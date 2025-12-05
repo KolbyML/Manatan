@@ -99,9 +99,11 @@ jobs:
       - name: Build and copy webUI, Build Jar
         env:
           ProductBuildType: "Stable"
-        working-directory: master/Subwayomi-Server
+        working-directory: master/Suwayomi-Server
         # ShadowJar will automatically pick up the files in src/main/resources
-        run: ./gradlew :server:downloadWebUI :server:shadowJar --stacktrace
+        run: |
+          echo "ls $(ls)"
+          ./gradlew :server:downloadWebUI :server:shadowJar --stacktrace
 
       - name: Upload Jar
         uses: actions/upload-artifact@v4
@@ -118,7 +120,7 @@ jobs:
           if-no-files-found: error
 
       - name: Tar scripts dir to maintain file permissions
-        run: tar -cvzf scripts.tar.gz -C master/Subwayomi-Server/ scripts/
+        run: tar -cvzf scripts.tar.gz -C master/Suwayomi-Server/ scripts/
 
       - name: Upload scripts.tar.gz
         uses: actions/upload-artifact@v4
