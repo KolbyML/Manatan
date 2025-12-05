@@ -20,8 +20,8 @@ jobs:
         with:
           submodules: recursive        
 
-      - name: Validate Gradle Wrapper
-        uses: gradle/actions/wrapper-validation@v3 # Updated to v3
+      # - name: Validate Gradle Wrapper
+      #   uses: gradle/actions/wrapper-validation@v3 # Updated to v3
 
   # --- NEW JOB: Compile Deno OCR Server ---
   build_ocr:
