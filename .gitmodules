@@ -1,9 +1,6 @@
-[submodule "external/Suwayomi-Server"]
-	path = external/Suwayomi-Server
-	url = https://github.com/KolbyML/Suwayomi-Server.git
-[submodule "external/Suwayomi-WebUI"]
-	path = external/Suwayomi-WebUI
-	url = https://github.com/KolbyML/Suwayomi-WebUI.git
-[submodule "external/Mangatan"]
-	path = external/Mangatan
-	url = https://github.com/exn251/Mangatan.git
+[submodule "Suwayomi-Server"]
+    path = Suwayomi-Server
+    url = https://github.com/KolbyML/Suwayomi-Server.git
+[submodule "Suwayomi-WebUI"]
+    path = Suwayomi-WebUI
+    url = https://github.com/KolbyML/Suwayomi-WebUI.git
