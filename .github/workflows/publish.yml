@@ -17,9 +17,11 @@ jobs:
     steps:
       - name: Clone repo
         uses: actions/checkout@v4 # Updated to v4 (standard stable)
+        with:
+          submodules: recursive        
 
-      # - name: Validate Gradle Wrapper
-      #   uses: gradle/actions/wrapper-validation@v3 # Updated to v3
+      - name: Validate Gradle Wrapper
+        uses: gradle/actions/wrapper-validation@v3 # Updated to v3
 
   # --- NEW JOB: Compile Deno OCR Server ---
   build_ocr:
@@ -68,6 +70,8 @@ jobs:
           ref: ${{ github.ref }}
           path: master
           fetch-depth: 0
+          with:
+            submodules: recursive          
 
       # --- NEW STEP: Inject OCR Binaries into Resources ---
       - name: Download OCR Binaries
@@ -88,8 +92,9 @@ jobs:
 
       - name: Copy CI gradle.properties
         run: |
+          cd master/Suwayomi-Server
           mkdir -p ~/.gradle
-          cp master/Suwayomi-Server/.github/runner-files/ci-gradle.properties \
+          cp .github/runner-files/ci-gradle.properties \
             ~/.gradle/gradle.properties
 
       - name: Build and copy webUI, Build Jar
