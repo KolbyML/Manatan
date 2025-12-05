@@ -1,6 +1,11 @@
 # Mangatan
 A 1 binary solution for https://github.com/kaihouguide/Mangatan
 
+## 🚀 Getting Started
+
+Download the latest release from the [Releases](https://github.com/KolbyML/Mangatan/releases) page.
+
+Run the executable, then visit `http://127.0.0.1:4567/` in your web browser to access the Mangatan web interface.
 
 ## Development
 
@@ -14,7 +19,7 @@ git clone --recursive https://github.com/KolbyML/Mangatan.git
 git submodule update --init --recursive
 ```
 
-# 📚 References and acknowledgements
+## 📚 References and acknowledgements
 The following links, repos, companies and projects have been important in the development of this repo, we have learned a lot from them and want to thank and acknowledge them.
 - https://github.com/kaihouguide/Mangatan
 - https://github.com/exn251/Mangatan/
