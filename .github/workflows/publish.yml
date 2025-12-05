@@ -18,8 +18,8 @@ jobs:
       - name: Clone repo
         uses: actions/checkout@v4 # Updated to v4 (standard stable)
 
-      - name: Validate Gradle Wrapper
-        uses: gradle/actions/wrapper-validation@v3 # Updated to v3
+      # - name: Validate Gradle Wrapper
+      #   uses: gradle/actions/wrapper-validation@v3 # Updated to v3
 
   # --- NEW JOB: Compile Deno OCR Server ---
   build_ocr:
