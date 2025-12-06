@@ -9,6 +9,12 @@ Download the latest release from the [Releases](https://github.com/KolbyML/Manga
 
 Run the executable, then visit `http://127.0.0.1:4567/` in your web browser to access the Mangatan web interface.
 
+## Roadmap
+
+- [x] Package Mangatan, OCR Server, and Suwayomi into a single binary
+- [ ] Add Manga Immersion Stats page https://github.com/KolbyML/Mangatan/issues/1
+- [ ] Suggest more features https://github.com/KolbyML/Mangatan/issues/new
+
 ## Development
 
 To clone the repo with all submodules:
