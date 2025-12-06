@@ -37,21 +37,7 @@ jobs:
           deno-version: v2.x
 
       - name: Compile OCR Server
-        working-directory: ocr-server
-        run: |
-          mkdir -p dist
-          
-          # Linux x64
-          deno compile --allow-net --allow-read --allow-write --allow-env --target x86_64-unknown-linux-gnu --output dist/ocr-server-linux server.ts
-          
-          # Windows x64
-          deno compile --allow-net --allow-read --allow-write --allow-env --target x86_64-pc-windows-msvc --output dist/ocr-server-win.exe server.ts
-          
-          # macOS x64 (Intel)
-          deno compile --allow-net --allow-read --allow-write --allow-env --target x86_64-apple-darwin --output dist/ocr-server-macos server.ts
-          
-          # macOS ARM64 (Apple Silicon) - Optional, can fallback to x64 via Rosetta or use specific binary if needed
-          deno compile --allow-net --allow-read --allow-write --allow-env --target aarch64-apple-darwin --output dist/ocr-server-macos-arm64 server.ts
+        run: make build-ocr-binaries
 
       - name: Upload OCR Artifacts
         uses: actions/upload-artifact@v4

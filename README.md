@@ -17,14 +17,33 @@ Run the executable, then visit `http://127.0.0.1:4567/` in your web browser to a
 
 ## Development
 
+### Prerequisites
+
+#### MacOS
+
+```bash
+brew install deno nvm yarn java
+nvm install 22.12.0
+nvm use 22.12.0
+```
+
+
+### Setup Environment
+
 To clone the repo with all submodules:
 ```
 git clone --recursive https://github.com/KolbyML/Mangatan.git
 ```
 
-## If you clone without --recursive
+#### If you clone without --recursive
 ```
 git submodule update --init --recursive
+```
+
+### Run dev mode
+    
+```bash
+make dev
 ```
 
 ## 📚 References and acknowledgements
