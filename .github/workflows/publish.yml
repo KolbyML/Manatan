@@ -207,7 +207,8 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: mangatan-${{ matrix.jre_name }}
-          path: bin/mangatan/target/${{ matrix.target }}/release/${{ matrix.binary_name }}
+          # FIX: Use wildcard `mangatan*` to catch `mangatan` AND `mangatan.exe`
+          path: bin/mangatan/target/${{ matrix.target }}/release/mangatan*
 
   # --- JOB 4: Release ---
   release:
@@ -239,18 +240,22 @@ jobs:
           name: mangatan-macOS-arm64
           path: release/mac-silicon
 
-      - name: Prepare Assets
+      - name: Prepare Assets with Versioning
         run: |
           mkdir final_release
-          mv release/linux/mangatan final_release/Mangatan-Linux-x64
-          mv release/windows/mangatan.exe final_release/Mangatan-Windows-x64.exe
-          mv release/mac-intel/mangatan final_release/Mangatan-macOS-Intel
-          mv release/mac-silicon/mangatan final_release/Mangatan-macOS-Silicon
+          # Capture version from tag (e.g. v1.0.0)
+          VERSION=${{ github.ref_name }}
           
-          # Make binaries executable (Linux/Mac)
-          chmod +x final_release/Mangatan-Linux-x64
-          chmod +x final_release/Mangatan-macOS-Intel
-          chmod +x final_release/Mangatan-macOS-Silicon
+          # Move and Rename using the Version
+          mv release/linux/mangatan final_release/Mangatan-${VERSION}-Linux-x64
+          mv release/windows/mangatan.exe final_release/Mangatan-${VERSION}-Windows-x64.exe
+          mv release/mac-intel/mangatan final_release/Mangatan-${VERSION}-macOS-Intel
+          mv release/mac-silicon/mangatan final_release/Mangatan-${VERSION}-macOS-Silicon
+          
+          # Make binaries executable
+          chmod +x final_release/Mangatan-${VERSION}-Linux-x64
+          chmod +x final_release/Mangatan-${VERSION}-macOS-Intel
+          chmod +x final_release/Mangatan-${VERSION}-macOS-Silicon
 
       - name: Generate Checksums
         run: cd final_release && sha256sum * > Checksums.sha256
