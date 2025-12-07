@@ -18,7 +18,7 @@ use futures::TryStreamExt;
 use reqwest::Client;
 use rust_embed::RustEmbed;
 use tao::event_loop::{ControlFlow, EventLoopBuilder};
-use tokio::process::Command;
+use tokio::{process::Command, sync::mpsc};
 use tower_http::cors::{Any, CorsLayer};
 use tray_icon::{
     TrayIconBuilder,
@@ -49,11 +49,9 @@ struct FrontendAssets;
 
 fn main() {
     let event_loop = EventLoopBuilder::new().build();
-
     let icon = load_icon(ICON_BYTES);
 
     let tray_menu = Menu::new();
-
     let open_browser_item = MenuItem::new("Open Web UI", true, None);
     let quit_item = MenuItem::new("Quit", true, None);
 
@@ -68,10 +66,14 @@ fn main() {
         .build()
         .expect("Failed to build tray icon");
 
-    std::thread::spawn(|| {
+    // Create a channel to signal shutdown
+    let (shutdown_tx, mut shutdown_rx) = mpsc::channel::<()>(1);
+
+    std::thread::spawn(move || {
         let rt = tokio::runtime::Runtime::new().expect("Failed to create Tokio runtime");
         rt.block_on(async {
-            if let Err(err) = run_server().await {
+            // Pass the receiver to run_server
+            if let Err(err) = run_server(&mut shutdown_rx).await {
                 eprintln!("Server crashed: {err}");
             }
         });
@@ -79,7 +81,6 @@ fn main() {
 
     let open_id = open_browser_item.id().clone();
     let quit_id = quit_item.id().clone();
-
     let menu_channel = MenuEvent::receiver();
 
     event_loop.run(move |_event, _, control_flow| {
@@ -91,6 +92,13 @@ fn main() {
                 let _ = open::that("http://localhost:8080");
             } else if event.id == quit_id {
                 println!("Shutting down...");
+
+                // Signal the background thread to stop
+                let _ = shutdown_tx.blocking_send(());
+
+                // Wait a moment for cleanup (optional, but good practice)
+                std::thread::sleep(std::time::Duration::from_millis(500));
+
                 *control_flow = ControlFlow::Exit;
                 std::process::exit(0);
             }
@@ -98,7 +106,10 @@ fn main() {
     });
 }
 
-async fn run_server() -> Result<(), Box<dyn std::error::Error>> {
+// Accept the shutdown receiver
+async fn run_server(
+    shutdown_signal: &mut mpsc::Receiver<()>,
+) -> Result<(), Box<dyn std::error::Error>> {
     println!("🚀 Initializing Mangatan Launcher...");
 
     let proj_dirs = ProjectDirs::from("com", "mangatan", "server")
@@ -122,22 +133,22 @@ async fn run_server() -> Result<(), Box<dyn std::error::Error>> {
 
     let java_exec = resolve_java(data_dir)?;
 
+    println!("👁️ Spawning OCR (Port 3033)...");
+    let mut ocr_proc = Command::new(&ocr_path)
+        .arg("--port")
+        .arg("3033")
+        .kill_on_drop(true) // This works when the handle is dropped
+        .stdout(Stdio::inherit())
+        .stderr(Stdio::inherit())
+        .spawn()?;
+
     println!("☕ Spawning Suwayomi (Port 4567)...");
     let mut suwayomi_proc = Command::new(&java_exec)
         .arg("-Dsuwayomi.tachidesk.config.server.webUIEnabled=false")
         .arg("-jar")
         .arg(&jar_path)
-        .kill_on_drop(true)
-        .stdout(Stdio::null())
-        .stderr(Stdio::inherit())
-        .spawn()?;
-
-    println!("👁️ Spawning OCR (Port 3033)...");
-    let mut ocr_proc = Command::new(&ocr_path)
-        .arg("--port")
-        .arg("3033")
-        .kill_on_drop(true)
-        .stdout(Stdio::null())
+        .kill_on_drop(true) // This works when the handle is dropped
+        .stdout(Stdio::inherit())
         .stderr(Stdio::inherit())
         .spawn()?;
 
@@ -179,14 +190,19 @@ async fn run_server() -> Result<(), Box<dyn std::error::Error>> {
         _ = server_future => {
             eprintln!("❌ CRITICAL: Web Server (Launcher) stopped unexpectedly!");
         }
+        // Wait for the shutdown signal from the Tray Menu
+        _ = shutdown_signal.recv() => {
+            println!("🛑 Shutdown signal received. Stopping servers...");
+        }
     }
 
-    println!("🛑 Shutting down entire application due to failure...");
+    println!("🛑 Cleaning up background processes...");
 
+    // Explicitly killing just to be sure, though dropping the handles below would trigger kill_on_drop
     let _ = suwayomi_proc.kill().await;
     let _ = ocr_proc.kill().await;
 
-    std::process::exit(1);
+    Ok(())
 }
 
 fn load_icon(bytes: &[u8]) -> tray_icon::Icon {
