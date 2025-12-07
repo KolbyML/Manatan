@@ -40,7 +40,7 @@ const OCR_BYTES: &[u8] = include_bytes!("../resources/ocr-server-linux");
 const OCR_BYTES: &[u8] = include_bytes!("../resources/ocr-server-macos-arm64");
 
 #[cfg(all(target_os = "macos", target_arch = "x86_64"))]
-const OCR_BYTES: &[u8] = include_bytes!("../resources/ocr-server-macos");
+const OCR_BYTES: &[u8] = include_bytes!("../resources/ocr-server-macos-x64");
 
 #[derive(RustEmbed)]
 #[folder = "resources/suwayomi-webui"]

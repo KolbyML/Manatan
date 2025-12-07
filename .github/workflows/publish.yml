@@ -118,6 +118,14 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
+- name: Install Linux Dependencies
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt-get update
+          # libglib2.0-dev fixes the current error
+          # libgtk-3-dev and libappindicator3-dev are required for the tray icon and windowing
+          sudo apt-get install -y libglib2.0-dev libgtk-3-dev libappindicator3-dev librsvg2-dev
+
       - name: Install Rust
         uses: dtolnay/rust-toolchain@stable
         with:
