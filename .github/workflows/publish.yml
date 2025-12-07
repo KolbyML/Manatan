@@ -149,7 +149,7 @@ jobs:
       - name: Download JRE
         uses: actions/download-artifact@v4
         with:
-          name: ${{ matrix.jre_name }}-jre
+          name: ${{ matrix.arch_name }}-jre
           path: temp_jre
 
       - name: Zip JRE for Embedding
