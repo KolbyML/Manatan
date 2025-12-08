@@ -9,19 +9,24 @@ Download the latest release from the [Releases](https://github.com/KolbyML/Manga
 
 Run the executable, then visit http://127.0.0.1:4568/ in your web browser to access the Mangatan web interface.
 
-### Setup Instructions (for Windows)
+## Setup (Windows)
 
-1. Go to the [releases](https://github.com/KolbyML/Mangatan/releases) page and download the .exe file for `windows-x64`
-2. Launch `Mangatan*.exe` and wait a few moments.
-3. A new Tray Icon should appear and http://127.0.0.1:4568/ keep refreshing it might take a few moments for the backend to start
-4. Please wait a few moments for the initial setup, then reload the page to be redirected to the library.
-5. You now need to add extension repositories to get manga on Suwayomi, you can do this by finding the correct index.min.json on Google 
-6. Paste the link for this index.min.json into Settings > Browse > Extension repositories > Add Repository > `<paste the link>` and click OK
-7. Go to the "Browse" section on the left, and then go to "Extensions" tab.
-8. Locate an extension from the list you wish to install. 
-9. Go to the "Sources" tab
-10. Click on the desired source to access and read your manga. Automatic OCR will be functional and you can use Yomitan just fine!
+1. Download the .zip file for `windows-x86` from the [releases](https://github.com/KolbyML/Mangatan/releases) page.
+2. Extract the .zip, and inside it launch `mangatan.exe`. Wait a few moments. Allow Windows Defender SmartScreen if prompted (More info > Run anyway).
+3. A "Mangatan Launcher" window should pop up, here click "**Open Web UI**".
+4. Allow Windows Firewall connections if prompted, and the Suwayomi web interface (`127.0.0.1:4568/`) should open in a new browser tab. Please wait a few moments while the initial setup is taking place. After ~30 seconds, reload the page to access the Suwayomi library (`127.0.0.1:4568/library`).
+5. To get manga, you need to locate the correct `index.min.json` extension repository URL for Suwayomi on Google. Add this URL in **Settings** > **Browse** > **Extension repositories** > **Add Repository** > `[paste the URL]` and click **OK**
+6. Go in **"Browse"** on the left sidebar, then go on the **"Extensions"** tab and click **"Install"** on your desired source.
+7. Finally, to start reading go to the **"Sources"** tab, click on the installed source and find the manga you wish to read. Automatic OCR will be functional and you can use Yomitan just fine!
 
+## Troubleshooting
+
+To fully clear cache and data from previous installs, delete the following and try again:
+
+- `mangatan-windows-x86`
+- `%LOCALAPPDATA%\Tachidesk`
+- `%APPDATA%\mangatan`
+- Site data & cookies from `127.0.0.1`
 ## Roadmap
 
 - [x] Package Mangatan, OCR Server, and Suwayomi into a single binary
