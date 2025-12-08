@@ -26,6 +26,8 @@ To fully clear cache and data from previous installs, delete the following and t
 - `mangatan-windows-x86`
 - `%LOCALAPPDATA%\Tachidesk`
 - `%APPDATA%\mangatan`
+- `%Temp%\Suwayomi*`
+- `%Temp%\Tachidesk*`
 - Site data & cookies from `127.0.0.1`
 ## Roadmap
 
