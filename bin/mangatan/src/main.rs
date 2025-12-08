@@ -125,8 +125,15 @@ async fn run_server(shutdown_signal: &mut mpsc::Receiver<()>) -> Result<(), Box<
     println!("📂 Data Directory: {}", data_dir.display());
 
     println!("📦 Extracting assets...");
-    let jar_path = extract_file(data_dir, "Suwayomi-Server.jar", JAR_BYTES)
-        .map_err(|err| anyhow!("Failed to extract Suwayomi-Server.jar: {err:?}"))?;
+    let jar_name = "suwayomi-server.jar";
+
+    let old_jar_path = data_dir.join("Suwayomi-Server.jar");
+    if old_jar_path.exists() {
+        let _ = fs::remove_file(old_jar_path);
+    }
+
+    let jar_path = extract_file(data_dir, jar_name, JAR_BYTES)
+        .map_err(|err| anyhow!("Failed to extract {}: {err:?}", jar_name))?;
 
     let ocr_bin_name = if cfg!(target_os = "windows") {
         "ocr-server.exe"

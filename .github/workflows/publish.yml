@@ -14,7 +14,7 @@ jobs:
   # --- JOB 1: Compile Deno OCR Server ---
   build_ocr:
     name: Build OCR Binaries
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-20.04 # Use older distro for better compatibility
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -45,7 +45,7 @@ jobs:
     strategy:
       matrix:
         include:
-          - os: ubuntu-latest
+          - os: ubuntu-20.04 # Use 20.04 for Linux JRE too
             name: linux-x64
           - os: windows-latest
             name: windows-x64
@@ -79,7 +79,8 @@ jobs:
       matrix:
         include:
           - name: Linux-x64
-            os: ubuntu-latest
+            # CRITICAL FIX: Build on Ubuntu 20.04 to support older GLIBC versions
+            os: ubuntu-20.04
             target: x86_64-unknown-linux-gnu
             arch_name: linux-x64
             ocr_binary: ocr-server-linux
@@ -173,52 +174,43 @@ jobs:
       # --- COMPILATION ---
       - name: Build Binary
         shell: bash
+        env:
+          CARGO_TARGET_DIR: ${{ github.workspace }}/target
         run: |
           cd bin/mangatan
           cargo build --release --target ${{ matrix.target }} --features embed-jre
 
-      # --- WINDOWS PACKAGING (Zip with Mesa DLLs) ---
+      # --- WINDOWS PACKAGING (Mesa Fix Included) ---
       - name: Package Windows with Mesa
         if: runner.os == 'Windows'
         shell: bash
         run: |
           mkdir output
-          
-          # 1. Copy the Main Executable
-          # Ensure this path matches where Cargo outputs the file (root target vs bin target)
           cp target/${{ matrix.target }}/release/mangatan.exe output/
           
-          # 2. Download Mesa 3D (CORRECTED URL)
           echo "Fetching latest Mesa version..."
           MESA_TAG=$(curl -s https://api.github.com/repos/pal1000/mesa-dist-win/releases/latest | jq -r .tag_name)
-          echo "Detected Mesa version: $MESA_TAG"
           
-          # FIX: The asset name is 'mesa3d-VERSION-release-msvc.7z'
+          # Use CORRECTED URL for Mesa
           curl -L -o mesa.7z "https://github.com/pal1000/mesa-dist-win/releases/download/${MESA_TAG}/mesa3d-${MESA_TAG}-release-msvc.7z"
           
-          # 3. Extract Mesa
           7z x mesa.7z -omesa_dist
           
-          # 4. Copy the required DLLs
           echo "Copying Mesa DLLs..."
           cp mesa_dist/x64/opengl32.dll output/
           cp mesa_dist/x64/libgallium_wgl.dll output/
-          
-          # Optional: d3d10warp.dll (Software Rasterizer)
           if [ -f "mesa_dist/x64/d3d10warp.dll" ]; then
              cp mesa_dist/x64/d3d10warp.dll output/
           fi
           
-          # 5. Zip everything together
           cd output
           7z a -tzip ../mangatan-windows-x64.zip *
           cd ..
           
-          # 6. Prepare for Upload
           mkdir final_artifact
           mv mangatan-windows-x64.zip final_artifact/
 
-      # --- LINUX PACKAGING (Manual Deb & AppImage) ---
+      # --- LINUX PACKAGING (Fix Execv Error) ---
       - name: Package Linux (Deb & AppImage)
         if: runner.os == 'Linux'
         shell: bash
@@ -261,10 +253,16 @@ jobs:
           
           # --- APPIMAGE ---
           mkdir -p AppDir/usr/bin AppDir/usr/share/applications AppDir/usr/share/icons/hicolor/256x256/apps
+          
+          # Copy files
           cp "$BINARY_PATH" AppDir/usr/bin/mangatan
           cp "$ICON_PATH" AppDir/mangatan.png
           cp "$ICON_PATH" AppDir/usr/share/icons/hicolor/256x256/apps/mangatan.png
           
+          # Ensure Binary is Executable
+          chmod +x AppDir/usr/bin/mangatan
+          
+          # Desktop File
           cat > AppDir/mangatan.desktop <<EOF
           [Desktop Entry]
           Name=Mangatan
@@ -275,12 +273,21 @@ jobs:
           Terminal=false
           EOF
           
+          # Setup LinuxDeploy
           wget -q https://github.com/linuxdeploy/linuxdeploy/releases/download/continuous/linuxdeploy-x86_64.AppImage
           chmod +x linuxdeploy-x86_64.AppImage
-          ./linuxdeploy-x86_64.AppImage --appdir AppDir --output appimage
+          
+          # FIX: Explicitly tell linuxdeploy where the executable and desktop file are
+          ./linuxdeploy-x86_64.AppImage \
+            --appdir AppDir \
+            --executable AppDir/usr/bin/mangatan \
+            --desktop-file AppDir/mangatan.desktop \
+            --icon-file AppDir/mangatan.png \
+            --output appimage
+          
           mv Mangatan*.AppImage output/
 
-      # --- MACOS PACKAGING (Manual .app Bundle) ---
+      # --- MACOS PACKAGING ---
       - name: Package macOS (.app)
         if: runner.os == 'macOS'
         shell: bash
