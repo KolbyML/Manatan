@@ -51,7 +51,7 @@ jobs:
       - name: Set up JDK
         uses: actions/setup-java@v4
         with:
-          java-version: 21 # SWITCHED TO LTS (25 is EA and breaks scanners)
+          java-version: 21 
           distribution: 'zulu'
 
       - name: Checkout code
@@ -176,7 +176,7 @@ jobs:
           cd bin/mangatan
           cargo build --release --target ${{ matrix.target }} --features embed-jre
 
-      # --- WINDOWS PACKAGING (Mesa Fix Included) ---
+      # --- WINDOWS PACKAGING ---
       - name: Package Windows with Mesa
         if: runner.os == 'Windows'
         shell: bash
@@ -206,8 +206,8 @@ jobs:
           mkdir final_artifact
           mv mangatan-windows-x64.zip final_artifact/
 
-      # --- LINUX PACKAGING (Fix Execv Error) ---
-      - name: Package Linux (Deb & AppImage)
+      # --- LINUX PACKAGING ---
+      - name: Package Linux (Deb)
         if: runner.os == 'Linux'
         shell: bash
         run: |
@@ -247,59 +247,18 @@ jobs:
           
           dpkg-deb --build deb_pkg output/mangatan_${CLEAN_VERSION}_amd64.deb
           
-      # --- MACOS PACKAGING ---
-      - name: Package macOS (.app)
+      # --- MACOS PACKAGING (SIMPLE BINARY) ---
+      - name: Package macOS (Raw Binary)
         if: runner.os == 'macOS'
         shell: bash
         run: |
-          BINARY_PATH="target/${{ matrix.target }}/release/mangatan"
-          ICON_PATH="bin/mangatan/resources/faviconlogo.png"
-          APP_NAME="Mangatan"
-          BUNDLE_DIR="${APP_NAME}.app"
+          mkdir output
+          # Copy the binary
+          cp target/${{ matrix.target }}/release/mangatan output/
           
-          mkdir -p output
-          mkdir -p "$BUNDLE_DIR/Contents/MacOS" "$BUNDLE_DIR/Contents/Resources"
-          cp "$BINARY_PATH" "$BUNDLE_DIR/Contents/MacOS/$APP_NAME"
-          chmod +x "$BUNDLE_DIR/Contents/MacOS/$APP_NAME"
-          
-          cat > "$BUNDLE_DIR/Contents/Info.plist" <<EOF
-          <?xml version="1.0" encoding="UTF-8"?>
-          <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
-          <plist version="1.0">
-          <dict>
-              <key>CFBundleExecutable</key>
-              <string>$APP_NAME</string>
-              <key>CFBundleIdentifier</key>
-              <string>com.mangatan.server</string>
-              <key>CFBundleName</key>
-              <string>$APP_NAME</string>
-              <key>CFBundleIconFile</key>
-              <string>AppIcon</string>
-              <key>CFBundlePackageType</key>
-              <string>APPL</string>
-              <key>LSUIElement</key>
-              <false/>
-          </dict>
-          </plist>
-          EOF
-          
-          mkdir mangatan.iconset
-          sips -z 16 16     "$ICON_PATH" --out mangatan.iconset/icon_16x16.png
-          sips -z 32 32     "$ICON_PATH" --out mangatan.iconset/icon_16x16@2x.png
-          sips -z 32 32     "$ICON_PATH" --out mangatan.iconset/icon_32x32.png
-          sips -z 64 64     "$ICON_PATH" --out mangatan.iconset/icon_32x32@2x.png
-          sips -z 128 128   "$ICON_PATH" --out mangatan.iconset/icon_128x128.png
-          sips -z 256 256   "$ICON_PATH" --out mangatan.iconset/icon_128x128@2x.png
-          sips -z 256 256   "$ICON_PATH" --out mangatan.iconset/icon_256x256.png
-          sips -z 512 512   "$ICON_PATH" --out mangatan.iconset/icon_256x256@2x.png
-          sips -z 512 512   "$ICON_PATH" --out mangatan.iconset/icon_512x512.png
-          iconutil -c icns mangatan.iconset
-          mv mangatan.icns "$BUNDLE_DIR/Contents/Resources/AppIcon.icns"
-          
-          # This forces a "self-signed" signature, preventing the immediate "Damaged" error
-          codesign --force --deep --sign - "$BUNDLE_DIR"
-
-          zip -r "output/${APP_NAME}.app.zip" "$BUNDLE_DIR"
+          # Zip it (Standard practice for distributing binaries to preserve permissions)
+          cd output
+          zip mangatan-macos.zip mangatan
 
       # --- UPLOAD ARTIFACTS ---
       - name: Upload Windows Artifact
@@ -321,7 +280,8 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: mangatan-${{ matrix.arch_name }}
-          path: output/Mangatan.app.zip
+          # Points to the simple zip
+          path: output/mangatan-macos.zip
 
   # --- JOB 4: Release ---
   release:
@@ -358,15 +318,15 @@ jobs:
           mkdir final_release
           VERSION=${{ github.ref_name }}
           
-          # WINDOWS (Now a Zip)
+          # WINDOWS (Zip)
           mv release/windows/mangatan-windows-x64.zip final_release/Mangatan-${VERSION}-Windows-x64.zip
           
-          # LINUX
+          # LINUX (Deb)
           mv release/linux/*.deb final_release/Mangatan-${VERSION}-Linux-x64.deb
           
-          # MACOS
-          mv release/mac-intel/Mangatan.app.zip final_release/Mangatan-${VERSION}-macOS-Intel.app.zip
-          mv release/mac-silicon/Mangatan.app.zip final_release/Mangatan-${VERSION}-macOS-Silicon.app.zip
+          # MACOS (Renaming the simple zips)
+          mv release/mac-intel/mangatan-macos.zip final_release/Mangatan-${VERSION}-macOS-Intel.zip
+          mv release/mac-silicon/mangatan-macos.zip final_release/Mangatan-${VERSION}-macOS-Silicon.zip
 
       - name: Generate Checksums
         run: cd final_release && sha256sum * > Checksums.sha256

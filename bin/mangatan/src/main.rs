@@ -210,7 +210,6 @@ async fn run_server(
 
     println!("☕ Spawning Suwayomi...");
     let mut suwayomi_proc = Command::new(&java_exec)
-        .arg("-Dsuwayomi.tachidesk.config.server.webUIEnabled=false")
         .arg("-Dsuwayomi.tachidesk.config.server.initialOpenInBrowserEnabled=false")
         .arg("-Dsuwayomi.tachidesk.config.server.webUIChannel=BUNDLED")
         .arg("-XX:+ExitOnOutOfMemoryError")
