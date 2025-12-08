@@ -199,9 +199,11 @@ async fn run_server(
     } else {
         "ocr-server"
     };
+    info!("Extracting OCR server binary: {ocr_bin_name}");
     let ocr_path = extract_executable(&bin_dir, ocr_bin_name, OCR_BYTES)
         .map_err(|err| anyhow!("Failed to extract ocr server {err:?}"))?;
 
+    info!("🔍 Resolving Java...");
     let java_exec =
         resolve_java(data_dir).map_err(|err| anyhow!("Failed to resolve java install {err:?}"))?;
 
@@ -374,11 +376,17 @@ async fn serve_react_app(uri: Uri) -> impl IntoResponse {
 
 fn extract_file(dir: &Path, name: &str, bytes: &[u8]) -> std::io::Result<PathBuf> {
     let path = dir.join(name);
+    info!("Extracting file to {}", path.display());
     if path.exists() {
+        info!("   Existing file found. Removing...");
         fs::remove_file(&path)?;
+        info!("   Old file removed.");
     }
+    info!("   Writing new file...");
     let mut file = File::create(&path)?;
+    info!("   Writing {} bytes...", bytes.len());
     file.write_all(bytes)?;
+    info!("   File extraction complete.");
     Ok(path)
 }
 
