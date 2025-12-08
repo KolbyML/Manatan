@@ -6,6 +6,7 @@ use std::{
     process::Stdio,
     sync::mpsc::{self, Receiver, Sender},
     thread,
+    time::Duration,
 };
 
 use anyhow::anyhow;
@@ -87,11 +88,21 @@ fn main() -> eframe::Result<()> {
         ..Default::default()
     };
 
-    eframe::run_native(
+    info!("🎨 Attempting to open GUI window...");
+    let result = eframe::run_native(
         "Mangatan",
         options,
         Box::new(|_cc| Ok(Box::new(MyApp::new(shutdown_tx, server_stopped_rx)))),
-    )
+    );
+
+    if let Err(err) = &result {
+        error!("❌ CRITICAL GUI ERROR: Failed to start eframe: {err}");
+        std::thread::sleep(Duration::from_secs(5));
+    } else {
+        info!("👋 GUI exited normally.");
+    }
+
+    result
 }
 
 struct ServerGuard {
