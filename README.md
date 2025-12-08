@@ -7,13 +7,13 @@ No monkey script or ocr setup required! Run the executable and start reading man
 
 Download the latest release from the [Releases](https://github.com/KolbyML/Mangatan/releases) page.
 
-Run the executable, then visit http://127.0.0.1:8080/ in your web browser to access the Mangatan web interface.
+Run the executable, then visit http://127.0.0.1:4568/ in your web browser to access the Mangatan web interface.
 
 ### Setup Instructions (for Windows)
 
 1. Go to the [releases](https://github.com/KolbyML/Mangatan/releases) page and download the .exe file for `windows-x64`
 2. Launch `Mangatan*.exe` and wait a few moments.
-3. A new Tray Icon should appear and http://127.0.0.1:8080/ keep refreshing it might take a few moments for the backend to start
+3. A new Tray Icon should appear and http://127.0.0.1:4568/ keep refreshing it might take a few moments for the backend to start
 4. Please wait a few moments for the initial setup, then reload the page to be redirected to the library.
 5. You now need to add extension repositories to get manga on Suwayomi, you can do this by finding the correct index.min.json on Google 
 6. Paste the link for this index.min.json into Settings > Browse > Extension repositories > Add Repository > `<paste the link>` and click OK
