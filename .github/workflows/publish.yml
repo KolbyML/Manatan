@@ -296,6 +296,9 @@ jobs:
           iconutil -c icns mangatan.iconset
           mv mangatan.icns "$BUNDLE_DIR/Contents/Resources/AppIcon.icns"
           
+          # This forces a "self-signed" signature, preventing the immediate "Damaged" error
+          codesign --force --deep --sign - "$BUNDLE_DIR"
+
           zip -r "output/${APP_NAME}.app.zip" "$BUNDLE_DIR"
 
       # --- UPLOAD ARTIFACTS ---
