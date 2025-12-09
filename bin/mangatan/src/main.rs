@@ -60,8 +60,15 @@ fn main() -> eframe::Result<()> {
         false => EnvFilter::builder().parse_lossy(rust_log),
     };
     tracing_subscriber::fmt().with_env_filter(env_filter).init();
-    let (shutdown_tx, mut shutdown_rx) = tokio::sync::mpsc::channel::<()>(1);
 
+    let proj_dirs =
+        ProjectDirs::from("", "", "mangatan").expect("Could not determine home directory");
+    let data_dir = proj_dirs.data_dir().to_path_buf();
+
+    let server_data_dir = data_dir.clone();
+    let gui_data_dir = data_dir.clone();
+
+    let (shutdown_tx, mut shutdown_rx) = tokio::sync::mpsc::channel::<()>(1);
     let (server_stopped_tx, server_stopped_rx) = mpsc::channel::<()>();
 
     thread::spawn(move || {
@@ -71,7 +78,7 @@ fn main() -> eframe::Result<()> {
                 tx: server_stopped_tx,
             };
 
-            if let Err(err) = run_server(&mut shutdown_rx).await {
+            if let Err(err) = run_server(&mut shutdown_rx, &server_data_dir).await {
                 error!("Server crashed: {err}");
             }
         });
@@ -92,7 +99,13 @@ fn main() -> eframe::Result<()> {
     let result = eframe::run_native(
         "Mangatan",
         options,
-        Box::new(|_cc| Ok(Box::new(MyApp::new(shutdown_tx, server_stopped_rx)))),
+        Box::new(|_cc| {
+            Ok(Box::new(MyApp::new(
+                shutdown_tx,
+                server_stopped_rx,
+                gui_data_dir,
+            )))
+        }),
     );
 
     if let Err(err) = &result {
@@ -110,7 +123,7 @@ struct ServerGuard {
 }
 impl Drop for ServerGuard {
     fn drop(&mut self) {
-        let _ = self.tx.send(()); // Tell GUI we are done
+        let _ = self.tx.send(());
     }
 }
 
@@ -118,14 +131,20 @@ struct MyApp {
     shutdown_tx: tokio::sync::mpsc::Sender<()>,
     server_stopped_rx: Receiver<()>,
     is_shutting_down: bool,
+    data_dir: PathBuf,
 }
 
 impl MyApp {
-    fn new(shutdown_tx: tokio::sync::mpsc::Sender<()>, server_stopped_rx: Receiver<()>) -> Self {
+    fn new(
+        shutdown_tx: tokio::sync::mpsc::Sender<()>,
+        server_stopped_rx: Receiver<()>,
+        data_dir: PathBuf,
+    ) -> Self {
         Self {
             shutdown_tx,
             server_stopped_rx,
             is_shutting_down: false,
+            data_dir,
         }
     }
 }
@@ -136,7 +155,6 @@ impl eframe::App for MyApp {
             if !self.is_shutting_down {
                 self.is_shutting_down = true;
                 info!("❌ Close requested. Signaling server to stop...");
-
                 let _ = self.shutdown_tx.try_send(());
             }
             ctx.send_viewport_cmd(egui::ViewportCommand::CancelClose);
@@ -157,7 +175,6 @@ impl eframe::App for MyApp {
                 info!("✅ Server cleanup complete. Exiting.");
                 std::process::exit(0);
             }
-
             ctx.request_repaint();
         } else {
             egui::CentralPanel::default().show(ctx, |ui| {
@@ -168,6 +185,18 @@ impl eframe::App for MyApp {
                     if ui.button("Open Web UI").clicked() {
                         let _ = open::that("http://localhost:4568");
                     }
+
+                    ui.add_space(10.0);
+
+                    if ui.button("Open Data Folder").clicked() {
+                        if !self.data_dir.exists() {
+                            let _ = std::fs::create_dir_all(&self.data_dir);
+                        }
+
+                        if let Err(e) = open::that(&self.data_dir) {
+                            error!("Failed to open data folder: {}", e);
+                        }
+                    }
                 });
             });
         }
@@ -176,20 +205,16 @@ impl eframe::App for MyApp {
 
 async fn run_server(
     shutdown_signal: &mut tokio::sync::mpsc::Receiver<()>,
+    data_dir: &PathBuf,
 ) -> Result<(), Box<anyhow::Error>> {
     info!("🚀 Initializing Mangatan Launcher...");
-
-    let proj_dirs = ProjectDirs::from("", "", "mangatan")
-        .ok_or(anyhow!("Could not determine home directory"))?;
-    let data_dir = proj_dirs.data_dir();
-
     info!("📂 Data Directory: {}", data_dir.display());
 
-    if data_dir.exists() {
-        if let Err(err) = fs::remove_dir_all(data_dir) {
-            error!("⚠️ Warning: Could not fully clear data directory: {err}");
-            error!("   (This usually means an old process is still running. Check Task Manager.)");
-        }
+    if data_dir.exists()
+        && let Err(err) = fs::remove_dir_all(data_dir)
+    {
+        error!("⚠️ Warning: Could not fully clear data directory: {err}");
+        error!("   (This usually means an old process is still running. Check Task Manager.)");
     }
 
     if !data_dir.exists() {

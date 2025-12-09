@@ -40,15 +40,16 @@ To fully clear cache and data from previous installs, delete the following and t
 #### Windows
 
 ```ps
-winget install Microsoft.OpenJDK.21 DenoLand.Deno
+winget install Microsoft.OpenJDK.21 DenoLand.Deno Rustlang.Rustup
 ```
 
 #### MacOS
 
 ```bash
-brew install deno nvm yarn java
+brew install deno nvm yarn java rustup
 nvm install 22.12.0
 nvm use 22.12.0
+rustup update
 ```
 
 
