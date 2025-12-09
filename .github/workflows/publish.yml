@@ -173,27 +173,12 @@ jobs:
           cargo build --release --target ${{ matrix.target }} --features embed-jre
 
       # --- WINDOWS PACKAGING ---
-      - name: Package Windows with Mesa
+      - name: Package Windows
         if: runner.os == 'Windows'
         shell: bash
         run: |
           mkdir output
           cp target/${{ matrix.target }}/release/mangatan.exe output/
-          
-          echo "Fetching latest Mesa version..."
-          MESA_TAG=$(curl -s https://api.github.com/repos/pal1000/mesa-dist-win/releases/latest | jq -r .tag_name)
-          
-          # Use CORRECTED URL for Mesa
-          curl -L -o mesa.7z "https://github.com/pal1000/mesa-dist-win/releases/download/${MESA_TAG}/mesa3d-${MESA_TAG}-release-msvc.7z"
-          
-          7z x mesa.7z -omesa_dist
-          
-          echo "Copying Mesa DLLs..."
-          cp mesa_dist/x64/opengl32.dll output/
-          cp mesa_dist/x64/libgallium_wgl.dll output/
-          if [ -f "mesa_dist/x64/d3d10warp.dll" ]; then
-             cp mesa_dist/x64/d3d10warp.dll output/
-          fi
           
           cd output
           7z a -tzip ../mangatan-windows-x64.zip *
