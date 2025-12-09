@@ -96,3 +96,23 @@ download_jar:
 	@echo "Downloading Suwayomi Server JAR..."
 	mkdir -p bin/mangatan/resources
 	curl -L "https://github.com/Suwayomi/Suwayomi-Server-preview/releases/download/v2.1.2019/Suwayomi-Server-v2.1.2019.jar" -o bin/mangatan/resources/Suwayomi-Server.jar
+
+.PHONY: release-notes
+release-notes:
+	@echo "---------------------------------------------------"
+	@echo "Generating Release Description"
+	@echo "---------------------------------------------------"
+	@# 1. Try to get the latest tag. 
+	@#    If command fails (no tags), PREV_TAG will be empty.
+	@export PREV_TAG=$$(git describe --tags --abbrev=0 2>/dev/null); \
+	if [ -z "$$PREV_TAG" ]; then \
+		echo "### Initial Release"; \
+		echo ""; \
+		git log --no-merges --pretty=format:"- %s (%h)"; \
+	else \
+		echo "### Changes since $$PREV_TAG"; \
+		echo ""; \
+		git log $$PREV_TAG..HEAD --no-merges --pretty=format:"- %s (%h)"; \
+	fi
+	@echo ""
+	@echo "---------------------------------------------------"
