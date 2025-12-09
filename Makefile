@@ -16,7 +16,14 @@ clippy: # Run `clippy` on the entire workspace.
 lint: fmt clippy sort # Run all linters.
 
 .PHONY: clean
-clean: # Run `cargo clean`.
+clean: # Run `clean mangatan resources`.
+	rm -rf bin/mangatan/resources/suwayomi-webui
+	rm -rf bin/mangatan/resources/jre_bundle.zip
+	rm -rf bin/mangatan/resources/ocr-server*
+	rm -rf bin/mangatan/resources/Suwayomi-Server.jar
+
+.PHONY: clean_rust
+clean_rust: # Run `cargo clean`.
 	cargo clean
 
 .PHONY: sort
@@ -42,16 +49,17 @@ build_webui:
 		node -v; \
 	fi; \
 	cd Suwayomi-WebUI && yarn install && yarn build
-	rm -r bin/mangatan/resources/suwayomi-webui
+	rm -rf bin/mangatan/resources/suwayomi-webui
 	mkdir -p bin/mangatan/resources/suwayomi-webui
 	cp -r Suwayomi-WebUI/build/* bin/mangatan/resources/suwayomi-webui/
+	rm -r Suwayomi-WebUI/build/
 
 .PHONY: build-ocr-binaries
 build-ocr-binaries:
 	@echo "Building OCR binaries..."
 
 	cd ocr-server && mkdir -p dist
-          
+	      
 	# Linux x64
 	cd ocr-server && deno compile --allow-net --allow-read --allow-write --allow-env --target x86_64-unknown-linux-gnu --output dist/ocr-server-linux server.ts
 	
@@ -63,9 +71,10 @@ build-ocr-binaries:
 	
 	# macOS ARM64 (Apple Silicon) - Optional, can fallback to x64 via Rosetta or use specific binary if needed
 	cd ocr-server && deno compile --allow-net --allow-read --allow-write --allow-env --target aarch64-apple-darwin --output dist/ocr-server-macos-arm64 server.ts
+	cp ocr-server/dist/ocr-server* bin/mangatan/resources
 
 .PHONY: dev
-dev: build-ocr-binaries build_webui
+dev: build-ocr-binaries build_webui download_jar
 	cargo run --release -p mangatan
 
 .PHONY: jlink
@@ -81,3 +90,9 @@ bundle_jre: jlink
 	@echo "Bundling JRE with Mangatan..."
 	rm -f bin/mangatan/resources/jre_bundle.zip
 	cd jre_bundle && zip -r ../bin/mangatan/resources/jre_bundle.zip ./*
+
+.PHONY: download_jar
+download_jar:
+	@echo "Downloading Suwayomi Server JAR..."
+	mkdir -p bin/mangatan/resources
+	curl -L "https://github.com/Suwayomi/Suwayomi-Server-preview/releases/download/v2.1.2019/Suwayomi-Server-v2.1.2019.jar" -o bin/mangatan/resources/Suwayomi-Server.jar
