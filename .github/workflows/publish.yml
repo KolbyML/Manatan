@@ -209,7 +209,7 @@ jobs:
           mv mangatan-windows-x64.zip final_artifact/
 
       # --- LINUX PACKAGING ---
-      - name: Package Linux (Deb)
+      - name: Package Linux
         if: runner.os == 'Linux'
         shell: bash
         run: |
@@ -220,7 +220,7 @@ jobs:
           
           mkdir -p output
           
-          # --- DEB ---
+          # --- 1. BUILD DEB ---
           mkdir -p deb_pkg/usr/bin deb_pkg/usr/share/applications deb_pkg/usr/share/icons/hicolor/512x512/apps deb_pkg/DEBIAN
           cp "$BINARY_PATH" deb_pkg/usr/bin/mangatan
           cp "$ICON_PATH" deb_pkg/usr/share/icons/hicolor/512x512/apps/mangatan.png
@@ -248,6 +248,19 @@ jobs:
           EOF
           
           dpkg-deb --build deb_pkg output/mangatan_${CLEAN_VERSION}_amd64.deb
+
+          # --- 2. BUILD TAR.GZ ---
+          # Create a staging directory so the tar extracts into a folder
+          mkdir -p tar_staging/mangatan-${CLEAN_VERSION}
+          
+          # Copy binary to staging
+          cp "$BINARY_PATH" tar_staging/mangatan-${CLEAN_VERSION}/mangatan
+          chmod +x tar_staging/mangatan-${CLEAN_VERSION}/mangatan
+          
+          # Create the archive
+          cd tar_staging
+          tar -czvf ../output/mangatan-linux-x64.tar.gz mangatan-${CLEAN_VERSION}
+          cd ..
           
       # --- MACOS PACKAGING (SIMPLE BINARY) ---
       - name: Package macOS (Raw Binary)
@@ -327,8 +340,9 @@ jobs:
           # WINDOWS (Zip)
           mv release/windows/mangatan-windows-x64.zip final_release/Mangatan-${VERSION}-Windows-x64.zip
           
-          # LINUX (Deb)
+          # LINUX
           mv release/linux/*.deb final_release/Mangatan-${VERSION}-Linux-x64.deb
+          mv release/linux/*.tar.gz final_release/Mangatan-${VERSION}-Linux-x64.tar.gz
           
           # MACOS
           mv release/mac-intel/mangatan-macos.zip final_release/Mangatan-${VERSION}-macOS-Intel.zip
