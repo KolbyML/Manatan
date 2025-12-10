@@ -1,6 +1,8 @@
 # Mangatan
 A 1 binary solution for https://github.com/kaihouguide/Mangatan
 
+Discord Server: https://discord.gg/tDAtpPN8KK
+
 No monkey script or ocr setup required! Run the executable and start reading manga in your browser. For more instructions on how to use Suwayomi, please refer to their respective repo https://github.com/Suwayomi/Suwayomi-Server.
 
 ## 🚀 Getting Started
