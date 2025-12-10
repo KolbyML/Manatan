@@ -35,6 +35,9 @@ static ICON_BYTES: &[u8] = include_bytes!("../resources/faviconlogo.png");
 static JAR_BYTES: &[u8] = include_bytes!("../resources/Suwayomi-Server.jar");
 
 #[cfg(feature = "embed-jre")]
+static NATIVES_BYTES: &[u8] = include_bytes!("../resources/natives.zip");
+
+#[cfg(feature = "embed-jre")]
 static JRE_BYTES: &[u8] = include_bytes!("../resources/jre_bundle.zip");
 
 #[cfg(target_os = "windows")]
@@ -238,6 +241,20 @@ async fn run_server(
     info!("Extracting OCR server binary: {ocr_bin_name}");
     let ocr_path = extract_executable(&bin_dir, ocr_bin_name, OCR_BYTES)
         .map_err(|err| anyhow!("Failed to extract ocr server {err:?}"))?;
+
+    #[cfg(feature = "embed-jre")]
+    {
+        let natives_dir = data_dir.join("natives");
+        if !natives_dir.exists() {
+            info!("📦 Extracting Native Libraries (JogAmp)...");
+            fs::create_dir_all(&natives_dir)
+                .map_err(|e| anyhow!("Failed to create natives dir: {e}"))?;
+
+            // Reusing the existing extract_zip function
+            extract_zip(NATIVES_BYTES, &natives_dir)
+                .map_err(|e| anyhow!("Failed to extract natives: {e}"))?;
+        }
+    }
 
     info!("🔍 Resolving Java...");
     let java_exec =

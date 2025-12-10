@@ -109,24 +109,28 @@ jobs:
             target: x86_64-unknown-linux-gnu
             arch_name: linux-x64
             ocr_binary: ocr-server-linux
+            jogamp_target: linux-amd64
             
           - name: Windows-x64
             os: windows-latest
             target: x86_64-pc-windows-msvc
             arch_name: windows-x64
             ocr_binary: ocr-server-win.exe
+            jogamp_target: windows-amd64
             
           - name: macOS-Intel
             os: macos-15-intel
             target: x86_64-apple-darwin
             arch_name: macOS-x64
             ocr_binary: ocr-server-macos-x64
+            jogamp_target: macosx-universal
             
           - name: macOS-Silicon
             os: macos-15
             target: aarch64-apple-darwin
             arch_name: macOS-arm64
             ocr_binary: ocr-server-macos-arm64
+            jogamp_target: macosx-universal
 
     steps:
       - name: Checkout code
@@ -136,7 +140,11 @@ jobs:
         if: runner.os == 'Linux'
         run: |
           sudo apt-get update
-          sudo apt-get install -y libglib2.0-dev libgtk-3-dev libappindicator3-dev librsvg2-dev libxdo-dev fuse
+          sudo apt-get install -y libglib2.0-dev libgtk-3-dev libappindicator3-dev librsvg2-dev libxdo-dev fuse p7zip-full
+
+      - name: Install macOS Dependencies
+        if: runner.os == 'macOS'
+        run: brew install p7zip
 
       - name: Install Rust
         uses: dtolnay/rust-toolchain@stable
@@ -157,6 +165,28 @@ jobs:
       - name: Place OCR Binary
         shell: bash
         run: cp temp_ocr/${{ matrix.ocr_binary }} bin/mangatan/resources/
+
+      - name: Prepare JogAmp Natives
+        shell: bash
+        run: |
+          # Download JogAmp
+          curl -L "https://jogamp.org/deployment/jogamp-current/archive/jogamp-all-platforms.7z" -o jogamp.7z
+          
+          # Extract specific folder using 7z
+          # The structure inside the 7z is jogamp-all-platforms/lib/<target>
+          7z x jogamp.7z "jogamp-all-platforms/lib/${{ matrix.jogamp_target }}"
+          
+          # Move files to a clean folder to be zipped
+          mkdir natives_temp
+          mv jogamp-all-platforms/lib/${{ matrix.jogamp_target }}/* natives_temp/
+          
+          # Zip it up for embedding
+          cd natives_temp
+          if [ "${{ runner.os }}" == "Windows" ]; then
+            7z a -tzip ../bin/mangatan/resources/natives.zip *
+          else
+            zip -r ../bin/mangatan/resources/natives.zip .
+          fi
 
       - name: Download JRE
         uses: actions/download-artifact@v4

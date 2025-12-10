@@ -1,5 +1,25 @@
 SHELL := /bin/bash
 
+UNAME_S := $(shell uname -s)
+JOGAMP_TARGET := unknown
+
+ifeq ($(UNAME_S),Linux)
+    JOGAMP_TARGET := linux-amd64
+endif
+ifeq ($(UNAME_S),Darwin)
+    JOGAMP_TARGET := macosx-universal
+endif
+# Check for Windows (MingW/MSYS/Cygwin or standard Env var)
+ifneq (,$(findstring MINGW,$(UNAME_S)))
+    JOGAMP_TARGET := windows-amd64
+endif
+ifneq (,$(findstring MSYS,$(UNAME_S)))
+    JOGAMP_TARGET := windows-amd64
+endif
+ifeq ($(OS),Windows_NT)
+    JOGAMP_TARGET := windows-amd64
+endif
+
 .PHONY: test
 test: # Run all tests.
 	cargo test --workspace -- --nocapture
@@ -21,6 +41,8 @@ clean: # Run `clean mangatan resources`.
 	rm -rf bin/mangatan/resources/jre_bundle.zip
 	rm -rf bin/mangatan/resources/ocr-server*
 	rm -rf bin/mangatan/resources/Suwayomi-Server.jar
+	rm -f jogamp.7z
+	rm -rf temp_natives	
 
 .PHONY: clean_rust
 clean_rust: # Run `cargo clean`.
@@ -73,8 +95,35 @@ build-ocr-binaries:
 	cd ocr-server && deno compile --allow-net --allow-read --allow-write --allow-env --target aarch64-apple-darwin --output dist/ocr-server-macos-arm64 server.ts
 	cp ocr-server/dist/ocr-server* bin/mangatan/resources
 
+.PHONY: download_natives
+download_natives:
+	@echo "Preparing JogAmp natives for target: $(JOGAMP_TARGET)"
+	@if [ "$(JOGAMP_TARGET)" = "unknown" ]; then \
+		echo "Error: Could not detect OS for JogAmp target. Please ensure you are on Linux, macOS, or Windows (MingW/Cygwin)."; \
+		exit 1; \
+	fi
+	mkdir -p bin/mangatan/resources
+	rm -f jogamp.7z
+	rm -rf temp_natives
+	
+	@echo "Downloading JogAmp..."
+	curl -L "https://jogamp.org/deployment/jogamp-current/archive/jogamp-all-platforms.7z" -o jogamp.7z
+	
+	@echo "Extracting $(JOGAMP_TARGET) libraries..."
+	# Requires 7z installed (p7zip-full on Linux/Mac)
+	7z x jogamp.7z -otemp_natives "jogamp-all-platforms/lib/$(JOGAMP_TARGET)"
+	
+	@echo "Zipping natives..."
+	# Zip the contents of the target folder into natives.zip
+	cd temp_natives/jogamp-all-platforms/lib/$(JOGAMP_TARGET) && zip -r ../../../../../bin/mangatan/resources/natives.zip .
+	
+	@echo "Cleanup..."
+	rm jogamp.7z
+	rm -rf temp_natives
+	@echo "Natives ready at bin/mangatan/resources/natives.zip"
+
 .PHONY: dev
-dev: build-ocr-binaries build_webui download_jar
+dev: build-ocr-binaries build_webui download_jar download_natives
 	cargo run --release -p mangatan
 
 .PHONY: jlink
@@ -96,23 +145,3 @@ download_jar:
 	@echo "Downloading Suwayomi Server JAR..."
 	mkdir -p bin/mangatan/resources
 	curl -L "https://github.com/Suwayomi/Suwayomi-Server-preview/releases/download/v2.1.2031/Suwayomi-Server-v2.1.2031.jar" -o bin/mangatan/resources/Suwayomi-Server.jar
-
-.PHONY: release-notes
-release-notes:
-	@echo "---------------------------------------------------"
-	@echo "Generating Release Description"
-	@echo "---------------------------------------------------"
-	@# 1. Try to get the latest tag. 
-	@#    If command fails (no tags), PREV_TAG will be empty.
-	@export PREV_TAG=$$(git describe --tags --abbrev=0 2>/dev/null); \
-	if [ -z "$$PREV_TAG" ]; then \
-		echo "### Initial Release"; \
-		echo ""; \
-		git log --no-merges --pretty=format:"- %s (%h)"; \
-	else \
-		echo "### Changes since $$PREV_TAG"; \
-		echo ""; \
-		git log $$PREV_TAG..HEAD --no-merges --pretty=format:"- %s (%h)"; \
-	fi
-	@echo ""
-	@echo "---------------------------------------------------"
