@@ -1,0 +1,59 @@
+[package]
+name = "mangatan_android"
+authors.workspace = true
+edition.workspace = true
+keywords.workspace = true
+license.workspace = true
+readme.workspace = true
+repository.workspace = true
+rust-version.workspace = true
+version.workspace = true
+autobins = false 
+
+[package.metadata.android]
+package = "com.mangatan.app" 
+label = "Mangatan"
+min_sdk_version = 23
+target_sdk_version = 35
+build_targets = ["aarch64-linux-android"]
+
+[lib]
+name = "mangatan_android"
+crate-type = ["cdylib", "rlib", "lib"]
+path = "src/lib.rs"
+
+[features]
+default = []
+embed-jre = []
+
+[target.'cfg(target_os = "android")'.dependencies]
+android_logger = "0.15"
+anyhow.workspace = true
+axum.workspace = true
+directories.workspace = true
+eframe = { version = "0.33.2", default-features = false, features = ["glow", "default_fonts", "android-native-activity"] }
+egui_demo_lib = { version = "0.33.2", default-features = false, features = ["chrono"] }
+egui_extras = { version = "0.33.2", default-features = false, features = ["default", "image"] }
+futures.workspace = true
+futures-util.workspace = true
+image.workspace = true
+jni = "0.21"
+libloading = "0.9"
+log = { version = "0.4.28", features = ["std"] }
+
+# Internal Crates
+mangatan-core.workspace = true
+mime_guess.workspace = true
+open.workspace = true
+reqwest.workspace = true
+rust-embed.workspace = true
+tao.workspace = true    
+tokio.workspace = true
+tower-http.workspace = true
+tracing.workspace = true
+tracing-subscriber.workspace = true
+winit = { version = "0.30", default-features = false }
+zip.workspace = true
+
+[lints]
+workspace = true

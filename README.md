@@ -56,6 +56,18 @@ nvm use 22.12.0
 rustup update
 ```
 
+### Android APK Development
+
+```bash
+rustup target add aarch64-linux-android
+cargo install cargo-apk
+```
+
+Install Android Studio to get Android SDK https://developer.android.com/studio
+
+Mark sure you install
+- Android 11 SDK
+- NDK
 
 ### Setup Environment
 

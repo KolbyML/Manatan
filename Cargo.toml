@@ -1,6 +1,6 @@
 [workspace]
 default-members = ["bin/mangatan"]
-members = ["bin/mangatan"]
+members = ["bin/mangatan", "bin/mangatan_android", "crates/core"]
 resolver = "2"
 
 [workspace.package]
@@ -31,13 +31,13 @@ wildcard_imports = "warn"
 anyhow = "1.0"
 axum = { version = "0.8.7", features = ["macros"] }
 directories = "6.0"
-eframe = "0.33" 
+eframe = "0.33"
 futures = "0.3.23"
 futures-util = "0.3.23"
 image = "0.25"   
 mime_guess = "2.0"
 open = "5.1"
-reqwest = { version = "0.12.24", features = ["json", "stream"] }
+reqwest = { version = "0.12.24", default-features = false, features = ["json", "stream", "multipart", "rustls-tls"] }
 rust-embed = "8.2"
 tao = "0.34"     
 tokio = { version = "1.0", features = ["full"] }
@@ -45,6 +45,9 @@ tower-http = { version = "0.6.7", features = ["fs", "cors", "trace"] }
 tracing = "0.1"
 tracing-subscriber = { version = "0.3.20", features = ["env-filter"] }
 zip = "6.0"
+
+# Internal Dependencies
+mangatan-core = { path = "crates/core" }
 
 [profile.test]
 inherits = "release"

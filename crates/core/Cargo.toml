@@ -1,5 +1,5 @@
 [package]
-name = "mangatan"
+name = "mangatan-core"
 authors.workspace = true
 edition.workspace = true
 keywords.workspace = true
@@ -11,7 +11,7 @@ version.workspace = true
 
 [features]
 default = []
-embed-jre = ["mangatan-core/embed-jre"]
+embed-jre = []
 
 [dependencies]
 anyhow.workspace = true
@@ -31,9 +31,6 @@ tower-http.workspace = true
 tracing.workspace = true
 tracing-subscriber.workspace = true
 zip.workspace = true
-
-# Internal Crates
-mangatan-core.workspace = true
 
 [lints]
 workspace = true
