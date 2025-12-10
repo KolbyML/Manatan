@@ -44,7 +44,6 @@ lint: fmt clippy sort # Run all linters.
 clean: # Run `clean mangatan resources`.
 	rm -rf bin/mangatan/resources/suwayomi-webui
 	rm -rf bin/mangatan/resources/jre_bundle.zip
-	rm -rf bin/mangatan/resources/ocr-server*
 	rm -rf bin/mangatan/resources/Suwayomi-Server.jar
 	rm -rf bin/mangatan/resources/natives.zip
 	rm -f jogamp.7z
@@ -82,22 +81,6 @@ build_webui:
 	cp -r Suwayomi-WebUI/build/* bin/mangatan/resources/suwayomi-webui/
 	rm -r Suwayomi-WebUI/build/
 
-.PHONY: build-ocr-binaries
-build-ocr-binaries:
-	@echo "Building OCR binaries..."
-	cd ocr-server && mkdir -p dist
-	# Linux x64
-	cd ocr-server && deno compile --allow-net --allow-read --allow-write --allow-env --target x86_64-unknown-linux-gnu --output dist/ocr-server-linux server.ts
-	# Linux ARM64
-	cd ocr-server && deno compile --allow-net --allow-read --allow-write --allow-env --target aarch64-unknown-linux-gnu --output dist/ocr-server-linux-arm64 server.ts
-	# Windows x64
-	cd ocr-server && deno compile --allow-net --allow-read --allow-write --allow-env --target x86_64-pc-windows-msvc --output dist/ocr-server-win.exe server.ts
-	# macOS x64 (Intel)
-	cd ocr-server && deno compile --allow-net --allow-read --allow-write --allow-env --target x86_64-apple-darwin --output dist/ocr-server-macos-x64 server.ts
-	# macOS ARM64
-	cd ocr-server && deno compile --allow-net --allow-read --allow-write --allow-env --target aarch64-apple-darwin --output dist/ocr-server-macos-arm64 server.ts
-	cp ocr-server/dist/ocr-server* bin/mangatan/resources
-
 .PHONY: download_natives
 download_natives:
 	@echo "Preparing JogAmp natives for target: $(JOGAMP_TARGET)"
@@ -127,11 +110,11 @@ download_natives:
 	@echo "Natives ready at bin/mangatan/resources/natives.zip"
 
 .PHONY: dev
-dev: build-ocr-binaries build_webui download_jar download_natives
+dev: build_webui download_jar download_natives
 	cargo run --release -p mangatan
 
 .PHONY: dev-embedded
-dev-embedded: build-ocr-binaries build_webui download_jar bundle_jre download_natives
+dev-embedded: build_webui download_jar bundle_jre download_natives
 	cargo run --release -p mangatan --features embed-jre
 
 .PHONY: jlink

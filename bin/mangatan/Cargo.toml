@@ -34,6 +34,7 @@ zip.workspace = true
 
 # Internal Crates
 mangatan-core.workspace = true
+mangatan-ocr-server.workspace = true
 
 [lints]
 workspace = true

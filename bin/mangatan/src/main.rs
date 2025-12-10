@@ -1,12 +1,11 @@
 use std::{
     env,
     fs::{self},
-    io::{self},
+    io,
     path::PathBuf,
     process::Stdio,
-    sync::mpsc::{self, Receiver, Sender},
+    sync::mpsc::{Receiver, Sender},
     thread,
-    time::Duration,
 };
 
 use anyhow::anyhow;
@@ -24,7 +23,9 @@ use eframe::{
     icon_data,
 };
 use futures::TryStreamExt;
-use mangatan_core::io::{extract_executable, extract_file, resolve_java};
+#[cfg(feature = "embed-jre")]
+use mangatan_core::io::extract_zip;
+use mangatan_core::io::{extract_file, resolve_java};
 use reqwest::Client;
 use rust_embed::RustEmbed;
 use tokio::process::Command;
@@ -32,29 +33,11 @@ use tower_http::cors::{Any, CorsLayer};
 use tracing::{error, info};
 use tracing_subscriber::EnvFilter;
 
-#[cfg(feature = "embed-jre")]
-use mangatan_core::io::extract_zip;
-
 static ICON_BYTES: &[u8] = include_bytes!("../resources/faviconlogo.png");
 static JAR_BYTES: &[u8] = include_bytes!("../resources/Suwayomi-Server.jar");
 
 #[cfg(feature = "embed-jre")]
 static NATIVES_BYTES: &[u8] = include_bytes!("../resources/natives.zip");
-
-#[cfg(target_os = "windows")]
-static OCR_BYTES: &[u8] = include_bytes!("../resources/ocr-server-win.exe");
-
-#[cfg(all(target_os = "linux", target_arch = "aarch64"))]
-static OCR_BYTES: &[u8] = include_bytes!("../resources/ocr-server-linux-arm64");
-
-#[cfg(all(target_os = "linux", target_arch = "x86_64"))]
-static OCR_BYTES: &[u8] = include_bytes!("../resources/ocr-server-linux");
-
-#[cfg(all(target_os = "macos", target_arch = "aarch64"))]
-static OCR_BYTES: &[u8] = include_bytes!("../resources/ocr-server-macos-arm64");
-
-#[cfg(all(target_os = "macos", target_arch = "x86_64"))]
-static OCR_BYTES: &[u8] = include_bytes!("../resources/ocr-server-macos-x64");
 
 #[derive(RustEmbed)]
 #[folder = "resources/suwayomi-webui"]
@@ -75,8 +58,8 @@ fn main() -> eframe::Result<()> {
     let server_data_dir = data_dir.clone();
     let gui_data_dir = data_dir.clone();
 
-    let (shutdown_tx, mut shutdown_rx) = tokio::sync::mpsc::channel::<()>(1);
-    let (server_stopped_tx, server_stopped_rx) = mpsc::channel::<()>();
+    let (shutdown_tx, shutdown_rx) = tokio::sync::mpsc::channel::<()>(1);
+    let (server_stopped_tx, server_stopped_rx) = std::sync::mpsc::channel::<()>();
 
     thread::spawn(move || {
         let rt = tokio::runtime::Runtime::new().expect("Failed to create Tokio runtime");
@@ -85,7 +68,7 @@ fn main() -> eframe::Result<()> {
                 tx: server_stopped_tx,
             };
 
-            if let Err(err) = run_server(&mut shutdown_rx, &server_data_dir).await {
+            if let Err(err) = run_server(shutdown_rx, &server_data_dir).await {
                 error!("Server crashed: {err}");
             }
         });
@@ -117,7 +100,7 @@ fn main() -> eframe::Result<()> {
 
     if let Err(err) = &result {
         error!("❌ CRITICAL GUI ERROR: Failed to start eframe: {err}");
-        std::thread::sleep(Duration::from_secs(5));
+        std::thread::sleep(std::time::Duration::from_secs(5));
     } else {
         info!("👋 GUI exited normally.");
     }
@@ -211,18 +194,12 @@ impl eframe::App for MyApp {
 }
 
 async fn run_server(
-    shutdown_signal: &mut tokio::sync::mpsc::Receiver<()>,
+    // FIX: Removed `&mut` to take ownership of the receiver
+    mut shutdown_signal: tokio::sync::mpsc::Receiver<()>,
     data_dir: &PathBuf,
 ) -> Result<(), Box<anyhow::Error>> {
     info!("🚀 Initializing Mangatan Launcher...");
     info!("📂 Data Directory: {}", data_dir.display());
-
-    if data_dir.exists()
-        && let Err(err) = fs::remove_dir_all(data_dir)
-    {
-        error!("⚠️ Warning: Could not fully clear data directory: {err}");
-        error!("   (This usually means an old process is still running. Check Task Manager.)");
-    }
 
     if !data_dir.exists() {
         fs::create_dir_all(data_dir).map_err(|err| anyhow!("Failed to create data dir {err:?}"))?;
@@ -237,15 +214,6 @@ async fn run_server(
     let jar_path = extract_file(&bin_dir, jar_name, JAR_BYTES)
         .map_err(|err| anyhow!("Failed to extract {jar_name} {err:?}"))?;
 
-    let ocr_bin_name = if cfg!(target_os = "windows") {
-        "ocr-server.exe"
-    } else {
-        "ocr-server"
-    };
-    info!("Extracting OCR server binary: {ocr_bin_name}");
-    let ocr_path = extract_executable(&bin_dir, ocr_bin_name, OCR_BYTES)
-        .map_err(|err| anyhow!("Failed to extract ocr server {err:?}"))?;
-
     #[cfg(feature = "embed-jre")]
     {
         let natives_dir = data_dir.join("natives");
@@ -254,7 +222,6 @@ async fn run_server(
             fs::create_dir_all(&natives_dir)
                 .map_err(|e| anyhow!("Failed to create natives dir: {e}"))?;
 
-            // Reusing the existing extract_zip function
             extract_zip(NATIVES_BYTES, &natives_dir)
                 .map_err(|e| anyhow!("Failed to extract natives: {e}"))?;
         }
@@ -263,16 +230,6 @@ async fn run_server(
     info!("🔍 Resolving Java...");
     let java_exec =
         resolve_java(data_dir).map_err(|err| anyhow!("Failed to resolve java install {err:?}"))?;
-
-    info!("👁️ Spawning OCR...");
-    let mut ocr_proc = Command::new(&ocr_path)
-        .arg("--port")
-        .arg("3033")
-        .kill_on_drop(true)
-        .stdout(Stdio::inherit())
-        .stderr(Stdio::inherit())
-        .spawn()
-        .map_err(|err| anyhow!("Failed to launch ocr server {err:?}"))?;
 
     info!("☕ Spawning Suwayomi...");
     let mut suwayomi_proc = Command::new(&java_exec)
@@ -292,36 +249,39 @@ async fn run_server(
         .map_err(|err| anyhow!("Failed to launch suwayomi {err:?}"))?;
 
     info!("🌍 Starting Web Interface at http://localhost:4568");
+
+    let ocr_router = mangatan_ocr_server::create_router(data_dir.clone());
+
     let client = Client::new();
     let cors = CorsLayer::new()
         .allow_origin(Any)
         .allow_methods(Any)
         .allow_headers(Any);
 
-    let app = Router::new()
-        .route("/api/ocr", any(proxy_ocr_handler))
-        .route("/api/ocr/", any(proxy_ocr_handler))
-        .route("/api/ocr/{*path}", any(proxy_ocr_handler))
+    let proxy_router = Router::new()
         .route("/api/{*path}", any(proxy_suwayomi_handler))
-        .fallback(serve_react_app)
-        .layer(cors)
         .with_state(client);
+
+    let app = Router::new()
+        .nest("/api/ocr", ocr_router)
+        .merge(proxy_router)
+        .fallback(serve_react_app)
+        .layer(cors);
 
     let listener = tokio::net::TcpListener::bind("0.0.0.0:4568")
         .await
-        .map_err(|err| anyhow!("Failed create proxies socket: {err:?}"))?;
+        .map_err(|err| anyhow!("Failed create main server socket: {err:?}"))?;
 
-    let server_future = axum::serve(listener, app).into_future();
+    let server_future = axum::serve(listener, app).with_graceful_shutdown(async move {
+        let _ = shutdown_signal.recv().await;
+        info!("🛑 Shutdown signal received.");
+    });
 
-    info!("✅ Servers Running. Waiting for shutdown signal...");
+    info!("✅ Unified Server Running.");
 
     tokio::select! {
         _ = suwayomi_proc.wait() => { error!("❌ Suwayomi exited unexpectedly"); }
-        _ = ocr_proc.wait() => { error!("❌ OCR exited unexpectedly"); }
-        _ = server_future => { error!("❌ Web server exited unexpectedly"); }
-        _ = shutdown_signal.recv() => {
-            info!("🛑 Shutdown signal received via GUI.");
-        }
+        _ = server_future => { info!("✅ Web server shutdown complete."); }
     }
 
     info!("🛑 terminating child processes...");
@@ -332,17 +292,7 @@ async fn run_server(
     let _ = suwayomi_proc.wait().await;
     info!("   Suwayomi terminated.");
 
-    if let Err(err) = ocr_proc.kill().await {
-        error!("Error killing OCR: {err}");
-    }
-    let _ = ocr_proc.wait().await;
-    info!("   OCR terminated.");
-
     Ok(())
-}
-
-async fn proxy_ocr_handler(State(client): State<Client>, req: Request) -> impl IntoResponse {
-    proxy_request(client, req, "http://127.0.0.1:3033", "/api/ocr").await
 }
 
 async fn proxy_suwayomi_handler(State(client): State<Client>, req: Request) -> impl IntoResponse {

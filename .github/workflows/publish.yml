@@ -11,28 +11,6 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  # --- JOB 1: Compile Deno OCR Server ---
-  build_ocr:
-    name: Build OCR Binaries
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Setup Deno
-        uses: denoland/setup-deno@v1
-        with:
-          deno-version: v2.x
-
-      - name: Compile OCR Server
-        run: make build-ocr-binaries
-
-      - name: Upload OCR Artifacts
-        uses: actions/upload-artifact@v4
-        with:
-          name: ocr-binaries
-          path: ocr-server/dist/*
-
   # --- JOB 2: Build Custom JREs ---
   jlink:
     runs-on: ${{ matrix.os }}
@@ -97,7 +75,7 @@ jobs:
   # --- JOB 4: Build Mangatan Launcher & Bundling ---
   build_mangatan:
     name: Build Mangatan (${{ matrix.name }})
-    needs: [build_ocr, jlink, build_webui]
+    needs: [jlink, build_webui]
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
@@ -108,7 +86,6 @@ jobs:
             os: ubuntu-latest
             target: x86_64-unknown-linux-gnu
             arch_name: linux-x64
-            ocr_binary: ocr-server-linux
             jogamp_target: linux-amd64
 
           # --- LINUX ARM64 ---
@@ -116,7 +93,6 @@ jobs:
             os: ubuntu-24.04-arm
             target: aarch64-unknown-linux-gnu
             arch_name: linux-arm64
-            ocr_binary: ocr-server-linux-arm64
             jogamp_target: linux-aarch64
             
           # --- WINDOWS ---
@@ -124,7 +100,6 @@ jobs:
             os: windows-latest
             target: x86_64-pc-windows-msvc
             arch_name: windows-x64
-            ocr_binary: ocr-server-win.exe
             jogamp_target: windows-amd64
             
           # --- MACOS ---
@@ -132,14 +107,12 @@ jobs:
             os: macos-15-intel
             target: x86_64-apple-darwin
             arch_name: macOS-x64
-            ocr_binary: ocr-server-macos-x64
             jogamp_target: macosx-universal
             
           - name: macOS-Silicon
             os: macos-15
             target: aarch64-apple-darwin
             arch_name: macOS-arm64
-            ocr_binary: ocr-server-macos-arm64
             jogamp_target: macosx-universal
 
     steps:
@@ -166,16 +139,6 @@ jobs:
       - name: Create Resources Directory
         shell: bash
         run: mkdir -p bin/mangatan/resources
-
-      - name: Download OCR Binaries
-        uses: actions/download-artifact@v4
-        with:
-          name: ocr-binaries
-          path: temp_ocr
-
-      - name: Place OCR Binary
-        shell: bash
-        run: cp temp_ocr/${{ matrix.ocr_binary }} bin/mangatan/resources/
 
       - name: Prepare JogAmp Natives
         shell: bash

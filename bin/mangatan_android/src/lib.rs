@@ -61,8 +61,6 @@ async fn start_proxy_server() {
         .allow_headers(Any);
 
     let app = Router::new()
-        // .route("/api/ocr", any(stub_ocr_handler))
-        // .route("/api/ocr/*path", any(stub_ocr_handler))
         .route("/api/*path", any(proxy_suwayomi_handler))
         .layer(cors)
         .with_state(client);

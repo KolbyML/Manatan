@@ -138,19 +138,15 @@ dist
 vite.config.js.timestamp-*
 vite.config.ts.timestamp-*
 
-*/ocr-server
-*/ocr-cache.json
 */uploads
 
 bin/mangatan_android/resources/*
 bin/mangatan/resources/suwayomi-webui*
 bin/mangatan/resources/natives.zip
-bin/mangatan/resources/ocr-server*
 bin/mangatan/resources/Suwayomi-Server.jar
 bin/mangatan/resources/jre_bundle.zip
 target
 .DS_Store
-ocr-cache.json
 jre_bundle
 temp_natives/*
 jogamp.7z
