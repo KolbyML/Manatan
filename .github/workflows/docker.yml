@@ -1,0 +1,110 @@
+name: Docker Publish
+
+on:
+  # TRIGGER: Only run when 'CI Publish' completes successfully
+  workflow_run:
+    workflows: ["CI Publish"]
+    types:
+      - completed
+  workflow_dispatch:
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository }}
+
+jobs:
+  push_to_registry:
+    name: Build & Push Docker Image
+    # Only run if the previous workflow succeeded
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # --- GET VERSION INFO ---
+      # Since this runs on the default branch, we must extract the tag
+      # from the workflow that triggered this run.
+      - name: Determine Version
+        id: get_version
+        run: |
+          # The branch/tag that triggered the previous run
+          TAG_NAME=${{ github.event.workflow_run.head_branch }}
+          
+          # Fallback if triggered manually or not a tag
+          if [[ -z "$TAG_NAME" || "$TAG_NAME" == "null" ]]; then
+             TAG_NAME="latest"
+          fi
+          
+          echo "Building for version: $TAG_NAME"
+          echo "tag=$TAG_NAME" >> $GITHUB_OUTPUT
+
+      # --- DOWNLOAD ARTIFACTS ---
+      # We download the exact binaries built in the previous run.
+      # This is safer than downloading from the Release page because 
+      # it avoids API caching issues.
+      - name: Download Linux x64 Artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: mangatan-linux-x64
+          path: download_x64
+          run-id: ${{ github.event.workflow_run.id }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Download Linux ARM64 Artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: mangatan-linux-arm64
+          path: download_arm64
+          run-id: ${{ github.event.workflow_run.id }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+
+      # --- PREPARE ASSETS ---
+      # Your CI uploads a folder containing .deb and .tar.gz
+      # We need to pick the .tar.gz and rename it for the Dockerfile
+      - name: Prepare Context
+        run: |
+          # Find the tar.gz in the downloaded folders and move/rename it
+          find download_x64 -name "*.tar.gz" -exec cp {} mangatan-linux-amd64.tar.gz \;
+          find download_arm64 -name "*.tar.gz" -exec cp {} mangatan-linux-arm64.tar.gz \;
+          
+          ls -lh *.tar.gz
+
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
+        with:
+          platforms: linux/amd64,linux/arm64
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to the Container registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Extract Metadata
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+          # Use the tag we extracted earlier
+          tags: |
+            type=raw,value=${{ steps.get_version.outputs.tag }}
+            type=raw,value=latest
+
+      - name: Build and Push
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: ./Dockerfile
+          push: true
+          platforms: linux/amd64,linux/arm64
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
