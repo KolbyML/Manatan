@@ -16,7 +16,7 @@ https://github.com/user-attachments/assets/38c63c86-289d-45a4-ba85-e29f1b812ceb
 ## Setup (Windows)
 
 1. Download the .zip file for `windows-x86` from the [releases](https://github.com/KolbyML/Mangatan/releases) page.
-2. Extract the .zip, and inside it launch `mangatan.exe`. Wait a few moments. Allow Windows Defender SmartScreen if prompted (More info > Run anyway).
+2. Extract the .zip, and inside it launch `mangatan.exe`. Wait a few moments. Allow Windows Defender SmartScreen if prompted (More info > Run anyway).(if it doesn't run on double click , go to properties and ✓ unblock)
 3. A "Mangatan Launcher" window should pop up, here click "**Open Web UI**".
 4. Allow Windows Firewall connections if prompted, and the Suwayomi web interface (`127.0.0.1:4568/`) should open in a new browser tab. Please wait a few moments while the initial setup is taking place. After ~30 seconds, reload the page to access the Suwayomi library (`127.0.0.1:4568/library`).
 5. To get manga, you need to locate the correct `index.min.json` extension repository URL for Suwayomi on Google. Add this URL in **Settings** > **Browse** > **Extension repositories** > **Add Repository** > `[paste the URL]` and click **OK**
