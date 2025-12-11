@@ -28,6 +28,21 @@ pub struct BoundingBox {
     pub height: f64,
 }
 
+/// Helper to strip the scheme/host from the URL for caching purposes.
+/// E.g. "http://localhost:3000/image.jpg?q=1" -> "/image.jpg?q=1"
+pub fn get_cache_key(url: &str) -> String {
+    if let Ok(parsed) = reqwest::Url::parse(url) {
+        let path = parsed.path();
+        match parsed.query() {
+            Some(q) => format!("{}?{}", path, q),
+            None => path.to_string(),
+        }
+    } else {
+        // Fallback for invalid URLs or relative paths
+        url.to_string()
+    }
+}
+
 pub async fn fetch_and_process(
     url: &str,
     user: Option<String>,
@@ -141,4 +156,54 @@ pub async fn fetch_and_process(
     }
 
     Ok(final_results)
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_get_cache_key_simple_path() {
+        let url = "http://localhost:4568/api/v1/manga/12/chapter/1/page/57?sourceId=3349575794425308347";
+        assert_eq!(get_cache_key(url), "/api/v1/manga/12/chapter/1/page/57?sourceId=3349575794425308347");
+    }
+
+    #[test]
+    fn test_get_cache_key_with_query() {
+        let url = "http://localhost:3000/image.jpg?width=100&q=test";
+        assert_eq!(get_cache_key(url), "/image.jpg?width=100&q=test");
+    }
+
+    #[test]
+    fn test_get_cache_key_https_and_port() {
+        let url = "https://api.mysite.org:8080/v1/ocr";
+        assert_eq!(get_cache_key(url), "/v1/ocr");
+    }
+
+    #[test]
+    fn test_get_cache_key_root() {
+        let url = "http://google.com";
+        assert_eq!(get_cache_key(url), "/");
+    }
+
+    #[test]
+    fn test_get_cache_key_root_with_slash() {
+        let url = "http://google.com/";
+        assert_eq!(get_cache_key(url), "/");
+    }
+
+    #[test]
+    fn test_get_cache_key_invalid_url() {
+        // Should fallback to returning the input exactly
+        let url = "not_a_valid_url";
+        assert_eq!(get_cache_key(url), "not_a_valid_url");
+    }
+
+    #[test]
+    fn test_get_cache_key_relative_path() {
+        // reqwest::Url::parse usually fails on relative paths without a base.
+        // The function should fallback to returning the input string.
+        let url = "/local/path/only";
+        assert_eq!(get_cache_key(url), "/local/path/only");
+    }
 }

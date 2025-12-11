@@ -18,7 +18,8 @@ pub async fn run_chapter_job(
 
     while errors < max_errors {
         // FIX: Inlined variables into format string
-        let url = format!("{base_url}{page_idx}");
+        let fetch_url = format!("{base_url}{page_idx}");
+        let cache_key = crate::logic::get_cache_key(&fetch_url);
 
         // Check cache first
         // FIX: Used expect instead of unwrap
@@ -27,24 +28,24 @@ pub async fn run_chapter_job(
                 .cache
                 .read()
                 .expect("cache lock poisoned")
-                .contains_key(&url)
+                .contains_key(&cache_key)
         };
         if exists {
-            tracing::info!("[Job] Skip (Cached): {}", url);
+            tracing::info!("[Job] Skip (Cached): {}", fetch_url);
             page_idx += 1;
             errors = 0;
             continue;
         }
 
         // Logic call directly
-        match crate::logic::fetch_and_process(&url, user.clone(), pass.clone()).await {
+        match crate::logic::fetch_and_process(&fetch_url, user.clone(), pass.clone()).await {
             Ok(res) => {
                 errors = 0;
-                tracing::info!("[Job] Processed: {}", url);
+                tracing::info!("[Job] Processed: {}", fetch_url);
                 // FIX: Used expect instead of unwrap
                 let mut w = state.cache.write().expect("cache lock poisoned");
                 w.insert(
-                    url,
+                    cache_key,
                     crate::state::CacheEntry {
                         context: context.clone(),
                         data: res,
@@ -53,7 +54,7 @@ pub async fn run_chapter_job(
             }
             Err(_) => {
                 errors += 1;
-                tracing::warn!("[Job] Failed: {} (Errors: {})", url, errors);
+                tracing::warn!("[Job] Failed: {} (Errors: {})", fetch_url, errors);
             }
         }
 

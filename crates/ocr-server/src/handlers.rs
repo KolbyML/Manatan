@@ -42,11 +42,14 @@ pub async fn ocr_handler(
     State(state): State<AppState>,
     Query(params): Query<OcrRequest>,
 ) -> Result<Json<Vec<crate::logic::OcrResult>>, (StatusCode, String)> {
+    // Generate the normalized key
+    let cache_key = logic::get_cache_key(&params.url);
+
     // 1. Cache Check
     {
         // FIX: Used expect instead of unwrap
         let reader = state.cache.read().expect("cache lock poisoned");
-        if let Some(entry) = reader.get(&params.url) {
+        if let Some(entry) = reader.get(&cache_key) {
             return Ok(Json(entry.data.clone()));
         }
     }
@@ -65,7 +68,7 @@ pub async fn ocr_handler(
         // FIX: Used expect instead of unwrap
         let mut writer = state.cache.write().expect("cache lock poisoned");
         writer.insert(
-            params.url,
+            cache_key,
             CacheEntry {
                 context: params.context,
                 data: results.clone(),
