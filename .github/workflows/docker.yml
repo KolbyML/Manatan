@@ -1,12 +1,20 @@
 name: Docker Publish
 
 on:
-  # TRIGGER: Only run when 'CI Publish' completes successfully
   workflow_run:
     workflows: ["CI Publish"]
     types:
       - completed
   workflow_dispatch:
+    inputs:
+      run_id:
+        description: 'Run ID of the "CI Publish" workflow to download artifacts from'
+        required: true
+        type: string
+      tag_name:
+        description: 'Docker Tag to apply (e.g., v1.0.5)'
+        required: true
+        type: string
 
 env:
   REGISTRY: ghcr.io
@@ -15,8 +23,7 @@ env:
 jobs:
   push_to_registry:
     name: Build & Push Docker Image
-    # Only run if the previous workflow succeeded
-    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+    if: ${{ github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success' }}
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -26,16 +33,18 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      # --- GET VERSION INFO ---
-      # Since this runs on the default branch, we must extract the tag
-      # from the workflow that triggered this run.
       - name: Determine Version
         id: get_version
         run: |
-          # The branch/tag that triggered the previous run
-          TAG_NAME=${{ github.event.workflow_run.head_branch }}
+          # 1. Try manual input first
+          TAG_NAME="${{ inputs.tag_name }}"
           
-          # Fallback if triggered manually or not a tag
+          # 2. If empty, try getting it from the workflow_run event
+          if [[ -z "$TAG_NAME" ]]; then
+            TAG_NAME="${{ github.event.workflow_run.head_branch }}"
+          fi
+          
+          # 3. Fallback validation
           if [[ -z "$TAG_NAME" || "$TAG_NAME" == "null" ]]; then
              TAG_NAME="latest"
           fi
@@ -43,16 +52,12 @@ jobs:
           echo "Building for version: $TAG_NAME"
           echo "tag=$TAG_NAME" >> $GITHUB_OUTPUT
 
-      # --- DOWNLOAD ARTIFACTS ---
-      # We download the exact binaries built in the previous run.
-      # This is safer than downloading from the Release page because 
-      # it avoids API caching issues.
       - name: Download Linux x64 Artifacts
         uses: actions/download-artifact@v4
         with:
           name: mangatan-linux-x64
           path: download_x64
-          run-id: ${{ github.event.workflow_run.id }}
+          run-id: ${{ inputs.run_id || github.event.workflow_run.id }}
           github-token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Download Linux ARM64 Artifacts
@@ -60,12 +65,9 @@ jobs:
         with:
           name: mangatan-linux-arm64
           path: download_arm64
-          run-id: ${{ github.event.workflow_run.id }}
+          run-id: ${{ inputs.run_id || github.event.workflow_run.id }}
           github-token: ${{ secrets.GITHUB_TOKEN }}
 
-      # --- PREPARE ASSETS ---
-      # Your CI uploads a folder containing .deb and .tar.gz
-      # We need to pick the .tar.gz and rename it for the Dockerfile
       - name: Prepare Context
         run: |
           # Find the tar.gz in the downloaded folders and move/rename it
@@ -94,7 +96,6 @@ jobs:
         uses: docker/metadata-action@v5
         with:
           images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
-          # Use the tag we extracted earlier
           tags: |
             type=raw,value=${{ steps.get_version.outputs.tag }}
             type=raw,value=latest
