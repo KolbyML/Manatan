@@ -7,7 +7,7 @@ services:
       - ./data:/data
 
   mangatan:
-    image: mangatan:local
+    image: ghcr.io/kolbyml/mangatan:latest
     # user: 1000:1000
     environment:
       - TZ=Etc/UTC # Use TZ database name from https://en.wikipedia.org/wiki/List_of_tz_database_time_zones
