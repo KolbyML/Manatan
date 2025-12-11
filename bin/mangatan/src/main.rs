@@ -20,6 +20,7 @@ use axum::{
     response::{IntoResponse, Response},
     routing::any,
 };
+use clap::Parser;
 use directories::ProjectDirs;
 use eframe::{
     egui::{self},
@@ -46,7 +47,17 @@ static NATIVES_BYTES: &[u8] = include_bytes!("../resources/natives.zip");
 #[folder = "resources/suwayomi-webui"]
 struct FrontendAssets;
 
+#[derive(Parser, Debug)]
+#[command(author, version, about, long_about = None)]
+struct Cli {
+    /// Runs the server without the GUI (Fixes Docker/Server deployments)
+    #[arg(long)]
+    headless: bool,
+}
+
 fn main() -> eframe::Result<()> {
+    let args = Cli::parse();
+
     let rust_log = env::var(EnvFilter::DEFAULT_ENV).unwrap_or_default();
     let env_filter = match rust_log.is_empty() {
         true => EnvFilter::builder().parse_lossy("info"),
@@ -60,6 +71,35 @@ fn main() -> eframe::Result<()> {
 
     let server_data_dir = data_dir.clone();
     let gui_data_dir = data_dir.clone();
+
+    if args.headless {
+        info!("👻 Starting in Headless Mode (No GUI)...");
+
+        let rt = tokio::runtime::Runtime::new().expect("Failed to create Tokio runtime");
+
+        rt.block_on(async {
+            let (shutdown_tx, shutdown_rx) = tokio::sync::mpsc::channel::<()>(1);
+            tokio::spawn(async move {
+                match tokio::signal::ctrl_c().await {
+                    Ok(()) => {
+                        info!("🛑 Received Ctrl+C, shutting down server...");
+
+                        let _ = shutdown_tx.send(()).await;
+                    }
+
+                    Err(err) => {
+                        error!("Unable to listen for shutdown signal: {}", err);
+                    }
+                }
+            });
+
+            if let Err(err) = run_server(shutdown_rx, &server_data_dir).await {
+                error!("Server crashed: {err}");
+            }
+        });
+
+        return Ok(());
+    }
 
     let (shutdown_tx, shutdown_rx) = tokio::sync::mpsc::channel::<()>(1);
     let (server_stopped_tx, server_stopped_rx) = std::sync::mpsc::channel::<()>();
