@@ -16,6 +16,7 @@ embed-jre = ["mangatan-core/embed-jre"]
 [dependencies]
 anyhow.workspace = true
 axum.workspace = true
+clap.workspace = true
 directories.workspace = true
 eframe.workspace = true
 futures.workspace = true

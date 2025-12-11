@@ -33,6 +33,7 @@ axum = { version = "0.8.7", features = ["macros", "multipart", "ws"] }
 base64 = "0.22"
 bytes = "1.11"
 chrome_lens_ocr = "0.2"
+clap = { version = "4.0", features = ["derive"] }
 directories = "6.0"
 eframe = "0.33"
 futures = "0.3.23"

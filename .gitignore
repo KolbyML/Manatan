@@ -150,3 +150,5 @@ target
 jre_bundle
 temp_natives/*
 jogamp.7z
+data/*
+mangatan-linux-*.tar.gz

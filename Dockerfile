@@ -11,6 +11,9 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     fuse \
     && rm -rf /var/lib/apt/lists/*
 
+RUN userdel -r ubuntu || true && \
+    useradd -m -u 1000 -s /bin/bash mangatan
+
 WORKDIR /app
 
 ARG TARGETARCH
@@ -28,5 +31,8 @@ RUN if [ "$TARGETARCH" = "amd64" ]; then \
     fi \
     && rm /tmp/amd64.tar.gz /tmp/arm64.tar.gz
 
+USER mangatan
+
+ENTRYPOINT []
 EXPOSE 4568
-CMD ["./mangatan"]
+CMD ["./mangatan", "--headless"]

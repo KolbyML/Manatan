@@ -4,25 +4,33 @@ UNAME_S := $(shell uname -s)
 UNAME_M := $(shell uname -m)
 JOGAMP_TARGET := unknown
 
+DOCKER_ARCH := amd64
+FAKE_ARCH := arm64
+
+ifneq (,$(filter aarch64 arm64,$(UNAME_M)))
+	DOCKER_ARCH := arm64
+	FAKE_ARCH := amd64
+endif
+
 ifeq ($(UNAME_S),Linux)
-    JOGAMP_TARGET := linux-amd64
-    ifneq (,$(filter aarch64 arm64,$(UNAME_M)))
-        JOGAMP_TARGET := linux-aarch64
-    endif
+	JOGAMP_TARGET := linux-amd64
+	ifneq (,$(filter aarch64 arm64,$(UNAME_M)))
+		JOGAMP_TARGET := linux-aarch64
+	endif
 endif
 
 ifeq ($(UNAME_S),Darwin)
-    JOGAMP_TARGET := macosx-universal
+	JOGAMP_TARGET := macosx-universal
 endif
 
 ifneq (,$(findstring MINGW,$(UNAME_S)))
-    JOGAMP_TARGET := windows-amd64
+	JOGAMP_TARGET := windows-amd64
 endif
 ifneq (,$(findstring MSYS,$(UNAME_S)))
-    JOGAMP_TARGET := windows-amd64
+	JOGAMP_TARGET := windows-amd64
 endif
 ifeq ($(OS),Windows_NT)
-    JOGAMP_TARGET := windows-amd64
+	JOGAMP_TARGET := windows-amd64
 endif
 
 .PHONY: test
@@ -48,6 +56,7 @@ clean: # Run `clean mangatan resources`.
 	rm -rf bin/mangatan/resources/natives.zip
 	rm -f jogamp.7z
 	rm -rf temp_natives 
+	rm -f mangatan-linux-*.tar.gz
 
 .PHONY: clean_rust
 clean_rust: # Run `cargo clean`.
@@ -64,8 +73,6 @@ clean-deps: # Run `cargo udeps`
 .PHONY: build_webui
 build_webui:
 	@echo "Building WebUI (Enforcing Node 22.12.0)..."
-	# 1. Try to source NVM and use Node 22.12.0. 
-	#    This setup assumes standard NVM installation path.
 	@export NVM_DIR="$$HOME/.nvm"; \
 	if [ -s "$$NVM_DIR/nvm.sh" ]; then \
 		. "$$NVM_DIR/nvm.sh"; \
@@ -96,12 +103,9 @@ download_natives:
 	curl -L "https://github.com/KolbyML/jogamp/releases/download/1/jogamp-all-platforms.7z" -o jogamp.7z
 	
 	@echo "Extracting libraries..."
-	# Extract only the specific architecture folder
 	7z x jogamp.7z -otemp_natives "jogamp-all-platforms/lib/$(JOGAMP_TARGET)"
 	
 	@echo "Zipping structure..."
-	# Change directory to the parent 'lib' folder so we can zip the folder 'linux-amd64' (or similar)
-	# This ensures natives.zip contains the folder structure: <arch>/file.so
 	cd temp_natives/jogamp-all-platforms/lib && zip -r "$(CURDIR)/bin/mangatan/resources/natives.zip" $(JOGAMP_TARGET)
 	
 	@echo "Cleanup..."
@@ -120,8 +124,6 @@ dev-embedded: build_webui download_jar bundle_jre download_natives
 .PHONY: jlink
 jlink:
 	@echo "Building custom JDK with jlink..."
-
-	# Ensure the output directory is clean
 	rm -rf jre_bundle
 	jlink --add-modules java.base,java.compiler,java.datatransfer,java.desktop,java.instrument,java.logging,java.management,java.naming,java.prefs,java.scripting,java.se,java.security.jgss,java.security.sasl,java.sql,java.transaction.xa,java.xml,jdk.attach,jdk.crypto.ec,jdk.jdi,jdk.management,jdk.net,jdk.unsupported,jdk.unsupported.desktop,jdk.zipfs,jdk.accessibility,jdk.charsets,jdk.localedata --bind-services --output jre_bundle --strip-debug --no-man-pages --no-header-files --compress=2
 
@@ -136,3 +138,23 @@ download_jar:
 	@echo "Downloading Suwayomi Server JAR..."
 	mkdir -p bin/mangatan/resources
 	curl -L "https://github.com/Suwayomi/Suwayomi-Server-preview/releases/download/v2.1.2031/Suwayomi-Server-v2.1.2031.jar" -o bin/mangatan/resources/Suwayomi-Server.jar
+
+.PHONY: docker-build
+docker-build: build_webui download_jar download_natives bundle_jre
+	@echo "🐳 Building Docker image for local architecture: $(DOCKER_ARCH)"
+	
+	cargo build --release --bin mangatan --features embed-jre
+	
+	mkdir -p dist
+	cp target/release/mangatan dist/
+	tar -czf mangatan-linux-$(DOCKER_ARCH).tar.gz dist
+	rm -rf dist
+	
+	@echo "Creating dummy file for $(FAKE_ARCH)..."
+	touch mangatan-linux-$(FAKE_ARCH).tar.gz
+	
+	docker build --build-arg TARGETARCH=$(DOCKER_ARCH) -t mangatan:local .
+	
+	rm mangatan-linux-$(DOCKER_ARCH).tar.gz
+	rm mangatan-linux-$(FAKE_ARCH).tar.gz
+	@echo "✅ Docker image 'mangatan:local' built successfully."
