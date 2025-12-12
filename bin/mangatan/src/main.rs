@@ -67,7 +67,7 @@ enum UpdateStatus {
 #[command(author, version, about, long_about = None)]
 struct Cli {
     /// Runs the server without the GUI (Fixes Docker/Server deployments)
-    #[arg(long)]
+    #[arg(long, env = "MANGATAN_HEADLESS")]
     headless: bool,
 }
 
@@ -712,7 +712,7 @@ fn get_asset_target_string() -> &'static str {
         return "Linux-arm64.tar";
 
         #[cfg(target_arch = "x86_64")]
-        return "Linux-x64.tar";
+        return "Linux-amd64.tar";
     }
 }
 

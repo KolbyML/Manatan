@@ -1,6 +1,6 @@
 FROM ubuntu:24.04
 
-# Install dependencies required by your Rust binary (GTK, etc)
+# Install runtime dependencies
 RUN apt-get update && apt-get install -y --no-install-recommends \
     ca-certificates \
     libglib2.0-0 \
@@ -11,6 +11,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     fuse \
     && rm -rf /var/lib/apt/lists/*
 
+# Create non-root user
 RUN userdel -r ubuntu || true && \
     useradd -m -u 1000 -s /bin/bash mangatan
 
@@ -18,21 +19,30 @@ WORKDIR /app
 
 ARG TARGETARCH
 
-# These files are now guaranteed to exist because we waited for CI to finish
+# Copy artifacts
 COPY mangatan-linux-amd64.tar.gz /tmp/amd64.tar.gz
 COPY mangatan-linux-arm64.tar.gz /tmp/arm64.tar.gz
 
+# Extract based on architecture
+# REMOVED --strip-components=1 to handle flat tarball structure
 RUN if [ "$TARGETARCH" = "amd64" ]; then \
-        tar -xzf /tmp/amd64.tar.gz -C /app --strip-components=1; \
+        tar -xzf /tmp/amd64.tar.gz -C /app; \
     elif [ "$TARGETARCH" = "arm64" ]; then \
-        tar -xzf /tmp/arm64.tar.gz -C /app --strip-components=1; \
+        tar -xzf /tmp/arm64.tar.gz -C /app; \
     else \
         echo "Unsupported architecture: $TARGETARCH" && exit 1; \
     fi \
-    && rm /tmp/amd64.tar.gz /tmp/arm64.tar.gz
+    && rm /tmp/*.tar.gz
+
+# Set permissions
+RUN chown -R mangatan:mangatan /app && \
+    chmod +x /app/mangatan
 
 USER mangatan
 
-ENTRYPOINT []
 EXPOSE 4568
-CMD ["./mangatan", "--headless"]
+
+# Default to headless mode
+ENV MANGATAN_HEADLESS=true
+
+ENTRYPOINT ["/app/mangatan"]

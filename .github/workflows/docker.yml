@@ -23,6 +23,7 @@ env:
 jobs:
   push_to_registry:
     name: Build & Push Docker Image
+    # Only run if the upstream workflow succeeded
     if: ${{ github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success' }}
     runs-on: ubuntu-latest
     permissions:
@@ -52,11 +53,11 @@ jobs:
           echo "Building for version: $TAG_NAME"
           echo "tag=$TAG_NAME" >> $GITHUB_OUTPUT
 
-      - name: Download Linux x64 Artifacts
+      - name: Download Linux AMD64 Artifacts
         uses: actions/download-artifact@v4
         with:
-          name: mangatan-linux-x64
-          path: download_x64
+          name: mangatan-linux-amd64
+          path: download_amd64
           run-id: ${{ inputs.run_id || github.event.workflow_run.id }}
           github-token: ${{ secrets.GITHUB_TOKEN }}
 
@@ -70,8 +71,9 @@ jobs:
 
       - name: Prepare Context
         run: |
-          # Find the tar.gz in the downloaded folders and move/rename it
-          find download_x64 -name "*.tar.gz" -exec cp {} mangatan-linux-amd64.tar.gz \;
+          # Rename files to exactly what the Dockerfile expects
+          # Note: We look in download_amd64 now, not download_x64
+          find download_amd64 -name "*.tar.gz" -exec cp {} mangatan-linux-amd64.tar.gz \;
           find download_arm64 -name "*.tar.gz" -exec cp {} mangatan-linux-arm64.tar.gz \;
           
           ls -lh *.tar.gz

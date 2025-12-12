@@ -18,7 +18,7 @@ jobs:
       matrix:
         include:
           - os: ubuntu-latest
-            name: linux-x64
+            name: linux-amd64
           - os: ubuntu-24.04-arm
             name: linux-arm64
           - os: windows-latest
@@ -81,28 +81,24 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          # --- LINUX x64 ---
-          - name: Linux-x64
+          - name: Linux-amd64
             os: ubuntu-latest
             target: x86_64-unknown-linux-gnu
-            arch_name: linux-x64
+            arch_name: linux-amd64
             jogamp_target: linux-amd64
 
-          # --- LINUX ARM64 ---
           - name: Linux-arm64
             os: ubuntu-24.04-arm
             target: aarch64-unknown-linux-gnu
             arch_name: linux-arm64
             jogamp_target: linux-aarch64
             
-          # --- WINDOWS ---
           - name: Windows-x64
             os: windows-latest
             target: x86_64-pc-windows-msvc
             arch_name: windows-x64
             jogamp_target: windows-amd64
             
-          # --- MACOS ---
           - name: macOS-Intel
             os: macos-15-intel
             target: x86_64-apple-darwin
@@ -118,13 +114,13 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 
 
-      # --- NASM SETUP ---
       - name: Install NASM
         if: runner.os == 'Windows' || runner.os == 'macOS'
         uses: ilammy/setup-nasm@v1
 
-      # --- LINUX DEPENDENCIES ---
       - name: Install Linux Dependencies
         if: runner.os == 'Linux'
         run: |
@@ -140,7 +136,6 @@ jobs:
         with:
           targets: ${{ matrix.target }}
 
-      # --- ASSET PREPARATION ---
       - name: Create Resources Directory
         shell: bash
         run: mkdir -p bin/mangatan/resources
@@ -149,18 +144,12 @@ jobs:
         shell: bash
         run: |
           curl -L "https://github.com/KolbyML/jogamp/releases/download/1/jogamp-all-platforms.7z" -o jogamp.7z
-          
-          # Extract the specific target folder
           7z x jogamp.7z "jogamp-all-platforms/lib/${{ matrix.jogamp_target }}"
           
           mkdir natives_temp
-          
-          # Move the entire architecture folder (e.g., 'linux-amd64') into natives_temp
           mv jogamp-all-platforms/lib/${{ matrix.jogamp_target }} natives_temp/
           
           cd natives_temp
-          
-          # Zip the folder itself (so the zip contains 'linux-amd64/libgluegen.so')
           if [ "${{ runner.os }}" == "Windows" ]; then
             7z a -tzip ../bin/mangatan/resources/natives.zip ${{ matrix.jogamp_target }}
           else
@@ -193,7 +182,6 @@ jobs:
           name: webui-assets
           path: bin/mangatan/resources/suwayomi-webui
 
-      # --- COMPILATION (Native for everyone) ---
       - name: Build Binary
         shell: bash
         env:
@@ -202,27 +190,24 @@ jobs:
           cd bin/mangatan
           cargo build --release --target ${{ matrix.target }} --features embed-jre
 
-      # --- WINDOWS PACKAGING ---
       - name: Package Windows
         if: runner.os == 'Windows'
         shell: bash
         run: |
           mkdir output
-          cp target/${{ matrix.target }}/release/mangatan.exe output/
+          cp "${{ github.workspace }}/target/${{ matrix.target }}/release/mangatan.exe" output/
           cd output && 7z a -tzip ../mangatan-windows-x64.zip * && cd ..
           mkdir final_artifact && mv mangatan-windows-x64.zip final_artifact/
 
-      # --- LINUX PACKAGING ---
       - name: Package Linux
         if: runner.os == 'Linux'
         shell: bash
         run: |
-          BINARY_PATH="target/${{ matrix.target }}/release/mangatan"
+          BINARY_PATH="${{ github.workspace }}/target/${{ matrix.target }}/release/mangatan"
           ICON_PATH="bin/mangatan/resources/faviconlogo.png"
           VERSION="${{ github.ref_name }}"
           CLEAN_VERSION=$(echo $VERSION | sed 's/^v//')
           
-          # Detect Arch
           DEB_ARCH="amd64"
           if [[ "${{ matrix.target }}" == *"aarch64"* ]]; then
             DEB_ARCH="arm64"
@@ -230,7 +215,7 @@ jobs:
           
           mkdir -p output
           
-          # --- 1. BUILD DEB (unchanged) ---
+          # --- 1. BUILD DEB ---
           mkdir -p deb_pkg/usr/bin deb_pkg/usr/share/applications deb_pkg/usr/share/icons/hicolor/512x512/apps deb_pkg/DEBIAN
           cp "$BINARY_PATH" deb_pkg/usr/bin/mangatan
           cp "$ICON_PATH" deb_pkg/usr/share/icons/hicolor/512x512/apps/mangatan.png
@@ -261,23 +246,23 @@ jobs:
 
           # --- 2. BUILD TAR.GZ (FLAT STRUCTURE) ---
           mkdir -p tar_staging
+          # Copy directly to root of staging
           cp "$BINARY_PATH" tar_staging/mangatan
           chmod +x tar_staging/mangatan
           
           cd tar_staging
+          # Create tar containing just the file
           tar -czvf ../output/mangatan-${{ matrix.arch_name }}.tar.gz mangatan
           cd ..
 
-      # --- MACOS PACKAGING ---
       - name: Package macOS
         if: runner.os == 'macOS'
         shell: bash
         run: |
           mkdir output
-          cp target/${{ matrix.target }}/release/mangatan output/
+          cp "${{ github.workspace }}/target/${{ matrix.target }}/release/mangatan" output/
           cd output && zip mangatan-macos.zip mangatan
 
-      # --- UPLOAD ARTIFACTS ---
       - name: Upload Windows Artifact
         if: runner.os == 'Windows'
         uses: actions/upload-artifact@v4
@@ -310,11 +295,11 @@ jobs:
         with:
           fetch-depth: 0  
 
-      - name: Download Linux x64
+      - name: Download Linux AMD64
         uses: actions/download-artifact@v4
         with:
-          name: mangatan-linux-x64
-          path: release/linux-x64
+          name: mangatan-linux-amd64
+          path: release/linux-amd64
 
       - name: Download Linux ARM64
         uses: actions/download-artifact@v4
@@ -348,9 +333,9 @@ jobs:
           # WINDOWS
           mv release/windows/mangatan-windows-x64.zip final_release/Mangatan-${VERSION}-Windows-x64.zip
           
-          # LINUX x64
-          mv release/linux-x64/*.deb final_release/Mangatan-${VERSION}-Linux-x64.deb
-          mv release/linux-x64/*.tar.gz final_release/Mangatan-${VERSION}-Linux-x64.tar.gz
+          # LINUX AMD64
+          mv release/linux-amd64/*.deb final_release/Mangatan-${VERSION}-Linux-amd64.deb
+          mv release/linux-amd64/*.tar.gz final_release/Mangatan-${VERSION}-Linux-amd64.tar.gz
 
           # LINUX ARM64
           mv release/linux-arm64/*.deb final_release/Mangatan-${VERSION}-Linux-arm64.deb

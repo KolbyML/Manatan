@@ -14,6 +14,7 @@ services:
       # Comment these out if you do not use the flaresolverr container at the bottom of this file
       - FLARESOLVERR_ENABLED=true
       - FLARESOLVERR_URL=http://flaresolverr:8191
+      - MANGATAN_HEADLESS=true
 #  #################################################################################################
 #
 #    !!! IMPORTANT !!!
@@ -37,7 +38,10 @@ services:
       - ./data/mangatan:/home/mangatan/.local/share/mangatan
     ports:
       - "4568:4568"
-    restart: on-failure:3
+    restart: unless-stopped
+    depends_on:
+      - flaresolverr
+      - init-permissions
 
   flaresolverr:
     image: ghcr.io/thephaseless/byparr:latest
