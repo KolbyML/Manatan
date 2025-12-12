@@ -380,6 +380,7 @@ jobs:
         run: |
           echo "RELEASE_BODY<<EOF" >> $GITHUB_ENV
           cat RELEASE_NOTES.md >> $GITHUB_ENV
+          echo "" >> $GITHUB_ENV 
           echo "EOF" >> $GITHUB_ENV
 
       - name: Create Release
