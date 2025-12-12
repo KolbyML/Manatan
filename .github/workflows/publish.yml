@@ -225,7 +225,7 @@ jobs:
           
           mkdir -p output
           
-          # --- 1. BUILD DEB ---
+          # --- 1. BUILD DEB (unchanged) ---
           mkdir -p deb_pkg/usr/bin deb_pkg/usr/share/applications deb_pkg/usr/share/icons/hicolor/512x512/apps deb_pkg/DEBIAN
           cp "$BINARY_PATH" deb_pkg/usr/bin/mangatan
           cp "$ICON_PATH" deb_pkg/usr/share/icons/hicolor/512x512/apps/mangatan.png
@@ -254,13 +254,17 @@ jobs:
           
           dpkg-deb --build deb_pkg output/mangatan_${CLEAN_VERSION}_${DEB_ARCH}.deb
 
-          # --- 2. BUILD TAR.GZ ---
-          mkdir -p tar_staging/mangatan-${CLEAN_VERSION}
-          cp "$BINARY_PATH" tar_staging/mangatan-${CLEAN_VERSION}/mangatan
-          chmod +x tar_staging/mangatan-${CLEAN_VERSION}/mangatan
+          # --- 2. BUILD TAR.GZ (FIXED) ---
+          # Create clean staging directory
+          mkdir -p tar_staging
           
+          # Copy binary DIRECTLY to root (no version folder)
+          cp "$BINARY_PATH" tar_staging/mangatan
+          chmod +x tar_staging/mangatan
+          
+          # Tar the binary directly from the current directory
           cd tar_staging
-          tar -czvf ../output/mangatan-${{ matrix.arch_name }}.tar.gz mangatan-${CLEAN_VERSION}
+          tar -czvf ../output/mangatan-${{ matrix.arch_name }}.tar.gz mangatan
           cd ..
 
       # --- MACOS PACKAGING ---

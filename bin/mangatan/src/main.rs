@@ -4,7 +4,10 @@ use std::{
     io,
     path::PathBuf,
     process::Stdio,
-    sync::mpsc::{Receiver, Sender},
+    sync::{
+        Arc, Mutex,
+        mpsc::{Receiver, Sender},
+    },
     thread,
 };
 
@@ -46,6 +49,17 @@ static NATIVES_BYTES: &[u8] = include_bytes!("../resources/natives.zip");
 #[derive(RustEmbed)]
 #[folder = "resources/suwayomi-webui"]
 struct FrontendAssets;
+
+#[derive(Clone, Debug, PartialEq)]
+enum UpdateStatus {
+    Idle,
+    Checking,
+    UpdateAvailable(String),
+    UpToDate,
+    Downloading,
+    RestartRequired,
+    Error(String),
+}
 
 #[derive(Parser, Debug)]
 #[command(author, version, about, long_about = None)]
@@ -120,7 +134,7 @@ fn main() -> eframe::Result<()> {
     let icon = icon_data::from_png_bytes(ICON_BYTES).expect("The icon data must be valid");
     let options = eframe::NativeOptions {
         viewport: egui::ViewportBuilder::default()
-            .with_inner_size([300.0, 150.0])
+            .with_inner_size([300.0, 220.0])
             .with_icon(icon)
             .with_title("Mangatan")
             .with_resizable(false)
@@ -165,6 +179,7 @@ struct MyApp {
     server_stopped_rx: Receiver<()>,
     is_shutting_down: bool,
     data_dir: PathBuf,
+    update_status: Arc<Mutex<UpdateStatus>>,
 }
 
 impl MyApp {
@@ -173,21 +188,43 @@ impl MyApp {
         server_stopped_rx: Receiver<()>,
         data_dir: PathBuf,
     ) -> Self {
+        // Initialize status
+        let update_status = Arc::new(Mutex::new(UpdateStatus::Idle));
+
+        // Optional: Trigger a check immediately on startup
+        let status_clone = update_status.clone();
+        std::thread::spawn(move || {
+            check_for_updates(status_clone);
+        });
+
         Self {
             shutdown_tx,
             server_stopped_rx,
             is_shutting_down: false,
             data_dir,
+            update_status,
         }
+    }
+
+    fn trigger_update(&self) {
+        let status_clone = self.update_status.clone();
+
+        *status_clone.lock().unwrap() = UpdateStatus::Downloading;
+
+        std::thread::spawn(move || match perform_update() {
+            Ok(_) => *status_clone.lock().unwrap() = UpdateStatus::RestartRequired,
+            Err(e) => *status_clone.lock().unwrap() = UpdateStatus::Error(e.to_string()),
+        });
     }
 }
 
 impl eframe::App for MyApp {
     fn update(&mut self, ctx: &egui::Context, _frame: &mut eframe::Frame) {
+        // Handle window close requests
         if ctx.input(|i| i.viewport().close_requested()) {
             if !self.is_shutting_down {
                 self.is_shutting_down = true;
-                info!("❌ Close requested. Signaling server to stop...");
+                tracing::info!("❌ Close requested. Signaling server to stop...");
                 let _ = self.shutdown_tx.try_send(());
             }
             ctx.send_viewport_cmd(egui::ViewportCommand::CancelClose);
@@ -200,34 +237,104 @@ impl eframe::App for MyApp {
                     ui.heading("Stopping Servers...");
                     ui.add_space(10.0);
                     ui.spinner();
-                    ui.label("Cleaning up child processes. Please wait.");
+                    ui.label("Cleaning up child processes...");
                 });
             });
 
             if self.server_stopped_rx.try_recv().is_ok() {
-                info!("✅ Server cleanup complete. Exiting.");
                 std::process::exit(0);
             }
             ctx.request_repaint();
         } else {
+            egui::Area::new("version_watermark".into())
+                .anchor(egui::Align2::LEFT_BOTTOM, [8.0, -8.0])
+                .order(egui::Order::Foreground)
+                .show(ctx, |ui| {
+                    ui.weak(format!("v{}", env!("CARGO_PKG_VERSION")));
+                });
+
+            // Main Content Panel
             egui::CentralPanel::default().show(ctx, |ui| {
                 ui.vertical_centered(|ui| {
-                    ui.add_space(20.0);
+                    ui.add_space(10.0);
                     ui.heading("Mangatan Launcher");
-                    ui.add_space(20.0);
+                    ui.add_space(10.0);
+
+                    // Update Status UI
+                    let status = self.update_status.lock().unwrap().clone();
+                    match status {
+                        UpdateStatus::Idle => {
+                            if ui.button("🔄 Check for Updates").clicked() {
+                                let status_clone = self.update_status.clone();
+                                std::thread::spawn(move || check_for_updates(status_clone));
+                            }
+                        }
+                        UpdateStatus::Checking => {
+                            ui.spinner();
+                            ui.label("Checking GitHub...");
+                        }
+                        UpdateStatus::UpdateAvailable(ver) => {
+                            ui.label(format!("✨ Update {} available", ver));
+                            if ui.button("⬇ Download & Install").clicked() {
+                                self.trigger_update();
+                            }
+                        }
+                        UpdateStatus::UpToDate => {
+                            ui.label("✅ You are up to date");
+                        }
+                        UpdateStatus::Downloading => {
+                            ui.spinner();
+                            ui.label("Downloading update...");
+                        }
+                        UpdateStatus::RestartRequired => {
+                            ui.colored_label(egui::Color32::GREEN, "✔ Installed!");
+
+                            if ui.button("🚀 Restart App").clicked() {
+                                if let Ok(exe_path) = std::env::current_exe() {
+                                    let mut exe_str = exe_path.to_string_lossy().to_string();
+                                    if cfg!(target_os = "linux") && exe_str.ends_with(" (deleted)") {
+                                        exe_str = exe_str.replace(" (deleted)", "");
+                                    }
+                                    if let Err(err) = std::process::Command::new(&exe_str)
+                                        .spawn()
+                                        .map_err(|err| {
+                                            anyhow!(
+                                                "Failed to restart: {err}, executable path  {exe_str:?}"
+                                            )
+                                        })
+                                    {
+                                        error!("{err:?}");
+                                    }
+                                }
+
+                                ctx.send_viewport_cmd(egui::ViewportCommand::Close);
+                            }
+                        }
+                        UpdateStatus::Error(e) => {
+                            ui.colored_label(egui::Color32::RED, "Update Error");
+                            ui.small(e.chars().take(40).collect::<String>());
+                            if ui.button("Retry").clicked() {
+                                *self.update_status.lock().unwrap() = UpdateStatus::Idle;
+                            }
+                        }
+                    }
+                    ui.add_space(10.0);
+                    ui.separator();
+                    ui.add_space(10.0);
+
+                    // App Controls
                     if ui.button("Open Web UI").clicked() {
                         let _ = open::that("http://localhost:4568");
                     }
 
-                    ui.add_space(10.0);
+                    ui.add_space(5.0);
 
                     if ui.button("Open Data Folder").clicked() {
                         if !self.data_dir.exists() {
                             let _ = std::fs::create_dir_all(&self.data_dir);
                         }
-
                         if let Err(e) = open::that(&self.data_dir) {
-                            error!("Failed to open data folder: {}", e);
+                            tracing::error!("Failed to open data folder: {}", e);
                         }
                     }
                 });
@@ -511,4 +618,84 @@ async fn serve_react_app(uri: Uri) -> impl IntoResponse {
     }
 
     (StatusCode::NOT_FOUND, "404 - Index.html missing").into_response()
+}
+
+fn get_asset_target_string() -> &'static str {
+    #[cfg(target_os = "windows")]
+    return "Windows-x64"; // Matches ...Windows-x64.zip
+
+    #[cfg(target_os = "macos")]
+    {
+        #[cfg(target_arch = "aarch64")]
+        return "macOS-Silicon";
+        #[cfg(target_arch = "x86_64")]
+        return "macOS-Intel";
+    }
+
+    #[cfg(target_os = "linux")]
+    {
+        #[cfg(target_arch = "aarch64")]
+        return "Linux-arm64.tar";
+
+        #[cfg(target_arch = "x86_64")]
+        return "Linux-x64.tar";
+    }
+
+    "unknown-target"
+}
+
+fn check_for_updates(status: Arc<Mutex<UpdateStatus>>) {
+    *status.lock().unwrap() = UpdateStatus::Checking;
+
+    // We use the same configuration for checking as we do for updating
+    // This ensures we only "find" releases that actually match our custom asset naming
+    let target_str = get_asset_target_string();
+
+    let updater_result = self_update::backends::github::Update::configure()
+        .repo_owner("KolbyML")
+        .repo_name("Mangatan")
+        .bin_name("mangatan") // This must match the binary name inside the zip/tar
+        .target(target_str) // CRITICAL: Forces it to look for "Windows-x64" etc.
+        .current_version(env!("CARGO_PKG_VERSION"))
+        .build();
+
+    match updater_result {
+        Ok(updater) => {
+            match updater.get_latest_release() {
+                Ok(release) => {
+                    // Check if remote version > local version
+                    let is_newer = self_update::version::bump_is_greater(
+                        env!("CARGO_PKG_VERSION"),
+                        &release.version,
+                    )
+                    .unwrap_or(false);
+
+                    if is_newer {
+                        *status.lock().unwrap() = UpdateStatus::UpdateAvailable(release.version);
+                    } else {
+                        *status.lock().unwrap() = UpdateStatus::UpToDate;
+                    }
+                }
+                Err(e) => *status.lock().unwrap() = UpdateStatus::Error(e.to_string()),
+            }
+        }
+        Err(e) => *status.lock().unwrap() = UpdateStatus::Error(e.to_string()),
+    }
+}
+
+fn perform_update() -> Result<(), Box<dyn std::error::Error>> {
+    let target_str = get_asset_target_string();
+
+    self_update::backends::github::Update::configure()
+        .repo_owner("KolbyML")
+        .repo_name("Mangatan")
+        .bin_name("mangatan")
+        .target(target_str)
+        .show_download_progress(true)
+        .current_version(env!("CARGO_PKG_VERSION"))
+        .no_confirm(true)
+        .build()?
+        .update()?;
+
+    Ok(())
 }
