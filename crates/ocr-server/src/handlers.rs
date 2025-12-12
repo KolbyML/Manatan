@@ -149,6 +149,39 @@ pub struct JobRequest {
     context: String,
 }
 
+pub async fn is_chapter_preprocessed_handler(
+    State(state): State<AppState>,
+    Json(req): Json<JobRequest>,
+) -> Json<serde_json::Value> {
+    let is_processing = {
+        state
+            .active_chapter_jobs
+            .read()
+            .expect("lock poisoned")
+            .contains(&req.base_url)
+    };
+
+    if is_processing {
+        return Json(serde_json::json!({ "status": "processing" }));
+    }
+
+    let first_page_url = format!("{}0", req.base_url);
+    let cache_key = logic::get_cache_key(&first_page_url);
+
+    let is_cached = {
+        state
+            .cache
+            .read()
+            .expect("lock poisoned")
+            .contains_key(&cache_key)
+    };
+
+    if is_cached {
+        Json(serde_json::json!({ "status": "processed" }))
+    } else {
+        Json(serde_json::json!({ "status": "idle" }))
+    }
+}
 pub async fn preprocess_handler(
     State(state): State<AppState>,
     Json(req): Json<JobRequest>,

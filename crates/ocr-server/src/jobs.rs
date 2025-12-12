@@ -9,6 +9,13 @@ pub async fn run_chapter_job(
     pass: Option<String>,
     context: String,
 ) {
+    {
+        state
+            .active_chapter_jobs
+            .write()
+            .expect("lock poisoned")
+            .insert(base_url.clone());
+    }
     state.active_jobs.fetch_add(1, Ordering::Relaxed);
     tracing::info!("[Job] Started for {}", context);
 
@@ -17,33 +24,22 @@ pub async fn run_chapter_job(
     let max_errors = 3;
 
     while errors < max_errors {
-        // FIX: Inlined variables into format string
-        let fetch_url = format!("{base_url}{page_idx}");
-        let cache_key = crate::logic::get_cache_key(&fetch_url);
+        let url = format!("{base_url}{page_idx}");
+        let cache_key = crate::logic::get_cache_key(&url);
+        let exists = { state.cache.read().expect("lock").contains_key(&cache_key) };
 
-        // Check cache first
-        // FIX: Used expect instead of unwrap
-        let exists = {
-            state
-                .cache
-                .read()
-                .expect("cache lock poisoned")
-                .contains_key(&cache_key)
-        };
         if exists {
-            tracing::info!("[Job] Skip (Cached): {}", fetch_url);
+            tracing::info!("[Job] Skip (Cached): {url}");
             page_idx += 1;
             errors = 0;
             continue;
         }
 
-        // Logic call directly
-        match crate::logic::fetch_and_process(&fetch_url, user.clone(), pass.clone()).await {
+        match crate::logic::fetch_and_process(&url, user.clone(), pass.clone()).await {
             Ok(res) => {
                 errors = 0;
-                tracing::info!("[Job] Processed: {}", fetch_url);
-                // FIX: Used expect instead of unwrap
-                let mut w = state.cache.write().expect("cache lock poisoned");
+                tracing::info!("[Job] Processed: {url}");
+                let mut w = state.cache.write().expect("lock");
                 w.insert(
                     cache_key,
                     crate::state::CacheEntry {
@@ -52,21 +48,28 @@ pub async fn run_chapter_job(
                     },
                 );
             }
-            Err(_) => {
+            Err(err) => {
                 errors += 1;
-                tracing::warn!("[Job] Failed: {} (Errors: {})", fetch_url, errors);
+                tracing::warn!("[Job] Failed: {url} (Error Count: {errors}, Error: {err:?})");
             }
         }
 
         if page_idx % 5 == 0 {
             state.save_cache();
         }
-
         page_idx += 1;
         tokio::time::sleep(Duration::from_millis(100)).await;
     }
 
     state.save_cache();
     state.active_jobs.fetch_sub(1, Ordering::Relaxed);
-    tracing::info!("[Job] Finished for {}", context);
+
+    {
+        state
+            .active_chapter_jobs
+            .write()
+            .expect("lock poisoned")
+            .remove(&base_url);
+    }
+    tracing::info!("[Job] Finished for {} {}", base_url, context);
 }

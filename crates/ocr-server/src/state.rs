@@ -1,5 +1,5 @@
 use std::{
-    collections::HashMap,
+    collections::{HashMap, HashSet},
     fs,
     path::PathBuf,
     sync::{Arc, RwLock, atomic::AtomicUsize},
@@ -15,6 +15,7 @@ pub struct AppState {
     pub cache_path: PathBuf,
     pub active_jobs: Arc<AtomicUsize>,
     pub requests_processed: Arc<AtomicUsize>,
+    pub active_chapter_jobs: Arc<RwLock<HashSet<String>>>,
 }
 
 #[derive(Serialize, Deserialize, Clone)]
@@ -41,11 +42,11 @@ impl AppState {
             cache_path,
             active_jobs: Arc::new(AtomicUsize::new(0)),
             requests_processed: Arc::new(AtomicUsize::new(0)),
+            active_chapter_jobs: Arc::new(RwLock::new(HashSet::new())),
         }
     }
 
     pub fn save_cache(&self) {
-        // FIX: Collapsed if statements
         if let Ok(reader) = self.cache.read()
             && let Ok(file) = fs::File::create(&self.cache_path)
         {
