@@ -722,13 +722,14 @@ fn check_for_updates(status: Arc<Mutex<UpdateStatus>>) {
     // We use the same configuration for checking as we do for updating
     // This ensures we only "find" releases that actually match our custom asset naming
     let target_str = get_asset_target_string();
+    let clean_version = APP_VERSION.trim_start_matches('v');
 
     let updater_result = self_update::backends::github::Update::configure()
         .repo_owner("KolbyML")
         .repo_name("Mangatan")
         .bin_name("mangatan") // This must match the binary name inside the zip/tar
         .target(target_str) // CRITICAL: Forces it to look for "Windows-x64" etc.
-        .current_version(APP_VERSION)
+        .current_version(clean_version)
         .build();
 
     match updater_result {
@@ -737,7 +738,7 @@ fn check_for_updates(status: Arc<Mutex<UpdateStatus>>) {
                 Ok(release) => {
                     // Check if remote version > local version
                     let is_newer =
-                        self_update::version::bump_is_greater(APP_VERSION, &release.version)
+                        self_update::version::bump_is_greater(clean_version, &release.version)
                             .unwrap_or(false);
 
                     if is_newer {
@@ -768,7 +769,7 @@ fn perform_update() -> Result<(), Box<dyn std::error::Error>> {
         .bin_name("mangatan")
         .target(target_str)
         .show_download_progress(true)
-        .current_version(APP_VERSION)
+        .current_version(APP_VERSION.trim_start_matches('v'))
         .no_confirm(true)
         .build()?
         .update()?;
