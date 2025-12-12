@@ -38,8 +38,11 @@ jobs:
 
     - uses: Swatinem/rust-cache@v2
       with:
-        cache-on-failure: true        
+        cache-on-failure: true
 
+    - name: Prepare Resources
+      run: make setup-depends
+  
     - name: Run Clippy
       run: |
         cargo clippy --all --all-targets --no-deps -- --deny warnings
@@ -70,7 +73,10 @@ jobs:
 
     - uses: Swatinem/rust-cache@v2
       with:
-        cache-on-failure: true        
+        cache-on-failure: true      
+
+    - name: Prepare Resources
+      run: make setup-depends          
 
     - name: Test
       run: cargo test --release --workspace -- --nocapture

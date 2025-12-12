@@ -66,6 +66,9 @@ clean_rust: # Run `cargo clean`.
 sort: # Run `cargo sort` on the entire workspace.
 	cargo sort --grouped --workspace
 
+.PHONY: pr
+pr: lint clean-deps test
+
 .PHONY: clean-deps
 clean-deps: # Run `cargo udeps`
 	cargo +nightly udeps --workspace --tests --all-targets --release
@@ -113,12 +116,15 @@ download_natives:
 	rm -rf temp_natives
 	@echo "Natives ready at bin/mangatan/resources/natives.zip"
 
+.PHONY: setup-depends
+setup-depends: build_webui download_jar download_natives
+
 .PHONY: dev
-dev: build_webui download_jar download_natives
+dev: setup-depends
 	cargo run --release -p mangatan
 
 .PHONY: dev-embedded
-dev-embedded: build_webui download_jar bundle_jre download_natives
+dev-embedded: setup-depends bundle_jre
 	cargo run --release -p mangatan --features embed-jre
 
 .PHONY: jlink

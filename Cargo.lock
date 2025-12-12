@@ -3305,7 +3305,6 @@ dependencies = [
  "reqwest",
  "rust-embed",
  "self_update",
- "tao",
  "tokio",
  "tokio-tungstenite",
  "tower-http",
@@ -3318,22 +3317,7 @@ dependencies = [
 name = "mangatan-core"
 version = "0.1.0"
 dependencies = [
- "anyhow",
- "axum",
- "directories",
- "eframe",
- "futures",
- "futures-util",
- "image",
- "mime_guess",
- "open",
- "reqwest",
- "rust-embed",
- "tao",
- "tokio",
- "tower-http",
  "tracing",
- "tracing-subscriber",
  "zip 6.0.0",
 ]
 

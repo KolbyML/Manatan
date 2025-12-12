@@ -14,22 +14,7 @@ default = []
 embed-jre = []
 
 [dependencies]
-anyhow.workspace = true
-axum.workspace = true
-directories.workspace = true
-eframe.workspace = true
-futures.workspace = true
-futures-util.workspace = true
-image.workspace = true
-mime_guess.workspace = true
-open.workspace = true
-reqwest.workspace = true
-rust-embed.workspace = true
-tao.workspace = true    
-tokio.workspace = true
-tower-http.workspace = true
 tracing.workspace = true
-tracing-subscriber.workspace = true
 zip.workspace = true
 
 [lints]

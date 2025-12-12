@@ -34,7 +34,7 @@ pub fn get_cache_key(url: &str) -> String {
     if let Ok(parsed) = reqwest::Url::parse(url) {
         let path = parsed.path();
         match parsed.query() {
-            Some(q) => format!("{}?{}", path, q),
+            Some(q) => format!("{path}?{q}"),
             None => path.to_string(),
         }
     } else {
@@ -164,8 +164,12 @@ mod tests {
 
     #[test]
     fn test_get_cache_key_simple_path() {
-        let url = "http://localhost:4568/api/v1/manga/12/chapter/1/page/57?sourceId=3349575794425308347";
-        assert_eq!(get_cache_key(url), "/api/v1/manga/12/chapter/1/page/57?sourceId=3349575794425308347");
+        let url =
+            "http://localhost:4568/api/v1/manga/12/chapter/1/page/57?sourceId=3349575794425308347";
+        assert_eq!(
+            get_cache_key(url),
+            "/api/v1/manga/12/chapter/1/page/57?sourceId=3349575794425308347"
+        );
     }
 
     #[test]

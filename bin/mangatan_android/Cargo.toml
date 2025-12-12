@@ -19,7 +19,7 @@ build_targets = ["aarch64-linux-android"]
 
 [lib]
 name = "mangatan_android"
-crate-type = ["cdylib", "rlib", "lib"]
+crate-type = ["cdylib", "lib"]
 path = "src/lib.rs"
 
 [features]

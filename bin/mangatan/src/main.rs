@@ -209,11 +209,16 @@ impl MyApp {
     fn trigger_update(&self) {
         let status_clone = self.update_status.clone();
 
-        *status_clone.lock().unwrap() = UpdateStatus::Downloading;
+        *status_clone.lock().expect("lock shouldn't panic") = UpdateStatus::Downloading;
 
         std::thread::spawn(move || match perform_update() {
-            Ok(_) => *status_clone.lock().unwrap() = UpdateStatus::RestartRequired,
-            Err(e) => *status_clone.lock().unwrap() = UpdateStatus::Error(e.to_string()),
+            Ok(_) => {
+                *status_clone.lock().expect("lock shouldn't panic") = UpdateStatus::RestartRequired
+            }
+            Err(e) => {
+                *status_clone.lock().expect("lock shouldn't panic") =
+                    UpdateStatus::Error(e.to_string())
+            }
         });
     }
 }
@@ -263,7 +268,11 @@ impl eframe::App for MyApp {
             ui.horizontal(|ui| {
                 ui.heading("Mangatan");
                 ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
-                    let status = self.update_status.lock().unwrap().clone();
+                    let status = self
+                        .update_status
+                        .lock()
+                        .expect("lock shouldn't panic")
+                        .clone();
                     match status {
                         UpdateStatus::Idle | UpdateStatus::UpToDate => {
                             if ui.small_button("🔄 Check Updates").clicked() {
@@ -283,15 +292,18 @@ impl eframe::App for MyApp {
             ui.add_space(10.0);
 
             // --- UPDATE NOTIFICATIONS AREA ---
-            // Only shows up if something important is happening
-            let status = self.update_status.lock().unwrap().clone();
+            let status = self
+                .update_status
+                .lock()
+                .expect("lock shouldn't panic")
+                .clone();
             match status {
                 UpdateStatus::UpdateAvailable(ver) => {
                     ui.group(|ui| {
                         ui.vertical_centered(|ui| {
                             ui.colored_label(
                                 egui::Color32::LIGHT_BLUE,
-                                format!("✨ Update {} Available", ver),
+                                format!("✨ Update {ver} Available"),
                             );
                             ui.add_space(5.0);
                             if ui.button("⬇ Download & Install").clicked() {
@@ -334,7 +346,8 @@ impl eframe::App for MyApp {
                     ui.colored_label(egui::Color32::RED, "Update Failed");
                     ui.small(e.chars().take(40).collect::<String>());
                     if ui.button("Retry").clicked() {
-                        *self.update_status.lock().unwrap() = UpdateStatus::Idle;
+                        *self.update_status.lock().expect("lock shouldn't panic") =
+                            UpdateStatus::Idle;
                     }
                     ui.add_space(10.0);
                 }
@@ -343,10 +356,10 @@ impl eframe::App for MyApp {
 
             // --- PRIMARY ACTION (THE "HERO" BUTTON) ---
             ui.vertical_centered(|ui| {
-                ui.add_space(10.0);
-                let btn_size = egui::vec2(ui.available_width() * 0.9, 50.0);
+                ui.add_space(5.0);
+                let btn_size = egui::vec2(ui.available_width() * 0.9, 45.0);
                 let btn =
-                    egui::Button::new(egui::RichText::new("🚀 OPEN WEB UI").size(20.0).strong())
+                    egui::Button::new(egui::RichText::new("🚀 OPEN WEB UI").size(18.0).strong())
                         .min_size(btn_size);
 
                 if ui.add(btn).clicked() {
@@ -354,7 +367,7 @@ impl eframe::App for MyApp {
                 }
             });
 
-            ui.add_space(20.0);
+            ui.add_space(15.0);
 
             // --- SECONDARY ACTIONS (Community) ---
             ui.vertical_centered(|ui| {
@@ -370,27 +383,33 @@ impl eframe::App for MyApp {
             ui.add_space(5.0);
             ui.label("Data Management:");
 
-            // Use a grid to put the folder buttons side-by-side or stacked cleanly
-            ui.columns(2, |columns| {
-                columns[0].vertical_centered_justified(|ui| {
-                    if ui.button("📂 Mangatan Data").clicked() {
-                        if !self.data_dir.exists() {
-                            let _ = std::fs::create_dir_all(&self.data_dir);
-                        }
-                        let _ = open::that(&self.data_dir);
+            // Simplified Grid Layout (Less nesting, safer to copy)
+            ui.horizontal(|ui| {
+                let width = (ui.available_width() - 10.0) / 2.0;
+
+                // Button 1: Mangatan Data
+                if ui
+                    .add_sized([width, 30.0], egui::Button::new("📂 Mangatan Data"))
+                    .clicked()
+                {
+                    if !self.data_dir.exists() {
+                        let _ = std::fs::create_dir_all(&self.data_dir);
                     }
-                });
-                columns[1].vertical_centered_justified(|ui| {
-                    if ui.button("📂 Suwayomi Data").clicked() {
-                        if let Some(base_dirs) = BaseDirs::new() {
-                            let dir = base_dirs.data_local_dir().join("Tachidesk");
-                            if !dir.exists() {
-                                let _ = std::fs::create_dir_all(&dir);
-                            }
-                            let _ = open::that(&dir);
-                        }
+                    let _ = open::that(&self.data_dir);
+                }
+
+                // Button 2: Suwayomi Data
+                if ui
+                    .add_sized([width, 30.0], egui::Button::new("📂 Suwayomi Data"))
+                    .clicked()
+                    && let Some(base_dirs) = BaseDirs::new()
+                {
+                    let dir = base_dirs.data_local_dir().join("Tachidesk");
+                    if !dir.exists() {
+                        let _ = std::fs::create_dir_all(&dir);
                     }
-                });
+                    let _ = open::that(&dir);
+                }
             });
         });
     }
@@ -675,7 +694,7 @@ async fn serve_react_app(uri: Uri) -> impl IntoResponse {
 
 fn get_asset_target_string() -> &'static str {
     #[cfg(target_os = "windows")]
-    return "Windows-x64"; // Matches ...Windows-x64.zip
+    return "Windows-x64";
 
     #[cfg(target_os = "macos")]
     {
@@ -693,12 +712,10 @@ fn get_asset_target_string() -> &'static str {
         #[cfg(target_arch = "x86_64")]
         return "Linux-x64.tar";
     }
-
-    "unknown-target"
 }
 
 fn check_for_updates(status: Arc<Mutex<UpdateStatus>>) {
-    *status.lock().unwrap() = UpdateStatus::Checking;
+    *status.lock().expect("lock shouldn't panic") = UpdateStatus::Checking;
 
     // We use the same configuration for checking as we do for updating
     // This ensures we only "find" releases that actually match our custom asset naming
@@ -724,15 +741,21 @@ fn check_for_updates(status: Arc<Mutex<UpdateStatus>>) {
                     .unwrap_or(false);
 
                     if is_newer {
-                        *status.lock().unwrap() = UpdateStatus::UpdateAvailable(release.version);
+                        *status.lock().expect("lock shouldn't panic") =
+                            UpdateStatus::UpdateAvailable(release.version);
                     } else {
-                        *status.lock().unwrap() = UpdateStatus::UpToDate;
+                        *status.lock().expect("lock shouldn't panic") = UpdateStatus::UpToDate;
                     }
                 }
-                Err(e) => *status.lock().unwrap() = UpdateStatus::Error(e.to_string()),
+                Err(e) => {
+                    *status.lock().expect("lock shouldn't panic") =
+                        UpdateStatus::Error(e.to_string())
+                }
             }
         }
-        Err(e) => *status.lock().unwrap() = UpdateStatus::Error(e.to_string()),
+        Err(e) => {
+            *status.lock().expect("lock shouldn't panic") = UpdateStatus::Error(e.to_string())
+        }
     }
 }
 
