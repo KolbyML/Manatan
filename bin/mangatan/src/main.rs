@@ -15,12 +15,12 @@ use std::{
 use anyhow::anyhow;
 use axum::{
     Router,
-    body::Body,
+    body::{Body, Bytes},
     extract::{
         FromRequestParts, Request, State,
         ws::{Message, WebSocket, WebSocketUpgrade},
     },
-    http::{StatusCode, Uri},
+    http::{HeaderMap, StatusCode, Uri},
     response::{IntoResponse, Response},
     routing::any,
 };
@@ -34,10 +34,23 @@ use futures::{SinkExt, StreamExt, TryStreamExt};
 #[cfg(feature = "embed-jre")]
 use mangatan_core::io::extract_zip;
 use mangatan_core::io::{extract_file, resolve_java};
-use reqwest::Client;
+use reqwest::{
+    Client, Method,
+    header::{
+        ACCEPT, ACCESS_CONTROL_ALLOW_HEADERS, ACCESS_CONTROL_ALLOW_ORIGIN,
+        ACCESS_CONTROL_REQUEST_METHOD, AUTHORIZATION, CONTENT_TYPE, ORIGIN,
+    },
+};
 use rust_embed::RustEmbed;
 use tokio::process::Command;
-use tower_http::cors::{Any, CorsLayer};
+use tokio_tungstenite::{
+    connect_async,
+    tungstenite::{
+        client::IntoClientRequest,
+        protocol::{Message as TungsteniteMessage, frame::coding::CloseCode},
+    },
+};
+use tower_http::cors::{AllowOrigin, Any, CorsLayer};
 use tracing::{error, info, warn};
 use tracing_subscriber::EnvFilter;
 
@@ -487,9 +500,24 @@ async fn run_server(
 
     let client = Client::new();
     let cors = CorsLayer::new()
-        .allow_origin(Any)
-        .allow_methods(Any)
-        .allow_headers(Any);
+        .allow_origin(AllowOrigin::mirror_request())
+        .allow_methods([
+            Method::GET,
+            Method::POST,
+            Method::PUT,
+            Method::DELETE,
+            Method::OPTIONS,
+        ])
+        .allow_headers([
+            AUTHORIZATION,
+            CONTENT_TYPE,
+            ACCEPT,
+            ORIGIN,
+            ACCESS_CONTROL_ALLOW_ORIGIN,
+            ACCESS_CONTROL_ALLOW_HEADERS,
+            ACCESS_CONTROL_REQUEST_METHOD,
+        ])
+        .allow_credentials(true);
 
     let proxy_router = Router::new()
         .route("/api/{*path}", any(proxy_suwayomi_handler))
@@ -539,11 +567,27 @@ async fn proxy_suwayomi_handler(State(client): State<Client>, req: Request) -> R
         .unwrap_or(false);
 
     if is_ws {
+        let path_query = parts
+            .uri
+            .path_and_query()
+            .map(|v| v.as_str())
+            .unwrap_or(parts.uri.path());
+        let backend_url = format!("ws://127.0.0.1:4567{}", path_query);
+        let headers = parts.headers.clone();
+
+        let protocols: Vec<String> = parts
+            .headers
+            .get("sec-websocket-protocol")
+            .and_then(|v| v.to_str().ok())
+            .map(|v| v.split(',').map(|s| s.trim().to_string()).collect())
+            .unwrap_or_default();
+
         match WebSocketUpgrade::from_request_parts(&mut parts, &()).await {
             Ok(ws) => {
-                let uri = parts.uri.clone();
+                // FIX 2: Tell Axum to accept these protocols in the handshake
                 return ws
-                    .on_upgrade(move |socket| handle_socket(socket, uri))
+                    .protocols(protocols)
+                    .on_upgrade(move |socket| handle_socket(socket, headers, backend_url))
                     .into_response();
             }
             Err(err) => {
@@ -556,17 +600,57 @@ async fn proxy_suwayomi_handler(State(client): State<Client>, req: Request) -> R
     proxy_request(client, req, "http://127.0.0.1:4567", "").await
 }
 
-async fn handle_socket(client_socket: WebSocket, uri: Uri) {
-    let path = uri
+pub async fn ws_proxy_handler(
+    ws: WebSocketUpgrade,
+    headers: HeaderMap,
+    uri: Uri,
+) -> impl IntoResponse {
+    let path_query = uri
         .path_and_query()
-        .map(|p| p.as_str())
+        .map(|v| v.as_str())
         .unwrap_or(uri.path());
-    let backend_url = format!("ws://127.0.0.1:4567{path}");
+    let backend_url = format!("ws://127.0.0.1:4567{}", path_query);
 
-    let (backend_socket, _) = match tokio_tungstenite::connect_async(&backend_url).await {
-        Ok(s) => s,
-        Err(err) => {
-            error!("❌ WS Connection failed to {backend_url}: {err}");
+    // FIX 3: Apply the same protocol logic to the direct handler if used
+    let protocols: Vec<String> = headers
+        .get("sec-websocket-protocol")
+        .and_then(|v| v.to_str().ok())
+        .map(|v| v.split(',').map(|s| s.trim().to_string()).collect())
+        .unwrap_or_default();
+
+    ws.protocols(protocols)
+        .on_upgrade(move |socket| handle_socket(socket, headers, backend_url))
+}
+
+async fn handle_socket(client_socket: WebSocket, headers: HeaderMap, backend_url: String) {
+    let mut request = match backend_url.clone().into_client_request() {
+        Ok(req) => req,
+        Err(e) => {
+            error!("Invalid backend URL {}: {}", backend_url, e);
+            return;
+        }
+    };
+
+    let headers_to_forward = [
+        "cookie",
+        "authorization",
+        "user-agent",
+        "sec-websocket-protocol",
+        "origin",
+    ];
+    for &name in &headers_to_forward {
+        if let Some(value) = headers.get(name) {
+            request.headers_mut().insert(name, value.clone());
+        }
+    }
+
+    let (backend_socket, _) = match connect_async(request).await {
+        Ok(conn) => conn,
+        Err(e) => {
+            error!(
+                "Failed to connect to backend WebSocket at {}: {}",
+                backend_url, e
+            );
             return;
         }
     };
@@ -574,51 +658,84 @@ async fn handle_socket(client_socket: WebSocket, uri: Uri) {
     let (mut client_sender, mut client_receiver) = client_socket.split();
     let (mut backend_sender, mut backend_receiver) = backend_socket.split();
 
-    let mut client_to_server = tokio::spawn(async move {
-        while let Some(Ok(msg)) = client_receiver.next().await {
-            let t_msg = match msg {
-                // FIX: Convert Axum Utf8Bytes -> String -> Tungstenite Message
-                Message::Text(t) => {
-                    tokio_tungstenite::tungstenite::Message::Text(t.to_string().into())
+    loop {
+        tokio::select! {
+            msg = client_receiver.next() => {
+                match msg {
+                    Some(Ok(msg)) => {
+                        if let Some(t_msg) = axum_to_tungstenite(msg) {
+                            if backend_sender.send(t_msg).await.is_err() { break; }
+                        }
+                    }
+                    Some(Err(e)) => {
+                        // FIX 4: Filter out noisy "ConnectionReset" logs
+                        if is_connection_reset(&e) {
+                            warn!("Client disconnected (reset): {}", e);
+                        } else {
+                            warn!("Client WebSocket error: {}", e);
+                        }
+                        break;
+                    }
+                    None => break,
                 }
-                Message::Binary(b) => tokio_tungstenite::tungstenite::Message::Binary(b),
-                Message::Ping(b) => tokio_tungstenite::tungstenite::Message::Ping(b),
-                Message::Pong(b) => tokio_tungstenite::tungstenite::Message::Pong(b),
-                Message::Close(_) => {
-                    let _ = backend_sender.close().await;
-                    break;
+            }
+            msg = backend_receiver.next() => {
+                match msg {
+                    Some(Ok(msg)) => {
+                        let a_msg = tungstenite_to_axum(msg);
+                        if client_sender.send(a_msg).await.is_err() { break; }
+                    }
+                    Some(Err(e)) => {
+                         warn!("Backend WebSocket error: {}", e);
+                         break;
+                    }
+                    None => break,
                 }
-            };
-
-            if backend_sender.send(t_msg).await.is_err() {
-                break;
             }
         }
-    });
+    }
+}
 
-    let mut server_to_client = tokio::spawn(async move {
-        while let Some(Ok(msg)) = backend_receiver.next().await {
-            let a_msg = match msg {
-                tokio_tungstenite::tungstenite::Message::Text(t) => {
-                    Message::Text(t.to_string().into())
-                }
-                tokio_tungstenite::tungstenite::Message::Binary(b) => Message::Binary(b),
-                tokio_tungstenite::tungstenite::Message::Ping(b) => Message::Ping(b),
-                tokio_tungstenite::tungstenite::Message::Pong(b) => Message::Pong(b),
-                tokio_tungstenite::tungstenite::Message::Close(_) => break,
-                tokio_tungstenite::tungstenite::Message::Frame(_) => continue,
-            };
+// Helper to identify benign reset errors
+fn is_connection_reset(err: &axum::Error) -> bool {
+    let s = err.to_string();
+    s.contains("Connection reset")
+        || s.contains("broken pipe")
+        || s.contains("without closing handshake")
+}
 
-            if client_sender.send(a_msg).await.is_err() {
-                break;
-            }
+// ... (Converters and other functions remain the same) ...
+fn axum_to_tungstenite(msg: Message) -> Option<TungsteniteMessage> {
+    match msg {
+        Message::Text(t) => Some(TungsteniteMessage::Text(t.as_str().into())),
+        Message::Binary(b) => Some(TungsteniteMessage::Binary(b)),
+        Message::Ping(p) => Some(TungsteniteMessage::Ping(p)),
+        Message::Pong(p) => Some(TungsteniteMessage::Pong(p)),
+        Message::Close(c) => {
+            let frame = c.map(|cf| tokio_tungstenite::tungstenite::protocol::CloseFrame {
+                code: CloseCode::from(cf.code),
+                reason: cf.reason.as_str().into(),
+            });
+            Some(TungsteniteMessage::Close(frame))
         }
-    });
+    }
+}
 
-    tokio::select! {
-        _ = (&mut client_to_server) => { server_to_client.abort(); },
-        _ = (&mut server_to_client) => { client_to_server.abort(); },
-    };
+fn tungstenite_to_axum(msg: TungsteniteMessage) -> Message {
+    match msg {
+        TungsteniteMessage::Text(t) => Message::Text(t.as_str().into()),
+        TungsteniteMessage::Binary(b) => Message::Binary(Bytes::from(b)),
+        TungsteniteMessage::Ping(p) => Message::Ping(p),
+        TungsteniteMessage::Pong(p) => Message::Pong(p),
+        TungsteniteMessage::Close(c) => {
+            let frame = c.map(|cf| axum::extract::ws::CloseFrame {
+                code: u16::from(cf.code),
+                reason: cf.reason.as_str().into(),
+            });
+            Message::Close(frame)
+        }
+        TungsteniteMessage::Frame(_) => Message::Binary(Bytes::new()),
+    }
 }
 
 async fn proxy_request(

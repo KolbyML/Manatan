@@ -20,6 +20,7 @@ pub struct OcrRequest {
     #[serde(default = "default_context")]
     pub context: String,
 }
+
 fn default_context() -> String {
     "No Context".to_string()
 }
@@ -27,7 +28,6 @@ fn default_context() -> String {
 // --- Handlers ---
 
 pub async fn status_handler(State(state): State<AppState>) -> Json<serde_json::Value> {
-    // FIX: Used expect instead of unwrap
     let cache_size = state.cache.read().expect("cache lock poisoned").len();
     Json(serde_json::json!({
         "status": "running",
@@ -42,103 +42,34 @@ pub async fn ocr_handler(
     State(state): State<AppState>,
     Query(params): Query<OcrRequest>,
 ) -> Result<Json<Vec<crate::logic::OcrResult>>, (StatusCode, String)> {
-    // Generate the normalized key
     let cache_key = logic::get_cache_key(&params.url);
 
-    // 1. Cache Check
-    {
-        // FIX: Used expect instead of unwrap
-        let reader = state.cache.read().expect("cache lock poisoned");
-        if let Some(entry) = reader.get(&cache_key) {
-            return Ok(Json(entry.data.clone()));
-        }
+    if let Some(entry) = state.cache.read().expect("lock").get(&cache_key) {
+        state.requests_processed.fetch_add(1, Ordering::Relaxed);
+        return Ok(Json(entry.data.clone()));
     }
-
-    tracing::info!("[OCR] Processing: {}", params.url);
 
     // 2. Process
-    let results = logic::fetch_and_process(&params.url, params.user, params.pass)
-        .await
-        // FIX: Inlined format argument
-        .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, format!("Error: {e}")))?;
+    match logic::fetch_and_process(&params.url, params.user, params.pass).await {
+        Ok(data) => {
+            state.requests_processed.fetch_add(1, Ordering::Relaxed);
 
-    // 3. Update State
-    state.requests_processed.fetch_add(1, Ordering::Relaxed);
-    {
-        // FIX: Used expect instead of unwrap
-        let mut writer = state.cache.write().expect("cache lock poisoned");
-        writer.insert(
-            cache_key,
-            CacheEntry {
-                context: params.context,
-                data: results.clone(),
-            },
-        );
-    }
-    state.save_cache();
-
-    Ok(Json(results))
-}
-
-pub async fn purge_cache_handler(State(state): State<AppState>) -> Json<serde_json::Value> {
-    // FIX: Used expect instead of unwrap
-    let mut writer = state.cache.write().expect("cache lock poisoned");
-    let count = writer.len();
-    writer.clear();
-    drop(writer);
-    state.save_cache();
-    Json(serde_json::json!({ "status": "success", "removed": count }))
-}
-
-pub async fn export_cache_handler(State(state): State<AppState>) -> Result<Vec<u8>, StatusCode> {
-    if state.cache_path.exists() {
-        fs::read(&state.cache_path).map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)
-    } else {
-        Err(StatusCode::NOT_FOUND)
-    }
-}
-
-pub async fn import_cache_handler(
-    State(state): State<AppState>,
-    mut multipart: Multipart,
-) -> Json<serde_json::Value> {
-    let mut added = 0;
-
-    // FIX: Collapsed if statements
-    while let Ok(Some(field)) = multipart.next_field().await {
-        if let Ok(bytes) = field.bytes().await
-            && let Ok(json) = serde_json::from_slice::<
-                std::collections::HashMap<String, serde_json::Value>,
-            >(&bytes)
-        {
-            // FIX: Used expect instead of unwrap
-            let mut writer = state.cache.write().expect("cache lock poisoned");
-
-            for (k, v) in json {
-                // FIX: Used Entry API to avoid double lookup (contains_key + insert)
-                if let Entry::Vacant(e) = writer.entry(k) {
-                    // Handle simple array vs object format
-                    if let Ok(data) =
-                        serde_json::from_value::<Vec<crate::logic::OcrResult>>(v.clone())
-                    {
-                        e.insert(CacheEntry {
-                            context: "Imported".into(),
-                            data,
-                        });
-                        added += 1;
-                    } else if let Ok(entry) = serde_json::from_value::<CacheEntry>(v) {
-                        e.insert(entry);
-                        added += 1;
-                    }
-                }
+            {
+                let mut w = state.cache.write().expect("lock");
+                w.insert(
+                    cache_key,
+                    CacheEntry {
+                        context: params.context,
+                        data: data.clone(),
+                    },
+                );
             }
-        }
-    }
 
-    if added > 0 {
-        state.save_cache();
+            state.save_cache();
+            Ok(Json(data))
+        }
+        Err(e) => Err((StatusCode::INTERNAL_SERVER_ERROR, e.to_string())),
     }
-    Json(serde_json::json!({ "message": "Import successful", "added": added }))
 }
 
 #[derive(Deserialize)]
@@ -147,22 +78,28 @@ pub struct JobRequest {
     user: Option<String>,
     pass: Option<String>,
     context: String,
+    pages: Option<Vec<String>>,
 }
 
 pub async fn is_chapter_preprocessed_handler(
     State(state): State<AppState>,
     Json(req): Json<JobRequest>,
 ) -> Json<serde_json::Value> {
-    let is_processing = {
+    let progress = {
         state
             .active_chapter_jobs
             .read()
             .expect("lock poisoned")
-            .contains(&req.base_url)
+            .get(&req.base_url)
+            .cloned() // Copy the JobProgress struct (current, total)
     };
 
-    if is_processing {
-        return Json(serde_json::json!({ "status": "processing" }));
+    if let Some(p) = progress {
+        return Json(serde_json::json!({
+            "status": "processing",
+            "progress": p.current, // <-- Pass these to frontend
+            "total": p.total       // <-- Pass these to frontend
+        }));
     }
 
     let first_page_url = format!("{}0", req.base_url);
@@ -182,16 +119,79 @@ pub async fn is_chapter_preprocessed_handler(
         Json(serde_json::json!({ "status": "idle" }))
     }
 }
+
 pub async fn preprocess_handler(
     State(state): State<AppState>,
     Json(req): Json<JobRequest>,
 ) -> Json<serde_json::Value> {
-    tokio::spawn(jobs::run_chapter_job(
-        state,
-        req.base_url,
-        req.user,
-        req.pass,
-        req.context,
-    ));
-    Json(serde_json::json!({ "status": "accepted", "message": "Job started" }))
+    let pages = match req.pages {
+        Some(p) => p,
+        None => return Json(serde_json::json!({ "error": "No pages provided" })),
+    };
+
+    let is_processing = {
+        state
+            .active_chapter_jobs
+            .read()
+            .expect("lock poisoned")
+            .contains_key(&req.base_url)
+    };
+
+    if is_processing {
+        return Json(serde_json::json!({ "status": "already_processing" }));
+    }
+
+    let state_clone = state.clone();
+    tokio::spawn(async move {
+        jobs::run_chapter_job(
+            state_clone,
+            req.base_url,
+            pages,
+            req.user,
+            req.pass,
+            req.context,
+        )
+        .await;
+    });
+
+    Json(serde_json::json!({ "status": "started" }))
+}
+
+pub async fn purge_cache_handler(State(state): State<AppState>) -> Json<serde_json::Value> {
+    let mut cache = state.cache.write().expect("lock");
+    cache.clear();
+
+    drop(cache);
+
+    state.save_cache();
+    Json(serde_json::json!({ "status": "cleared" }))
+}
+
+pub async fn export_cache_handler(
+    State(state): State<AppState>,
+) -> Json<std::collections::HashMap<String, CacheEntry>> {
+    let cache = state.cache.read().expect("lock");
+    Json(cache.clone())
+}
+
+pub async fn import_cache_handler(
+    State(state): State<AppState>,
+    Json(data): Json<std::collections::HashMap<String, CacheEntry>>,
+) -> Json<serde_json::Value> {
+    let mut added = 0;
+
+    {
+        let mut cache = state.cache.write().expect("lock");
+        for (k, v) in data {
+            if !cache.contains_key(&k) {
+                cache.insert(k, v);
+                added += 1;
+            }
+        }
+    } // Drop lock
+
+    if added > 0 {
+        state.save_cache();
+    }
+    Json(serde_json::json!({ "message": "Import successful", "added": added }))
 }

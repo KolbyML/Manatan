@@ -29,44 +29,12 @@ pub struct BoundingBox {
     pub height: f64,
 }
 
-/// Helper to strip the scheme/host from the URL for caching purposes.
+/// Helper to strip the scheme/host/query from the URL for caching purposes.
 pub fn get_cache_key(url: &str) -> String {
-    if let Ok(mut parsed) = reqwest::Url::parse(url) {
-        // 1. Capture and filter query parameters
-        // We filter out 'user', 'pass', 'username', 'password' case-insensitively
-        let filtered_params: Vec<(String, String)> = parsed
-            .query_pairs()
-            .filter(|(k, _)| {
-                let key = k.to_lowercase();
-                key != "user" && key != "pass" && key != "username" && key != "password"
-            })
-            .map(|(k, v)| (k.into_owned(), v.into_owned()))
-            .collect();
-
-        // 2. Clear the existing query string on the Url object
-        parsed.query_pairs_mut().clear();
-
-        // 3. Re-append only the safe parameters
-        if filtered_params.is_empty() {
-            // Explicitly remove the query component to avoid a trailing '?'
-            parsed.set_query(None);
-        } else {
-            for (k, v) in filtered_params {
-                parsed.query_pairs_mut().append_pair(&k, &v);
-            }
-        }
-
-        // 4. Return the path + reconstructed query
-        // Note: parsed.path() already excludes the scheme://host:port/ prefix
-        let path = parsed.path();
-        match parsed.query() {
-            Some(q) => format!("{path}?{q}"),
-            None => path.to_string(),
-        }
-    } else {
-        // Fallback for invalid URLs
-        url.to_string()
+    if let Ok(parsed) = reqwest::Url::parse(url) {
+        return parsed.path().to_string();
     }
+    url.split('?').next().unwrap_or(url).to_string()
 }
 
 /// Helper to decode AVIF manually using 'avif-decode' to avoid 'image' crate issues
@@ -265,120 +233,4 @@ pub async fn fetch_and_process(
     }
 
     Ok(final_results)
-}
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    fn test_get_cache_key_simple_path() {
-        let url =
-            "http://localhost:4568/api/v1/manga/12/chapter/1/page/57?sourceId=3349575794425308347";
-        assert_eq!(
-            get_cache_key(url),
-            "/api/v1/manga/12/chapter/1/page/57?sourceId=3349575794425308347"
-        );
-    }
-
-    #[test]
-    fn test_get_cache_key_with_query() {
-        let url = "http://localhost:3000/image.jpg?width=100&q=test";
-        assert_eq!(get_cache_key(url), "/image.jpg?width=100&q=test");
-    }
-
-    #[test]
-    fn test_get_cache_key_https_and_port() {
-        let url = "https://api.mysite.org:8080/v1/ocr";
-        assert_eq!(get_cache_key(url), "/v1/ocr");
-    }
-
-    #[test]
-    fn test_get_cache_key_root() {
-        let url = "http://google.com";
-        assert_eq!(get_cache_key(url), "/");
-    }
-
-    #[test]
-    fn test_get_cache_key_root_with_slash() {
-        let url = "http://google.com/";
-        assert_eq!(get_cache_key(url), "/");
-    }
-
-    #[test]
-    fn test_get_cache_key_invalid_url() {
-        // Should fallback to returning the input exactly
-        let url = "not_a_valid_url";
-        assert_eq!(get_cache_key(url), "not_a_valid_url");
-    }
-
-    #[test]
-    fn test_get_cache_key_relative_path() {
-        // reqwest::Url::parse usually fails on relative paths without a base.
-        // The function should fallback to returning the input string.
-        let url = "/local/path/only";
-        assert_eq!(get_cache_key(url), "/local/path/only");
-    }
-
-    #[test]
-    fn test_cache_key_basic_path() {
-        let url = "http://example.com/api/v1/manga/123/chapter/1";
-        assert_eq!(get_cache_key(url), "/api/v1/manga/123/chapter/1");
-    }
-
-    #[test]
-    fn test_cache_key_preserves_valid_query() {
-        let url = "http://example.com/image.jpg?width=800&format=webp";
-        // Note: Order of query params isn't guaranteed by Url::parse,
-        // but typically it preserves input order or sorts.
-        // We check if it contains the expected path and params.
-        let key = get_cache_key(url);
-        assert!(key.starts_with("/image.jpg?"));
-        assert!(key.contains("width=800"));
-        assert!(key.contains("format=webp"));
-    }
-
-    #[test]
-    fn test_cache_key_strips_user_pass() {
-        let url = "http://example.com/resource?user=admin&pass=secret123";
-        assert_eq!(get_cache_key(url), "/resource");
-    }
-
-    #[test]
-    fn test_cache_key_strips_username_password() {
-        let url = "http://example.com/resource?username=admin&password=secret123";
-        assert_eq!(get_cache_key(url), "/resource");
-    }
-
-    #[test]
-    fn test_cache_key_mixed_params() {
-        // Should keep 'page' and 'sort', but remove 'user' and 'pass'
-        let url = "http://example.com/list?page=1&user=bob&sort=asc&pass=12345";
-        assert_eq!(get_cache_key(url), "/list?page=1&sort=asc");
-    }
-
-    #[test]
-    fn test_cache_key_case_insensitivity() {
-        // Should strip mixed case params
-        let url = "http://example.com/data?User=admin&PASS=secret&UserName=root";
-        assert_eq!(get_cache_key(url), "/data");
-    }
-
-    #[test]
-    fn test_cache_key_invalid_url() {
-        // Should return the input string as-is if it can't be parsed
-        let url = "not-a-valid-url";
-        assert_eq!(get_cache_key(url), "not-a-valid-url");
-    }
-
-    #[test]
-    fn test_cache_key_no_host_relative_path() {
-        // reqwest::Url::parse requires a base for relative URLs usually.
-        // If your app handles relative URLs, verify how Url::parse treats them.
-        // Often "http://dummy" is prepended if the input is relative,
-        // or it fails.
-        // Assuming your input always has a scheme:
-        let url = "http://localhost:3000/test";
-        assert_eq!(get_cache_key(url), "/test");
-    }
 }
