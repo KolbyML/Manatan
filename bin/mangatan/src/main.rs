@@ -50,7 +50,7 @@ use tokio_tungstenite::{
         protocol::{Message as TungsteniteMessage, frame::coding::CloseCode},
     },
 };
-use tower_http::cors::{AllowOrigin, Any, CorsLayer};
+use tower_http::cors::{AllowOrigin, CorsLayer};
 use tracing::{error, info, warn};
 use tracing_subscriber::EnvFilter;
 
@@ -572,7 +572,7 @@ async fn proxy_suwayomi_handler(State(client): State<Client>, req: Request) -> R
             .path_and_query()
             .map(|v| v.as_str())
             .unwrap_or(parts.uri.path());
-        let backend_url = format!("ws://127.0.0.1:4567{}", path_query);
+        let backend_url = format!("ws://127.0.0.1:4567{path_query}");
         let headers = parts.headers.clone();
 
         let protocols: Vec<String> = parts
@@ -609,7 +609,7 @@ pub async fn ws_proxy_handler(
         .path_and_query()
         .map(|v| v.as_str())
         .unwrap_or(uri.path());
-    let backend_url = format!("ws://127.0.0.1:4567{}", path_query);
+    let backend_url = format!("ws://127.0.0.1:4567{path_query}");
 
     // FIX 3: Apply the same protocol logic to the direct handler if used
     let protocols: Vec<String> = headers
@@ -663,9 +663,7 @@ async fn handle_socket(client_socket: WebSocket, headers: HeaderMap, backend_url
             msg = client_receiver.next() => {
                 match msg {
                     Some(Ok(msg)) => {
-                        if let Some(t_msg) = axum_to_tungstenite(msg) {
-                            if backend_sender.send(t_msg).await.is_err() { break; }
-                        }
+                        if let Some(t_msg) = axum_to_tungstenite(msg) && backend_sender.send(t_msg).await.is_err() { break; }
                     }
                     Some(Err(e)) => {
                         // FIX 4: Filter out noisy "ConnectionReset" logs
@@ -724,7 +722,7 @@ fn axum_to_tungstenite(msg: Message) -> Option<TungsteniteMessage> {
 fn tungstenite_to_axum(msg: TungsteniteMessage) -> Message {
     match msg {
         TungsteniteMessage::Text(t) => Message::Text(t.as_str().into()),
-        TungsteniteMessage::Binary(b) => Message::Binary(Bytes::from(b)),
+        TungsteniteMessage::Binary(b) => Message::Binary(b),
         TungsteniteMessage::Ping(p) => Message::Ping(p),
         TungsteniteMessage::Pong(p) => Message::Pong(p),
         TungsteniteMessage::Close(c) => {

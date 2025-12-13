@@ -215,11 +215,48 @@ jobs:
           
           mkdir -p output
           
-          # --- 1. BUILD DEB ---
-          mkdir -p deb_pkg/usr/bin deb_pkg/usr/share/applications deb_pkg/usr/share/icons/hicolor/512x512/apps deb_pkg/DEBIAN
-          cp "$BINARY_PATH" deb_pkg/usr/bin/mangatan
-          cp "$ICON_PATH" deb_pkg/usr/share/icons/hicolor/512x512/apps/mangatan.png
+          # --- 1. BUILD DEB (SHIM STRATEGY) ---
+          mkdir -p deb_pkg/usr/lib/mangatan
+          mkdir -p deb_pkg/usr/bin
+          mkdir -p deb_pkg/usr/share/applications 
+          mkdir -p deb_pkg/usr/share/icons/hicolor/512x512/apps 
+          mkdir -p deb_pkg/DEBIAN
+          
+          # 1. Place the REAL binary in /usr/lib (System Read-Only Location)
+          cp "$BINARY_PATH" deb_pkg/usr/lib/mangatan/mangatan-server
+          
+          # 2. Create the WRAPPER SCRIPT
+          # This script copies the binary to user's data dir/bin if missing or if system has update
+          cat > deb_pkg/usr/bin/mangatan <<'EOF'
+          #!/bin/bash
+          set -e
+          
+          # Define paths
+          SYSTEM_BIN="/usr/lib/mangatan/mangatan-server"
+          USER_DIR="$HOME/.local/share/mangatan/bin"
+          USER_BIN="$USER_DIR/mangatan"
+          
+          # Ensure user directory exists
+          mkdir -p "$USER_DIR"
+          
+          # Copy logic:
+          # - If user bin doesn't exist, copy it.
+          # - If system bin is NEWER (e.g. user updated via apt), overwrite user bin.
+          if [ -f "$SYSTEM_BIN" ]; then
+              cp -u "$SYSTEM_BIN" "$USER_BIN"
+          fi
+          
+          chmod +x "$USER_BIN"
+          
+          # Run the USER copy (which is writable and self-updatable)
+          exec "$USER_BIN" "$@"
+          EOF
+          
+          # Make the wrapper executable
           chmod +x deb_pkg/usr/bin/mangatan
+          
+          # 3. Copy Icon & Control File
+          cp "$ICON_PATH" deb_pkg/usr/share/icons/hicolor/512x512/apps/mangatan.png
           
           cat > deb_pkg/DEBIAN/control <<EOF
           Package: mangatan
@@ -245,13 +282,12 @@ jobs:
           dpkg-deb --build deb_pkg output/mangatan_${CLEAN_VERSION}_${DEB_ARCH}.deb
 
           # --- 2. BUILD TAR.GZ (FLAT STRUCTURE) ---
+          # This remains flat so the self-updater can find the binary easily
           mkdir -p tar_staging
-          # Copy directly to root of staging
           cp "$BINARY_PATH" tar_staging/mangatan
           chmod +x tar_staging/mangatan
           
           cd tar_staging
-          # Create tar containing just the file
           tar -czvf ../output/mangatan-${{ matrix.arch_name }}.tar.gz mangatan
           cd ..
 

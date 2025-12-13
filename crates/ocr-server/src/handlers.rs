@@ -1,8 +1,8 @@
-use std::{collections::hash_map::Entry, fs, sync::atomic::Ordering};
+use std::{collections::hash_map::Entry, sync::atomic::Ordering};
 
 use axum::{
     Json,
-    extract::{Multipart, Query, State},
+    extract::{Query, State},
     http::StatusCode,
 };
 use serde::Deserialize;
@@ -183,8 +183,8 @@ pub async fn import_cache_handler(
     {
         let mut cache = state.cache.write().expect("lock");
         for (k, v) in data {
-            if !cache.contains_key(&k) {
-                cache.insert(k, v);
+            if let Entry::Vacant(e) = cache.entry(k) {
+                e.insert(v);
                 added += 1;
             }
         }

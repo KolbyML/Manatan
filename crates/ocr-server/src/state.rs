@@ -1,5 +1,5 @@
 use std::{
-    collections::{HashMap, HashSet},
+    collections::HashMap,
     fs,
     io::Write, // Added Write trait
     path::PathBuf,
