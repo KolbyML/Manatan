@@ -37,7 +37,7 @@ https://github.com/user-attachments/assets/38c63c86-289d-45a4-ba85-e29f1b812ceb
     * *Please wait ~30 seconds for the initial setup to finish. Reload the page to access the library.*
 5.  **Adding Sources:**
     * Go to **Settings** > **Browse** > **Extension repositories** > **Add Repository**.
-    * Paste a valid Suwayomi `index.min.json` extension repository URL (search "Suwayomi extension repos" on Google to find one) and click **OK**.
+    * Paste a valid Suwayomi `index.min.json` extension repository URL (search "mihon extension repos" on Google to find one) and click **OK**.
 6.  **Installing Extensions:**
     * Go to **"Browse"** on the left sidebar, then the **"Extensions"** tab.
     * Click **"Install"** on your desired source.
