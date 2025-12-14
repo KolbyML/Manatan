@@ -66,7 +66,28 @@ jobs:
 
       - name: Build APK
         working-directory: bin/mangatan_android
-        run: cargo apk build --release
+        run: |
+          # 1. Locate the NDK (Try environment variable, fallback to known path from your logs)
+          NDK_ROOT=${ANDROID_NDK_HOME}
+          if [ -z "$NDK_ROOT" ]; then
+            # Fallback based on your error logs
+            NDK_ROOT=$(ls -d /usr/local/lib/android/sdk/ndk/* | sort -V | tail -n1)
+          fi
+          echo "Using NDK at: $NDK_ROOT"
+
+          # 2. Define the path to LLVM binaries
+          TOOLCHAIN_BIN="$NDK_ROOT/toolchains/llvm/prebuilt/linux-x86_64/bin"
+
+          # 3. Export specific variables to force OpenSSL to use LLVM tools
+          export RANLIB="$TOOLCHAIN_BIN/llvm-ranlib"
+          export AR="$TOOLCHAIN_BIN/llvm-ar"
+          export CC="$TOOLCHAIN_BIN/aarch64-linux-android30-clang"
+          export CXX="$TOOLCHAIN_BIN/aarch64-linux-android30-clang++"
+          
+          echo "RANLIB set to: $RANLIB"
+
+          # 4. Run the build
+          cargo apk build --release
 
       - name: Sign APK
         id: sign_app
