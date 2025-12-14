@@ -2,15 +2,6 @@
 
 **The easiest way to read manga with instant OCR lookup.** *No scripts, no complex setup—just download and read.*
 
----
-
-### 🖥️ Supported Platforms
-| Windows | Linux | macOS | Android | iOS |
-| :---: | :---: | :---: | :---: | :---: |
-| ✅ | ✅ | ✅ | ✅ | 🚧 (Coming Soon) |
-
----
-
 Discord Server: https://discord.gg/tDAtpPN8KK
 
 ## ✨ Why Mangatan?
@@ -22,6 +13,11 @@ Traditional setups for reading manga with Japanese lookup (OCR) can be complicat
 * **Built-in OCR:** Just hover over Japanese text to get instant translations and dictionary lookups.
 * **Cross-Platform:** Run the exact same interface on your PC, Mac, or Android phone.
 * **Browser Interface:** Uses the familiar [Suwayomi](https://github.com/Suwayomi/Suwayomi-Server) interface in your favorite web browser.
+
+### 🖥️ Supported Platforms
+| Windows | Linux | macOS | Android | iOS |
+| :---: | :---: | :---: | :---: | :---: |
+| ✅ | ✅ | ✅ | ✅ | 🚧 (Coming Soon) |
 
 ## 🚀 Getting Started
 
