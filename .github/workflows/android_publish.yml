@@ -117,32 +117,38 @@ jobs:
           echo "✅ Copied to signing_stage/mangatan-unsigned.apk"
 
       - name: Sign APK Manually
+        env:
+          SIGNING_KEY_BASE64: ${{ secrets.ANDROID_SIGNING_KEY }}
+          KEY_STORE_PASSWORD: ${{ secrets.ANDROID_KEY_STORE_PASSWORD }}
+          KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
+          ALIAS: mangatan
         run: |
-          # 1. Decode the Keystore from Secrets
-          echo "${{ secrets.ANDROID_SIGNING_KEY }}" | base64 --decode > release.keystore
+          echo "🔐 Decoding Keystore..."
+          # --ignore-garbage ensures newlines/spaces in the secret don't break the file
+          echo "$SIGNING_KEY_BASE64" | base64 -d --ignore-garbage > release.keystore
 
-          # 2. Define Build Tools Path (We know 30.0.3 is installed)
+          # Debug: Check if keystore is readable (prints 'KeyStore type: PKCS12' if valid)
+          keytool -list -keystore release.keystore -storepass "$KEY_STORE_PASSWORD" -alias "$ALIAS" || {
+             echo "❌ ERROR: Keystore is corrupt or password is wrong."
+             exit 1
+          }
+          
+          echo "✅ Keystore verified successfully."
+
           BUILD_TOOLS_PATH="$ANDROID_HOME/build-tools/30.0.3"
           
-          echo "Using Build Tools at: $BUILD_TOOLS_PATH"
-
-          # 3. Zipalign the APK (Optimizes layout)
-          # Input: signing_stage/mangatan-unsigned.apk
-          # Output: mangatan-aligned.apk
+          echo "📐 Aligning APK..."
           "$BUILD_TOOLS_PATH/zipalign" -v -p 4 signing_stage/mangatan-unsigned.apk mangatan-aligned.apk
           
-          # 4. Sign the APK (Applies the signature)
-          # Input: mangatan-aligned.apk
-          # Output: mangatan-android-signed.apk
+          echo "✍️ Signing APK..."
           "$BUILD_TOOLS_PATH/apksigner" sign \
             --ks release.keystore \
-            --ks-pass pass:${{ secrets.ANDROID_KEY_STORE_PASSWORD }} \
-            --ks-key-alias mangatan \
-            --key-pass pass:${{ secrets.ANDROID_KEY_PASSWORD }} \
+            --ks-pass pass:"$KEY_STORE_PASSWORD" \
+            --ks-key-alias "$ALIAS" \
+            --key-pass pass:"$KEY_PASSWORD" \
             --out mangatan-android-signed.apk \
             mangatan-aligned.apk
             
-          # 5. Verify Signature (Optional check)
           "$BUILD_TOOLS_PATH/apksigner" verify mangatan-android-signed.apk
 
       - name: Rename Artifact
