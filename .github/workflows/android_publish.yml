@@ -116,15 +116,34 @@ jobs:
           cp "$APK_PATH" signing_stage/mangatan-unsigned.apk
           echo "✅ Copied to signing_stage/mangatan-unsigned.apk"
 
-      - name: Sign APK
-        id: sign_app
-        uses: r0adkll/sign-android-release@v1
-        with:
-          releaseDirectory: signing_stage
-          signingKeyBase64: ${{ secrets.ANDROID_SIGNING_KEY }}
-          alias: ${{ secrets.ANDROID_KEY_ALIAS }}
-          keyStorePassword: ${{ secrets.ANDROID_KEY_STORE_PASSWORD }}
-          keyPassword: ${{ secrets.ANDROID_KEY_PASSWORD }}
+      - name: Sign APK Manually
+        run: |
+          # 1. Decode the Keystore from Secrets
+          echo "${{ secrets.ANDROID_SIGNING_KEY }}" | base64 --decode > release.keystore
+
+          # 2. Define Build Tools Path (We know 30.0.3 is installed)
+          BUILD_TOOLS_PATH="$ANDROID_HOME/build-tools/30.0.3"
+          
+          echo "Using Build Tools at: $BUILD_TOOLS_PATH"
+
+          # 3. Zipalign the APK (Optimizes layout)
+          # Input: signing_stage/mangatan-unsigned.apk
+          # Output: mangatan-aligned.apk
+          "$BUILD_TOOLS_PATH/zipalign" -v -p 4 signing_stage/mangatan-unsigned.apk mangatan-aligned.apk
+          
+          # 4. Sign the APK (Applies the signature)
+          # Input: mangatan-aligned.apk
+          # Output: mangatan-android-signed.apk
+          "$BUILD_TOOLS_PATH/apksigner" sign \
+            --ks release.keystore \
+            --ks-pass pass:${{ secrets.ANDROID_KEY_STORE_PASSWORD }} \
+            --ks-key-alias mangatan \
+            --key-pass pass:${{ secrets.ANDROID_KEY_PASSWORD }} \
+            --out mangatan-android-signed.apk \
+            mangatan-aligned.apk
+            
+          # 5. Verify Signature (Optional check)
+          "$BUILD_TOOLS_PATH/apksigner" verify mangatan-android-signed.apk
 
       - name: Rename Artifact
         run: |
