@@ -14,7 +14,7 @@ autobins = false
 package = "com.mangatan.app"
 label = "Mangatan"
 min_sdk_version = 23
-target_sdk_version = 28 
+target_sdk_version = 26 
 build_targets = ["aarch64-linux-android"]
 assets = "assets"
 
