@@ -39,6 +39,13 @@ name = "android.permission.MANAGE_EXTERNAL_STORAGE"
 [package.metadata.android.application]
 allow_native_heap_pointer_tagging = false
 request_legacy_external_storage = true
+debuggable = true
+
+[profile.release]
+debug = true         
+strip = false
+lto = "thin"      
+codegen-units = 1
 
 [lib]
 crate-type = ["cdylib"]

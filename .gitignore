@@ -147,6 +147,7 @@ bin/mangatan/resources/Suwayomi-Server.jar
 bin/mangatan/resources/jre_bundle.zip
 bin/mangatan_android/assets/*
 bin/mangatan_ios/.build/*
+bin/mangatan_android/binary_cache/*
 target
 .DS_Store
 jre_bundle
