@@ -212,6 +212,9 @@ fn android_main(app: AndroidApp) {
 
     ensure_battery_unrestricted(&app);
     check_and_request_permissions(&app);
+    acquire_wifi_lock(&app);
+    post_notification(&app);
+    spawn_notification_retry_logic(app.clone());
 
     let app_bg = app.clone();
     let files_dir = app.internal_data_path().expect("Failed to get data path");
@@ -649,12 +652,38 @@ fn start_background_services(app: AndroidApp, files_dir: PathBuf) {
         let tmp_opt = CString::new(format!("-Djava.io.tmpdir={}", tmp_dir.display())).unwrap();
         let ipv4_opt = CString::new("-Djava.net.preferIPv4Stack=true").unwrap();
         let no_ipv6_opt = CString::new("-Djava.net.preferIPv6Addresses=false").unwrap();
-        let xint_opt = CString::new("-Xint").unwrap();
-        let no_oops_opt = CString::new("-XX:-UseCompressedOops").unwrap();
+        let xmx_opt = CString::new("-Xmx512m").unwrap();
+        let xms_opt = CString::new("-Xms128m").unwrap();
+        let tiered_opt = CString::new("-XX:TieredStopAtLevel=1").unwrap();
+        let no_tray =
+            CString::new("-Dsuwayomi.tachidesk.config.server.systemTrayEnabled=false").unwrap();
+        let initialOpenInBrowserEnabled =
+            CString::new("-Dsuwayomi.tachidesk.config.server.initialOpenInBrowserEnabled=false")
+                .unwrap();
 
         let _ = std::env::set_current_dir(&tachidesk_data);
 
         let mut options = vec![
+            jni::sys::JavaVMOption {
+                optionString: no_tray.as_ptr() as *mut _,
+                extraInfo: std::ptr::null_mut(),
+            },
+            jni::sys::JavaVMOption {
+                optionString: initialOpenInBrowserEnabled.as_ptr() as *mut _,
+                extraInfo: std::ptr::null_mut(),
+            },
+            jni::sys::JavaVMOption {
+                optionString: xmx_opt.as_ptr() as *mut _,
+                extraInfo: std::ptr::null_mut(),
+            },
+            jni::sys::JavaVMOption {
+                optionString: xms_opt.as_ptr() as *mut _,
+                extraInfo: std::ptr::null_mut(),
+            },
+            jni::sys::JavaVMOption {
+                optionString: tiered_opt.as_ptr() as *mut _,
+                extraInfo: std::ptr::null_mut(),
+            },
             jni::sys::JavaVMOption {
                 optionString: classpath_opt.as_ptr() as *mut _,
                 extraInfo: std::ptr::null_mut(),
@@ -681,14 +710,6 @@ fn start_background_services(app: AndroidApp, files_dir: PathBuf) {
             },
             jni::sys::JavaVMOption {
                 optionString: no_ipv6_opt.as_ptr() as *mut _,
-                extraInfo: std::ptr::null_mut(),
-            },
-            jni::sys::JavaVMOption {
-                optionString: xint_opt.as_ptr() as *mut _,
-                extraInfo: std::ptr::null_mut(),
-            },
-            jni::sys::JavaVMOption {
-                optionString: no_oops_opt.as_ptr() as *mut _,
                 extraInfo: std::ptr::null_mut(),
             },
         ];
@@ -1011,6 +1032,46 @@ fn check_and_request_permissions(app: &AndroidApp) {
 
     info!("Detected Android SDK: {}", sdk_int);
 
+    if sdk_int >= 33 {
+        let notif_perm = env
+            .new_string("android.permission.POST_NOTIFICATIONS")
+            .unwrap();
+
+        let check_res = env
+            .call_method(
+                &context,
+                "checkSelfPermission",
+                "(Ljava/lang/String;)I",
+                &[JValue::Object(&notif_perm)],
+            )
+            .unwrap()
+            .i()
+            .unwrap();
+
+        if check_res != 0 {
+            // 0 = PERMISSION_GRANTED, -1 = PERMISSION_DENIED
+            info!("Requesting Notification Permissions (Android 13+)...");
+
+            let string_cls = env.find_class("java/lang/String").unwrap();
+            let perms_array = env
+                .new_object_array(1, string_cls, JObject::null())
+                .unwrap();
+
+            env.set_object_array_element(&perms_array, 0, notif_perm)
+                .unwrap();
+
+            // Request code 102 for notifications
+            let _ = env.call_method(
+                &context,
+                "requestPermissions",
+                "([Ljava/lang/String;I)V",
+                &[JValue::Object(&perms_array), JValue::Int(102)],
+            );
+        } else {
+            info!("Notification permissions already granted.");
+        }
+    }
+
     if sdk_int >= 30 {
         // --- Android 11+ (SDK 30+) Logic: Manage All Files ---
         let env_cls = env.find_class("android/os/Environment").unwrap();
@@ -1117,4 +1178,206 @@ fn check_and_request_permissions(app: &AndroidApp) {
             info!("Legacy Storage Permissions already granted.");
         }
     }
+}
+
+fn post_notification(app: &AndroidApp) {
+    use jni::objects::{JObject, JValue};
+    let vm_ptr = app.vm_as_ptr() as *mut jni::sys::JavaVM;
+    let vm = unsafe { JavaVM::from_raw(vm_ptr).unwrap() };
+    let mut env = vm.attach_current_thread().unwrap();
+
+    let activity_ptr = app.activity_as_ptr() as jni::sys::jobject;
+    let context = unsafe { JObject::from_raw(activity_ptr) };
+
+    let channel_id = env.new_string("mangatan_server_channel").unwrap();
+    let channel_name = env.new_string("Mangatan Server").unwrap();
+
+    // 1. Create Notification Channel (Required for Android 8+)
+    let notif_manager_cls = env.find_class("android/app/NotificationManager").unwrap();
+    let importance_low = 2; // IMPORTANCE_LOW (No sound, but visible)
+
+    let channel_cls = env.find_class("android/app/NotificationChannel").unwrap();
+    let channel = env
+        .new_object(
+            &channel_cls,
+            "(Ljava/lang/String;Ljava/lang/CharSequence;I)V",
+            &[
+                JValue::Object(&channel_id),
+                JValue::Object(&channel_name),
+                JValue::Int(importance_low),
+            ],
+        )
+        .unwrap();
+
+    let notif_service_str = env.new_string("notification").unwrap();
+    let notif_manager = env
+        .call_method(
+            &context,
+            "getSystemService",
+            "(Ljava/lang/String;)Ljava/lang/Object;",
+            &[JValue::Object(&notif_service_str)],
+        )
+        .unwrap()
+        .l()
+        .unwrap();
+
+    let _ = env
+        .call_method(
+            &notif_manager,
+            "createNotificationChannel",
+            "(Landroid/app/NotificationChannel;)V",
+            &[JValue::Object(&channel)],
+        )
+        .unwrap();
+
+    // 2. Build Notification
+    let builder_cls = env.find_class("android/app/Notification$Builder").unwrap();
+    let builder = env
+        .new_object(
+            &builder_cls,
+            "(Landroid/content/Context;Ljava/lang/String;)V",
+            &[JValue::Object(&context), JValue::Object(&channel_id)],
+        )
+        .unwrap();
+
+    let title = env.new_string("Mangatan Server Running").unwrap();
+    let text = env.new_string("Tap to return to app").unwrap();
+    let icon_id = 17301659; // android.R.drawable.ic_dialog_info (Generic icon)
+
+    let _ = env
+        .call_method(
+            &builder,
+            "setContentTitle",
+            "(Ljava/lang/CharSequence;)Landroid/app/Notification$Builder;",
+            &[JValue::Object(&title)],
+        )
+        .unwrap();
+    let _ = env
+        .call_method(
+            &builder,
+            "setContentText",
+            "(Ljava/lang/CharSequence;)Landroid/app/Notification$Builder;",
+            &[JValue::Object(&text)],
+        )
+        .unwrap();
+    let _ = env
+        .call_method(
+            &builder,
+            "setSmallIcon",
+            "(I)Landroid/app/Notification$Builder;",
+            &[JValue::Int(icon_id)],
+        )
+        .unwrap();
+    let _ = env
+        .call_method(
+            &builder,
+            "setOngoing",
+            "(Z)Landroid/app/Notification$Builder;",
+            &[JValue::Bool(1)],
+        )
+        .unwrap();
+
+    let notification = env
+        .call_method(&builder, "build", "()Landroid/app/Notification;", &[])
+        .unwrap()
+        .l()
+        .unwrap();
+
+    // 3. Show it
+    let _ = env
+        .call_method(
+            &notif_manager,
+            "notify",
+            "(ILandroid/app/Notification;)V",
+            &[JValue::Int(1), JValue::Object(&notification)],
+        )
+        .unwrap();
+
+    info!("✅ Permanent Notification Posted");
+}
+
+fn acquire_wifi_lock(app: &AndroidApp) {
+    use jni::objects::{JObject, JValue};
+
+    info!("Acquiring WifiLock...");
+    let vm_ptr = app.vm_as_ptr() as *mut jni::sys::JavaVM;
+    let vm = unsafe { JavaVM::from_raw(vm_ptr).unwrap() };
+    let mut env = vm.attach_current_thread().unwrap();
+
+    let activity_ptr = app.activity_as_ptr() as jni::sys::jobject;
+    let context = unsafe { JObject::from_raw(activity_ptr) };
+
+    // 1. Get WifiManager
+    let wifi_service_str = env.new_string("wifi").unwrap();
+    let wifi_manager = env
+        .call_method(
+            &context,
+            "getSystemService",
+            "(Ljava/lang/String;)Ljava/lang/Object;",
+            &[JValue::Object(&wifi_service_str)],
+        )
+        .unwrap()
+        .l()
+        .unwrap();
+
+    // 2. Create Lock (Mode 3 = WIFI_MODE_FULL_HIGH_PERF)
+    // This keeps the radio active and high performance even when screen is off.
+    let tag = env.new_string("Mangatan:WifiLock").unwrap();
+    let wifi_lock = env
+        .call_method(
+            &wifi_manager,
+            "createWifiLock",
+            "(ILjava/lang/String;)Landroid/net/wifi/WifiManager$WifiLock;",
+            &[JValue::Int(3), JValue::Object(&tag)],
+        )
+        .unwrap()
+        .l()
+        .unwrap();
+
+    // 3. Acquire
+    let _ = env.call_method(&wifi_lock, "acquire", "()V", &[]);
+
+    // 4. Release Reference (Java keeps the lock object alive)
+    let _ = env.new_global_ref(&wifi_lock).unwrap();
+
+    info!("✅ WifiLock Acquired!");
+}
+
+fn spawn_notification_retry_logic(app: AndroidApp) {
+    thread::spawn(move || {
+        let vm_ptr = app.vm_as_ptr() as *mut jni::sys::JavaVM;
+        let vm = unsafe { JavaVM::from_raw(vm_ptr).unwrap() };
+
+        for _ in 0..20 {
+            thread::sleep(Duration::from_secs(5));
+
+            let mut env = vm.attach_current_thread().unwrap();
+            let context = unsafe { JObject::from_raw(app.activity_as_ptr() as jobject) };
+
+            // Check if we have permission now
+            let notif_perm = env
+                .new_string("android.permission.POST_NOTIFICATIONS")
+                .unwrap();
+            let check_res = env
+                .call_method(
+                    &context,
+                    "checkSelfPermission",
+                    "(Ljava/lang/String;)I",
+                    &[JValue::Object(&notif_perm)],
+                )
+                .unwrap()
+                .i()
+                .unwrap();
+
+            if check_res == 0 {
+                // Permission Granted! Post and exit thread.
+                info!("Permission granted detected. Posting notification now.");
+                post_notification(&app);
+                return;
+            } else {
+                info!("Waiting for user to grant notification permission...");
+            }
+        }
+        info!("Stopped waiting for notification permission.");
+    });
 }

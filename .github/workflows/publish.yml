@@ -376,7 +376,7 @@ jobs:
           targets: aarch64-linux-android
 
       - name: Install cargo-apk
-        run: cargo install cargo-apk
+        run: cargo install --git https://github.com/kolbyml/cargo-apk
 
       - name: Set up Node.js
         uses: actions/setup-node@v4
@@ -581,7 +581,7 @@ jobs:
         uses: softprops/action-gh-release@v2
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
-          draft: true
+          draft: false
           body_path: RELEASE_NOTES.md
           files: final_release/*
 

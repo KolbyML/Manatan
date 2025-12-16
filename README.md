@@ -86,7 +86,7 @@ rustup update
 
 ```bash
 rustup target add aarch64-linux-android
-cargo install cargo-apk
+cargo install --git https://github.com/kolbyml/cargo-apk
 ```
 
 Install Android Studio to get Android SDK https://developer.android.com/studio
