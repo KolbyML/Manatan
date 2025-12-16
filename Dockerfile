@@ -45,4 +45,8 @@ EXPOSE 4568
 # Default to headless mode
 ENV MANGATAN_HEADLESS=true
 
+# Ensure UTF-8 filesystem encoding for Java
+ENV LANG=C.UTF-8
+ENV LC_ALL=C.UTF-8
+
 ENTRYPOINT ["/app/mangatan"]
