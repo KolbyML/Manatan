@@ -581,7 +581,7 @@ jobs:
         uses: softprops/action-gh-release@v2
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
-          draft: true
+          draft: false
           body_path: RELEASE_NOTES.md
           files: final_release/*
 
