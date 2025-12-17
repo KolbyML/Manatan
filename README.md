@@ -66,21 +66,26 @@ To fully clear cache and data from previous installs, delete the following folde
 
 ## Development
 
-### Prerequisites
+We have detailed build instructions for each platform. Please refer to the specific documentation below to set up your environment:
 
-#### Windows
-```ps
-winget install Microsoft.OpenJDK.21 DenoLand.Deno Rustlang.Rustup
-```
+* **Windows:** [Building on Windows (WSL2)](docs/build/windows.md)
+* **macOS:** [Building on macOS](docs/build/mac.md)
+* **Linux:** [Building on Linux](docs/build/linux.md)
+* **Android:** [Building for Android](docs/build/android.md)
 
-#### MacOS
+### Quick Start (General)
 
-```bash
-brew install deno nvm yarn java rustup
-nvm install 22.12.0
-nvm use 22.12.0
-rustup update
-```
+1.  **Clone the repository:**
+    ```bash
+    git clone --recursive [https://github.com/KolbyML/Mangatan.git](https://github.com/KolbyML/Mangatan.git)
+    cd Mangatan
+    ```
+
+2.  **Run in Development Mode:**
+    Assuming you have the [prerequisites installed](docs/build/linux.md), you can use the Makefile to setup dependencies and run the app:
+    ```bash
+    make dev-embedded
+    ```
 
 ### Android APK Development
 
@@ -119,24 +124,9 @@ adb shell run-as com.mangatan.app ls -la files
 adb forward tcp:4567 tcp:4567
 ```
 
+Remove the forwards
+```
 adb forward --remove-all
-
-### Setup Environment
-
-To clone the repo with all submodules:
-```
-git clone --recursive https://github.com/KolbyML/Mangatan.git
-```
-
-#### If you clone without --recursive
-```
-git submodule update --init --recursive
-```
-
-### Run dev mode
-    
-```bash
-make dev
 ```
 
 ## 📚 References and acknowledgements
