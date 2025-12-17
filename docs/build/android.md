@@ -68,7 +68,7 @@ sdkmanager "platforms;android-30" "build-tools;30.0.3" "ndk;26.1.10909125"
 
 
 
-### 4. Setup Rust & cargo-apk
+### 4. Setup Rust & cargo-apk2
 
 1. **Install Rust** (if you haven't already):
 ```bash
@@ -86,10 +86,10 @@ rustup target add aarch64-linux-android
 ```
 
 
-3. **Install cargo-apk:**
+3. **Install cargo-apk2:**
 **Important:** The CI installs a specific fork/version from git. You should do the same to avoid compatibility issues.
 ```bash
-cargo install --git https://github.com/kolbyml/cargo-apk
+cargo install --git https://github.com/kolbyml/cargo-apk2
 
 ```
 
@@ -119,7 +119,7 @@ cd bin/mangatan_android && cargo apk run
 
 * **Emulator:** If using an emulator, it likely uses x86_64 architecture. You must run `rustup target add x86_64-linux-android` and run with `--target x86_64-linux-android`.
 * **Signing:** `cargo apk run` automatically uses a debug keystore. You do **not** need to perform the "Dummy Keystore" steps from the CI (those are for creating a signed Release APK).
-* **NDK Errors:** If `cargo-apk` complains about the NDK, ensure `ANDROID_NDK_HOME` is set correctly to the *exact* folder version (e.g., `.../ndk/26.1.10909125`).
+* **NDK Errors:** If `cargo-apk2` complains about the NDK, ensure `ANDROID_NDK_HOME` is set correctly to the *exact* folder version (e.g., `.../ndk/26.1.10909125`).
 
 #### Log App
 

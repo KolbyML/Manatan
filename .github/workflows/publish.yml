@@ -375,8 +375,8 @@ jobs:
         with:
           targets: aarch64-linux-android
 
-      - name: Install cargo-apk
-        run: cargo install --git https://github.com/kolbyml/cargo-apk
+      - name: Install cargo-apk2
+        run: cargo install --git https://github.com/kolbyml/cargo-apk2
 
       - name: Set up Node.js
         uses: actions/setup-node@v4
