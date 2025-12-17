@@ -266,8 +266,20 @@ fn android_main(app: AndroidApp) {
         });
     });
 
+    let sdk_version = get_android_sdk_version(&app);
+    info!("Detected Android SDK Version: {}", sdk_version);
+
     let app_gui = app.clone();
     let mut options = eframe::NativeOptions::default();
+    
+    if sdk_version <= 29 {
+        info!("SDK <= 29: Forcing OpenGL (GLES) backend for compatibility.");
+        options.wgpu_options.supported_backends = eframe::wgpu::Backends::GL;
+    } else {
+        info!("SDK > 29: Using default backend (Vulkan/Primary).");
+        options.wgpu_options.supported_backends = eframe::wgpu::Backends::PRIMARY;
+    }
+
     options.event_loop_builder = Some(Box::new(move |builder| {
         builder.with_android_app(app_gui);
     }));
@@ -1001,6 +1013,21 @@ fn get_package_name(env: &mut jni::JNIEnv, context: &JObject) -> jni::errors::Re
     let rust_string: String = env.get_string(&package_jstr)?.into();
 
     Ok(rust_string)
+}
+
+fn get_android_sdk_version(app: &AndroidApp) -> i32 {
+    let vm_ptr = app.vm_as_ptr() as *mut jni::sys::JavaVM;
+    let vm = unsafe { JavaVM::from_raw(vm_ptr).unwrap() };
+    let mut env = vm.attach_current_thread().unwrap();
+
+    let version_cls = env.find_class("android/os/Build$VERSION").expect("Failed to find Build$VERSION");
+    let sdk_int = env
+        .get_static_field(version_cls, "SDK_INT", "I")
+        .expect("Failed to get SDK_INT")
+        .i()
+        .unwrap_or(0);
+
+    sdk_int
 }
 
 fn check_and_request_permissions(app: &AndroidApp) {
