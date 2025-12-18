@@ -82,6 +82,64 @@ impl<'a> MakeWriter<'a> for GuiMakeWriter {
     }
 }
 
+fn start_java_service(app: &AndroidApp) {
+    let vm_ptr = app.vm_as_ptr() as *mut jni::sys::JavaVM;
+    let vm = unsafe { JavaVM::from_raw(vm_ptr).unwrap() };
+    let mut env = vm.attach_current_thread().unwrap();
+    
+    let activity = unsafe { JObject::from_raw(app.activity_as_ptr() as jobject) };
+
+    // --- THE FIX: Get the App's ClassLoader ---
+    // We cannot use env.find_class() for custom classes on a background thread.
+    // We must ask the Activity for its ClassLoader.
+    let class_loader = env.call_method(
+        &activity, 
+        "getClassLoader", 
+        "()Ljava/lang/ClassLoader;", 
+        &[]
+    ).unwrap().l().unwrap();
+
+    // loadClass uses DOT notation: "com.mangatan.app.MainService"
+    let service_class_name = env.new_string("com.mangatan.app.MainService").unwrap();
+    
+    info!("Loading MainService class via ClassLoader...");
+    let cls_main_service = env.call_method(
+        &class_loader,
+        "loadClass",
+        "(Ljava/lang/String;)Ljava/lang/Class;",
+        &[JValue::Object(&service_class_name)],
+    ).unwrap().l().unwrap();
+
+    // Intent is a SYSTEM class, so find_class("android/content/Intent") works fine
+    let cls_intent = env.find_class("android/content/Intent").unwrap();
+    
+    // Create Intent: new Intent(activity, MainService.class)
+    let intent = env.new_object(
+        &cls_intent,
+        "(Landroid/content/Context;Ljava/lang/Class;)V",
+        &[JValue::Object(&activity), JValue::Object(&cls_main_service)],
+    ).unwrap();
+
+    // Determine starting method based on SDK
+    let sdk_int = get_android_sdk_version(app);
+    let method_name = if sdk_int >= 26 { "startForegroundService" } else { "startService" };
+
+    info!("Executing activity.{}...", method_name);
+    match env.call_method(
+        &activity,
+        method_name,
+        "(Landroid/content/Intent;)Landroid/content/ComponentName;",
+        &[JValue::Object(&intent)],
+    ) {
+        Ok(_) => info!("✅ Foreground Service start signal sent."),
+        Err(e) => {
+            error!("❌ Failed to start service: {:?}", e);
+            let _ = env.exception_describe();
+            let _ = env.exception_clear();
+        }
+    }
+}
+
 fn init_tracing() {
     LogTracer::init().expect("Failed to set logger");
     let filter =
@@ -210,6 +268,8 @@ fn android_main(app: AndroidApp) {
 
     info!("Starting Mangatan...");
 
+
+    start_java_service(&app);
     ensure_battery_unrestricted(&app);
     check_and_request_permissions(&app);
     acquire_wifi_lock(&app);
