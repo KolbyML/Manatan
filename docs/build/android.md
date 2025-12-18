@@ -109,7 +109,7 @@ Now you can switch to the Android crate directory and run it.
 make android_webui
 make download_android_jar
 make download_android_jre
-cd bin/mangatan_android && cargo apk run
+cd bin/mangatan_android && cargo apk2 run
 
 ```
 
@@ -118,7 +118,7 @@ cd bin/mangatan_android && cargo apk run
 **Troubleshooting Notes:**
 
 * **Emulator:** If using an emulator, it likely uses x86_64 architecture. You must run `rustup target add x86_64-linux-android` and run with `--target x86_64-linux-android`.
-* **Signing:** `cargo apk run` automatically uses a debug keystore. You do **not** need to perform the "Dummy Keystore" steps from the CI (those are for creating a signed Release APK).
+* **Signing:** `cargo apk2 run` automatically uses a debug keystore. You do **not** need to perform the "Dummy Keystore" steps from the CI (those are for creating a signed Release APK).
 * **NDK Errors:** If `cargo-apk2` complains about the NDK, ensure `ANDROID_NDK_HOME` is set correctly to the *exact* folder version (e.g., `.../ndk/26.1.10909125`).
 
 #### Log App

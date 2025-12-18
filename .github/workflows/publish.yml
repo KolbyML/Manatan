@@ -434,7 +434,7 @@ jobs:
           export CC="$TOOLCHAIN_BIN/aarch64-linux-android30-clang"
           export CXX="$TOOLCHAIN_BIN/aarch64-linux-android30-clang++"
           
-          cargo apk build --release
+          cargo apk2 build --release
 
       - name: Locate and Stage APK
         run: |
