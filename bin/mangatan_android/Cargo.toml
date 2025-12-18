@@ -15,7 +15,7 @@ package = "com.mangatan.app"
 label = "Mangatan"
 min_sdk_version = 23
 target_sdk_version = 34 # Upgraded to support newer foreground service rules
-build_targets = ["aarch64-linux-android"]
+build_targets = ["Arm64V8a"]
 assets = "assets"
 java_sources = "java" # Tell cargo-apk2 where the .java files are
 
