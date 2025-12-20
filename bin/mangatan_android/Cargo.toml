@@ -59,7 +59,7 @@ request_legacy_external_storage = true
 has_code = true
 
 [[package.metadata.android.application.activity]]
-name = "android.app.NativeActivity"
+name = ".MangatanActivity"
 label = "Mangatan"
 config_changes = "orientation|keyboardHidden|screenSize"
 exported = true
