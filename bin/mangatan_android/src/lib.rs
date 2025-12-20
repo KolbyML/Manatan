@@ -192,15 +192,11 @@ type JniCreateJavaVM = unsafe extern "system" fn(
 
 struct MangatanApp {
     server_ready: Arc<AtomicBool>,
-    android_app: AndroidApp,
 }
 
 impl MangatanApp {
-    fn new(_cc: &eframe::CreationContext<'_>, server_ready: Arc<AtomicBool>, android_app: AndroidApp) -> Self {
-        Self { 
-            server_ready,
-            android_app,
-        }
+    fn new(_cc: &eframe::CreationContext<'_>, server_ready: Arc<AtomicBool>) -> Self {
+        Self { server_ready }
     }
 }
 
@@ -232,7 +228,6 @@ impl eframe::App for MangatanApp {
                 }
                 ui.add_space(20.0);
 
-                // Open WebUI Button
                 if ui
                     .add(egui::Button::new("Open WebUI").min_size(egui::vec2(200.0, 50.0)))
                     .clicked()
@@ -242,8 +237,6 @@ impl eframe::App for MangatanApp {
                 }
 
                 ui.add_space(10.0);
-                
-                // Discord Button
                 if ui
                     .add(egui::Button::new("Join our Discord").min_size(egui::vec2(200.0, 50.0)))
                     .clicked()
@@ -251,24 +244,7 @@ impl eframe::App for MangatanApp {
                     ctx.open_url(egui::OpenUrl::new_tab("https://discord.gg/tDAtpPN8KK"));
                     info!("User clicked Discord");
                 }
-				
-				ui.add_space(10.0);
-				
-                // --- STOP SERVER BUTTON ---
-                let stop_btn = egui::Button::new(
-                    egui::RichText::new("Stop Server & Exit")
-                        .color(egui::Color32::WHITE)
-                        .strong()
-                )
-                .min_size(egui::vec2(200.0, 50.0))
-                .fill(egui::Color32::from_rgb(200, 50, 50)); // Red background
-
-                if ui.add(stop_btn).clicked() {
-                    info!("User clicked Stop Server");
-                    stop_app_and_server(&self.android_app);
-                }
             });
-
 
             ui.add_space(20.0);
             ui.separator();
@@ -314,10 +290,6 @@ fn android_main(app: AndroidApp) {
     let server_ready = Arc::new(AtomicBool::new(false));
     let server_ready_bg = server_ready.clone();
     let server_ready_gui = server_ready.clone();
-    
-    // Clones for GUI and Winit
-    let app_for_gui = app.clone(); 
-    let app_gui_winit = app.clone();
 
     thread::spawn(move || {
         start_background_services(app_bg, files_dir);
@@ -364,6 +336,7 @@ fn android_main(app: AndroidApp) {
     let sdk_version = get_android_sdk_version(&app);
     info!("Detected Android SDK Version: {}", sdk_version);
 
+    let app_gui = app.clone();
     let mut options = eframe::NativeOptions::default();
 
     if sdk_version <= 29 {
@@ -375,13 +348,13 @@ fn android_main(app: AndroidApp) {
     }
 
     options.event_loop_builder = Some(Box::new(move |builder| {
-        builder.with_android_app(app_gui_winit);
+        builder.with_android_app(app_gui);
     }));
 
     eframe::run_native(
         "Mangatan",
         options,
-        Box::new(move |cc| Ok(Box::new(MangatanApp::new(cc, server_ready_gui, app_for_gui)))),
+        Box::new(move |cc| Ok(Box::new(MangatanApp::new(cc, server_ready_gui)))),
     )
     .unwrap_or_else(|e| {
         error!("GUI Failed to start: {:?}", e);
@@ -895,22 +868,6 @@ fn start_background_services(app: AndroidApp, files_dir: PathBuf) {
             let _ = env.exception_describe();
         }
     }
-}
-
-fn stop_app_and_server(app: &AndroidApp) {
-    info!("Stopping application via JNI...");
-    let vm_ptr = app.vm_as_ptr() as *mut jni::sys::JavaVM;
-    let vm = unsafe { JavaVM::from_raw(vm_ptr).unwrap() };
-    let mut env = vm.attach_current_thread().unwrap();
-
-    // Call System.exit(0)
-    let system_class = env.find_class("java/lang/System").expect("Failed to find System class");
-    let _ = env.call_static_method(
-        system_class,
-        "exit",
-        "(I)V",
-        &[JValue::Int(0)],
-    );
 }
 
 fn install_webui(app: &AndroidApp, target_dir: &Path) -> std::io::Result<()> {
