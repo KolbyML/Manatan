@@ -497,6 +497,7 @@ async fn run_server(
     info!("🌍 Starting Web Interface at http://localhost:4568");
 
     let ocr_router = mangatan_ocr_server::create_router(data_dir.clone());
+    let yomitan_router = mangatan_yomitan_server::create_router(data_dir.clone());
 
     let client = Client::new();
     let cors = CorsLayer::new()
@@ -525,6 +526,7 @@ async fn run_server(
 
     let app = Router::new()
         .nest("/api/ocr", ocr_router)
+        .nest("/api/yomitan", yomitan_router)
         .merge(proxy_router)
         .fallback(serve_react_app)
         .layer(cors);

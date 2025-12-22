@@ -14,22 +14,23 @@ crate-type = ["staticlib"]
 name = "mangatan_ios_backend"
 
 [dependencies]
-axum = { version = "0.8.7", features = ["macros", "multipart", "ws"] }
+axum.workspace = true
 futures = "0.3.30"
 http = "1.1.0"
 jni = { version = "0.21", features = ["invocation"] }
 libc = "0.2"
 libloading = "0.8"
 mangatan-ocr-server.workspace = true
+mangatan-yomitan-server.workspace = true
 mime_guess = "2.0.4"
 reqwest = { version = "0.12.4", features = ["stream", "json"] }
 socket2 = { version = "0.5", features = ["all"] }
 tokio = { version = "1.37", features = ["full"] }
 tokio-tungstenite = { version = "0.21", features = ["rustls-tls-native-roots"] }
-tower-http = { version = "0.5.2", features = ["cors", "fs"] }
+tower-http = { version = "0.5.2", features = ["cors", "fs", "limit"] }
 tracing = "0.1.40"
 tracing-subscriber = { version = "0.3.18", features = ["env-filter"] }
-zip = "0.6"
+zip.workspace = true
 
 [lints]
 workspace = true

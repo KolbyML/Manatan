@@ -124,7 +124,7 @@ async fn start_web_server(
 ) -> Result<(), Box<dyn std::error::Error>> {
     info!("🚀 Initializing Axum Proxy Server on port 4568...");
     let ocr_router = mangatan_ocr_server::create_router(data_dir.clone());
-
+    let yomitan_router = mangatan_yomitan_server::create_router(data_dir.clone());
     let state = AppState {
         client: Client::new(),
         webui_dir: bundle_dir.join("webui"),
@@ -155,6 +155,7 @@ async fn start_web_server(
 
     let app: Router<AppState> = Router::new()
         .nest_service("/api/ocr", ocr_router)
+        .nest_service("/api/yomitan", yomitan_router)
         .merge(proxy_router)
         .fallback(serve_react_app)
         .layer(cors);

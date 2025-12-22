@@ -109,6 +109,21 @@ android_webui: build_webui
 	mkdir -p bin/mangatan_android/assets
 	tar -cf bin/mangatan_android/assets/suwayomi-webui.tar -C Suwayomi-WebUI/build .
 
+.PHONY: ios_webui
+ios_webui: build_webui
+	@echo "Packaging WebUI for iOS..."
+	@# Ensure directory exists
+	mkdir -p bin/mangatan_ios/Mangatan/webui
+	
+	@# Delete everything in target except empty.txt
+	@echo "Cleaning bin/mangatan_ios/Mangatan/webui..."
+	find bin/mangatan_ios/Mangatan/webui -mindepth 1 -maxdepth 1 -not -name 'empty.txt' -exec rm -rf {} +
+	
+	@# Copy build artifacts
+	@echo "Copying new files..."
+	cp -r Suwayomi-WebUI/build/* bin/mangatan_ios/Mangatan/webui/
+	@echo "✅ iOS WebUI updated."
+
 # ---------------------
 
 .PHONY: download_natives

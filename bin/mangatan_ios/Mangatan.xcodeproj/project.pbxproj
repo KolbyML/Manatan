@@ -114,6 +114,7 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = D89E6A202EF738A300F0F89C /* Build configuration list for PBXNativeTarget "Mangatan" */;
 			buildPhases = (
+				D8B1F0D82EF89388005C0001 /* Build webui */,
 				D89E052F2EF7D83A00F0F89C /* Build Rust Backend */,
 				D89E6A042EF738A100F0F89C /* Sources */,
 				D89E6A052EF738A100F0F89C /* Frameworks */,
@@ -195,7 +196,26 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "export PATH=\"/opt/homebrew/bin:/usr/local/bin:$PATH\"\nexport PATH=\"$HOME/.cargo/bin:$PATH\"\n\ncd \"${PROJECT_DIR}/../backend\"\n\n# CLEANSE ENVIRONMENT\nunset SDKROOT\nunset CC\nunset CXX\n\necho \"🦀 Building ONLY ios_backend for $TARGET\"\n#Scargo build -p mangatan_ios_backend --release --target aarch64-apple-ios\n";
+			shellScript = "export PATH=\"/opt/homebrew/bin:/usr/local/bin:$PATH\"\nexport PATH=\"$HOME/.cargo/bin:$PATH\"\n\ncd \"${PROJECT_DIR}/../backend\"\n\n# CLEANSE ENVIRONMENT\nunset SDKROOT\nunset CC\nunset CXX\n\necho \"🦀 Building ONLY ios_backend for $TARGET\"\ncargo build -p mangatan_ios_backend --release --target aarch64-apple-ios\n";
+		};
+		D8B1F0D82EF89388005C0001 /* Build webui */ = {
+			isa = PBXShellScriptBuildPhase;
+			alwaysOutOfDate = 1;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+			);
+			name = "Build webui";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "# Navigate from 'bin/mangatan_ios' up to the Repo Root\ncd \"$SRCROOT/../..\"\n\n# Run the make command\n# Ensure path is set for node/npm/yarn if needed by Make\nexport PATH=\"$PATH:/usr/local/bin:/opt/homebrew/bin\" \n\nmake ios_webui\n";
 		};
 /* End PBXShellScriptBuildPhase section */
 
@@ -219,7 +239,7 @@
 				CURRENT_PROJECT_VERSION = 1;
 				DEAD_CODE_STRIPPING = NO;
 				DEVELOPMENT_TEAM = 4842UP28SQ;
-				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = NO;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = Mangatan/Info.plist;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
@@ -255,7 +275,7 @@
 				CURRENT_PROJECT_VERSION = 1;
 				DEAD_CODE_STRIPPING = NO;
 				DEVELOPMENT_TEAM = 4842UP28SQ;
-				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = NO;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = Mangatan/Info.plist;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
