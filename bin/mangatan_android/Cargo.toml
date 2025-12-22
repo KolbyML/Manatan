@@ -84,7 +84,7 @@ crate-type = ["cdylib"]
 [target.'cfg(target_os = "android")'.dependencies]
 
 android-activity = { version = "0.6", features = ["native-activity"] }
-axum = { version = "0.8.7", features = ["macros", "multipart", "ws"] }
+axum.workspace = true
 # GUI
 eframe = { version = "0.29", default-features = false, features = ["wgpu", "android-native-activity" ] }
 egui = "0.29"

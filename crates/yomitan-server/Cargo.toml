@@ -1,0 +1,30 @@
+[package]
+name = "mangatan-yomitan-server"
+authors.workspace = true
+edition.workspace = true
+keywords.workspace = true
+license.workspace = true
+readme.workspace = true
+repository.workspace = true
+rust-version.workspace = true
+version.workspace = true
+
+[dependencies]
+anyhow.workspace = true 
+axum.workspace = true 
+base64.workspace = true 
+bytes.workspace = true 
+futures.workspace = true
+reqwest.workspace = true 
+serde.workspace = true 
+serde_json .workspace = true 
+tokio.workspace = true 
+tower-http = { version = "0.5.2", features = ["cors", "fs", "limit"] }
+tracing.workspace = true 
+thiserror = "2.0"
+zip.workspace = true
+wordbase-api = { git = "https://github.com/kolbyml/wordbase", rev = "b3a5a825b5afa05d9cd57ce18e24d988f1ab88ca" }
+lindera = { version = "0.43", features = ["unidic", "compress"] }
+
+[lints]
+workspace = true
