@@ -1,3 +1,3 @@
-[submodule "Suwayomi-WebUI"]
-    path = Suwayomi-WebUI
-    url = https://github.com/KolbyML/Suwayomi-WebUI.git
+[submodule "Mangatan-WebUI"]
+    path = Mangatan-WebUI
+    url = https://github.com/KolbyML/Mangatan-WebUI.git

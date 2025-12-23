@@ -52,17 +52,17 @@ lint: fmt clippy sort
 
 .PHONY: clean
 clean:
-	rm -rf bin/mangatan/resources/suwayomi-webui
+	rm -rf bin/mangatan/resources/mangatan-webui
 	rm -rf bin/mangatan/resources/jre_bundle.zip
 	rm -rf bin/mangatan/resources/Suwayomi-Server.jar
 	rm -rf bin/mangatan/resources/natives.zip
-	rm -rf bin/mangatan_android/*
-	rm -f bin/mangatan_android/suwayomi-webui.tar
+	rm -rf bin/mangatan_android/assets/*
+	rm -f bin/mangatan_android/mangatan-webui.tar
 	rm -f jogamp.7z
 	rm -rf temp_natives 
 	rm -f mangatan-linux-*.tar.gz
 	rm -rf jre_bundle
-	rm -rf Suwayomi-WebUI/build
+	rm -rf Mangatan-WebUI/build
 
 .PHONY: clean_rust
 clean_rust:
@@ -93,21 +93,21 @@ build_webui:
 	    echo "Warning: NVM not found. Using system node version:"; \
 	    node -v; \
 	fi; \
-	cd Suwayomi-WebUI && yarn install && yarn build
+	cd Mangatan-WebUI && yarn install && yarn build
 
 .PHONY: desktop_webui
 desktop_webui: build_webui
 	@echo "Installing WebUI for Desktop..."
-	rm -rf bin/mangatan/resources/suwayomi-webui
-	mkdir -p bin/mangatan/resources/suwayomi-webui
-	cp -r Suwayomi-WebUI/build/* bin/mangatan/resources/suwayomi-webui/
+	rm -rf bin/mangatan/resources/mangatan-webui
+	mkdir -p bin/mangatan/resources/mangatan-webui
+	cp -r Mangatan-WebUI/build/* bin/mangatan/resources/mangatan-webui/
 
 .PHONY: android_webui
 android_webui: build_webui
 	@echo "Packaging WebUI for Android..."
-	rm -rf bin/mangatan_android/assets/suwayomi-webui.tar
+	rm -rf bin/mangatan_android/assets/mangatan-webui.tar
 	mkdir -p bin/mangatan_android/assets
-	tar -cf bin/mangatan_android/assets/suwayomi-webui.tar -C Suwayomi-WebUI/build .
+	tar -cf bin/mangatan_android/assets/mangatan-webui.tar -C Mangatan-WebUI/build .
 
 .PHONY: ios_webui
 ios_webui: build_webui
@@ -121,7 +121,7 @@ ios_webui: build_webui
 	
 	@# Copy build artifacts
 	@echo "Copying new files..."
-	cp -r Suwayomi-WebUI/build/* bin/mangatan_ios/Mangatan/webui/
+	cp -r Mangatan-WebUI/build/* bin/mangatan_ios/Mangatan/webui/
 	@echo "✅ iOS WebUI updated."
 
 # ---------------------

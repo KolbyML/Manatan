@@ -47,8 +47,8 @@ jobs:
       run: |
         make download_jar
         make download_natives
-        mkdir -p bin/mangatan/resources/suwayomi-webui
-        touch bin/mangatan/resources/suwayomi-webui/index.html
+        mkdir -p bin/mangatan/resources/mangatan-webui
+        touch bin/mangatan/resources/mangatan-webui/index.html
   
     - name: Run Clippy
       run: |
@@ -89,8 +89,8 @@ jobs:
       run: |
         make download_jar
         make download_natives
-        mkdir -p bin/mangatan/resources/suwayomi-webui
-        touch bin/mangatan/resources/suwayomi-webui/index.html      
+        mkdir -p bin/mangatan/resources/mangatan-webui
+        touch bin/mangatan/resources/mangatan-webui/index.html      
 
     - name: Test
       run: cargo test --release --workspace -- --nocapture

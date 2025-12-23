@@ -139,12 +139,11 @@ vite.config.js.timestamp-*
 vite.config.ts.timestamp-*
 
 */uploads
-bin/mangatan_android/resources/*
-bin/mangatan/resources/suwayomi-webui*
+bin/mangatan_android/assets/*
+bin/mangatan/resources/mangatan-webui*
 bin/mangatan/resources/natives.zip
 bin/mangatan/resources/Suwayomi-Server.jar
 bin/mangatan/resources/jre_bundle.zip
-bin/mangatan_android/assets/*
 bin/mangatan_ios/.build/*
 bin/mangatan_ios/Mangatan/assets/*
 bin/mangatan_ios/Mangatan/lib/*
@@ -153,7 +152,6 @@ bin/mangatan_ios/Mangatan/jar/*
 !bin/mangatan_ios/Mangatan/jar/empty.txt
 bin/mangatan_ios/Mangatan/webui/*
 !bin/mangatan_ios/Mangatan/webui/empty.txt
-bin/mangatan_android/binary_cache/*
 jre_bundle
 temp_natives/*
 jogamp.7z

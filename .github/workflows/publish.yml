@@ -89,19 +89,19 @@ jobs:
       - name: Set up NodeJs
         uses: actions/setup-node@v4
         with:
-          node-version-file: 'Suwayomi-WebUI/package.json'
+          node-version-file: 'Mangatan-WebUI/package.json'
           cache: 'yarn'
-          cache-dependency-path: 'Suwayomi-WebUI/yarn.lock'
+          cache-dependency-path: 'Mangatan-WebUI/yarn.lock'
       - name: Build WebUI Assets
         run: |
-          cd Suwayomi-WebUI
+          cd Mangatan-WebUI
           yarn install --frozen-lockfile
           yarn build
       - name: Upload WebUI Artifact
         uses: actions/upload-artifact@v4
         with:
           name: webui-assets
-          path: Suwayomi-WebUI/build 
+          path: Mangatan-WebUI/build 
 
   # --- JOB 4: Build Mangatan Launcher (Desktop) ---
   build_mangatan:
@@ -205,7 +205,7 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: webui-assets
-          path: bin/mangatan/resources/suwayomi-webui
+          path: bin/mangatan/resources/mangatan-webui
 
       - name: Build Binary
         shell: bash
@@ -383,7 +383,7 @@ jobs:
         with:
           node-version: '22.12.0'
           cache: 'yarn'
-          cache-dependency-path: 'Suwayomi-WebUI/yarn.lock'
+          cache-dependency-path: 'Mangatan-WebUI/yarn.lock'
 
       - name: Prepare Assets (WebUI & Jars)
         run: |

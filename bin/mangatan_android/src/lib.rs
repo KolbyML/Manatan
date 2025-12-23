@@ -869,14 +869,14 @@ fn start_background_services(app: AndroidApp, files_dir: PathBuf) {
 }
 
 fn install_webui(app: &AndroidApp, target_dir: &Path) -> std::io::Result<()> {
-    let filename = CString::new("suwayomi-webui.tar").unwrap();
+    let filename = CString::new("mangatan-webui.tar").unwrap();
 
     let asset = app
         .asset_manager()
         .open(&filename)
         .ok_or(std::io::Error::new(
             std::io::ErrorKind::NotFound,
-            "suwayomi-webui.tar missing in assets",
+            "mangatan-webui.tar missing in assets",
         ))?;
 
     let mut archive = Archive::new(BufReader::new(asset));

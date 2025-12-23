@@ -105,7 +105,7 @@ The following links, repos, companies and projects have been important in the de
 - https://github.com/kaihouguide/Mangatan
 - https://github.com/exn251/Mangatan/
 - https://github.com/Suwayomi/Suwayomi-Server
-- https://github.com/Suwayomi/Suwayomi-WebUI
+- https://github.com/Suwayomi/Mangatan-WebUI
 
 ## Star History
 

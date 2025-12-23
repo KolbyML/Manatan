@@ -63,7 +63,7 @@ static JAR_BYTES: &[u8] = include_bytes!("../resources/Suwayomi-Server.jar");
 static NATIVES_BYTES: &[u8] = include_bytes!("../resources/natives.zip");
 
 #[derive(RustEmbed)]
-#[folder = "resources/suwayomi-webui"]
+#[folder = "resources/mangatan-webui"]
 struct FrontendAssets;
 
 #[derive(Clone, Debug, PartialEq)]
