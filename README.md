@@ -55,6 +55,7 @@ You can also read manga files stored locally on your device. To set up local man
 * Android Internal Storage: Use paths like `/storage/emulated/0/YourFolder/`
 * Android SD Cards: Use `/storage/[SD_CARD_ID]/YourFolder/` where [SD_CARD_ID] is the unique identifier Android assigned to your SD card (you can find this using file manager apps like X-plore)
 * Windows: The default local manga directory is at C:\Users\[YourUsername]\AppData\Local\Tachidesk\local)
+3. You will then be able to find your local manga under **Browse → Sources → Local source**
 ### Important : Your manga must follow a specific folder structure to be detected properly.
 Refer to the [Suwayomi Local Source documentation](https://github.com/Suwayomi/Suwayomi-Server/wiki/Local-Source#folder-structure) for details on how to structure your folders.
 ## Troubleshooting
