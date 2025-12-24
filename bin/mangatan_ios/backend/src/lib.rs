@@ -162,7 +162,7 @@ async fn start_web_server(
 
     let app_with_state = app.with_state(state);
 
-    let addr: SocketAddr = "0.0.0.0:4568".parse()?;
+    let addr: SocketAddr = "127.0.0.1:4568".parse()?;
 
     // Manually create socket to set SO_REUSEADDR
     let socket = Socket::new(Domain::IPV4, Type::STREAM, Some(Protocol::TCP))?;
@@ -175,7 +175,7 @@ async fn start_web_server(
     let std_listener: std::net::TcpListener = socket.into();
     std_listener.set_nonblocking(true)?; // Required for conversion to async
     let listener = tokio::net::TcpListener::from_std(std_listener)?;
-    info!("✅ Web Server listening on 0.0.0.0:4568");
+    info!("✅ Web Server listening on 127.0.0.1:4568");
     axum::serve(listener, app_with_state).await?;
     Ok(())
 }

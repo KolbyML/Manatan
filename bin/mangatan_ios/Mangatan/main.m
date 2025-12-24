@@ -79,7 +79,7 @@ int main(int argc, char * argv[]) {
     [[NSFileManager defaultManager] createDirectoryAtPath:tmpDir withIntermediateDirectories:YES attributes:nil error:nil];
 
     JavaVMInitArgs vm_args;
-    JavaVMOption options[29];
+    JavaVMOption options[30];
     int optCount = 0;
 
     options[optCount++].optionString = strdup([[NSString stringWithFormat:@"-Djava.home=%@", libPath] UTF8String]);
@@ -92,6 +92,7 @@ int main(int argc, char * argv[]) {
     options[optCount++].optionString = "-Dos.version=5.15.0";
     options[optCount++].optionString = "-Dos.arch=aarch64";
     
+    options[optCount++].optionString = "-Dsuwayomi.tachidesk.config.server.ip =\"127.0.0.1\"";
     options[optCount++].optionString = "-Dsuwayomi.tachidesk.config.server.initialOpenInBrowserEnabled=false";
     options[optCount++].optionString = "-Dsuwayomi.tachidesk.config.server.systemTrayEnabled=false";
     options[optCount++].optionString = strdup([[NSString stringWithFormat:@"-Dsuwayomi.tachidesk.config.server.rootDir=%@", docDir] UTF8String]);
