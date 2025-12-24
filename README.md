@@ -107,6 +107,16 @@ The following links, repos, companies and projects have been important in the de
 - https://github.com/Suwayomi/Suwayomi-Server
 - https://github.com/Suwayomi/Mangatan-WebUI
 
+## Privacy Policy
+
+Mangatan does not collect, transmit, or share any user data. All data including imported comics, reading progress, bookmarks, and saved vocabulary words are stored locally on your device and never leave it.
+
+The only external communication occurs during OCR which is optional and uses Google Cloud Vision API. When enabled, selected image regions are sent over HTTPS for text recognition only. No user accounts are used, and images are not linked to personal identity. OCR can be disabled at any time in Settings.
+
+No analytics, tracking, or telemetry data is collected.
+
+Last updated: 12/23/2025
+
 ## Star History
 
 [![Star History Chart](https://api.star-history.com/svg?repos=KolbyML/Mangatan&type=date&legend=top-left)](https://www.star-history.com/#KolbyML/Mangatan&type=date&legend=top-left)
