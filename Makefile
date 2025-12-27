@@ -214,6 +214,64 @@ download_android_jar:
 	rm -f bin/mangatan_android/assets/Suwayomi-Server.jar
 	curl -L "https://github.com/Suwayomi/Suwayomi-Server-preview/releases/download/v2.1.2031/Suwayomi-Server-v2.1.2031.jar" -o bin/mangatan_android/assets/Suwayomi-Server.jar
 
+.PHONY: download_ios_jar
+download_ios_jar:
+	@echo "Downloading iOS Suwayomi Server JAR..."
+	mkdir -p bin/mangatan_ios/Mangatan/jar
+	rm -f bin/mangatan_ios/Mangatan/jar/suwayomi-server.jar
+	curl -L "https://github.com/Suwayomi/Suwayomi-Server-preview/releases/download/v2.1.2031/Suwayomi-Server-v2.1.2031.jar" -o bin/mangatan_ios/Mangatan/jar/suwayomi-server.jar
+
+
+.PHONY: ios_framework
+ios_framework:
+	@echo "Preparing iOS Framework..."
+	mkdir -p bin/mangatan_ios/frameworks
+	rm -f ios_framework.zip
+	# Clean previous version to prevent conflicts
+	rm -rf bin/mangatan_ios/frameworks/OpenJDK.xcframework
+	
+	@echo "Downloading OpenJDK.xcframework..."
+	curl -L "https://github.com/KolbyML/ios-tools/releases/download/snapshot/OpenJDK.xcframework.zip" -o ios_framework.zip
+	
+	@echo "Extracting..."
+	# -o overwrites files without prompting, -d specifies destination
+	unzip -o ios_framework.zip -d bin/mangatan_ios/frameworks
+	
+	@echo "Cleanup..."
+	rm ios_framework.zip
+	@echo "✅ iOS Framework ready at bin/mangatan_ios/frameworks"
+	cd bin/mangatan_ios/frameworks/OpenJDK.xcframework/ios-arm64 && ar -d libdevice.a java_md_macosx.o
+
+.PHONY: ios_jre
+ios_jre:
+	@echo "Downloading iOS JRE..."
+	mkdir -p bin/mangatan_ios/Mangatan/lib
+	# Clean destination to ensure no stale files
+	rm -rf bin/mangatan_ios/Mangatan/lib/*
+	rm -rf temp_ios_jre_extract
+	rm -f ios_jre.zip
+
+	@echo "Downloading..."
+	curl -L "https://github.com/KolbyML/java_assets/releases/download/1/ios_jre.zip" -o ios_jre.zip
+
+	@echo "Extracting..."
+	unzip -q ios_jre.zip -d temp_ios_jre_extract
+
+	@echo "Installing to bin/mangatan_ios/Mangatan/lib..."
+	# Logic: Enter temp dir. If there is exactly 1 item and it is a directory, enter it.
+	# Then copy everything from current location to destination.
+	cd temp_ios_jre_extract && \
+	if [ "$$(ls -1 | wc -l)" -eq "1" ] && [ -d "$$(ls -1)" ]; then \
+		cd *; \
+	fi && \
+	cp -r . "$(CURDIR)/bin/mangatan_ios/Mangatan/lib/"
+
+	@echo "Cleanup..."
+	rm -rf temp_ios_jre_extract
+	rm ios_jre.zip
+	rm -rf bin/mangatan_ios/Mangatan/lib/__MACOSX
+	@echo "✅ iOS JRE installed."
+
 .PHONY: download_android_jre
 download_android_jre:
 	@echo "Downloading Android JRE..."

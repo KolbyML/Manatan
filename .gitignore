@@ -147,6 +147,8 @@ bin/mangatan/resources/jre_bundle.zip
 bin/mangatan_ios/.build/*
 bin/mangatan_ios/Mangatan/assets/*
 bin/mangatan_ios/Mangatan/lib/*
+bin/mangatan_ios/frameworks/*
+ios_framework.zip
 !bin/mangatan_ios/Mangatan/lib/empty.txt
 bin/mangatan_ios/Mangatan/jar/*
 !bin/mangatan_ios/Mangatan/jar/empty.txt

@@ -10,7 +10,7 @@
 		D87994E82EF807CB006DFC29 /* libmangatan_ios_backend.a in Frameworks */ = {isa = PBXBuildFile; fileRef = D8FA739B2EF7FEE400D2B8DF /* libmangatan_ios_backend.a */; };
 		D89E6A2F2EF7446F00F0F89C /* libz.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = D89E6A2E2EF7446F00F0F89C /* libz.tbd */; };
 		D89E6A4D2EF7AB3A00F0F89C /* libiconv.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = D89E6A4C2EF7AB3A00F0F89C /* libiconv.tbd */; };
-		D8B1F1152EFD2195005C0001 /* OpenJDK.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = D8B1F1142EFD2195005C0001 /* OpenJDK.xcframework */; };
+		D8B1F1552EFFCEF3005C0001 /* OpenJDK.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = D8B1F1542EFFCEF3005C0001 /* OpenJDK.xcframework */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -31,7 +31,7 @@
 		D89E6A082EF738A100F0F89C /* Mangatan.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Mangatan.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		D89E6A2E2EF7446F00F0F89C /* libz.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libz.tbd; path = usr/lib/libz.tbd; sourceTree = SDKROOT; };
 		D89E6A4C2EF7AB3A00F0F89C /* libiconv.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libiconv.tbd; path = usr/lib/libiconv.tbd; sourceTree = SDKROOT; };
-		D8B1F1142EFD2195005C0001 /* OpenJDK.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; name = OpenJDK.xcframework; path = ../../../../../Downloads/OpenJDK.xcframework; sourceTree = "<group>"; };
+		D8B1F1542EFFCEF3005C0001 /* OpenJDK.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; name = OpenJDK.xcframework; path = frameworks/OpenJDK.xcframework; sourceTree = "<group>"; };
 		D8FA739B2EF7FEE400D2B8DF /* libmangatan_ios_backend.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libmangatan_ios_backend.a; path = "../../target/aarch64-apple-ios/release/libmangatan_ios_backend.a"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -67,7 +67,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				D87994E82EF807CB006DFC29 /* libmangatan_ios_backend.a in Frameworks */,
-				D8B1F1152EFD2195005C0001 /* OpenJDK.xcframework in Frameworks */,
+				D8B1F1552EFFCEF3005C0001 /* OpenJDK.xcframework in Frameworks */,
 				D89E6A4D2EF7AB3A00F0F89C /* libiconv.tbd in Frameworks */,
 				D89E6A2F2EF7446F00F0F89C /* libz.tbd in Frameworks */,
 			);
@@ -96,7 +96,7 @@
 		D89E6A252EF7432600F0F89C /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
-				D8B1F1142EFD2195005C0001 /* OpenJDK.xcframework */,
+				D8B1F1542EFFCEF3005C0001 /* OpenJDK.xcframework */,
 				D88369472EF7DAFC0031A663 /* libmangatan_ios_backend.a */,
 				D8FA739B2EF7FEE400D2B8DF /* libmangatan_ios_backend.a */,
 				D89E6A4C2EF7AB3A00F0F89C /* libiconv.tbd */,
@@ -113,6 +113,9 @@
 			buildConfigurationList = D89E6A202EF738A300F0F89C /* Build configuration list for PBXNativeTarget "Mangatan" */;
 			buildPhases = (
 				D8B1F0D82EF89388005C0001 /* Build webui */,
+				D8B1F1532EFFCC7A005C0001 /* download OpenJDK framework */,
+				D8B1F1572EFFD1EF005C0001 /* download jre */,
+				D8B1F1582EFFD275005C0001 /* download jar */,
 				D89E052F2EF7D83A00F0F89C /* Build Rust Backend */,
 				D89E6A042EF738A100F0F89C /* Sources */,
 				D89E6A052EF738A100F0F89C /* Frameworks */,
@@ -214,6 +217,63 @@
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
 			shellScript = "# Navigate from 'bin/mangatan_ios' up to the Repo Root\ncd \"$SRCROOT/../..\"\n\n# Run the make command\n# Ensure path is set for node/npm/yarn if needed by Make\nexport PATH=\"$PATH:/usr/local/bin:/opt/homebrew/bin\" \n\nmake ios_webui\n";
+		};
+		D8B1F1532EFFCC7A005C0001 /* download OpenJDK framework */ = {
+			isa = PBXShellScriptBuildPhase;
+			alwaysOutOfDate = 1;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+			);
+			name = "download OpenJDK framework";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "# Navigate from 'bin/mangatan_ios' up to the Repo Root\ncd \"$SRCROOT/../..\"\n\n# Run the make command\n# Ensure path is set for node/npm/yarn if needed by Make\nexport PATH=\"$PATH:/usr/local/bin:/opt/homebrew/bin\" \n\nmake ios_framework\n";
+		};
+		D8B1F1572EFFD1EF005C0001 /* download jre */ = {
+			isa = PBXShellScriptBuildPhase;
+			alwaysOutOfDate = 1;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+			);
+			name = "download jre";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "# Navigate from 'bin/mangatan_ios' up to the Repo Root\ncd \"$SRCROOT/../..\"\n\n# Run the make command\n# Ensure path is set for node/npm/yarn if needed by Make\nexport PATH=\"$PATH:/usr/local/bin:/opt/homebrew/bin\" \n\nmake ios_jre\n";
+		};
+		D8B1F1582EFFD275005C0001 /* download jar */ = {
+			isa = PBXShellScriptBuildPhase;
+			alwaysOutOfDate = 1;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+			);
+			name = "download jar";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "# Navigate from 'bin/mangatan_ios' up to the Repo Root\ncd \"$SRCROOT/../..\"\n\n# Run the make command\n# Ensure path is set for node/npm/yarn if needed by Make\nexport PATH=\"$PATH:/usr/local/bin:/opt/homebrew/bin\" \n\nmake download_ios_jar\n";
 		};
 /* End PBXShellScriptBuildPhase section */
 
