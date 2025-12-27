@@ -520,6 +520,11 @@ jobs:
           cache: 'yarn'
           cache-dependency-path: 'Mangatan-WebUI/yarn.lock'
 
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: aarch64-apple-ios
+
       - name: Prepare iOS Assets
         run: |
           make ios_webui
