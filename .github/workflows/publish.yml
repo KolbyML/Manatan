@@ -503,6 +503,67 @@ jobs:
           name: mangatan-android
           path: mangatan-android-signed.apk
 
+  build_ios:
+    name: Build iOS IPA
+    if: startsWith(github.ref, 'refs/tags/v')
+    runs-on: macos-15
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22.12.0'
+          cache: 'yarn'
+          cache-dependency-path: 'Mangatan-WebUI/yarn.lock'
+      
+      - name: Build IPA
+        run: |
+          cd bin/mangatan_ios
+          
+          # 1. Build Archive
+          xcodebuild -scheme Mangatan \
+            -destination "generic/platform=iOS" \
+            -archivePath Mangatan.xcarchive \
+            archive \
+            CODE_SIGN_IDENTITY="" \
+            CODE_SIGNING_REQUIRED=NO \
+            CODE_SIGNING_ALLOWED=NO
+
+          # 2. Export IPA
+          # We need an export options plist. We create a minimal AdHoc/Dev one on the fly.
+          # Since we are building unsigned/ad-hoc for now (or relying on auto-signing), 
+          # we use a manual export approach or a simple plist.
+          
+          cat > ExportOptions.plist <<EOF
+          <?xml version="1.0" encoding="UTF-8"?>
+          <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+          <plist version="1.0">
+          <dict>
+              <key>method</key>
+              <string>development</string>
+              <key>signingStyle</key>
+              <string>manual</string>
+          </dict>
+          </plist>
+          EOF
+          
+          # Note: Exporting usually requires signing. If you want a purely unsigned IPA (payload only),
+          # you can zip the .app inside the archive.
+          
+          mkdir -p Payload
+          cp -r Mangatan.xcarchive/Products/Applications/Mangatan.app Payload/
+          zip -r Mangatan.ipa Payload
+          
+      - name: Upload iOS Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: mangatan-ios
+          path: bin/mangatan_ios/Mangatan.ipa
+
   # --- JOB 6: Release (Combines Everything) ---
   release:
     if: startsWith(github.ref, 'refs/tags/v')
@@ -546,6 +607,12 @@ jobs:
           name: mangatan-android
           path: release/android
 
+      - name: Download iOS
+        uses: actions/download-artifact@v4
+        with:
+          name: mangatan-ios
+          path: release/ios
+
       - name: Prepare Final Assets
         run: |
           mkdir final_release
@@ -563,6 +630,9 @@ jobs:
           # ANDROID
           # Rename the raw signed APK to have the version number
           mv release/android/mangatan-android-signed.apk final_release/Mangatan-${VERSION}-Android.apk
+
+          # iOS
+          mv release/ios/Mangatan.ipa final_release/Mangatan-${VERSION}-iOS.ipa
 
       - name: Generate Checksums
         run: cd final_release && sha256sum * > Checksums.sha256
