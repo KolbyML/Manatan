@@ -7,11 +7,10 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		D87983BC2EF80FD3006DFC29 /* OpenJDK.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = D87983BB2EF80FD3006DFC29 /* OpenJDK.xcframework */; };
-		D87983BD2EF80FD3006DFC29 /* OpenJDK.xcframework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = D87983BB2EF80FD3006DFC29 /* OpenJDK.xcframework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		D87994E82EF807CB006DFC29 /* libmangatan_ios_backend.a in Frameworks */ = {isa = PBXBuildFile; fileRef = D8FA739B2EF7FEE400D2B8DF /* libmangatan_ios_backend.a */; };
 		D89E6A2F2EF7446F00F0F89C /* libz.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = D89E6A2E2EF7446F00F0F89C /* libz.tbd */; };
 		D89E6A4D2EF7AB3A00F0F89C /* libiconv.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = D89E6A4C2EF7AB3A00F0F89C /* libiconv.tbd */; };
+		D8B1F1152EFD2195005C0001 /* OpenJDK.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = D8B1F1142EFD2195005C0001 /* OpenJDK.xcframework */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -21,7 +20,6 @@
 			dstPath = "";
 			dstSubfolderSpec = 10;
 			files = (
-				D87983BD2EF80FD3006DFC29 /* OpenJDK.xcframework in Embed Frameworks */,
 			);
 			name = "Embed Frameworks";
 			runOnlyForDeploymentPostprocessing = 0;
@@ -29,11 +27,11 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
-		D87983BB2EF80FD3006DFC29 /* OpenJDK.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; name = OpenJDK.xcframework; path = ../../../../../Downloads/OpenJDK.xcframework; sourceTree = "<group>"; };
 		D88369472EF7DAFC0031A663 /* libmangatan_ios_backend.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libmangatan_ios_backend.a; path = "../../target/aarch64-apple-ios/debug/libmangatan_ios_backend.a"; sourceTree = "<group>"; };
 		D89E6A082EF738A100F0F89C /* Mangatan.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Mangatan.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		D89E6A2E2EF7446F00F0F89C /* libz.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libz.tbd; path = usr/lib/libz.tbd; sourceTree = SDKROOT; };
 		D89E6A4C2EF7AB3A00F0F89C /* libiconv.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libiconv.tbd; path = usr/lib/libiconv.tbd; sourceTree = SDKROOT; };
+		D8B1F1142EFD2195005C0001 /* OpenJDK.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; name = OpenJDK.xcframework; path = ../../../../../Downloads/OpenJDK.xcframework; sourceTree = "<group>"; };
 		D8FA739B2EF7FEE400D2B8DF /* libmangatan_ios_backend.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libmangatan_ios_backend.a; path = "../../target/aarch64-apple-ios/release/libmangatan_ios_backend.a"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -69,7 +67,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				D87994E82EF807CB006DFC29 /* libmangatan_ios_backend.a in Frameworks */,
-				D87983BC2EF80FD3006DFC29 /* OpenJDK.xcframework in Frameworks */,
+				D8B1F1152EFD2195005C0001 /* OpenJDK.xcframework in Frameworks */,
 				D89E6A4D2EF7AB3A00F0F89C /* libiconv.tbd in Frameworks */,
 				D89E6A2F2EF7446F00F0F89C /* libz.tbd in Frameworks */,
 			);
@@ -98,7 +96,7 @@
 		D89E6A252EF7432600F0F89C /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
-				D87983BB2EF80FD3006DFC29 /* OpenJDK.xcframework */,
+				D8B1F1142EFD2195005C0001 /* OpenJDK.xcframework */,
 				D88369472EF7DAFC0031A663 /* libmangatan_ios_backend.a */,
 				D8FA739B2EF7FEE400D2B8DF /* libmangatan_ios_backend.a */,
 				D89E6A4C2EF7AB3A00F0F89C /* libiconv.tbd */,
@@ -236,7 +234,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1;
+				CURRENT_PROJECT_VERSION = 2;
 				DEAD_CODE_STRIPPING = NO;
 				DEVELOPMENT_TEAM = 4842UP28SQ;
 				ENABLE_USER_SCRIPT_SANDBOXING = NO;
@@ -253,12 +251,12 @@
 					"@executable_path/Frameworks",
 				);
 				LIBRARY_SEARCH_PATHS = "\"$(PROJECT_DIR)/../../target/aarch64-apple-ios/release\"";
-				MARKETING_VERSION = 1.0;
+				MARKETING_VERSION = 1.0.104;
 				OTHER_LDFLAGS = (
 					"-lc++",
 					"-all_load",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = com.KolbyML.Mangatan;
+				PRODUCT_BUNDLE_IDENTIFIER = app.mangatan.mangatan;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				STRING_CATALOG_GENERATE_SYMBOLS = YES;
 				SWIFT_EMIT_LOC_STRINGS = YES;
@@ -272,7 +270,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1;
+				CURRENT_PROJECT_VERSION = 2;
 				DEAD_CODE_STRIPPING = NO;
 				DEVELOPMENT_TEAM = 4842UP28SQ;
 				ENABLE_USER_SCRIPT_SANDBOXING = NO;
@@ -289,12 +287,12 @@
 					"@executable_path/Frameworks",
 				);
 				LIBRARY_SEARCH_PATHS = "\"$(PROJECT_DIR)/../../target/aarch64-apple-ios/release\"";
-				MARKETING_VERSION = 1.0;
+				MARKETING_VERSION = 1.0.104;
 				OTHER_LDFLAGS = (
 					"-lc++",
 					"-all_load",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = com.KolbyML.Mangatan;
+				PRODUCT_BUNDLE_IDENTIFIER = app.mangatan.mangatan;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				STRING_CATALOG_GENERATE_SYMBOLS = YES;
 				SWIFT_EMIT_LOC_STRINGS = YES;
