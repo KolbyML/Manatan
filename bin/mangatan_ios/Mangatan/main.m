@@ -72,13 +72,25 @@ void* run_java_thread(void* arg) {
 int main(int argc, char * argv[]) {
     NSString *bundlePath = [[NSBundle mainBundle] resourcePath];
     NSString *docDir = getDocumentsDirectory();
+    
+    // 1. Suwayomi Configs/DBs -> 'suwayomi' subfolder (Hidden from root view)
+    NSString *suwayomiDataDir = [docDir stringByAppendingPathComponent:@"suwayomi"];
+    [[NSFileManager defaultManager] createDirectoryAtPath:suwayomiDataDir withIntermediateDirectories:YES attributes:nil error:nil];
+    
+    // 2. Local Source & Tmp -> Main Docs Directory (Visible to User)
+    NSString *localSourcePath = [docDir stringByAppendingPathComponent:@"local-source"];
+    NSString *tmpDir = [docDir stringByAppendingPathComponent:@"tmp"];
+    
     NSString *libPath = [bundlePath stringByAppendingPathComponent:@"lib"];
     NSString *jarPath = [bundlePath stringByAppendingPathComponent:@"jar/suwayomi-server.jar"];
-    NSString *tmpDir = [docDir stringByAppendingPathComponent:@"tmp"];
 
-    NSString *localSourcePath = [docDir stringByAppendingPathComponent:@"local-source"];
+    // Clean old temp directory on boot
+    if ([[NSFileManager defaultManager] fileExistsAtPath:tmpDir]) {
+        fprintf(stderr, "Cleaning old temp directory...\n");
+        [[NSFileManager defaultManager] removeItemAtPath:tmpDir error:nil];
+    }
+
     [[NSFileManager defaultManager] createDirectoryAtPath:localSourcePath withIntermediateDirectories:YES attributes:nil error:nil];
-    
     [[NSFileManager defaultManager] createDirectoryAtPath:tmpDir withIntermediateDirectories:YES attributes:nil error:nil];
 
     JavaVMInitArgs vm_args;
@@ -87,7 +99,11 @@ int main(int argc, char * argv[]) {
 
     options[optCount++].optionString = strdup([[NSString stringWithFormat:@"-Djava.home=%@", libPath] UTF8String]);
     options[optCount++].optionString = strdup([[NSString stringWithFormat:@"-Djava.class.path=%@", jarPath] UTF8String]);
-    options[optCount++].optionString = strdup([[NSString stringWithFormat:@"-Duser.dir=%@", docDir] UTF8String]);
+    
+    // Working directory is the SUBFOLDER (keeps configs organized)
+    options[optCount++].optionString = strdup([[NSString stringWithFormat:@"-Duser.dir=%@", suwayomiDataDir] UTF8String]);
+    
+    // Temp dir is the ROOT FOLDER (as requested)
     options[optCount++].optionString = strdup([[NSString stringWithFormat:@"-Djava.io.tmpdir=%@", tmpDir] UTF8String]);
     
     options[optCount++].optionString = "-Djava.awt.headless=true";
@@ -95,11 +111,14 @@ int main(int argc, char * argv[]) {
     options[optCount++].optionString = "-Dos.version=5.15.0";
     options[optCount++].optionString = "-Dos.arch=aarch64";
     
+    // Local Source is the ROOT FOLDER (as requested)
     options[optCount++].optionString = strdup([[NSString stringWithFormat:@"-Dsuwayomi.tachidesk.config.server.localSourcePath=%@", localSourcePath] UTF8String]);
     options[optCount++].optionString = "-Dsuwayomi.tachidesk.config.server.ip =\"127.0.0.1\"";
     options[optCount++].optionString = "-Dsuwayomi.tachidesk.config.server.initialOpenInBrowserEnabled=false";
     options[optCount++].optionString = "-Dsuwayomi.tachidesk.config.server.systemTrayEnabled=false";
-    options[optCount++].optionString = strdup([[NSString stringWithFormat:@"-Dsuwayomi.tachidesk.config.server.rootDir=%@", docDir] UTF8String]);
+    
+    // Root Dir (for configs/settings) is the SUBFOLDER
+    options[optCount++].optionString = strdup([[NSString stringWithFormat:@"-Dsuwayomi.tachidesk.config.server.rootDir=%@", suwayomiDataDir] UTF8String]);
 
     vm_args.version = JNI_VERSION_1_8;
     vm_args.nOptions = optCount;
@@ -109,7 +128,7 @@ int main(int argc, char * argv[]) {
     loadfunctions();
     
     fprintf(stderr, "Creating JavaVM on Main Thread...\n");
-    JNIEnv *env; 
+    JNIEnv *env;
     jint res = JNI_CreateJavaVM(&globalJVM, (void **)&env, &vm_args);
 
     if (res != JNI_OK) {
@@ -121,13 +140,14 @@ int main(int argc, char * argv[]) {
     JNI_OnLoad_management_ext(globalJVM, NULL);
 
     fprintf(stderr, "Starting Rust Server...\n");
+    // Rust server works within the suwayomiDataDir context for configs
     start_rust_server([bundlePath UTF8String], [docDir UTF8String]);
 
     fprintf(stderr, "Spawning Java Thread...\n");
     pthread_t thread;
     pthread_attr_t attrs;
     pthread_attr_init(&attrs);
-    pthread_attr_setstacksize(&attrs, 16 * 1024 * 1024); 
+    pthread_attr_setstacksize(&attrs, 16 * 1024 * 1024);
     pthread_create(&thread, &attrs, run_java_thread, NULL);
     pthread_attr_destroy(&attrs);
 
