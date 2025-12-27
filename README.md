@@ -73,7 +73,7 @@ To fully clear cache and data from previous installs, delete the following folde
 
 - [x] Package Mangatan, OCR Server, and Suwayomi into a single binary
 - [x] Add Android Support https://github.com/KolbyML/Mangatan/issues/17
-- [ ] Add iOS Support https://github.com/KolbyML/Mangatan/issues/19
+- [x] Add iOS Support https://github.com/KolbyML/Mangatan/issues/19
 - [ ] Add Manga Immersion Stats page https://github.com/KolbyML/Mangatan/issues/1
 - [ ] Suggest more features https://github.com/KolbyML/Mangatan/issues/new
 
