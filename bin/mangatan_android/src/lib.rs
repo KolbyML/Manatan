@@ -603,26 +603,42 @@ fn tungstenite_to_axum(msg: TungsteniteMessage) -> Message {
 }
 
 fn start_background_services(app: AndroidApp, files_dir: PathBuf) {
-    info!("Background Service: Initializing Assets...");
-
-    let jre_root = files_dir.join("jre");
-    if jre_root.exists() {
-        fs::remove_dir_all(&jre_root).ok();
-    }
-    if let Err(e) = install_jre(&app, &files_dir) {
-        error!("Failed to extract JRE: {:?}", e);
-        return;
-    }
-
-    let webui_dir = files_dir.join("webui");
-    if webui_dir.exists() {
-        fs::remove_dir_all(&webui_dir).ok();
-    }
-    fs::create_dir_all(&webui_dir).ok();
-
-    info!("Extracting WebUI...");
-    if let Err(e) = install_webui(&app, &webui_dir) {
-        error!("Failed to extract WebUI: {:?}", e);
+    info!("Background Service: Initializing...");
+    
+     // Compare APK update time with last extraction to avoid redundant asset extraction.
+    // This ensures assets are only extracted on first run or after app updates.
+    let apk_time = get_apk_update_time(&app).unwrap_or(i64::MAX);
+    let marker = files_dir.join(".extracted_apk_time");
+    
+    let last_time: i64 = fs::read_to_string(&marker)
+        .ok()
+        .and_then(|s| s.parse().ok())
+        .unwrap_or(0);
+    
+    if apk_time > last_time {
+        info!("Extracting assets (APK updated)...");
+        
+        let jre_root = files_dir.join("jre");
+        let webui = files_dir.join("webui");
+        
+        if jre_root.exists() { fs::remove_dir_all(&jre_root).ok(); }
+        if webui.exists() { fs::remove_dir_all(&webui).ok(); }
+        
+        if let Err(e) = install_jre(&app, &files_dir) {
+            error!("JRE extraction failed: {:?}", e);
+            return;
+        }
+        
+        fs::create_dir_all(&webui).ok();
+        if let Err(e) = install_webui(&app, &webui) {
+            error!("WebUI extraction failed: {:?}", e);
+            return;
+        }
+        
+        fs::write(&marker, apk_time.to_string()).ok();
+        info!("Extraction complete");
+    } else {
+        info!("Assets up-to-date, skipping extraction");
     }
 
     // CHANGE: Create 'bin' directory to satisfy Suwayomi's directory scanner
@@ -1330,4 +1346,16 @@ fn acquire_wake_lock(app: &AndroidApp) {
     let _ = env.new_global_ref(&wake_lock).unwrap();
 
     info!("✅ Partial WakeLock Acquired!");
+}
+// Add this helper function for getting last update time
+fn get_apk_update_time(app: &AndroidApp) -> Option<i64> {
+    let vm = unsafe { JavaVM::from_raw(app.vm_as_ptr() as *mut _).ok()? };
+    let env = vm.attach_current_thread().ok()?;
+    let ctx = unsafe { JObject::from_raw(app.activity_as_ptr() as jni::sys::jobject) };
+    
+    let pkg = env.call_method(&ctx, "getPackageName", "()Ljava/lang/String;", &[]).ok()?.l().ok()?;
+    let pm = env.call_method(&ctx, "getPackageManager", "()Landroid/content/pm/PackageManager;", &[]).ok()?.l().ok()?;
+    let info = env.call_method(&pm, "getPackageInfo", "(Ljava/lang/String;I)Landroid/content/pm/PackageInfo;", &[(&pkg).into(), 0.into()]).ok()?.l().ok()?;
+    
+    env.get_field(&info, "lastUpdateTime", "J").ok()?.j().ok()
 }
