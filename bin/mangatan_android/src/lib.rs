@@ -392,12 +392,18 @@ fn android_main(app: AndroidApp) {
     let app_gui = app.clone();
     let mut options = eframe::NativeOptions::default();
 
-    if sdk_version <= 29 {
-        info!("SDK <= 29: Forcing OpenGL (GLES) backend for compatibility.");
+   if sdk_version <= 29 {
+        info!("SDK <= 29: Forcing OpenGL (GLES) backend for maximum compatibility.");
         options.wgpu_options.supported_backends = eframe::wgpu::Backends::GL;
     } else {
-        info!("SDK > 29: Using default backend (Vulkan/Primary).");
-        options.wgpu_options.supported_backends = eframe::wgpu::Backends::PRIMARY;
+        info!("SDK > 29: Programmatically detecting best graphics backend...");
+        if supports_vulkan(&app) {
+            info!("Vulkan supported. Using primary backend (Vulkan preferred).");
+            options.wgpu_options.supported_backends = eframe::wgpu::Backends::PRIMARY;
+        } else {
+            info!("Vulkan not supported or check failed. Forcing OpenGL (GLES) backend.");
+            options.wgpu_options.supported_backends = eframe::wgpu::Backends::GL;
+        }
     }
 
     options.event_loop_builder = Some(Box::new(move |builder| {
@@ -1209,7 +1215,20 @@ fn get_package_name(env: &mut jni::JNIEnv, context: &JObject) -> jni::errors::Re
 
     Ok(rust_string)
 }
+fn supports_vulkan(app: &AndroidApp) -> bool {
+    let vm = unsafe { JavaVM::from_raw(app.vm_as_ptr() as *mut jni::sys::JavaVM).unwrap() };
+    let mut env = vm.attach_current_thread().unwrap();
+    let context = unsafe { JObject::from_raw(app.activity_as_ptr() as jni::sys::jobject) };
 
+    let pm = env.call_method(&context, "getPackageManager", "()Landroid/content/pm/PackageManager;", &[]).unwrap().l().unwrap();
+    let pm_class = env.find_class("android/content/pm/PackageManager").unwrap();
+    let feature_str = env.get_static_field(&pm_class, "FEATURE_VULKAN_HARDWARE_LEVEL", "Ljava/lang/String;").unwrap().l().unwrap();
+
+    let supported = env.call_method(&pm, "hasSystemFeature", "(Ljava/lang/String;)Z", &[JValue::Object(&feature_str)]).unwrap().z().unwrap_or(false);
+
+    info!("Vulkan hardware support detected: {}", supported);
+    supported
+}
 fn get_android_sdk_version(app: &AndroidApp) -> i32 {
     let vm_ptr = app.vm_as_ptr() as *mut jni::sys::JavaVM;
     let vm = unsafe { JavaVM::from_raw(vm_ptr).unwrap() };
