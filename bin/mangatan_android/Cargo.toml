@@ -59,6 +59,9 @@ name = "android.permission.FOREGROUND_SERVICE"
 [[package.metadata.android.uses_permission]]
 name = "android.permission.POST_NOTIFICATIONS"
 
+[[package.metadata.android.uses_permission]]
+name = "android.permission.REQUEST_INSTALL_PACKAGES"
+
 [package.metadata.android.application]
 allow_native_heap_pointer_tagging = false
 request_legacy_external_storage = true
@@ -112,7 +115,8 @@ mangatan-ocr-server.workspace = true
 mangatan-yomitan-server.workspace = true
 mime_guess = "2"
 openssl = { version = "0.10", features = ["vendored"] }
-
+ndk-context = "0.1"
+serde.workspace = true
 # Web Server & Networking
 # IMPORTANT: reqwest 0.12 uses http 1.0, matching axum 0.7
 reqwest = { version = "0.12", default-features = false, features = ["rustls-tls", "stream"] }

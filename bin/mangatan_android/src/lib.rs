@@ -1,21 +1,6 @@
 #![cfg(target_os = "android")]
-use std::{
-    collections::VecDeque,
-    ffi::{CString, c_void},
-    fs::{self, File},
-    io::{self, BufReader},
-    os::unix::io::FromRawFd,
-    path::{Path, PathBuf},
-    sync::{
-        Arc, Mutex,
-        atomic::{AtomicBool, Ordering},
-    },
-    thread,
-    time::Duration,
-};
-
 use axum::{
-    Router,
+    Json, Router,
     body::{Body, Bytes},
     extract::{
         FromRequestParts, Request, State,
@@ -35,6 +20,22 @@ use jni::{
 };
 use lazy_static::lazy_static;
 use reqwest::Client;
+use serde::{Deserialize, Serialize};
+use std::sync::atomic::AtomicI64;
+use std::{
+    collections::VecDeque,
+    ffi::{CString, c_void},
+    fs::{self, File},
+    io::{self, BufReader},
+    os::unix::io::FromRawFd,
+    path::{Path, PathBuf},
+    sync::{
+        Arc, Mutex,
+        atomic::{AtomicBool, Ordering},
+    },
+    thread,
+    time::Duration,
+};
 use tar::Archive;
 use tokio::{fs as tokio_fs, net::TcpListener};
 use tokio_tungstenite::{
@@ -533,6 +534,13 @@ async fn start_web_server(data_dir: PathBuf) -> Result<(), Box<dyn std::error::E
     let app: Router<AppState> = Router::new()
         .nest_service("/api/ocr", ocr_router)
         .nest_service("/api/yomitan", yomitan_router)
+        .nest(
+            "/api/system",
+            Router::new()
+                .route("/version", any(current_version_handler))
+                .route("/download-update", any(download_update_handler))
+                .route("/install-update", any(install_update_handler)),
+        )
         .merge(proxy_router)
         .fallback(serve_react_app)
         .layer(cors)
@@ -760,32 +768,36 @@ fn tungstenite_to_axum(msg: TungsteniteMessage) -> Message {
 fn start_background_services(app: AndroidApp, files_dir: PathBuf) {
     let apk_time = get_apk_update_time(&app).unwrap_or(i64::MAX);
     let marker = files_dir.join(".extracted_apk_time");
-    
+
     let last_time: i64 = fs::read_to_string(&marker)
         .ok()
         .and_then(|s| s.parse().ok())
         .unwrap_or(0);
-    
+
     let jre_root = files_dir.join("jre");
     let webui = files_dir.join("webui");
-    
+
     if apk_time > last_time {
         info!("Extracting assets (APK updated)...");
-        
-        if jre_root.exists() { fs::remove_dir_all(&jre_root).ok(); }
-        if webui.exists() { fs::remove_dir_all(&webui).ok(); }
-        
+
+        if jre_root.exists() {
+            fs::remove_dir_all(&jre_root).ok();
+        }
+        if webui.exists() {
+            fs::remove_dir_all(&webui).ok();
+        }
+
         if let Err(e) = install_jre(&app, &files_dir) {
             error!("JRE extraction failed: {:?}", e);
             return;
         }
-        
+
         fs::create_dir_all(&webui).ok();
         if let Err(e) = install_webui(&app, &webui) {
             error!("WebUI extraction failed: {:?}", e);
             return;
         }
-        
+
         fs::write(&marker, apk_time.to_string()).ok();
         info!("Extraction complete");
     } else {
@@ -1510,12 +1522,344 @@ fn acquire_wake_lock(app: &AndroidApp) {
 // Add this helper function for getting last update time
 fn get_apk_update_time(app: &AndroidApp) -> Option<i64> {
     let vm = unsafe { JavaVM::from_raw(app.vm_as_ptr() as *mut _).ok()? };
-    let mut env = vm.attach_current_thread().ok()?;  // ← Add `mut` here
+    let mut env = vm.attach_current_thread().ok()?; // ← Add `mut` here
     let ctx = unsafe { JObject::from_raw(app.activity_as_ptr() as jni::sys::jobject) };
-    
-    let pkg = env.call_method(&ctx, "getPackageName", "()Ljava/lang/String;", &[]).ok()?.l().ok()?;
-    let pm = env.call_method(&ctx, "getPackageManager", "()Landroid/content/pm/PackageManager;", &[]).ok()?.l().ok()?;
-    let info = env.call_method(&pm, "getPackageInfo", "(Ljava/lang/String;I)Landroid/content/pm/PackageInfo;", &[(&pkg).into(), 0.into()]).ok()?.l().ok()?;
-    
+
+    let pkg = env
+        .call_method(&ctx, "getPackageName", "()Ljava/lang/String;", &[])
+        .ok()?
+        .l()
+        .ok()?;
+    let pm = env
+        .call_method(
+            &ctx,
+            "getPackageManager",
+            "()Landroid/content/pm/PackageManager;",
+            &[],
+        )
+        .ok()?
+        .l()
+        .ok()?;
+    let info = env
+        .call_method(
+            &pm,
+            "getPackageInfo",
+            "(Ljava/lang/String;I)Landroid/content/pm/PackageInfo;",
+            &[(&pkg).into(), 0.into()],
+        )
+        .ok()?
+        .l()
+        .ok()?;
+
     env.get_field(&info, "lastUpdateTime", "J").ok()?.j().ok()
+}
+
+#[derive(Serialize)]
+struct VersionResponse {
+    version: String,
+    variant: String,
+    update_status: String,
+}
+
+#[derive(Deserialize)]
+struct UpdateRequest {
+    url: String,
+    filename: String,
+}
+
+static LAST_DOWNLOAD_ID: AtomicI64 = AtomicI64::new(-1);
+
+async fn current_version_handler() -> impl IntoResponse {
+    let version = env!("CARGO_PKG_VERSION");
+    #[cfg(feature = "native_webview")]
+    let variant = "native-webview";
+    #[cfg(not(feature = "native_webview"))]
+    let variant = "browser";
+
+    let update_status = check_update_status();
+
+    Json(VersionResponse {
+        version: version.to_string(),
+        variant: variant.to_string(),
+        update_status,
+    })
+}
+
+async fn download_update_handler(Json(payload): Json<UpdateRequest>) -> impl IntoResponse {
+    match native_download_manager(&payload.url, &payload.filename) {
+        Ok(_) => (StatusCode::OK, "Download started".to_string()),
+        Err(e) => (StatusCode::INTERNAL_SERVER_ERROR, format!("Failed: {}", e)),
+    }
+}
+
+async fn install_update_handler() -> impl IntoResponse {
+    match native_trigger_install() {
+        Ok(_) => (StatusCode::OK, "Install started".to_string()),
+        Err(e) => (StatusCode::INTERNAL_SERVER_ERROR, format!("Failed: {}", e)),
+    }
+}
+
+// --- NATIVE HELPERS ---
+
+fn check_update_status() -> String {
+    if let Ok(s) = check_update_status_safe() {
+        s
+    } else {
+        "idle".to_string()
+    }
+}
+
+fn check_update_status_safe() -> Result<String, Box<dyn std::error::Error>> {
+    let id = LAST_DOWNLOAD_ID.load(Ordering::Relaxed);
+    if id == -1 {
+        return Ok("idle".to_string());
+    }
+
+    let ctx = ndk_context::android_context();
+    let vm = unsafe { jni::JavaVM::from_raw(ctx.vm().cast()) }?;
+    let mut env = vm.attach_current_thread()?;
+    let context_obj = unsafe { jni::objects::JObject::from_raw(ctx.context().cast()) };
+
+    let dm_str = env.new_string("download")?;
+    let dm = env
+        .call_method(
+            &context_obj,
+            "getSystemService",
+            "(Ljava/lang/String;)Ljava/lang/Object;",
+            &[JValue::Object(&dm_str)],
+        )?
+        .l()?;
+
+    let query_cls = env.find_class("android/app/DownloadManager$Query")?;
+    let query = env.new_object(query_cls, "()V", &[])?;
+    let id_array = env.new_long_array(1)?;
+    env.set_long_array_region(&id_array, 0, &[id])?;
+    env.call_method(
+        &query,
+        "setFilterById",
+        "([J)Landroid/app/DownloadManager$Query;",
+        &[JValue::Object(&id_array)],
+    )?;
+
+    let cursor = env
+        .call_method(
+            &dm,
+            "query",
+            "(Landroid/app/DownloadManager$Query;)Landroid/database/Cursor;",
+            &[JValue::Object(&query)],
+        )?
+        .l()?;
+
+    if env.call_method(&cursor, "moveToFirst", "()Z", &[])?.z()? {
+        let status_str = env.new_string("status")?;
+        let col_idx = env
+            .call_method(
+                &cursor,
+                "getColumnIndex",
+                "(Ljava/lang/String;)I",
+                &[JValue::Object(&status_str)],
+            )?
+            .i()?;
+        if col_idx >= 0 {
+            let status = env
+                .call_method(&cursor, "getInt", "(I)I", &[JValue::Int(col_idx)])?
+                .i()?;
+            if status == 1 || status == 2 {
+                return Ok("downloading".to_string());
+            }
+            if status == 8 {
+                return Ok("ready".to_string());
+            }
+        }
+    }
+    Ok("idle".to_string())
+}
+
+// --- AUTOMATIC MONITOR TASK ---
+// This loops in a background thread to auto-trigger install when done
+fn monitor_download_completion(id: i64) {
+    info!("👀 Starting download monitor for ID: {}", id);
+    loop {
+        // Poll every 2 seconds
+        thread::sleep(Duration::from_secs(2));
+
+        // Check if ID has changed (new download started) - if so, abort this monitor
+        if LAST_DOWNLOAD_ID.load(Ordering::Relaxed) != id {
+            info!("🛑 Monitor aborted (New download started)");
+            break;
+        }
+
+        // Check Status
+        if let Ok(status) = check_update_status_safe() {
+            if status == "ready" {
+                info!("✅ Download {} complete! Triggering install...", id);
+                if let Err(e) = native_trigger_install() {
+                    error!("❌ Automatic install trigger failed: {}", e);
+                }
+                break; // Job done
+            }
+            if status == "idle" {
+                // Means it failed or was cancelled
+                info!("🛑 Monitor aborted (Download idle/failed)");
+                break;
+            }
+            // If "downloading", just loop again
+        } else {
+            break; // JNI Error
+        }
+    }
+}
+
+fn native_download_manager(url: &str, filename: &str) -> Result<(), Box<dyn std::error::Error>> {
+    let ctx = ndk_context::android_context();
+    let vm = unsafe { jni::JavaVM::from_raw(ctx.vm().cast()) }?;
+    let mut env = vm.attach_current_thread()?;
+    let context_obj = unsafe { jni::objects::JObject::from_raw(ctx.context().cast()) };
+
+    let url_jstr = env.new_string(url)?;
+    let fn_jstr = env.new_string(filename)?;
+
+    let uri_cls = env.find_class("android/net/Uri")?;
+    let uri = env
+        .call_static_method(
+            uri_cls,
+            "parse",
+            "(Ljava/lang/String;)Landroid/net/Uri;",
+            &[JValue::Object(&url_jstr)],
+        )?
+        .l()?;
+
+    let req_cls = env.find_class("android/app/DownloadManager$Request")?;
+    let req = env.new_object(req_cls, "(Landroid/net/Uri;)V", &[JValue::Object(&uri)])?;
+
+    let mime = env.new_string("application/vnd.android.package-archive")?;
+    env.call_method(
+        &req,
+        "setMimeType",
+        "(Ljava/lang/String;)Landroid/app/DownloadManager$Request;",
+        &[JValue::Object(&mime)],
+    )?;
+    env.call_method(
+        &req,
+        "setNotificationVisibility",
+        "(I)Landroid/app/DownloadManager$Request;",
+        &[JValue::Int(1)],
+    )?;
+
+    let env_cls = env.find_class("android/os/Environment")?;
+    let dir_down = env
+        .get_static_field(env_cls, "DIRECTORY_DOWNLOADS", "Ljava/lang/String;")?
+        .l()?;
+    env.call_method(
+        &req,
+        "setDestinationInExternalPublicDir",
+        "(Ljava/lang/String;Ljava/lang/String;)Landroid/app/DownloadManager$Request;",
+        &[JValue::Object(&dir_down), JValue::Object(&fn_jstr)],
+    )?;
+
+    let title = env.new_string("Mangatan Update")?;
+    env.call_method(
+        &req,
+        "setTitle",
+        "(Ljava/lang/CharSequence;)Landroid/app/DownloadManager$Request;",
+        &[JValue::Object(&title)],
+    )?;
+
+    let dm_str = env.new_string("download")?;
+    let dm = env
+        .call_method(
+            &context_obj,
+            "getSystemService",
+            "(Ljava/lang/String;)Ljava/lang/Object;",
+            &[JValue::Object(&dm_str)],
+        )?
+        .l()?;
+
+    let id = env
+        .call_method(
+            &dm,
+            "enqueue",
+            "(Landroid/app/DownloadManager$Request;)J",
+            &[JValue::Object(&req)],
+        )?
+        .j()?;
+
+    LAST_DOWNLOAD_ID.store(id, Ordering::Relaxed);
+
+    // --- START BACKGROUND MONITOR ---
+    thread::spawn(move || {
+        monitor_download_completion(id);
+    });
+
+    info!("✅ Download Enqueued ID: {}", id);
+    Ok(())
+}
+
+fn native_trigger_install() -> Result<(), Box<dyn std::error::Error>> {
+    let id = LAST_DOWNLOAD_ID.load(Ordering::Relaxed);
+    if id == -1 {
+        return Err("No active download".into());
+    }
+
+    let ctx = ndk_context::android_context();
+    let vm = unsafe { jni::JavaVM::from_raw(ctx.vm().cast()) }?;
+    let mut env = vm.attach_current_thread()?;
+    let context_obj = unsafe { jni::objects::JObject::from_raw(ctx.context().cast()) };
+
+    let dm_str = env.new_string("download")?;
+    let dm = env
+        .call_method(
+            &context_obj,
+            "getSystemService",
+            "(Ljava/lang/String;)Ljava/lang/Object;",
+            &[JValue::Object(&dm_str)],
+        )?
+        .l()?;
+
+    let uri = env
+        .call_method(
+            &dm,
+            "getUriForDownloadedFile",
+            "(J)Landroid/net/Uri;",
+            &[JValue::Long(id)],
+        )?
+        .l()?;
+    if uri.is_null() {
+        return Err("Download URI is null".into());
+    }
+
+    let intent_cls = env.find_class("android/content/Intent")?;
+    let action_view = env
+        .get_static_field(&intent_cls, "ACTION_VIEW", "Ljava/lang/String;")?
+        .l()?;
+    let intent = env.new_object(
+        &intent_cls,
+        "(Ljava/lang/String;)V",
+        &[JValue::Object(&action_view)],
+    )?;
+
+    let mime = env.new_string("application/vnd.android.package-archive")?;
+    env.call_method(
+        &intent,
+        "setDataAndType",
+        "(Landroid/net/Uri;Ljava/lang/String;)Landroid/content/Intent;",
+        &[JValue::Object(&uri), JValue::Object(&mime)],
+    )?;
+
+    env.call_method(
+        &intent,
+        "addFlags",
+        "(I)Landroid/content/Intent;",
+        &[JValue::Int(1 | 268435456)],
+    )?;
+
+    env.call_method(
+        &context_obj,
+        "startActivity",
+        "(Landroid/content/Intent;)V",
+        &[JValue::Object(&intent)],
+    )?;
+
+    info!("✅ Install Intent Started");
+    Ok(())
 }

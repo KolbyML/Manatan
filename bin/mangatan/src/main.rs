@@ -42,6 +42,7 @@ use reqwest::{
     },
 };
 use rust_embed::RustEmbed;
+use serde::Serialize;
 use tokio::process::Command;
 use tokio_tungstenite::{
     connect_async,
@@ -65,6 +66,12 @@ static NATIVES_BYTES: &[u8] = include_bytes!("../resources/natives.zip");
 #[derive(RustEmbed)]
 #[folder = "resources/mangatan-webui"]
 struct FrontendAssets;
+
+#[derive(Serialize)]
+struct VersionResponse {
+    version: String,
+    variant: String,
+}
 
 #[derive(Clone, Debug, PartialEq)]
 enum UpdateStatus {
@@ -498,6 +505,7 @@ async fn run_server(
 
     let ocr_router = mangatan_ocr_server::create_router(data_dir.clone());
     let yomitan_router = mangatan_yomitan_server::create_router(data_dir.clone(), true);
+    let system_router = Router::new().route("/version", any(current_version_handler));
 
     let client = Client::new();
     let cors = CorsLayer::new()
@@ -527,6 +535,7 @@ async fn run_server(
     let app = Router::new()
         .nest("/api/ocr", ocr_router)
         .nest("/api/yomitan", yomitan_router)
+        .nest("/api/system", system_router)
         .merge(proxy_router)
         .fallback(serve_react_app)
         .layer(cors);
@@ -942,4 +951,11 @@ async fn open_webpage_when_ready() {
     {
         error!("❌ Timed out waiting for server readiness (10s). Browser open cancelled.");
     }
+}
+
+async fn current_version_handler() -> impl IntoResponse {
+    axum::Json(VersionResponse {
+        version: APP_VERSION.to_string(),
+        variant: "desktop".to_string(), // Frontend will see 'desktop' and HIDE the button
+    })
 }

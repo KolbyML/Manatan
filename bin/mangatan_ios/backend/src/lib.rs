@@ -22,6 +22,7 @@ use axum::{
 };
 use futures::{SinkExt, StreamExt};
 use reqwest::Client;
+use serde::Serialize;
 use socket2::{Domain, Protocol, Socket, Type};
 use tokio::{fs as tokio_fs, runtime::Runtime};
 use tokio_tungstenite::{
@@ -38,6 +39,12 @@ use tracing::{error, info, warn};
 struct AppState {
     client: Client,
     webui_dir: PathBuf,
+}
+
+#[derive(Serialize)]
+struct VersionResponse {
+    version: String,
+    variant: String,
 }
 
 // Global state used by Objective-C to determine if it should show the WebView
@@ -125,6 +132,7 @@ async fn start_web_server(
     info!("🚀 Initializing Axum Proxy Server on port 4568...");
     let ocr_router = mangatan_ocr_server::create_router(data_dir.clone());
     let yomitan_router = mangatan_yomitan_server::create_router(data_dir.clone(), true);
+    let system_router = Router::new().route("/version", any(current_version_handler));
     let state = AppState {
         client: Client::new(),
         webui_dir: bundle_dir.join("webui"),
@@ -156,6 +164,7 @@ async fn start_web_server(
     let app: Router<AppState> = Router::new()
         .nest_service("/api/ocr", ocr_router)
         .nest_service("/api/yomitan", yomitan_router)
+        .nest("/api/system", system_router)
         .merge(proxy_router)
         .fallback(serve_react_app)
         .layer(cors);
@@ -373,4 +382,12 @@ fn tungstenite_to_axum(msg: TungsteniteMessage) -> Message {
         }
         TungsteniteMessage::Frame(_) => Message::Binary(Bytes::new()),
     }
+}
+
+async fn current_version_handler() -> impl IntoResponse {
+    let version = env!("CARGO_PKG_VERSION");
+    axum::Json(VersionResponse {
+        version: version.to_string(),
+        variant: "ios".to_string(),
+    })
 }

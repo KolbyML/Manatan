@@ -26,6 +26,7 @@ mime_guess.workspace = true
 open.workspace = true
 reqwest.workspace = true
 rust-embed.workspace = true
+serde.workspace = true
 self_update.workspace = true
 tokio.workspace = true
 tokio-tungstenite.workspace = true

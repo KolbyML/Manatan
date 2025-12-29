@@ -371,7 +371,13 @@ jobs:
           VERSION="${{ github.ref_name }}"
           CLEAN_VERSION="${VERSION#v}"
           echo "Updating workspace version from 0.1.0 to $CLEAN_VERSION..."
-          sed "s/^version = \"0.1.0\"/version = \"$CLEAN_VERSION\"/" Cargo.toml > Cargo.toml.tmp && mv Cargo.toml.tmp Cargo.toml          
+          
+          # 1. Update Root Workspace
+          sed "s/^version = \"0.1.0\"/version = \"$CLEAN_VERSION\"/" Cargo.toml > Cargo.toml.tmp && mv Cargo.toml.tmp Cargo.toml
+          
+          # 2. Explicitly update Android Package (Fixes APK versioning)
+          echo "Injecting version into Android manifest..."
+          sed "s/^version.workspace = true/version = \"$CLEAN_VERSION\"/" bin/mangatan_android/Cargo.toml > bin/mangatan_android/Cargo.toml.tmp && mv bin/mangatan_android/Cargo.toml.tmp bin/mangatan_android/Cargo.toml
 
       - name: Set up JDK 17
         uses: actions/setup-java@v4
@@ -669,8 +675,8 @@ jobs:
           mv release/mac-silicon/mangatan-macos.zip final_release/Mangatan-${VERSION}-macOS-Silicon.zip
           
           # ANDROID
-          mv release/android/mangatan-browser.apk final_release/Mangatan-${VERSION}-Android-Browser.apk
-          mv release/android/mangatan-native-webview.apk final_release/Mangatan-${VERSION}-Android-NativeWebview.apk
+          mv release/android/mangatan-browser.apk final_release/Mangatan-${VERSION}-Android-Browser-Advanced-Users.apk
+          mv release/android/mangatan-native-webview.apk final_release/Mangatan-${VERSION}-Android-NativeWebview-Recommended.apk
 
           # iOS
           mv release/ios/Mangatan.ipa final_release/Mangatan-${VERSION}-iOS.ipa
