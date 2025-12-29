@@ -19,7 +19,7 @@ use handlers::{
 use lookup::LookupService;
 use state::AppState;
 
-pub const PREBAKED_DICT: &[u8] = include_bytes!("../assets/JMdict_english.zip");
+pub static PREBAKED_DICT: &[u8] = include_bytes!("../assets/JMdict_english.zip");
 
 #[derive(Clone)]
 pub struct ServerState {
