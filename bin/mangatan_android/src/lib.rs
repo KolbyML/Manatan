@@ -1219,14 +1219,12 @@ fn supports_vulkan(app: &AndroidApp) -> bool {
     let vm = unsafe { JavaVM::from_raw(app.vm_as_ptr() as *mut jni::sys::JavaVM).unwrap() };
     let mut env = vm.attach_current_thread().unwrap();
     let context = unsafe { JObject::from_raw(app.activity_as_ptr() as jni::sys::jobject) };
-
     let pm = env.call_method(&context, "getPackageManager", "()Landroid/content/pm/PackageManager;", &[]).unwrap().l().unwrap();
     let pm_class = env.find_class("android/content/pm/PackageManager").unwrap();
-    let feature_str = env.get_static_field(&pm_class, "FEATURE_VULKAN_HARDWARE_LEVEL", "Ljava/lang/String;").unwrap().l().unwrap();
-
-    let supported = env.call_method(&pm, "hasSystemFeature", "(Ljava/lang/String;)Z", &[JValue::Object(&feature_str)]).unwrap().z().unwrap_or(false);
-
-    info!("Vulkan hardware support detected: {}", supported);
+    let feature_str = env.get_static_field(&pm_class, "FEATURE_VULKAN_HARDWARE_VERSION", "Ljava/lang/String;").unwrap().l().unwrap();
+    let vulkan_1_1_version_code = 0x401000;
+    let supported = env.call_method(&pm, "hasSystemFeature", "(Ljava/lang/String;I)Z", &[JValue::Object(&feature_str), JValue::Int(vulkan_1_1_version_code)]).unwrap().z().unwrap_or(false);
+    info!("Vulkan 1.1+ hardware support detected: {}", supported);
     supported
 }
 fn get_android_sdk_version(app: &AndroidApp) -> i32 {
