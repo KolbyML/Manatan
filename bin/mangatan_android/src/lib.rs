@@ -603,10 +603,6 @@ fn tungstenite_to_axum(msg: TungsteniteMessage) -> Message {
 }
 
 fn start_background_services(app: AndroidApp, files_dir: PathBuf) {
-    info!("Background Service: Initializing...");
-    
-     // Compare APK update time with last extraction to avoid redundant asset extraction.
-    // This ensures assets are only extracted on first run or after app updates.
     let apk_time = get_apk_update_time(&app).unwrap_or(i64::MAX);
     let marker = files_dir.join(".extracted_apk_time");
     
@@ -615,11 +611,11 @@ fn start_background_services(app: AndroidApp, files_dir: PathBuf) {
         .and_then(|s| s.parse().ok())
         .unwrap_or(0);
     
+    let jre_root = files_dir.join("jre");
+    let webui = files_dir.join("webui");
+    
     if apk_time > last_time {
         info!("Extracting assets (APK updated)...");
-        
-        let jre_root = files_dir.join("jre");
-        let webui = files_dir.join("webui");
         
         if jre_root.exists() { fs::remove_dir_all(&jre_root).ok(); }
         if webui.exists() { fs::remove_dir_all(&webui).ok(); }
@@ -1350,7 +1346,7 @@ fn acquire_wake_lock(app: &AndroidApp) {
 // Add this helper function for getting last update time
 fn get_apk_update_time(app: &AndroidApp) -> Option<i64> {
     let vm = unsafe { JavaVM::from_raw(app.vm_as_ptr() as *mut _).ok()? };
-    let env = vm.attach_current_thread().ok()?;
+    let mut env = vm.attach_current_thread().ok()?;  // ← Add `mut` here
     let ctx = unsafe { JObject::from_raw(app.activity_as_ptr() as jni::sys::jobject) };
     
     let pkg = env.call_method(&ctx, "getPackageName", "()Ljava/lang/String;", &[]).ok()?.l().ok()?;
