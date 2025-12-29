@@ -10,6 +10,11 @@ rust-version.workspace = true
 version.workspace = true
 autobins = false 
 
+[features]
+default = []
+# When enabled, the app shows a loading spinner then launches a native Android Webview
+native_webview = []
+
 [package.metadata.android]
 package = "com.mangatan.app"
 build_targets = ["Arm64V8a", "ArmV7a"]
@@ -59,6 +64,13 @@ request_legacy_external_storage = true
 has_code = true
 
 [[package.metadata.android.application.activity]]
+name = ".WebviewActivity"
+label = "Mangatan Reader"
+config_changes = "orientation|keyboardHidden|screenSize"
+exported = false
+theme = "@android:style/Theme.NoTitleBar"
+
+[[package.metadata.android.application.activity]]
 name = ".MangatanActivity"
 label = "Mangatan"
 config_changes = "orientation|keyboardHidden|screenSize"
@@ -94,6 +106,7 @@ lazy_static = "1.4"
 libc = "0.2"
 libloading = "0.8"
 mangatan-ocr-server.workspace = true
+mangatan-yomitan-server.workspace = true
 mime_guess = "2"
 openssl = { version = "0.10", features = ["vendored"] }
 

@@ -124,7 +124,7 @@ async fn start_web_server(
 ) -> Result<(), Box<dyn std::error::Error>> {
     info!("🚀 Initializing Axum Proxy Server on port 4568...");
     let ocr_router = mangatan_ocr_server::create_router(data_dir.clone());
-    let yomitan_router = mangatan_yomitan_server::create_router(data_dir.clone());
+    let yomitan_router = mangatan_yomitan_server::create_router(data_dir.clone(), true);
     let state = AppState {
         client: Client::new(),
         webui_dir: bundle_dir.join("webui"),

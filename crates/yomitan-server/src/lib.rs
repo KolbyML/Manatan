@@ -13,8 +13,8 @@ pub mod lookup;
 pub mod state;
 
 use handlers::{
-    import_handler, list_dictionaries_handler, lookup_handler, manage_dictionaries_handler,
-    reset_db_handler,
+    import_handler, install_defaults_handler, list_dictionaries_handler, lookup_handler,
+    manage_dictionaries_handler, reset_db_handler,
 };
 use lookup::LookupService;
 use state::AppState;
@@ -27,7 +27,7 @@ pub struct ServerState {
     pub lookup: Arc<LookupService>,
 }
 
-pub fn create_router(data_dir: PathBuf) -> Router {
+pub fn create_router(data_dir: PathBuf, auto_install: bool) -> Router {
     let state = ServerState {
         app: AppState::new(data_dir),
         lookup: Arc::new(LookupService::new()),
@@ -44,15 +44,19 @@ pub fn create_router(data_dir: PathBuf) -> Router {
         };
 
         if needs_import {
-            info!("📦 [Yomitan] No saved state. Setting LOADING flag and importing...");
-            app_state_clone.set_loading(true);
+            if auto_install {
+                info!("📦 [Yomitan] Auto-Install Enabled: Importing default dictionary...");
+                app_state_clone.set_loading(true);
 
-            match import::import_zip(&app_state_clone, PREBAKED_DICT) {
-                Ok(msg) => info!("✅ [Yomitan] Prebake Success: {}", msg),
-                Err(e) => error!("❌ [Yomitan] Prebake Failed: {}", e),
+                match import::import_zip(&app_state_clone, PREBAKED_DICT) {
+                    Ok(msg) => info!("✅ [Yomitan] Prebake Success: {}", msg),
+                    Err(e) => error!("❌ [Yomitan] Prebake Failed: {}", e),
+                }
+
+                app_state_clone.set_loading(false);
+            } else {
+                info!("ℹ️ [Yomitan] Auto-Install Disabled. Waiting for user action.");
             }
-
-            app_state_clone.set_loading(false);
         } else {
             info!("ℹ️ [Yomitan] State loaded from disk. Ready.");
         }
@@ -66,6 +70,7 @@ pub fn create_router(data_dir: PathBuf) -> Router {
         .route("/import", post(import_handler))
         .route("/reset", post(reset_db_handler))
         .route("/manage", post(manage_dictionaries_handler))
+        .route("/install-defaults", post(install_defaults_handler))
         .layer(CorsLayer::permissive())
         .layer(DefaultBodyLimit::max(limit))
         .layer(RequestBodyLimitLayer::new(limit))

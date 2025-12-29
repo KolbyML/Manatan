@@ -1,4 +1,4 @@
-use crate::{ServerState, import};
+use crate::{PREBAKED_DICT, ServerState, import};
 use axum::{
     Json,
     extract::{Multipart, Query, State},
@@ -48,21 +48,16 @@ pub enum DictionaryAction {
     Reorder { order: Vec<i64> },
 }
 
-// --- DICTIONARY MANAGEMENT HANDLER ---
 pub async fn manage_dictionaries_handler(
     State(state): State<ServerState>,
     Json(action): Json<DictionaryAction>,
 ) -> Json<Value> {
     let app_state = state.app.clone();
 
-    // Spawn blocking task for DB operations
     let res = tokio::task::spawn_blocking(move || -> Result<(), String> {
         let mut conn = app_state.pool.get().map_err(|e| e.to_string())?;
-
-        // Track if we need to vacuum (reclaim disk space)
         let mut should_vacuum = false;
 
-        // Scope the transaction so it drops (commits) BEFORE we try to VACUUM
         {
             let tx = conn.transaction().map_err(|e| e.to_string())?;
 
@@ -94,8 +89,6 @@ pub async fn manage_dictionaries_handler(
 
                     let mut dicts = app_state.dictionaries.write().expect("lock");
                     dicts.remove(&DictionaryId(id));
-
-                    // Mark for VACUUM since we deleted a lot of data
                     should_vacuum = true;
                 }
                 DictionaryAction::Reorder { order } => {
@@ -117,9 +110,8 @@ pub async fn manage_dictionaries_handler(
             }
 
             tx.commit().map_err(|e| e.to_string())?;
-        } // Transaction ends here
+        }
 
-        // VACUUM must run outside of a transaction
         if should_vacuum {
             info!("🧹 [Yomitan] Vacuuming database to reclaim disk space...");
             conn.execute("VACUUM", []).map_err(|e| e.to_string())?;
@@ -134,6 +126,42 @@ pub async fn manage_dictionaries_handler(
     match res {
         Ok(_) => Json(json!({ "status": "ok" })),
         Err(e) => Json(json!({ "status": "error", "message": e })),
+    }
+}
+
+pub async fn install_defaults_handler(State(state): State<ServerState>) -> Json<Value> {
+    let app_state = state.app.clone();
+
+    // Check if we already have dictionaries to avoid overwriting/duplicating
+    {
+        let dicts = app_state.dictionaries.read().expect("lock");
+        if !dicts.is_empty() {
+            return Json(json!({ "status": "ok", "message": "Dictionaries already exist." }));
+        }
+    }
+
+    info!("📥 [Yomitan] User requested default dictionary installation...");
+    app_state.set_loading(true);
+
+    // FIX: Clone the state specifically for the blocking task
+    let app_state_for_task = app_state.clone();
+
+    let res = tokio::task::spawn_blocking(move || {
+        // Use the CLONE inside the closure
+        import::import_zip(&app_state_for_task, PREBAKED_DICT)
+    })
+    .await
+    .unwrap();
+
+    // Use the ORIGINAL here (it wasn't moved)
+    app_state.set_loading(false);
+
+    match res {
+        Ok(msg) => Json(json!({ "status": "ok", "message": msg })),
+        Err(e) => {
+            error!("❌ [Install Defaults] Failed: {}", e);
+            Json(json!({ "status": "error", "message": e.to_string() }))
+        }
     }
 }
 
@@ -152,14 +180,12 @@ pub async fn reset_db_handler(State(state): State<ServerState>) -> Json<Value> {
         }
 
         if let Ok(mut conn) = app_state.pool.get() {
-            // 1. Delete all data
             if let Ok(tx) = conn.transaction() {
                 let _ = tx.execute("DELETE FROM terms", []);
                 let _ = tx.execute("DELETE FROM dictionaries", []);
                 let _ = tx.execute("DELETE FROM metadata", []);
                 let _ = tx.commit();
             }
-            // 2. Reclaim space immediately (since we deleted everything)
             info!("🧹 [Yomitan] Vacuuming after reset...");
             let _ = conn.execute("VACUUM", []);
         }

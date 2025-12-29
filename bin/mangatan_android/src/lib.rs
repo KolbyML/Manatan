@@ -190,27 +190,73 @@ type JniCreateJavaVM = unsafe extern "system" fn(
 
 struct MangatanApp {
     server_ready: Arc<AtomicBool>,
+    #[cfg(feature = "native_webview")]
+    webview_launcher: Box<dyn Fn() + Send + Sync>,
+    #[cfg(feature = "native_webview")]
+    webview_launched: bool,
 }
 
 impl MangatanApp {
-    fn new(_cc: &eframe::CreationContext<'_>, server_ready: Arc<AtomicBool>) -> Self {
-        Self { server_ready }
+    fn new(
+        _cc: &eframe::CreationContext<'_>,
+        server_ready: Arc<AtomicBool>,
+        #[cfg(feature = "native_webview")] webview_launcher: Box<dyn Fn() + Send + Sync>,
+    ) -> Self {
+        Self {
+            server_ready,
+            #[cfg(feature = "native_webview")]
+            webview_launcher,
+            #[cfg(feature = "native_webview")]
+            webview_launched: false,
+        }
     }
 }
 
 impl eframe::App for MangatanApp {
     fn update(&mut self, ctx: &egui::Context, _frame: &mut eframe::Frame) {
-        if !self.server_ready.load(Ordering::Relaxed) {
-            ctx.request_repaint();
+        let is_ready = self.server_ready.load(Ordering::Relaxed);
+        if !is_ready {
+            ctx.request_repaint_after(Duration::from_millis(100));
         }
 
+        // --- NATIVE WEBVIEW MODE ---
+        #[cfg(feature = "native_webview")]
+        {
+            if is_ready && !self.webview_launched {
+                info!("Server ready, auto-launching WebView...");
+                (self.webview_launcher)();
+                self.webview_launched = true;
+            }
+
+            // Render a clean Loading Screen (No logs, no buttons)
+            egui::CentralPanel::default().show(ctx, |ui| {
+                ui.vertical_centered(|ui| {
+                    ui.add_space(ctx.screen_rect().height() * 0.4);
+
+                    if !is_ready {
+                        ui.spinner();
+                        ui.add_space(20.0);
+                        ui.heading("Mangatan is starting...");
+                        ui.label("Please wait while the server initializes.");
+                    } else {
+                        // Minimal UI in case user backs out of WebView
+                        ui.heading("Mangatan is Running");
+                        ui.add_space(20.0);
+                        if ui.button("Return to App").clicked() {
+                            (self.webview_launcher)();
+                        }
+                    }
+                });
+            });
+            return; // Skip drawing the debug GUI
+        }
+
+        // --- DEBUG GUI (Only runs if feature is DISABLED) ---
         egui::CentralPanel::default().show(ctx, |ui| {
             ui.vertical_centered(|ui| {
                 ui.add_space(20.0);
                 ui.heading(egui::RichText::new("Mangatan").size(32.0).strong());
                 ui.add_space(20.0);
-
-                let is_ready = self.server_ready.load(Ordering::Relaxed);
 
                 if is_ready {
                     ui.heading(
@@ -275,10 +321,19 @@ fn android_main(app: AndroidApp) {
 
     info!("Starting Mangatan...");
 
-    ensure_battery_unrestricted(&app);
-    check_and_request_permissions(&app);
+    // --- CONDITIONALLY REQUEST PERMISSIONS ---
+    #[cfg(not(feature = "native_webview"))]
+    {
+        // Only ask for battery/notifications if we are in DEBUG/Server mode
+        ensure_battery_unrestricted(&app);
+        check_and_request_permissions(&app);
+    }
+
+    // We still need locks to keep the server running
     acquire_wifi_lock(&app);
     acquire_wake_lock(&app);
+
+    // Service ensures the process isn't killed immediately
     start_foreground_service(&app);
 
     let app_bg = app.clone();
@@ -349,19 +404,96 @@ fn android_main(app: AndroidApp) {
         builder.with_android_app(app_gui);
     }));
 
+    let app_for_launcher = app.clone();
+
     eframe::run_native(
         "Mangatan",
         options,
-        Box::new(move |cc| Ok(Box::new(MangatanApp::new(cc, server_ready_gui)))),
+        Box::new(move |cc| {
+            // Setup the launcher closure
+            #[cfg(feature = "native_webview")]
+            let launcher = Box::new(move || {
+                launch_webview_activity(&app_for_launcher);
+            });
+
+            Ok(Box::new(MangatanApp::new(
+                cc,
+                server_ready_gui,
+                #[cfg(feature = "native_webview")]
+                launcher,
+            )))
+        }),
     )
     .unwrap_or_else(|e| {
         error!("GUI Failed to start: {:?}", e);
     });
 }
 
+fn launch_webview_activity(app: &AndroidApp) {
+    use jni::objects::{JObject, JValue};
+
+    info!("🚀 Launching Native Webview Activity...");
+
+    let vm_ptr = app.vm_as_ptr() as *mut jni::sys::JavaVM;
+    let vm = unsafe { JavaVM::from_raw(vm_ptr).unwrap() };
+    let mut env = vm.attach_current_thread().unwrap();
+
+    let activity_ptr = app.activity_as_ptr() as jni::sys::jobject;
+    let context = unsafe { JObject::from_raw(activity_ptr) };
+
+    // Find the class we just created
+    let intent_class = env
+        .find_class("android/content/Intent")
+        .expect("Failed to find Intent class");
+    let intent = env
+        .new_object(&intent_class, "()V", &[])
+        .expect("Failed to create Intent");
+
+    // Helper to get package name
+    let pkg_name = get_package_name(&mut env, &context).unwrap_or("com.mangatan.app".to_string());
+    let pkg_name_jstr = env.new_string(&pkg_name).unwrap();
+
+    // Target the new Activity
+    let activity_class_name = env.new_string("com.mangatan.app.WebviewActivity").unwrap();
+
+    let _ = env
+        .call_method(
+            &intent,
+            "setClassName",
+            "(Ljava/lang/String;Ljava/lang/String;)Landroid/content/Intent;",
+            &[
+                JValue::Object(&pkg_name_jstr),
+                JValue::Object(&activity_class_name),
+            ],
+        )
+        .expect("Failed to set class name");
+
+    let _ = env
+        .call_method(
+            &context,
+            "startActivity",
+            "(Landroid/content/Intent;)V",
+            &[JValue::Object(&intent)],
+        )
+        .expect("Failed to start Webview Activity");
+}
+
 async fn start_web_server(data_dir: PathBuf) -> Result<(), Box<dyn std::error::Error>> {
     info!("🚀 Initializing Axum Proxy Server on port 4568...");
     let ocr_router = mangatan_ocr_server::create_router(data_dir.clone());
+
+    #[cfg(feature = "native_webview")]
+    let auto_install_yomitan = true;
+
+    #[cfg(not(feature = "native_webview"))]
+    let auto_install_yomitan = false;
+
+    info!(
+        "📚 Initializing Yomitan Server (Auto-Install: {})...",
+        auto_install_yomitan
+    );
+    let yomitan_router =
+        mangatan_yomitan_server::create_router(data_dir.clone(), auto_install_yomitan);
 
     let webui_dir = data_dir.join("webui");
     let client = Client::new();
@@ -394,6 +526,7 @@ async fn start_web_server(data_dir: PathBuf) -> Result<(), Box<dyn std::error::E
 
     let app: Router<AppState> = Router::new()
         .nest_service("/api/ocr", ocr_router)
+        .nest_service("/api/yomitan", yomitan_router)
         .merge(proxy_router)
         .fallback(serve_react_app)
         .layer(cors)
@@ -416,7 +549,16 @@ async fn serve_react_app(State(state): State<AppState>, uri: Uri) -> impl IntoRe
         if file_path.starts_with(&state.webui_dir) && file_path.exists() {
             if let Ok(content) = tokio_fs::read(&file_path).await {
                 let mime = mime_guess::from_path(&file_path).first_or_octet_stream();
-                return ([(axum::http::header::CONTENT_TYPE, mime.as_ref())], content)
+                return (
+                    [
+                        (axum::http::header::CONTENT_TYPE, mime.as_ref()),
+                        (
+                            axum::http::header::CACHE_CONTROL,
+                            "no-cache, no-store, must-revalidate",
+                        ),
+                    ],
+                    content,
+                )
                     .into_response();
             }
         }
@@ -426,7 +568,13 @@ async fn serve_react_app(State(state): State<AppState>, uri: Uri) -> impl IntoRe
     if let Ok(html_string) = tokio_fs::read_to_string(index_path).await {
         let fixed_html = html_string.replace("<head>", "<head><base href=\"/\" />");
         return (
-            [(axum::http::header::CONTENT_TYPE, "text/html")],
+            [
+                (axum::http::header::CONTENT_TYPE, "text/html"),
+                (
+                    axum::http::header::CACHE_CONTROL,
+                    "no-cache, no-store, must-revalidate",
+                ),
+            ],
             fixed_html,
         )
             .into_response();
@@ -479,6 +627,7 @@ async fn proxy_suwayomi_handler(State(state): State<AppState>, req: Request) -> 
     let req = Request::from_parts(parts, body);
     proxy_request(client, req, "http://127.0.0.1:4567", "").await
 }
+
 async fn handle_socket(client_socket: WebSocket, headers: HeaderMap, backend_url: String) {
     let mut request = match backend_url.clone().into_client_request() {
         Ok(req) => req,
@@ -625,7 +774,7 @@ fn start_background_services(app: AndroidApp, files_dir: PathBuf) {
         error!("Failed to extract WebUI: {:?}", e);
     }
 
-    // CHANGE: Create 'bin' directory to satisfy Suwayomi's directory scanner
+    // Create 'bin' directory to satisfy Suwayomi's directory scanner
     let bin_dir = files_dir.join("bin");
     if bin_dir.exists() {
         fs::remove_dir_all(&bin_dir).ok();
@@ -1079,7 +1228,6 @@ fn check_and_request_permissions(app: &AndroidApp) {
         Ok(name) => name,
         Err(e) => {
             info!("Failed to get package name via JNI: {:?}", e);
-            // Fallback to a common package structure or hardcoded value if JNI fails
             "com.mangatan.app".to_string()
         }
     };
@@ -1267,7 +1415,6 @@ fn acquire_wifi_lock(app: &AndroidApp) {
         .unwrap();
 
     // 2. Create Lock (Mode 3 = WIFI_MODE_FULL_HIGH_PERF)
-    // This keeps the radio active and high performance even when screen is off.
     let tag = env.new_string("Mangatan:WifiLock").unwrap();
     let wifi_lock = env
         .call_method(

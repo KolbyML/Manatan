@@ -151,11 +151,12 @@ download_natives:
 	rm -rf temp_natives
 	@echo "Natives ready at bin/mangatan/resources/natives.zip"
 
-.PHONY: download_android_natives
-download_android_natives:
+# --- Android Downloads (Cached) ---
+
+# 1. Android Natives
+bin/mangatan_android/assets/natives.tar:
 	@echo "Downloading Android Natives (JogAmp)..."
 	mkdir -p bin/mangatan_android/assets
-	rm -f bin/mangatan_android/assets/natives.tar
 	rm -rf temp_android_natives
 	
 	@echo "Downloading JogAmp..."
@@ -173,6 +174,29 @@ download_android_natives:
 	rm jogamp_android.7z
 	rm -rf temp_android_natives
 
+.PHONY: download_android_natives
+download_android_natives: bin/mangatan_android/assets/natives.tar
+
+# 2. Android JAR
+bin/mangatan_android/assets/Suwayomi-Server.jar:
+	@echo "Downloading Android Suwayomi Server JAR..."
+	mkdir -p bin/mangatan_android/assets
+	curl -L "https://github.com/Suwayomi/Suwayomi-Server-preview/releases/download/v2.1.2038/Suwayomi-Server-v2.1.2038.jar" -o bin/mangatan_android/assets/Suwayomi-Server.jar
+
+.PHONY: download_android_jar
+download_android_jar: bin/mangatan_android/assets/Suwayomi-Server.jar
+
+# 3. Android JRE
+bin/mangatan_android/assets/jre.tar:
+	@echo "Downloading Android JRE..."
+	mkdir -p bin/mangatan_android/assets
+	curl -L "https://github.com/KolbyML/java_assets/releases/download/1/android_jdk_21.tar" -o bin/mangatan_android/assets/jre.tar
+
+.PHONY: download_android_jre
+download_android_jre: bin/mangatan_android/assets/jre.tar
+
+# -----------------------------------
+
 .PHONY: setup-depends
 setup-depends: desktop_webui download_jar download_natives
 
@@ -185,8 +209,12 @@ dev-embedded: setup-depends bundle_jre
 	cargo run --release -p mangatan --features embed-jre
 
 .PHONY: dev-android
-dev-android: android_webui download_android_jar download_android_jre
+dev-android: android_webui download_android_jar download_android_jre download_android_natives
 	cd bin/mangatan_android && cargo apk2 run
+
+.PHONY: dev-android-native
+dev-android-native: android_webui download_android_jar download_android_jre download_android_natives
+	cd bin/mangatan_android && cargo apk2 run --features native_webview
 
 .PHONY: jlink
 jlink:
@@ -206,13 +234,6 @@ download_jar:
 	mkdir -p bin/mangatan/resources
 	rm -f bin/mangatan/resources/Suwayomi-Server.jar
 	curl -L "https://github.com/Suwayomi/Suwayomi-Server-preview/releases/download/v2.1.2038/Suwayomi-Server-v2.1.2038.jar" -o bin/mangatan/resources/Suwayomi-Server.jar
-
-.PHONY: download_android_jar
-download_android_jar:
-	@echo "Downloading Android Suwayomi Server JAR..."
-	mkdir -p bin/mangatan_android/assets
-	rm -f bin/mangatan_android/assets/Suwayomi-Server.jar
-	curl -L "https://github.com/Suwayomi/Suwayomi-Server-preview/releases/download/v2.1.2038/Suwayomi-Server-v2.1.2038.jar" -o bin/mangatan_android/assets/Suwayomi-Server.jar
 
 .PHONY: download_ios_jar
 download_ios_jar:
@@ -272,13 +293,6 @@ ios_jre:
 	rm -rf bin/mangatan_ios/Mangatan/lib/__MACOSX
 	@echo "✅ iOS JRE installed."
 
-.PHONY: download_android_jre
-download_android_jre:
-	@echo "Downloading Android JRE..."
-	mkdir -p bin/mangatan_android/assets
-	rm -f bin/mangatan_android/assets/jre.tar
-	curl -L "https://github.com/KolbyML/java_assets/releases/download/1/android_jdk_21.tar" -o bin/mangatan_android/assets/jre.tar
-
 .PHONY: docker-build
 docker-build: desktop_webui download_jar download_natives bundle_jre
 	@echo "🐳 Building Docker image for local architecture: $(DOCKER_ARCH)"
@@ -294,7 +308,6 @@ docker-build: desktop_webui download_jar download_natives bundle_jre
 	
 	# 4. Build the image
 	docker build --build-arg TARGETARCH=$(DOCKER_ARCH) -t mangatan:local .
-	
 	# 5. Cleanup artifacts
 	rm mangatan-linux-$(DOCKER_ARCH).tar.gz
 	rm mangatan-linux-$(FAKE_ARCH).tar.gz

@@ -3687,6 +3687,7 @@ dependencies = [
  "libc",
  "libloading 0.8.9",
  "mangatan-ocr-server",
+ "mangatan-yomitan-server",
  "mime_guess",
  "openssl",
  "reqwest",

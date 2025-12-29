@@ -357,7 +357,7 @@ jobs:
   # --- JOB 5: Build Android APK (Integrated) ---
   build_android:
     if: startsWith(github.ref, 'refs/tags/v')
-    name: Build Android APK
+    name: Build Android APKs
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
@@ -435,7 +435,7 @@ jobs:
           key_password = "password"
           EOF
 
-      - name: Build APK
+      - name: Build APKs
         working-directory: bin/mangatan_android
         run: |
           NDK_ROOT=${ANDROID_NDK_HOME}
@@ -450,39 +450,37 @@ jobs:
           export AR="$TOOLCHAIN_BIN/llvm-ar"
           
           # --- CONFIG FOR AARCH64 (64-bit) ---
-          # We use target-specific env vars so cc-rs can find the right compiler for each arch
           export CC_aarch64_linux_android="$TOOLCHAIN_BIN/aarch64-linux-android30-clang"
           export CXX_aarch64_linux_android="$TOOLCHAIN_BIN/aarch64-linux-android30-clang++"
           export AR_aarch64_linux_android="$TOOLCHAIN_BIN/llvm-ar"
           
           # --- CONFIG FOR ARMV7 (32-bit) ---
-          # Note the 'armv7a' prefix in the clang executable name
           export CC_armv7_linux_androideabi="$TOOLCHAIN_BIN/armv7a-linux-androideabi30-clang"
           export CXX_armv7_linux_androideabi="$TOOLCHAIN_BIN/armv7a-linux-androideabi30-clang++"
           export AR_armv7_linux_androideabi="$TOOLCHAIN_BIN/llvm-ar"
 
+          # Create staging directory
+          mkdir -p ../../signing_stage
+
+          # --- 1. BUILD BROWSER VERSION (Default) ---
+          echo "🏗️ Building Browser Version..."
           cargo apk2 build --release
+          
+          # Find output (cargo-apk places it in target/release/apk usually)
+          APK_PATH=$(find ../../target -name "*.apk" | grep "release/apk" | head -n 1)
+          echo "✅ Browser APK: $APK_PATH"
+          cp "$APK_PATH" ../../signing_stage/mangatan-browser-unsigned.apk
+          rm "$APK_PATH" # Clean up for next build
 
-      - name: Locate and Stage APK
-        run: |
-          echo "🔍 Searching for APK..."
-          # Find the APK in the 'target' directory (ignoring intermediates)
-          APK_PATH=$(find target -name "*.apk" | grep "release" | head -n 1)
+          # --- 2. BUILD NATIVE WEBVIEW VERSION ---
+          echo "🏗️ Building Native Webview Version..."
+          cargo apk2 build --release --features native_webview
           
-          if [ -z "$APK_PATH" ]; then
-            echo "❌ Error: Could not find any APK in 'target/'"
-            find target -name "*.apk" || echo "No APKs found at all."
-            exit 1
-          fi
-          
-          echo "✅ Found APK at: $APK_PATH"
-          
-          # Create a clean directory for the signer
-          mkdir -p signing_stage
-          cp "$APK_PATH" signing_stage/mangatan-unsigned.apk
-          echo "✅ Copied to signing_stage/mangatan-unsigned.apk"
+          APK_PATH=$(find ../../target -name "*.apk" | grep "release/apk" | head -n 1)
+          echo "✅ Native Webview APK: $APK_PATH"
+          cp "$APK_PATH" ../../signing_stage/mangatan-native-webview-unsigned.apk
 
-      - name: Sign APK Manually
+      - name: Sign APKs
         env:
           SIGNING_KEY_BASE64: ${{ secrets.ANDROID_SIGNING_KEY }}
           KEY_STORE_PASSWORD: ${{ secrets.ANDROID_KEY_STORE_PASSWORD }}
@@ -499,26 +497,32 @@ jobs:
           }
           
           BUILD_TOOLS_PATH="$ANDROID_HOME/build-tools/30.0.3"
+          mkdir -p signed_apks
           
-          echo "📐 Aligning APK..."
-          "$BUILD_TOOLS_PATH/zipalign" -v -p 4 signing_stage/mangatan-unsigned.apk mangatan-aligned.apk
-          
-          echo "✍️ Signing APK..."
-          "$BUILD_TOOLS_PATH/apksigner" sign \
-            --ks release.keystore \
-            --ks-pass pass:"$KEY_STORE_PASSWORD" \
-            --ks-key-alias "$ALIAS" \
-            --key-pass pass:"$KEY_PASSWORD" \
-            --out mangatan-android-signed.apk \
-            mangatan-aligned.apk
+          # Loop through all unsigned APKs in staging
+          for APK in signing_stage/*.apk; do
+            # Extract name (e.g., mangatan-browser)
+            BASENAME=$(basename "$APK" -unsigned.apk)
+            echo "✍️ Signing $BASENAME..."
             
-          "$BUILD_TOOLS_PATH/apksigner" verify mangatan-android-signed.apk
+            "$BUILD_TOOLS_PATH/zipalign" -v -p 4 "$APK" "${BASENAME}-aligned.apk"
+            
+            "$BUILD_TOOLS_PATH/apksigner" sign \
+              --ks release.keystore \
+              --ks-pass pass:"$KEY_STORE_PASSWORD" \
+              --ks-key-alias "$ALIAS" \
+              --key-pass pass:"$KEY_PASSWORD" \
+              --out "signed_apks/${BASENAME}.apk" \
+              "${BASENAME}-aligned.apk"
+              
+            "$BUILD_TOOLS_PATH/apksigner" verify "signed_apks/${BASENAME}.apk"
+          done
 
-      - name: Upload Android Artifact
+      - name: Upload Android Artifacts
         uses: actions/upload-artifact@v4
         with:
           name: mangatan-android
-          path: mangatan-android-signed.apk
+          path: signed_apks/*.apk
 
   build_ios:
     name: Build iOS IPA
@@ -677,8 +681,8 @@ jobs:
           mv release/mac-silicon/mangatan-macos.zip final_release/Mangatan-${VERSION}-macOS-Silicon.zip
           
           # ANDROID
-          # Rename the raw signed APK to have the version number
-          mv release/android/mangatan-android-signed.apk final_release/Mangatan-${VERSION}-Android.apk
+          mv release/android/mangatan-browser.apk final_release/Mangatan-${VERSION}-Android-Browser.apk
+          mv release/android/mangatan-native-webview.apk final_release/Mangatan-${VERSION}-Android-NativeWebview.apk
 
           # iOS
           mv release/ios/Mangatan.ipa final_release/Mangatan-${VERSION}-iOS.ipa

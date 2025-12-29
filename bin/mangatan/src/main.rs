@@ -497,7 +497,7 @@ async fn run_server(
     info!("🌍 Starting Web Interface at http://localhost:4568");
 
     let ocr_router = mangatan_ocr_server::create_router(data_dir.clone());
-    let yomitan_router = mangatan_yomitan_server::create_router(data_dir.clone());
+    let yomitan_router = mangatan_yomitan_server::create_router(data_dir.clone(), true);
 
     let client = Client::new();
     let cors = CorsLayer::new()
