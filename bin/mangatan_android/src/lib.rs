@@ -323,12 +323,13 @@ fn android_main(app: AndroidApp) {
 
     info!("Starting Mangatan...");
 
+    check_and_request_permissions(&app);
+
     // --- CONDITIONALLY REQUEST PERMISSIONS ---
     #[cfg(not(feature = "native_webview"))]
     {
         // Only ask for battery/notifications if we are in DEBUG/Server mode
         ensure_battery_unrestricted(&app);
-        check_and_request_permissions(&app);
     }
 
     // We still need locks to keep the server running
