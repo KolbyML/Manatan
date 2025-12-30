@@ -4,7 +4,6 @@ members = [
     "bin/mangatan",
     "bin/mangatan_android",
     "bin/mangatan_ios/backend",
-    "crates/core",
     "crates/ocr-server", 
     "crates/yomitan-server",
 ]
@@ -73,7 +72,6 @@ tracing-subscriber = { version = "0.3.20", features = ["env-filter"] }
 zip = "6.0"
 
 # Internal Dependencies
-mangatan-core = { path = "crates/core" }
 mangatan-ocr-server = { path = "crates/ocr-server" }
 mangatan-yomitan-server = { path = "crates/yomitan-server" }
 

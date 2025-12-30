@@ -1,7 +1,8 @@
+mod io;
+
 use std::{
     env,
     fs::{self},
-    io,
     path::PathBuf,
     process::Stdio,
     sync::{
@@ -12,6 +13,9 @@ use std::{
     time::Duration,
 };
 
+#[cfg(feature = "embed-jre")]
+use crate::io::extract_zip;
+use crate::io::{extract_file, resolve_java};
 use anyhow::anyhow;
 use axum::{
     Router,
@@ -31,9 +35,6 @@ use eframe::{
     icon_data,
 };
 use futures::{SinkExt, StreamExt, TryStreamExt};
-#[cfg(feature = "embed-jre")]
-use mangatan_core::io::extract_zip;
-use mangatan_core::io::{extract_file, resolve_java};
 use reqwest::{
     Client, Method,
     header::{
@@ -787,7 +788,7 @@ async fn proxy_request(
             for (key, value) in resp.headers() {
                 response_builder = response_builder.header(key, value);
             }
-            let stream = resp.bytes_stream().map_err(io::Error::other);
+            let stream = resp.bytes_stream().map_err(std::io::Error::other);
             response_builder
                 .body(Body::from_stream(stream))
                 .expect("Failed to build proxied response")

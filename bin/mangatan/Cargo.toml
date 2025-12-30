@@ -11,7 +11,7 @@ version.workspace = true
 
 [features]
 default = []
-embed-jre = ["mangatan-core/embed-jre"]
+embed-jre = []
 
 [dependencies]
 anyhow.workspace = true
@@ -36,7 +36,6 @@ tracing-subscriber.workspace = true
 zip.workspace = true
 
 # Internal Crates
-mangatan-core.workspace = true
 mangatan-ocr-server.workspace = true
 mangatan-yomitan-server.workspace = true
 

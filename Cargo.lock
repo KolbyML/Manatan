@@ -3603,7 +3603,6 @@ dependencies = [
  "futures",
  "futures-util",
  "image",
- "mangatan-core",
  "mangatan-ocr-server",
  "mangatan-yomitan-server",
  "mime_guess",
@@ -3619,14 +3618,6 @@ dependencies = [
  "tracing-subscriber",
  "vergen",
  "vergen-git2",
- "zip 6.0.0",
-]
-
-[[package]]
-name = "mangatan-core"
-version = "0.1.0"
-dependencies = [
- "tracing",
  "zip 6.0.0",
 ]
 
