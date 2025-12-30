@@ -81,8 +81,11 @@ clean-deps:
 
 # --- WebUI Targets ---
 
-.PHONY: build_webui
-build_webui:
+# Define all files that should trigger a rebuild (src, public, package.json, yarn.lock)
+WEBUI_SOURCES := $(shell find Mangatan-WebUI/src Mangatan-WebUI/public -type f 2>/dev/null) Mangatan-WebUI/package.json Mangatan-WebUI/yarn.lock
+
+# The Real Target: Only runs if sources are newer than build/index.html
+Mangatan-WebUI/build/index.html: $(WEBUI_SOURCES)
 	@echo "Building WebUI (Enforcing Node 22.12.0)..."
 	@export NVM_DIR="$$HOME/.nvm"; \
 	if [ -s "$$NVM_DIR/nvm.sh" ]; then \
@@ -94,6 +97,12 @@ build_webui:
 	    node -v; \
 	fi; \
 	cd Mangatan-WebUI && yarn install && yarn build
+	@# "Touch" the output to update its timestamp, ensuring Make knows it's fresh
+	touch Mangatan-WebUI/build/index.html
+
+# Phony alias so your other targets (android_webui, etc.) still work
+.PHONY: build_webui
+build_webui: Mangatan-WebUI/build/index.html
 
 .PHONY: desktop_webui
 desktop_webui: build_webui
