@@ -485,10 +485,15 @@ async fn run_server(
     info!("🔍 Resolving Java...");
     let java_exec =
         resolve_java(data_dir).map_err(|err| anyhow!("Failed to resolve java install {err:?}"))?;
+    let java_home = java_exec
+        .parent()
+        .and_then(|p| p.parent())
+        .unwrap_or(data_dir);
 
     info!("☕ Spawning Suwayomi...");
     let mut suwayomi_proc = Command::new(&java_exec)
         .current_dir(data_dir)
+        .env("JAVA_HOME", java_home)
         .arg("-Dsuwayomi.tachidesk.config.server.initialOpenInBrowserEnabled=false")
         .arg("-Dsuwayomi.tachidesk.config.server.webUIChannel=BUNDLED")
         .arg("-XX:+ExitOnOutOfMemoryError")
