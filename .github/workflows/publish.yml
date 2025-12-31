@@ -666,6 +666,12 @@ jobs:
           name: mangatan-ios
           path: release/ios
 
+      - name: Download WebUI Dist
+        uses: actions/download-artifact@v4
+        with:
+          name: webui-dist
+          path: release/webui
+
       - name: Prepare Final Assets
         run: |
           mkdir final_release
