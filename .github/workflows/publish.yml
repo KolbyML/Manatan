@@ -97,11 +97,17 @@ jobs:
           cd Mangatan-WebUI
           yarn install --frozen-lockfile
           yarn build
+          tar -czf ../mangatan-webui-dist.tar.gz build/
       - name: Upload WebUI Artifact
         uses: actions/upload-artifact@v4
         with:
           name: webui-assets
           path: Mangatan-WebUI/build 
+      - name: Upload WebUI Dist (Tarball)
+        uses: actions/upload-artifact@v4
+        with:
+          name: webui-dist
+          path: mangatan-webui-dist.tar.gz          
 
   # --- JOB 4: Build Mangatan Launcher (Desktop) ---
   build_mangatan:
@@ -680,6 +686,9 @@ jobs:
 
           # iOS
           mv release/ios/Mangatan.ipa final_release/Mangatan-${VERSION}-iOS.ipa
+
+          # WebUI Tarball
+          mv release/webui/mangatan-webui-dist.tar.gz final_release/mangatan-webui-dist.tar.gz
 
       - name: Generate Checksums
         run: cd final_release && sha256sum * > Checksums.sha256
