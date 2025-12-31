@@ -150,8 +150,7 @@ ios_webui: build_webui
 
 # ---------------------
 
-.PHONY: download_natives
-download_natives:
+bin/mangatan/resources/natives.zip:
 	@echo "Preparing JogAmp natives for target: $(JOGAMP_TARGET)"
 	@if [ "$(JOGAMP_TARGET)" = "unknown" ]; then \
 	    echo "Error: Could not detect OS for JogAmp target."; \
@@ -174,6 +173,10 @@ download_natives:
 	rm jogamp.7z
 	rm -rf temp_natives
 	@echo "Natives ready at bin/mangatan/resources/natives.zip"
+
+# Phony alias for backward compatibility
+.PHONY: download_natives
+download_natives: bin/mangatan/resources/natives.zip
 
 # --- Android Downloads (Cached) ---
 
@@ -241,24 +244,32 @@ dev-android: android_webui download_android_jar download_android_jre download_an
 dev-android-native: android_webui download_android_jar download_android_jre download_android_natives android_icon
 	cd bin/mangatan_android && cargo apk2 run --features native_webview
 
-.PHONY: jlink
-jlink:
+jre_bundle:
 	@echo "Building custom JDK with jlink..."
 	rm -rf jre_bundle
 	jlink --add-modules java.base,java.compiler,java.datatransfer,java.desktop,java.instrument,java.logging,java.management,java.naming,java.prefs,java.scripting,java.se,java.security.jgss,java.security.sasl,java.sql,java.transaction.xa,java.xml,jdk.attach,jdk.crypto.ec,jdk.jdi,jdk.management,jdk.net,jdk.unsupported,jdk.unsupported.desktop,jdk.zipfs,jdk.accessibility,jdk.charsets,jdk.localedata --bind-services --output jre_bundle --strip-debug --no-man-pages --no-header-files --compress=2
 
-.PHONY: bundle_jre
-bundle_jre: jlink
-	@echo "Bundling JRE with Mangatan..."
-	rm -f bin/mangatan/resources/jre_bundle.zip
-	cd jre_bundle && zip -r ../bin/mangatan/resources/jre_bundle.zip ./*
+# Phony alias so 'make jlink' works in publish.yml
+.PHONY: jlink
+jlink: jre_bundle
 
-.PHONY: download_jar
-download_jar:
+# 2. The Zip File Target (Used by Local Dev)
+bin/mangatan/resources/jre_bundle.zip: jre_bundle
+	@echo "Bundling JRE with Mangatan..."
+	mkdir -p bin/mangatan/resources
+	cd jre_bundle && zip -r "$(CURDIR)/bin/mangatan/resources/jre_bundle.zip" ./*
+
+# Phony alias for local dev
+.PHONY: bundle_jre
+bundle_jre: bin/mangatan/resources/jre_bundle.zip
+
+bin/mangatan/resources/Suwayomi-Server.jar:
 	@echo "Downloading Suwayomi Server JAR..."
 	mkdir -p bin/mangatan/resources
-	rm -f bin/mangatan/resources/Suwayomi-Server.jar
-	curl -L "https://github.com/Suwayomi/Suwayomi-Server-preview/releases/download/v2.1.2038/Suwayomi-Server-v2.1.2038.jar" -o bin/mangatan/resources/Suwayomi-Server.jar
+	curl -L "https://github.com/Suwayomi/Suwayomi-Server-preview/releases/download/v2.1.2038/Suwayomi-Server-v2.1.2038.jar" -o $@
+
+.PHONY: download_jar
+download_jar: bin/mangatan/resources/Suwayomi-Server.jar
 
 .PHONY: download_ios_jar
 download_ios_jar:
