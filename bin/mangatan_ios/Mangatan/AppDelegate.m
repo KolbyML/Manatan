@@ -8,7 +8,7 @@
 #import "AppDelegate.h"
 
 @interface AppDelegate ()
-
+@property (nonatomic, assign) UIBackgroundTaskIdentifier backgroundTask;
 @end
 
 @implementation AppDelegate
@@ -17,6 +17,28 @@
 - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions {
     // Override point for customization after application launch.
     return YES;
+}
+
+// 1. When the app is minimized (Background), tell iOS we need more time
+- (void)applicationDidEnterBackground:(UIApplication *)application {
+    NSLog(@"[AppDelegate] App entering background. Requesting background time...");
+
+    self.backgroundTask = [application beginBackgroundTaskWithExpirationHandler:^{
+        // This block runs if we run out of time (usually ~3 minutes)
+        NSLog(@"[AppDelegate] Background time expired. Ending task.");
+        [application endBackgroundTask:self.backgroundTask];
+        self.backgroundTask = UIBackgroundTaskInvalid;
+    }];
+}
+
+// 2. When the app is opened again (Foreground), stop the background timer
+- (void)applicationWillEnterForeground:(UIApplication *)application {
+    NSLog(@"[AppDelegate] App entering foreground.");
+    
+    if (self.backgroundTask != UIBackgroundTaskInvalid) {
+        [application endBackgroundTask:self.backgroundTask];
+        self.backgroundTask = UIBackgroundTaskInvalid;
+    }
 }
 
 
