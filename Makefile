@@ -348,3 +348,51 @@ docker-build: desktop_webui download_jar download_natives bundle_jre
 	rm mangatan-linux-$(DOCKER_ARCH).tar.gz
 	rm mangatan-linux-$(FAKE_ARCH).tar.gz
 	@echo "✅ Docker image 'mangatan:local' built successfully."
+
+# --- Testing ---
+
+TEST_DATA_REPO := https://github.com/KolbyML/ocr-test-data.git
+TEST_DATA_DIR := ocr-test-data
+
+.PHONY: ensure-test-data
+ensure-test-data:
+	@if [ ! -d "$(TEST_DATA_DIR)" ]; then \
+		echo "Cloning test data..."; \
+		git clone $(TEST_DATA_REPO) $(TEST_DATA_DIR); \
+	else \
+		echo "Syncing test data..."; \
+		cd $(TEST_DATA_DIR) && git fetch origin && git checkout master && git pull origin master; \
+	fi
+
+.PHONY: test-ocr-merge
+test-ocr-merge: ensure-test-data
+	@echo "Running Regression Tests..."
+	cargo test --package mangatan-ocr-server --test merge_regression -- --nocapture
+
+.PHONY: pr-ocr-data
+pr-ocr-data:
+	@echo "Tests Passed. Preparing PR for manual changes..."
+	
+	cd $(TEST_DATA_DIR) && \
+	# --- STEP 1: Update .gitignore --- \
+	if ! grep -q "*.raw.json" .gitignore 2>/dev/null; then \
+		echo "*.raw.json" >> .gitignore; \
+		echo "Added *.raw.json to .gitignore"; \
+	fi && \
+	# --------------------------------- \
+	if [ -n "$$(git status --porcelain)" ]; then \
+		BRANCH_NAME="update-data-$$(date +%s)"; \
+		git checkout -b $$BRANCH_NAME; \
+		git add .; \
+		git commit -m "chore: manual update of expected OCR data"; \
+		echo "Pushing branch $$BRANCH_NAME..."; \
+		git push origin $$BRANCH_NAME; \
+		echo "Creating PR..."; \
+		if command -v gh >/dev/null 2>&1; then \
+			gh pr create --title "Update Test Data $$(date +%Y-%m-%d)" --body "Manual updates to expected results." --repo KolbyML/ocr-test-data; \
+		else \
+			echo "GitHub CLI (gh) not found. Please create PR manually for branch: $$BRANCH_NAME"; \
+		fi \
+	else \
+		echo "No changes detected in ocr-test-data. Nothing to PR."; \
+	fi

@@ -195,3 +195,5 @@ yarn-error.log*
 .env
 .env.*
 !.env.example
+
+ocr-test-data

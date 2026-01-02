@@ -226,7 +226,7 @@ pub struct BoundingBox {
     pub width: f64,
     pub height: f64,
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub rotation: Option<f64>, // Kept for type compatibility, but will be None/0.0
+    pub rotation: Option<f64>,
 }
 
 /// Helper to strip the scheme/host/query from the URL for caching purposes.
@@ -238,12 +238,9 @@ pub fn get_cache_key(url: &str) -> String {
 }
 
 lazy_static! {
-    // Matches CJK characters (Kanji, Hiragana, Katakana)
     static ref CJK_REGEX: Regex = Regex::new(r"[\p{Han}\p{Hiragana}\p{Katakana}]").unwrap();
 }
 
-/// Cleans up text based on content.
-/// If the text contains CJK characters, it strips whitespace (Lens adds artificial spaces).
 fn post_process_text(text: String) -> String {
     if CJK_REGEX.is_match(&text) {
         text.replace(char::is_whitespace, "")
@@ -318,7 +315,6 @@ pub async fn fetch_and_process(
 ) -> anyhow::Result<Vec<OcrResult>> {
     let mut last_error = anyhow!("Unknown error");
 
-    // Try up to 3 times on Android
     for attempt_number in 1..=3 {
         match fetch_and_process_internal(url, user.clone(), pass.clone(), add_space_on_merge).await
         {
@@ -336,6 +332,146 @@ pub async fn fetch_and_process(
         }
     }
     Err(last_error)
+}
+
+// --- Data Structure for Test Caching ---
+
+#[derive(Serialize, Deserialize, Clone)]
+pub struct RawChunk {
+    pub lines: Vec<OcrResult>,
+    pub width: u32,
+    pub height: u32,
+    pub global_y: u32,
+    pub full_width: u32,
+    pub full_height: u32,
+}
+
+// --- Public Helper for Testing ---
+pub async fn get_raw_ocr_data(image_bytes: &[u8]) -> anyhow::Result<Vec<RawChunk>> {
+    let reader = ImageReader::new(Cursor::new(image_bytes))
+        .with_guessed_format()
+        .map_err(|err| anyhow!("Failed with_guessed_format: {err:?}"))?;
+
+    let decoded_image = if reader.format() == Some(ImageFormat::Avif) {
+        decode_avif_custom(image_bytes)?
+    } else {
+        reader
+            .decode()
+            .map_err(|err| anyhow!("Failed decode: {err:?}"))?
+    };
+
+    let full_image_width = decoded_image.width();
+    let full_image_height = decoded_image.height();
+    let chunk_height_limit = 3000;
+
+    let mut raw_chunks = Vec::new();
+    let lens_client = LensClient::new(None);
+
+    let mut current_y_position = 0;
+    while current_y_position < full_image_height {
+        let current_chunk_height =
+            std::cmp::min(chunk_height_limit, full_image_height - current_y_position);
+        if current_chunk_height == 0 {
+            break;
+        }
+
+        let chunk_image = decoded_image
+            .view(
+                0,
+                current_y_position,
+                full_image_width,
+                current_chunk_height,
+            )
+            .to_image();
+        let mut image_buffer = Cursor::new(Vec::new());
+        chunk_image
+            .write_to(&mut image_buffer, ImageFormat::Png)
+            .map_err(|err| anyhow!("Failed write_to: {err:?}"))?;
+        let chunk_png_bytes = image_buffer.into_inner();
+
+        let lens_response = lens_client
+            .process_image_bytes(&chunk_png_bytes, Some("jp"))
+            .await
+            .map_err(|err| anyhow!("Failed process_image_bytes: {err:?}"))?;
+
+        let mut flat_ocr_lines = Vec::new();
+        for paragraph in lens_response.paragraphs {
+            for line in paragraph.lines {
+                if let Some(geometry) = line.geometry {
+                    let clean_text = post_process_text(line.text);
+                    if clean_text.trim().is_empty() {
+                        continue;
+                    }
+
+                    let rotation = geometry.rotation_z as f64;
+                    let cx = (geometry.center_x * full_image_width as f32) as f64;
+                    let cy = (geometry.center_y * current_chunk_height as f32) as f64;
+                    let w = (geometry.width * full_image_width as f32) as f64;
+                    let h = (geometry.height * current_chunk_height as f32) as f64;
+
+                    let hw = w / 2.0;
+                    let hh = h / 2.0;
+                    let cos_a = rotation.cos();
+                    let sin_a = rotation.sin();
+
+                    let corners = [(-hw, -hh), (hw, -hh), (hw, hh), (-hw, hh)];
+
+                    let mut min_x = f64::INFINITY;
+                    let mut max_x = f64::NEG_INFINITY;
+                    let mut min_y = f64::INFINITY;
+                    let mut max_y = f64::NEG_INFINITY;
+
+                    for (lx, ly) in corners {
+                        let rx = lx * cos_a - ly * sin_a + cx;
+                        let ry = lx * sin_a + ly * cos_a + cy;
+                        min_x = min_x.min(rx);
+                        max_x = max_x.max(rx);
+                        min_y = min_y.min(ry);
+                        max_y = max_y.max(ry);
+                    }
+
+                    let aabb_w = max_x - min_x;
+                    let aabb_h = max_y - min_y;
+
+                    let is_vertical = if rotation.abs() > 0.1 {
+                        (rotation.abs() - std::f32::consts::FRAC_PI_2 as f64).abs() < 0.5
+                    } else {
+                        aabb_w <= aabb_h
+                    };
+
+                    flat_ocr_lines.push(OcrResult {
+                        text: clean_text,
+                        is_merged: Some(false),
+                        forced_orientation: Some(if is_vertical {
+                            "vertical".into()
+                        } else {
+                            "horizontal".into()
+                        }),
+                        tight_bounding_box: BoundingBox {
+                            x: min_x,
+                            y: min_y,
+                            width: aabb_w,
+                            height: aabb_h,
+                            rotation: None,
+                        },
+                    });
+                }
+            }
+        }
+
+        raw_chunks.push(RawChunk {
+            lines: flat_ocr_lines,
+            width: full_image_width,
+            height: current_chunk_height,
+            global_y: current_y_position,
+            full_width: full_image_width,
+            full_height: full_image_height,
+        });
+
+        current_y_position += chunk_height_limit;
+    }
+
+    Ok(raw_chunks)
 }
 
 async fn fetch_and_process_internal(
@@ -368,167 +504,33 @@ async fn fetch_and_process_internal(
         .map_err(|err| anyhow!("Failed error_for_status (URL: {target_url}): {err:?}"))?;
     let image_bytes = response.bytes().await?.to_vec();
 
-    // 2. Decode Image (With AVIF Fix)
-    // We guess the format first. If it is AVIF, we use our custom function.
-    let reader = ImageReader::new(Cursor::new(&image_bytes))
-        .with_guessed_format()
-        .map_err(|err| anyhow!("Failed with_guessed_format: {err:?}"))?;
+    // 2. Decode & OCR (Wrapped)
+    let raw_chunks = get_raw_ocr_data(&image_bytes).await?;
 
-    let decoded_image = if reader.format() == Some(ImageFormat::Avif) {
-        decode_avif_custom(&image_bytes)?
-    } else {
-        reader
-            .decode()
-            .map_err(|err| anyhow!("Failed decode: {err:?}"))?
-    };
-
-    let full_image_width = decoded_image.width();
-    let full_image_height = decoded_image.height();
-    let chunk_height_limit = 3000;
-
+    // 3. Merge & Normalize
     let mut final_results = Vec::new();
-    let lens_client = LensClient::new(None);
+    let mut merge_config = MergeConfig::default();
+    merge_config.add_space_on_merge = add_space_on_merge;
 
-    // 3. Chunking Loop
-    let mut current_y_position = 0;
-    while current_y_position < full_image_height {
-        let current_chunk_height =
-            std::cmp::min(chunk_height_limit, full_image_height - current_y_position);
-        if current_chunk_height == 0 {
-            break;
-        }
+    for chunk in raw_chunks {
+        let merged_lines = merge::auto_merge(chunk.lines, chunk.width, chunk.height, &merge_config);
 
-        let chunk_image = decoded_image
-            .view(
-                0,
-                current_y_position,
-                full_image_width,
-                current_chunk_height,
-            )
-            .to_image();
-        let mut image_buffer = Cursor::new(Vec::new());
-        chunk_image
-            .write_to(&mut image_buffer, ImageFormat::Png)
-            .map_err(|err| anyhow!("Failed write_to: {err:?}"))?;
-        let chunk_png_bytes = image_buffer.into_inner();
-
-        // 4. Call Lens
-        let lens_response = lens_client
-            .process_image_bytes(&chunk_png_bytes, Some("jp"))
-            .await
-            .map_err(|err| anyhow!("Failed process_image_bytes: {err:?}"))?;
-
-        // 5. Flatten LensResult & Convert Normalized Coords to Chunk Pixels
-        let mut flat_ocr_lines = Vec::new();
-        for paragraph in lens_response.paragraphs {
-            for line in paragraph.lines {
-                if let Some(geometry) = line.geometry {
-                    // Normalize text immediately
-                    let clean_text = post_process_text(line.text);
-                    if clean_text.trim().is_empty() {
-                        continue;
-                    }
-
-                    // --- FIX: CALCULATE AABB FROM ROTATED RECT ---
-                    // Lens gives us Center, Width, Height, and Rotation.
-                    // To get a non-rotated box that fits, we must calculate the corners
-                    // and find the min/max X/Y.
-
-                    let rotation = geometry.rotation_z as f64;
-                    let cx = (geometry.center_x * full_image_width as f32) as f64;
-                    let cy = (geometry.center_y * current_chunk_height as f32) as f64;
-                    let w = (geometry.width * full_image_width as f32) as f64;
-                    let h = (geometry.height * current_chunk_height as f32) as f64;
-
-                    // Calculate corners of rotated rect
-                    let hw = w / 2.0;
-                    let hh = h / 2.0;
-                    let cos_a = rotation.cos();
-                    let sin_a = rotation.sin();
-
-                    let corners = [(-hw, -hh), (hw, -hh), (hw, hh), (-hw, hh)];
-
-                    let mut min_x = f64::INFINITY;
-                    let mut max_x = f64::NEG_INFINITY;
-                    let mut min_y = f64::INFINITY;
-                    let mut max_y = f64::NEG_INFINITY;
-
-                    for (lx, ly) in corners {
-                        let rx = lx * cos_a - ly * sin_a + cx;
-                        let ry = lx * sin_a + ly * cos_a + cy;
-                        min_x = min_x.min(rx);
-                        max_x = max_x.max(rx);
-                        min_y = min_y.min(ry);
-                        max_y = max_y.max(ry);
-                    }
-
-                    let aabb_w = max_x - min_x;
-                    let aabb_h = max_y - min_y;
-
-                    // Improved vertical detection:
-                    // If rotation is roughly +/- 90deg (1.57 rad), it's vertical.
-                    let is_vertical = if rotation.abs() > 0.1 {
-                        (rotation.abs() - std::f32::consts::FRAC_PI_2 as f64).abs() < 0.5
-                    } else {
-                        // Fallback to aspect ratio if rotation is near zero
-                        aabb_w <= aabb_h
-                    };
-
-                    let orientation_string = if is_vertical {
-                        "vertical"
-                    } else {
-                        "horizontal"
-                    }
-                    .to_string();
-
-                    flat_ocr_lines.push(OcrResult {
-                        text: clean_text,
-                        is_merged: Some(false),
-                        forced_orientation: Some(orientation_string),
-                        tight_bounding_box: BoundingBox {
-                            x: min_x,
-                            y: min_y,
-                            width: aabb_w,
-                            height: aabb_h,
-                            rotation: None, // FORCE NO ROTATION
-                        },
-                    });
-                }
-            }
-        }
-
-        // 6. Auto Merge
-        let mut merge_config = MergeConfig::default();
-        merge_config.add_space_on_merge = add_space_on_merge;
-
-        let merged_lines = merge::auto_merge(
-            flat_ocr_lines,
-            full_image_width,
-            current_chunk_height,
-            &merge_config,
-        );
-
-        // 7. Adjust Coordinates: Chunk Pixels -> Global Pixels -> Global Normalized
         for mut result in merged_lines {
-            // 1. Get Chunk Pixels (Result from merge is still in pixels relative to chunk)
+            // Adjust Coordinates: Chunk Pixels -> Global Pixels -> Global Normalized
             let chunk_pixel_x = result.tight_bounding_box.x;
             let chunk_pixel_y = result.tight_bounding_box.y;
             let chunk_pixel_width = result.tight_bounding_box.width;
             let chunk_pixel_height = result.tight_bounding_box.height;
 
-            // 2. Convert to Global Pixels
-            let global_pixel_y = chunk_pixel_y + (current_y_position as f64);
+            let global_pixel_y = chunk_pixel_y + (chunk.global_y as f64);
 
-            // 3. Normalize to Global Image (0.0 - 1.0)
-            result.tight_bounding_box.x = chunk_pixel_x / full_image_width as f64;
-            result.tight_bounding_box.width = chunk_pixel_width / full_image_width as f64;
-            result.tight_bounding_box.y = global_pixel_y / full_image_height as f64;
-            result.tight_bounding_box.height = chunk_pixel_height / full_image_height as f64;
+            result.tight_bounding_box.x = chunk_pixel_x / chunk.full_width as f64;
+            result.tight_bounding_box.width = chunk_pixel_width / chunk.full_width as f64;
+            result.tight_bounding_box.y = global_pixel_y / chunk.full_height as f64;
+            result.tight_bounding_box.height = chunk_pixel_height / chunk.full_height as f64;
 
             final_results.push(result);
         }
-
-        current_y_position += chunk_height_limit;
     }
 
     Ok(final_results)
