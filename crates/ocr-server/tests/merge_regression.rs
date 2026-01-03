@@ -1,9 +1,9 @@
 use mangatan_ocr_server::logic::{self, RawChunk};
 use mangatan_ocr_server::merge::{self, MergeConfig};
-use pretty_assertions::assert_eq;
+use pretty_assertions::StrComparison;
 use serde_json::Value;
 use std::fs;
-use std::path::PathBuf; // Pathを削除して警告を修正
+use std::path::PathBuf;
 use walkdir::WalkDir;
 
 fn sanitize_results(v: &mut Value) {
@@ -69,6 +69,7 @@ async fn run_merge_regression_tests() {
     let mut passed = 0;
     let mut generated = 0;
     let mut skipped = 0;
+    let mut failures = Vec::new();
 
     for entry in WalkDir::new(&test_data_path)
         .into_iter()
@@ -78,7 +79,14 @@ async fn run_merge_regression_tests() {
 
         if let Some(ext) = path.extension().and_then(|s| s.to_str()) {
             if ["png", "jpg", "jpeg", "webp", "avif"].contains(&ext.to_lowercase().as_str()) {
-                let test_name = path.file_stem().unwrap().to_str().unwrap();
+                let file_stem = path.file_stem().unwrap().to_str().unwrap();
+                let parent_dir = path
+                    .parent()
+                    .and_then(|p| p.file_name())
+                    .and_then(|s| s.to_str())
+                    .unwrap_or("root");
+
+                let test_name = format!("{}/{}", parent_dir, file_stem);
 
                 let raw_cache_path = path.with_extension("raw.json");
                 let expected_path = path.with_extension("expected.json");
@@ -94,7 +102,6 @@ async fn run_merge_regression_tests() {
                 }
 
                 // 1. Get OCR Data
-                // If force_regen_raw is true, ignore cache presence and run logic
                 let raw_chunks: Vec<RawChunk> = if raw_cache_path.exists() && !force_regen_raw {
                     let content = fs::read_to_string(&raw_cache_path).expect("Read raw cache");
                     serde_json::from_str(&content).expect("Parse raw cache")
@@ -139,17 +146,13 @@ async fn run_merge_regression_tests() {
                 // 3. Validation Logic
                 if expected_path.exists() {
                     if update_expected {
-                        // FORCE UPDATE mode
                         println!("  [UPDATE] Overwriting expected file for: {}", test_name);
                         fs::write(&expected_path, actual_json_str).expect("Write expected file");
                         generated += 1;
                     } else if force_regen_raw {
-                        // RAW REGEN mode: Do NOT validate against potentially stale expected file
-                        // The raw data just changed, so a mismatch is likely and expected.
-                        // We skip the assertion so the script doesn't fail.
-                        // println!("  [INFO] Skipping validation for {} (Raw regenerated)", test_name);
+                        // skip validation during raw regen
                     } else {
-                        // STANDARD TEST mode: Check for regressions
+                        // STANDARD TEST mode
                         let expected_content =
                             fs::read_to_string(&expected_path).expect("Read expected");
                         let mut expected: Value =
@@ -159,11 +162,22 @@ async fn run_merge_regression_tests() {
                         let p_exp = serde_json::to_string_pretty(&expected).unwrap();
                         let p_act = serde_json::to_string_pretty(&actual_value).unwrap();
 
-                        assert_eq!(p_act, p_exp, "Mismatch in test case: {}", test_name);
-                        passed += 1;
+                        if p_act != p_exp {
+                            println!(
+                                "------------------------------------------------------------"
+                            );
+                            println!("❌ Mismatch in test case: {}", test_name);
+                            println!("Diff < left (actual) / right (expected) > :");
+                            println!("{}", StrComparison::new(&p_act, &p_exp));
+                            println!(
+                                "------------------------------------------------------------"
+                            );
+                            failures.push(test_name);
+                        } else {
+                            passed += 1;
+                        }
                     }
                 } else {
-                    // NEW FILE mode
                     println!("  [NEW] Generating expected file for: {}", test_name);
                     fs::write(&expected_path, actual_json_str).expect("Bootstrap expected file");
                     generated += 1;
@@ -181,8 +195,18 @@ async fn run_merge_regression_tests() {
         );
     } else {
         println!(
-            "Tests Passed: {} | New/Updated Files: {}",
-            passed, generated
+            "Tests Finished: {} passed | {} failed | {} generated",
+            passed,
+            failures.len(),
+            generated
         );
+
+        if !failures.is_empty() {
+            panic!(
+                "Validation failed for {} test cases:\n{:#?}",
+                failures.len(),
+                failures
+            );
+        }
     }
 }
