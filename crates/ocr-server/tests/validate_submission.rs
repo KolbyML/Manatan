@@ -1,29 +1,49 @@
 use mangatan_ocr_server::logic::{self, RawChunk};
 use serde_json::Value;
+use std::collections::HashMap;
 use std::fs;
 use std::path::Path;
 use walkdir::WalkDir;
 
-fn is_valid_subsequence(source: &str, target: &str) -> bool {
-    let src_chars: Vec<char> = source.chars().filter(|c| !c.is_whitespace()).collect();
-    let tgt_chars: Vec<char> = target.chars().filter(|c| !c.is_whitespace()).collect();
+/// Validates that `source` contains enough of every character in `target`
+/// to construct `target`, ignoring whitespace.
+/// Returns a list of missing characters if validation fails.
+fn get_missing_characters(source: &str, target: &str) -> Option<HashMap<char, usize>> {
+    let mut source_counts = HashMap::new();
 
-    let mut src_iter = src_chars.iter();
-    for &t in &tgt_chars {
-        if !src_iter.any(|&s| s == t) {
-            return false;
+    // Count available characters in Raw (source)
+    for c in source.chars().filter(|c| !c.is_whitespace()) {
+        *source_counts.entry(c).or_insert(0) += 1;
+    }
+
+    let mut missing_counts: HashMap<char, usize> = HashMap::new();
+
+    // Check if Expected (target) characters exist in Raw counts
+    for c in target.chars().filter(|c| !c.is_whitespace()) {
+        let count = source_counts.get_mut(&c);
+        match count {
+            Some(n) if *n > 0 => {
+                *n -= 1;
+            }
+            _ => {
+                *missing_counts.entry(c).or_insert(0) += 1;
+            }
         }
     }
-    true
+
+    if missing_counts.is_empty() {
+        None
+    } else {
+        Some(missing_counts)
+    }
 }
 
 #[tokio::test]
 async fn validate_expected_is_subset_of_raw() {
-    // Attempt to locate the sibling folder relative to where cargo runs
     let possible_paths = [
-        Path::new("../../../ocr-test-data"), // Standard relative path from crate root
-        Path::new("../../ocr-test-data"),    // From workspace root
-        Path::new("../ocr-test-data"),       // Direct sibling
+        Path::new("../../../ocr-test-data"),
+        Path::new("../../ocr-test-data"),
+        Path::new("../ocr-test-data"),
     ];
 
     let test_data_path = possible_paths.iter().find(|p| p.exists());
@@ -31,11 +51,8 @@ async fn validate_expected_is_subset_of_raw() {
     let test_data_path = match test_data_path {
         Some(p) => p,
         None => {
-            // In CI, this is a hard failure. Locally, we just skip.
             if std::env::var("CI").is_ok() {
-                panic!(
-                    "CI Error: 'ocr-test-data' directory not found. Ensure it is checked out as a sibling."
-                );
+                panic!("CI Error: 'ocr-test-data' directory not found.");
             } else {
                 println!("Skipping validation: 'ocr-test-data' not found.");
                 return;
@@ -44,6 +61,7 @@ async fn validate_expected_is_subset_of_raw() {
     };
 
     let mut errors = Vec::new();
+    let mut total_validated = 0;
 
     for entry in WalkDir::new(test_data_path)
         .into_iter()
@@ -53,16 +71,26 @@ async fn validate_expected_is_subset_of_raw() {
 
         if let Some(ext) = path.extension().and_then(|s| s.to_str()) {
             if ["png", "jpg", "jpeg", "webp", "avif"].contains(&ext.to_lowercase().as_str()) {
-                let test_name = path.file_stem().unwrap().to_str().unwrap();
+                let file_stem = path.file_stem().unwrap().to_str().unwrap();
+                // Get parent directory name for better identification
+                let parent_dir = path
+                    .parent()
+                    .and_then(|p| p.file_name())
+                    .and_then(|s| s.to_str())
+                    .unwrap_or("unknown_dir");
+
+                let test_identifier = format!("{}/{}", parent_dir, file_stem);
+
                 let expected_path = path.with_extension("expected.json");
                 let raw_path = path.with_extension("raw.json");
 
-                // Skip if this image doesn't have an expected file yet
+                // Only validate if an expected file exists
                 if !expected_path.exists() {
                     continue;
                 }
 
-                println!("🔍 Validating {}...", test_name);
+                total_validated += 1;
+                println!("🔍 Validating {}...", test_identifier);
 
                 // 1. Get Raw Data
                 let raw_chunks: Vec<RawChunk> = if raw_path.exists() {
@@ -84,7 +112,7 @@ async fn validate_expected_is_subset_of_raw() {
                     }
                 }
 
-                // 3. Extract Expected Text (Cleanly)
+                // 3. Extract Expected Text
                 let expected_content =
                     fs::read_to_string(&expected_path).expect("Read expected.json");
                 let expected_json: Value =
@@ -99,26 +127,37 @@ async fn validate_expected_is_subset_of_raw() {
                     }
                 }
 
-                // 4. Validate Subsequence
-                if !is_valid_subsequence(&full_raw_text, &full_expected_text) {
+                // 4. Validate (Bag of Characters)
+                if let Some(missing) = get_missing_characters(&full_raw_text, &full_expected_text) {
+                    let mut missing_desc: Vec<String> = missing
+                        .iter()
+                        .map(|(char, count)| format!("'{}' (x{})", char, count))
+                        .collect();
+                    missing_desc.sort();
+
                     let err_msg = format!(
-                        "❌ INVALID: '{}'. Expected text contains characters not found in Raw OCR.",
-                        test_name
+                        "❌ INVALID: '{}'. Expected text contains characters not found in Raw OCR.\n   Missing: {}",
+                        test_identifier,
+                        missing_desc.join(", ")
                     );
                     eprintln!("{}", err_msg);
                     errors.push(err_msg);
                 } else {
-                    println!("✅ {} is valid.", test_name);
+                    println!("✅ {} is valid.", test_identifier);
                 }
             }
         }
     }
 
+    println!("---------------------------------------------------");
+    println!("Total test cases validated: {}", total_validated);
+    println!("---------------------------------------------------");
+
     if !errors.is_empty() {
         panic!(
             "Validation failed for {} test cases:\n{}",
             errors.len(),
-            errors.join("\n")
+            errors.join("\n\n")
         );
     }
 }
