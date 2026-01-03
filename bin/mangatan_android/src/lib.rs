@@ -490,6 +490,7 @@ fn launch_webview_activity(app: &AndroidApp) {
 async fn start_web_server(data_dir: PathBuf) -> Result<(), Box<dyn std::error::Error>> {
     info!("🚀 Initializing Axum Proxy Server on port 4568...");
     let ocr_router = mangatan_ocr_server::create_router(data_dir.clone());
+    let anki_router = mangatan_anki_server::create_router();
 
     #[cfg(feature = "native_webview")]
     let auto_install_yomitan = true;
@@ -535,6 +536,7 @@ async fn start_web_server(data_dir: PathBuf) -> Result<(), Box<dyn std::error::E
 
     let app: Router<AppState> = Router::new()
         .nest_service("/api/ocr", ocr_router)
+        .nest_service("/api/anki", anki_router)
         .nest_service("/api/yomitan", yomitan_router)
         .nest(
             "/api/system",

@@ -3628,6 +3628,17 @@ dependencies = [
 ]
 
 [[package]]
+name = "mangatan-anki-server"
+version = "0.1.0"
+dependencies = [
+ "axum",
+ "base64",
+ "reqwest",
+ "serde",
+ "serde_json",
+]
+
+[[package]]
 name = "mangatan-ocr-server"
 version = "0.1.0"
 dependencies = [

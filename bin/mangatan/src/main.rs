@@ -517,6 +517,7 @@ async fn run_server(
     info!("🌍 Starting Web Interface at http://localhost:4568");
 
     let ocr_router = mangatan_ocr_server::create_router(data_dir.clone());
+    let anki_router = mangatan_anki_server::create_router();
     let yomitan_router = mangatan_yomitan_server::create_router(data_dir.clone(), true);
     let system_router = Router::new().route("/version", any(current_version_handler));
 
@@ -547,6 +548,7 @@ async fn run_server(
 
     let app = Router::new()
         .nest("/api/ocr", ocr_router)
+        .nest("/api/anki", anki_router)
         .nest("/api/yomitan", yomitan_router)
         .nest("/api/system", system_router)
         .merge(proxy_router)

@@ -6,6 +6,7 @@ members = [
     "bin/mangatan_ios/backend",
     "crates/ocr-server", 
     "crates/yomitan-server",
+    "crates/anki-server",
 ]
 exclude = ["bin/mangatan"]
 resolver = "2"
@@ -74,6 +75,7 @@ zip = "6.0"
 # Internal Dependencies
 mangatan-ocr-server = { path = "crates/ocr-server" }
 mangatan-yomitan-server = { path = "crates/yomitan-server" }
+mangatan-anki-server = { path = "crates/anki-server" }
 
 [profile.test]
 inherits = "release"
