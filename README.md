@@ -80,6 +80,17 @@ To fully clear cache and data from previous installs, delete the following folde
 - [ ] Add Manga Immersion Stats page https://github.com/KolbyML/Mangatan/issues/1
 - [ ] Suggest more features https://github.com/KolbyML/Mangatan/issues/new
 
+## 🤝 Help Improve OCR Accuracy
+
+Mangatan's text overlay precision relies on a robust set of test cases. We are crowdsourcing data to fine-tune our engine, fix merging errors, and ensure text detection works perfectly across all manga styles.
+
+**We need your help!**
+If you have examples of complex text bubbles, or just want to help us prevent future bugs, please contribute to our test suite:
+
+👉 **[Contribute to KolbyML/ocr-test-data](https://github.com/KolbyML/ocr-test-data)**
+
+Your submissions directly help us improve the reading experience for everyone.
+
 ## Development
 
 We have detailed build instructions for each platform. Please refer to the specific documentation below to set up your environment:
