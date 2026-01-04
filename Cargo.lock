@@ -3729,7 +3729,6 @@ dependencies = [
  "jni",
  "libc",
  "libloading 0.8.9",
- "mangatan-anki-server",
  "mangatan-ocr-server",
  "mangatan-yomitan-server",
  "mime_guess",
