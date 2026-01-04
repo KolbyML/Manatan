@@ -22,6 +22,8 @@ pub struct UpdateCardRequest {
     pub sentence: String,   // Text from the textbox
     pub sentence_field: Option<String>,
     pub image_field: Option<String>,
+    pub suwayomi_user: Option<String>,
+    pub suwayomi_pass: Option<String>,
 }
 
 pub fn create_router() -> Router {
@@ -113,7 +115,15 @@ async fn update_last_card_handler(
 
         let suwayomi_url = format!("http://127.0.0.1:4567{}", payload.image_path);
 
-        let image_bytes = match state.client.get(&suwayomi_url).send().await {
+        // Construct the request builder
+        let mut request = state.client.get(&suwayomi_url);
+
+        // Apply authentication if a username is provided (similar to the ocr code)
+        if let Some(username) = payload.suwayomi_user {
+            request = request.basic_auth(username, payload.suwayomi_pass);
+        }
+
+        let image_bytes = match request.send().await {
             Ok(resp) => match resp.bytes().await {
                 Ok(b) => b,
                 Err(e) => {
