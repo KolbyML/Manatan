@@ -9,6 +9,7 @@
 
 @interface ViewController : UIViewController
 
+// Public method to force the UI to reset (Soft Restart)
+- (void)forceReload;
 
 @end
-

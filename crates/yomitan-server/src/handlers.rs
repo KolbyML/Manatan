@@ -38,6 +38,8 @@ pub struct ApiGroupedResult {
     pub furigana: Vec<(String, String)>,
     pub definitions: Vec<ApiDefinition>,
     pub forms: Vec<ApiForm>,
+    // ADDED: Return the length of the match so the frontend can highlight it
+    pub match_len: usize,
 }
 
 #[derive(Deserialize)]
@@ -132,7 +134,6 @@ pub async fn manage_dictionaries_handler(
 pub async fn install_defaults_handler(State(state): State<ServerState>) -> Json<Value> {
     let app_state = state.app.clone();
 
-    // Check if we already have dictionaries to avoid overwriting/duplicating
     {
         let dicts = app_state.dictionaries.read().expect("lock");
         if !dicts.is_empty() {
@@ -143,17 +144,13 @@ pub async fn install_defaults_handler(State(state): State<ServerState>) -> Json<
     info!("📥 [Yomitan] User requested default dictionary installation...");
     app_state.set_loading(true);
 
-    // FIX: Clone the state specifically for the blocking task
     let app_state_for_task = app_state.clone();
 
-    let res = tokio::task::spawn_blocking(move || {
-        // Use the CLONE inside the closure
-        import::import_zip(&app_state_for_task, PREBAKED_DICT)
-    })
-    .await
-    .unwrap();
+    let res =
+        tokio::task::spawn_blocking(move || import::import_zip(&app_state_for_task, PREBAKED_DICT))
+            .await
+            .unwrap();
 
-    // Use the ORIGINAL here (it wasn't moved)
     app_state.set_loading(false);
 
     match res {
@@ -232,6 +229,7 @@ pub async fn lookup_handler(
         furigana: Vec<(String, String)>,
         definitions: Vec<ApiDefinition>,
         forms_set: Vec<(String, String)>,
+        match_len: usize, // Added to aggregator
     }
 
     let mut map: Vec<Aggregator> = Vec::new();
@@ -246,6 +244,8 @@ pub async fn lookup_handler(
         if headword.is_empty() {
             continue;
         }
+
+        let match_len = entry.span_chars.end as usize;
 
         let (content_val, tags) = if let Record::YomitanGlossary(gloss) = &entry.record {
             let t = gloss
@@ -299,6 +299,7 @@ pub async fn lookup_handler(
                 furigana: calculate_furigana(&headword, &reading),
                 definitions: vec![def_obj],
                 forms_set: vec![(headword.clone(), reading.clone())],
+                match_len, // Capture match length
             });
         }
     }
@@ -320,6 +321,7 @@ pub async fn lookup_handler(
                 furigana: agg.furigana,
                 definitions: agg.definitions,
                 forms: forms_vec,
+                match_len: agg.match_len, // Expose match length
             }
         })
         .collect();

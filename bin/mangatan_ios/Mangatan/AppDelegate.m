@@ -6,9 +6,11 @@
 //
 
 #import "AppDelegate.h"
+#import "ViewController.h" // Import to access forceReload
 
 @interface AppDelegate ()
 @property (nonatomic, assign) UIBackgroundTaskIdentifier backgroundTask;
+@property (nonatomic, strong) NSDate *backgroundEnterTime; // Stores when we minimized
 @end
 
 @implementation AppDelegate
@@ -19,25 +21,59 @@
     return YES;
 }
 
-// 1. When the app is minimized (Background), tell iOS we need more time
+// 1. SAFE SUSPEND: Prevent the "3-minute watchdog kill"
 - (void)applicationDidEnterBackground:(UIApplication *)application {
-    NSLog(@"[AppDelegate] App entering background. Requesting background time...");
+    NSLog(@"[AppDelegate] App entering background.");
+    
+    // Record the exact time we went to sleep
+    self.backgroundEnterTime = [NSDate date];
 
+    // Request background execution time.
+    // This tells iOS: "Don't kill me immediately, let me finish up."
+    // iOS gives us ~30s to 3 minutes.
     self.backgroundTask = [application beginBackgroundTaskWithExpirationHandler:^{
-        // This block runs if we run out of time (usually ~3 minutes)
-        NSLog(@"[AppDelegate] Background time expired. Ending task.");
+        // This block runs if we run out of time.
+        // We MUST call endBackgroundTask here, or iOS will crash us.
+        NSLog(@"[AppDelegate] Background time expired. Suspending app now.");
         [application endBackgroundTask:self.backgroundTask];
         self.backgroundTask = UIBackgroundTaskInvalid;
     }];
 }
 
-// 2. When the app is opened again (Foreground), stop the background timer
+// 2. SAFE RESUME: Prevent the "Stale Connection crash"
 - (void)applicationWillEnterForeground:(UIApplication *)application {
     NSLog(@"[AppDelegate] App entering foreground.");
     
+    // End the background task if it's still running
     if (self.backgroundTask != UIBackgroundTaskInvalid) {
         [application endBackgroundTask:self.backgroundTask];
         self.backgroundTask = UIBackgroundTaskInvalid;
+    }
+    
+    // Check how long we were asleep
+    if (self.backgroundEnterTime) {
+        NSTimeInterval timeSpentInBackground = [[NSDate date] timeIntervalSinceDate:self.backgroundEnterTime];
+        NSLog(@"[AppDelegate] Was suspended for: %.2f seconds", timeSpentInBackground);
+        
+        // CRITICAL CHECK:
+        // If we were minimized for > 15 minutes (900 seconds), assume the connection is dead.
+        // We force a "Soft Restart" of the UI to establish a fresh connection.
+        if (timeSpentInBackground > 900) {
+            NSLog(@"[AppDelegate] Session is stale (>15m). Triggering Soft Restart...");
+            
+            // Find the active ViewController and tell it to reload
+            for (UIScene *scene in application.connectedScenes) {
+                if ([scene.delegate conformsToProtocol:@protocol(UIWindowSceneDelegate)]) {
+                    UIWindow *window = [(id<UIWindowSceneDelegate>)scene.delegate window];
+                    if ([window.rootViewController isKindOfClass:[ViewController class]]) {
+                        [(ViewController *)window.rootViewController forceReload];
+                    }
+                }
+            }
+        }
+        
+        // Reset the timer
+        self.backgroundEnterTime = nil;
     }
 }
 
