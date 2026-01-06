@@ -37,7 +37,7 @@ npm install --global yarn
 
 ### 3. Setup Android SDK & NDK
 
-The CI uses specific versions (`android-26`, NDK `26.1.10909125`). You need to match these to ensure compilation works.
+The CI uses specific versions (`android-29`, NDK `26.1.10909125`). You need to match these to ensure compilation works.
 
 1. **Download Command Line Tools:**
 Download the "Command line tools only" from [Android Developer](https://www.google.com/search?q=https://developer.android.com/studio%23command-tools) or use the command below:
