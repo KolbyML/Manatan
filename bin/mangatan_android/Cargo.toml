@@ -24,7 +24,10 @@ resources = "res"
 
 [package.metadata.android.sdk]
 min_sdk_version = 23
-target_sdk_version = 26
+target_sdk_version = 29
+
+[[package.metadata.android.uses_permission]]
+name = "android.permission.FOREGROUND_SERVICE_DATA_SYNC"
 
 [[package.metadata.android.uses_permission]]
 name = "android.permission.INTERNET"
@@ -66,6 +69,7 @@ name = "android.permission.REQUEST_INSTALL_PACKAGES"
 allow_native_heap_pointer_tagging = false
 request_legacy_external_storage = true
 has_code = true
+has_fragile_user_data = true
 label = "Mangatan"
 icon = "@mipmap/ic_launcher"
 
@@ -94,6 +98,7 @@ value = "mangatan_android"
 name = ".MangatanService"
 enabled = true
 exported = false
+foreground_service_type = "dataSync"
 
 [lib]
 name = "mangatan_android"

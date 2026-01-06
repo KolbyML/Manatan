@@ -397,7 +397,7 @@ jobs:
       - name: Install Android Platform & NDK
         run: |
           yes | sdkmanager --licenses
-          sdkmanager "platforms;android-30" "platforms;android-26" "build-tools;30.0.3" "ndk;26.1.10909125"
+          sdkmanager "platforms;android-29" "platforms;android-26" "build-tools;30.0.3" "ndk;26.1.10909125"
 
       - name: Install Rust
         uses: dtolnay/rust-toolchain@stable

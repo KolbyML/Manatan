@@ -30,7 +30,17 @@ public class MangatanService extends Service {
                 }
             }
         };
-        registerReceiver(exitReceiver, new IntentFilter(ACTION_EXIT));
+
+        // --- FIX FOR ANDROID 14 CRASH ---
+        IntentFilter filter = new IntentFilter(ACTION_EXIT);
+        if (Build.VERSION.SDK_INT >= 34) { // Android 14+
+            // Use '4' instead of Context.RECEIVER_NOT_EXPORTED to avoid compile error on older SDKs
+            registerReceiver(exitReceiver, filter, 4);
+        } else if (Build.VERSION.SDK_INT >= 26) { // Android 8+
+            registerReceiver(exitReceiver, filter, 0); 
+        } else {
+            registerReceiver(exitReceiver, filter);
+        }
     }
 
     @Override
