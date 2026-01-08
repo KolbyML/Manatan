@@ -210,7 +210,7 @@ pub async fn resolve_total_pages_from_graphql(
         .ok_or_else(|| anyhow!("Failed to parse chapter number from URL: {chapter_base_url}"))?;
 
     let manga_id = manga_id_str.parse::<i32>()?;
-    let chapter_number = chapter_number_str.parse::<f64>()?;
+    let chapter_number = chapter_number_str.parse::<i32>()?;
 
     let query_body = serde_json::json!({
         "operationName": "MangaIdToChapterIDs",
@@ -232,20 +232,7 @@ pub async fn resolve_total_pages_from_graphql(
         .and_then(|chapters| chapters.nodes)
         .ok_or_else(|| anyhow!("GraphQL STEP 1 response missing chapter nodes"))?;
 
-    let has_chapter_zero = chapters.iter().any(|chapter| chapter.chapter_number == 0.0);
-    let target_chapter_number = if has_chapter_zero {
-        chapter_number - 1.0
-    } else {
-        chapter_number
-    };
-
-    let matching_chapter = chapters
-        .into_iter()
-        .find(|chapter| (chapter.chapter_number - target_chapter_number).abs() < 0.001);
-
-    let internal_chapter_id = matching_chapter.map(|chapter| chapter.id).ok_or_else(|| {
-        anyhow!("Failed to find internal ID for chapter number {target_chapter_number}")
-    })?;
+    let internal_chapter_id = chapters[(chapter_number - 1) as usize].id;
 
     let mutation_body = serde_json::json!({
         "operationName": "GET_CHAPTER_PAGES_FETCH",
