@@ -1009,9 +1009,9 @@ dependencies = [
 
 [[package]]
 name = "chrome_lens_ocr"
-version = "0.2.3"
+version = "0.3.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "34ecf5d2bf09684c9530483a27ee99840b538ac9011410d917290eb05632de5c"
+checksum = "475966513f43d650f645b97d395ef851819d3f393899f6225baa011b8df3a3a5"
 dependencies = [
  "anyhow",
  "bytes",
