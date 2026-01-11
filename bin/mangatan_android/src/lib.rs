@@ -47,6 +47,7 @@ use tokio_tungstenite::{
         protocol::{Message as TungsteniteMessage, frame::coding::CloseCode},
     },
 };
+use tower::make::Shared;
 use tower_http::cors::{AllowOrigin, Any, CorsLayer};
 use tracing::{error, info, trace};
 use tracing_log::LogTracer;
@@ -403,8 +404,8 @@ fn android_main(app: AndroidApp) {
             info!("✅ Anki-Connect running on :8765");
 
             let _ = tokio::join!(
-                axum::serve(main_listener, main_router.into_make_service()),
-                axum::serve(anki_listener, anki_router.into_make_service())
+                axum::serve(main_listener, Shared::new(main_router.into_service())),
+                axum::serve(anki_listener, Shared::new(anki_router.into_service()))
             );
         });
     });
@@ -521,10 +522,10 @@ async fn anki_connect_handler(
         Ok(c) => c,
         Err(e) => {
             error!("❌ Could not find AnkiBridge class: {:?}", e);
-            return (
-                [(axum::http::header::CONTENT_TYPE, "application/json")],
-                r#"{"error": "Internal Error: AnkiBridge class missing"}"#.to_string()
-            );
+            return Response::builder()
+                .header(axum::http::header::CONTENT_TYPE, "application/json")
+                .body(axum::body::Body::from(r#"{"error": "Internal Error: AnkiBridge class missing"}"#))
+                .unwrap();
         }
     };
 
