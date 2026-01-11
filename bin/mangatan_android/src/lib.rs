@@ -102,7 +102,7 @@ fn start_foreground_service(app: &AndroidApp) {
         .new_object(&intent_class, "()V", &[])
         .expect("Failed to create Intent");
 
-    let context_class = env
+    let _context_class = env
         .find_class("android/content/Context")
         .expect("Failed to find Context class");
     let service_class_name = env
@@ -255,6 +255,7 @@ impl eframe::App for MangatanApp {
         }
 
         // --- DEBUG GUI (Only runs if feature is DISABLED) ---
+        #[cfg(not(feature = "native_webview"))]
         egui::CentralPanel::default().show(ctx, |ui| {
             ui.vertical_centered(|ui| {
                 ui.add_space(20.0);
@@ -402,8 +403,8 @@ fn android_main(app: AndroidApp) {
             info!("✅ Anki-Connect running on :8765");
 
             let _ = tokio::join!(
-                axum::serve(main_listener, main_router),
-                axum::serve(anki_listener, anki_router)
+                axum::serve(main_listener, main_router.into_make_service()),
+                axum::serve(anki_listener, anki_router.into_make_service())
             );
         });
     });
@@ -555,13 +556,13 @@ async fn anki_connect_handler(
         }
     };
 
-    (
-        [
-            (axum::http::header::CONTENT_TYPE, "application/json"),
-            (axum::http::header::ACCESS_CONTROL_ALLOW_ORIGIN, "*"),
-        ],
-        response_str
-    )
+    let response = Response::builder()
+        .header(axum::http::header::CONTENT_TYPE, "application/json")
+        .header(axum::http::header::ACCESS_CONTROL_ALLOW_ORIGIN, "*")
+        .body(axum::body::Body::from(response_str))
+        .unwrap();
+
+    response
 }
 
 async fn create_web_server_router(data_dir: PathBuf) -> Router<AppState> {
@@ -1108,7 +1109,7 @@ fn start_background_services(app: AndroidApp, files_dir: PathBuf) {
         // 1. Try to find the Main Class safely
         let main_class = match env.find_class(&main_class_path) {
             Ok(cls) => cls,
-            Err(e) => {
+            Err(_e) => {
                 error!(
                     "❌ CRITICAL: JVM could not load Main Class: {}",
                     main_class_path
@@ -1126,7 +1127,7 @@ fn start_background_services(app: AndroidApp, files_dir: PathBuf) {
             "([Ljava/lang/String;)V",
         ) {
             Ok(mid) => mid,
-            Err(e) => {
+            Err(_e) => {
                 error!(
                     "❌ CRITICAL: Found class, but could not find 'static void main(String[] args)'"
                 );
@@ -1138,7 +1139,7 @@ fn start_background_services(app: AndroidApp, files_dir: PathBuf) {
         // 3. Create the arguments array safely
         let empty_str_array = match env.new_object_array(0, "java/lang/String", JObject::null()) {
             Ok(arr) => arr,
-            Err(e) => {
+            Err(_e) => {
                 error!("❌ CRITICAL: Failed to create args array");
                 let _ = env.exception_describe();
                 return;
