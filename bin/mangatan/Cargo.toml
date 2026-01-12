@@ -39,9 +39,5 @@ zip.workspace = true
 mangatan-ocr-server.workspace = true
 mangatan-yomitan-server.workspace = true
 
-[build-dependencies]
-vergen = { version = "9.0", features = ["build", "cargo", "emit_and_set", "rustc"] }
-vergen-git2 = "1.0"
-
 [lints]
 workspace = true

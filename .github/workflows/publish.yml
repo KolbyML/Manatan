@@ -382,8 +382,6 @@ jobs:
       - name: Install cargo-apk2
         run: cargo install --git https://github.com/kolbyml/cargo-apk2
 
-      # OPTIMIZATION: Download WebUI artifact to "Mangatan-WebUI/build"
-      # This mimics the build output so we can run the tar command manually.
       - name: Download WebUI Assets
         uses: actions/download-artifact@v4
         with:
@@ -392,12 +390,8 @@ jobs:
 
       - name: Prepare Assets
         run: |
-          # 1. Manually package WebUI (Replaces 'make android_webui')
-          # This creates the .tar file required by build.rs without needing Node/Yarn.
           mkdir -p bin/mangatan_android/assets
           tar -cf bin/mangatan_android/assets/mangatan-webui.tar -C Mangatan-WebUI/build .
-
-          # 2. Run remaining Make targets
           make download_android_jar
           make download_android_jre
           make android_icon
@@ -496,7 +490,6 @@ jobs:
       - name: Patch Xcode Project
         run: find bin/mangatan_ios -name "project.pbxproj" -exec sed -i '' 's/unset SDKROOT/# unset SDKROOT/g' {} +
 
-      # OPTIMIZATION: Direct download to target folder (Replaces 'make ios_webui')
       - name: Download WebUI Assets
         uses: actions/download-artifact@v4
         with:

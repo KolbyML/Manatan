@@ -57,7 +57,7 @@ use tracing_subscriber::EnvFilter;
 use crate::io::extract_zip;
 use crate::io::{extract_file, resolve_java};
 
-const APP_VERSION: &str = env!("MANGATAN_VERSION");
+const APP_VERSION: &str = env!("CARGO_PKG_VERSION");
 
 static ICON_BYTES: &[u8] = include_bytes!("../resources/faviconlogo.png");
 static JAR_BYTES: &[u8] = include_bytes!("../resources/Suwayomi-Server.jar");
@@ -296,7 +296,7 @@ impl eframe::App for MyApp {
             .anchor(egui::Align2::LEFT_BOTTOM, [8.0, -8.0])
             .order(egui::Order::Foreground)
             .show(ctx, |ui| {
-                ui.weak(APP_VERSION);
+                ui.weak(format!("v{APP_VERSION}"));
             });
 
         egui::CentralPanel::default().show(ctx, |ui| {
@@ -305,7 +305,7 @@ impl eframe::App for MyApp {
                 ui.heading("Mangatan");
                 ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
                     if is_flatpak() {
-                        ui.weak(format!("Flatpak: {}", APP_VERSION));
+                        ui.weak(format!("Flatpak: v{APP_VERSION}"));
                     } else {
                         let status = self
                             .update_status
@@ -872,14 +872,13 @@ fn check_for_updates(status: Arc<Mutex<UpdateStatus>>) {
     // We use the same configuration for checking as we do for updating
     // This ensures we only "find" releases that actually match our custom asset naming
     let target_str = get_asset_target_string();
-    let clean_version = APP_VERSION.trim_start_matches('v');
 
     let updater_result = self_update::backends::github::Update::configure()
         .repo_owner("KolbyML")
         .repo_name("Mangatan")
         .bin_name("mangatan") // This must match the binary name inside the zip/tar
         .target(target_str) // CRITICAL: Forces it to look for "Windows-x64" etc.
-        .current_version(clean_version)
+        .current_version(APP_VERSION)
         .build();
 
     match updater_result {
@@ -888,7 +887,7 @@ fn check_for_updates(status: Arc<Mutex<UpdateStatus>>) {
                 Ok(release) => {
                     // Check if remote version > local version
                     let is_newer =
-                        self_update::version::bump_is_greater(clean_version, &release.version)
+                        self_update::version::bump_is_greater(APP_VERSION, &release.version)
                             .unwrap_or(false);
 
                     if is_newer {
@@ -919,7 +918,7 @@ fn perform_update() -> Result<(), Box<dyn std::error::Error>> {
         .bin_name("mangatan")
         .target(target_str)
         .show_download_progress(true)
-        .current_version(APP_VERSION.trim_start_matches('v'))
+        .current_version(APP_VERSION)
         .no_confirm(true)
         .build()?
         .update()?;
