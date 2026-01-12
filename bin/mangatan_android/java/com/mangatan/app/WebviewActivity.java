@@ -27,6 +27,11 @@ public class WebviewActivity extends Activity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
+        if (checkSelfPermission("com.ichi2.anki.permission.READ_WRITE_DATABASE") 
+                != android.content.pm.PackageManager.PERMISSION_GRANTED) {
+            requestPermissions(new String[]{"com.ichi2.anki.permission.READ_WRITE_DATABASE"}, 999);
+        }
+
         // Remove Title Bar
         requestWindowFeature(Window.FEATURE_NO_TITLE);
 
@@ -105,5 +110,18 @@ public class WebviewActivity extends Activity {
             return true;
         }
         return super.onKeyDown(keyCode, event);
+    }
+    @Override
+    public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
+    super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+
+    if (requestCode == 999) {
+        boolean granted = grantResults.length > 0
+                && grantResults[0] == android.content.pm.PackageManager.PERMISSION_GRANTED;
+
+        if (!granted) {
+            Toast.makeText(this, "Anki permission denied. Anki sync will not work.", Toast.LENGTH_LONG).show();
+         }
+        }
     }
 }
