@@ -3,13 +3,23 @@ name: CI Publish
 on:
   workflow_dispatch:
     inputs:
-      version:
-        description: 'Release Version (e.g. 1.0.0)'
+      increment:
+        description: 'Version Increment'
         required: true
-        type: string
-  push:
-    tags:
-      - "v*"
+        default: 'patch'
+        type: choice
+        options:
+          - patch
+          - minor
+          - major
+      stage:
+        description: 'Release Stage'
+        required: true
+        default: 'release'
+        type: choice
+        options:
+          - release
+          - prerelease
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -19,30 +29,57 @@ permissions:
   contents: write
 
 jobs:
-  # --- JOB 1: Create Tag (Runs ONLY on manual trigger) ---
-  create_release_tag:
+  # --- JOB 1: Determine Version (Does NOT push tag) ---
+  prepare_version:
     runs-on: ubuntu-latest
-    if: github.event_name == 'workflow_dispatch'
+    outputs:
+      version_tag: ${{ steps.calc.outputs.version_tag }}       # e.g. v1.2.0
+      clean_version: ${{ steps.calc.outputs.clean_version }}   # e.g. 1.2.0
+      is_prerelease: ${{ steps.calc.outputs.is_prerelease }}   # true/false
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
         with:
-          token: ${{ secrets.RELEASE_TOKEN }}        
-
-      - name: Create and Push Tag
+          fetch-depth: 0
+      
+      - name: Calculate Version
+        id: calc
         run: |
-          VERSION="${{ inputs.version }}"
-          if [[ $VERSION != v* ]]; then VERSION="v$VERSION"; fi
+          # Workflow Dispatch: Calculate Next Version
+          git fetch --tags
           
-          echo "Preparing to tag commit with: $VERSION"
-          git config user.name "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
-          git tag -a "$VERSION" -m "Release $VERSION"
-          git push origin "$VERSION"
+          # Find latest stable tag vX.Y.Z
+          LAST_TAG=$(git tag -l "v*" | grep -E '^v[0-9]+\.[0-9]+\.[0-9]+$' | sort -V | tail -n1)
+          
+          if [ -z "$LAST_TAG" ]; then LAST_TAG="v0.0.0"; fi
+          VERSION=${LAST_TAG#v}
+          IFS='.' read -r MAJOR MINOR PATCH <<< "$VERSION"
+          
+          INCREMENT="${{ inputs.increment }}"
+          
+          if [ "$INCREMENT" == "major" ]; then
+            MAJOR=$((MAJOR+1)); MINOR=0; PATCH=0
+          elif [ "$INCREMENT" == "minor" ]; then
+            MINOR=$((MINOR+1)); PATCH=0
+          else
+            PATCH=$((PATCH+1))
+          fi
+          
+          # Clean tag (no -pre suffix)
+          NEW_TAG="v$MAJOR.$MINOR.$PATCH"
+          echo "Calculated new version: $NEW_TAG"
+          
+          echo "version_tag=$NEW_TAG" >> $GITHUB_OUTPUT
+          echo "clean_version=$MAJOR.$MINOR.$PATCH" >> $GITHUB_OUTPUT
+          
+          if [ "${{ inputs.stage }}" == "prerelease" ]; then
+            echo "is_prerelease=true" >> $GITHUB_OUTPUT
+          else
+            echo "is_prerelease=false" >> $GITHUB_OUTPUT
+          fi
 
   # --- JOB 2: Build Custom JREs (Desktop Dependency) ---
   jlink:
-    if: startsWith(github.ref, 'refs/tags/v')
+    needs: prepare_version
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
@@ -79,7 +116,7 @@ jobs:
   # --- JOB 3: Build WebUI (Desktop Dependency) ---
   build_webui:
     name: Build WebUI (Desktop)
-    if: startsWith(github.ref, 'refs/tags/v')
+    needs: prepare_version
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
@@ -112,8 +149,7 @@ jobs:
   # --- JOB 4: Build Mangatan Launcher (Desktop) ---
   build_mangatan:
     name: Build Mangatan Desktop (${{ matrix.name }})
-    needs: [jlink, build_webui]
-    if: startsWith(github.ref, 'refs/tags/v')
+    needs: [jlink, build_webui, prepare_version]
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
@@ -154,8 +190,8 @@ jobs:
       - name: Update Cargo Version
         shell: bash
         run: |
-          VERSION="${{ github.ref_name }}"
-          CLEAN_VERSION="${VERSION#v}"
+          # Use calculated version from setup job
+          CLEAN_VERSION="${{ needs.prepare_version.outputs.clean_version }}"
           echo "Updating workspace version from 0.1.0 to $CLEAN_VERSION..."
           # Uses a temp file to ensure cross-platform compatibility (Linux/macOS/Windows Git Bash)
           sed "s/^version = \"0.1.0\"/version = \"$CLEAN_VERSION\"/" Cargo.toml > Cargo.toml.tmp && mv Cargo.toml.tmp Cargo.toml
@@ -245,8 +281,9 @@ jobs:
         run: |
           BINARY_PATH="${{ github.workspace }}/target/${{ matrix.target }}/release/mangatan"
           ICON_PATH="bin/mangatan/resources/faviconlogo.png"
-          VERSION="${{ github.ref_name }}"
-          CLEAN_VERSION=$(echo $VERSION | sed 's/^v//')
+          
+          # Use calculated version
+          CLEAN_VERSION="${{ needs.prepare_version.outputs.clean_version }}"
           
           DEB_ARCH="amd64"
           if [[ "${{ matrix.target }}" == *"aarch64"* ]]; then
@@ -362,7 +399,7 @@ jobs:
 
   # --- JOB 5: Build Android APK (Integrated) ---
   build_android:
-    if: startsWith(github.ref, 'refs/tags/v')
+    needs: prepare_version
     name: Build Android APKs
     runs-on: ubuntu-latest
     steps:
@@ -374,8 +411,7 @@ jobs:
       - name: Update Cargo Version
         shell: bash
         run: |
-          VERSION="${{ github.ref_name }}"
-          CLEAN_VERSION="${VERSION#v}"
+          CLEAN_VERSION="${{ needs.prepare_version.outputs.clean_version }}"
           echo "Updating workspace version from 0.1.0 to $CLEAN_VERSION..."
           
           # 1. Update Root Workspace
@@ -526,7 +562,7 @@ jobs:
 
   build_ios:
     name: Build iOS IPA
-    if: startsWith(github.ref, 'refs/tags/v')
+    needs: prepare_version
     runs-on: macos-15
     steps:
       - name: Checkout code
@@ -537,8 +573,7 @@ jobs:
       - name: Update Cargo Version
         shell: bash
         run: |
-          VERSION="${{ github.ref_name }}"
-          CLEAN_VERSION="${VERSION#v}"
+          CLEAN_VERSION="${{ needs.prepare_version.outputs.clean_version }}"
           echo "Updating workspace version from 0.1.0 to $CLEAN_VERSION..."
           sed "s/^version = \"0.1.0\"/version = \"$CLEAN_VERSION\"/" Cargo.toml > Cargo.toml.tmp && mv Cargo.toml.tmp Cargo.toml
 
@@ -619,8 +654,7 @@ jobs:
       
   # --- JOB 6: Release (Combines Everything) ---
   release:
-    if: startsWith(github.ref, 'refs/tags/v')
-    needs: [build_mangatan, build_android, build_ios]
+    needs: [build_mangatan, build_android, build_ios, prepare_version]
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -675,7 +709,7 @@ jobs:
       - name: Prepare Final Assets
         run: |
           mkdir final_release
-          VERSION=${{ github.ref_name }}
+          VERSION=${{ needs.prepare_version.outputs.version_tag }}
           
           # DESKTOP
           mv release/windows/mangatan-windows-x64.zip final_release/Mangatan-${VERSION}-Windows-x64.zip
@@ -702,14 +736,21 @@ jobs:
       - name: Generate Release Notes
         id: release_notes
         run: |
-          CURRENT_TAG=${{ github.ref_name }}
-          PREV_TAG=$(git describe --tags --abbrev=0 "${CURRENT_TAG}^" 2>/dev/null || true)
+          CURRENT_TAG=${{ needs.prepare_version.outputs.version_tag }}
+          # Fetch tags again for log generation
+          git fetch --tags
+          
+          # Find the previous tag. If fails, assume first release.
+          PREV_TAG=$(git describe --tags --abbrev=0 "${CURRENT_TAG}^" 2>/dev/null || git describe --tags --abbrev=0 2>/dev/null || true)
+          
           echo "## Release $CURRENT_TAG" > RELEASE_NOTES.md
           echo "" >> RELEASE_NOTES.md
+          
           if [ -z "$PREV_TAG" ]; then
             git log --no-merges --pretty=format:"- %s (%h)" >> RELEASE_NOTES.md
           else
-            git log "$PREV_TAG..$CURRENT_TAG" --no-merges --pretty=format:"- %s (%h)" >> RELEASE_NOTES.md
+            # Since the current tag doesn't exist on the remote yet, we log from previous tag to HEAD
+            git log "$PREV_TAG..HEAD" --no-merges --pretty=format:"- %s (%h)" >> RELEASE_NOTES.md
           fi
 
       - name: Load Release Notes
@@ -724,6 +765,12 @@ jobs:
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           draft: false
+          # Use the tag name calculated in job 1
+          tag_name: ${{ needs.prepare_version.outputs.version_tag }}
+          # Point the tag to the current commit
+          target_commitish: ${{ github.sha }}
+          # Use the flag passed from inputs (is_prerelease)
+          prerelease: ${{ needs.prepare_version.outputs.is_prerelease }}
           body_path: RELEASE_NOTES.md
           files: final_release/*
 
@@ -735,8 +782,8 @@ jobs:
           args: |
             🚀 **New Release Published!**
             
-            **Version:** ${{ github.ref_name }}
-            **Download:** https://github.com/${{ github.repository }}/releases/tag/${{ github.ref_name }}
+            **Version:** ${{ needs.prepare_version.outputs.version_tag }}
+            **Download:** https://github.com/${{ github.repository }}/releases/tag/${{ needs.prepare_version.outputs.version_tag }}
             
             **Changelog:**
             ${{ env.RELEASE_BODY }}
