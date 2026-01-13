@@ -118,75 +118,162 @@ public class AnkiBridge {
     }
     
     private static void handleAnkiRequest(Socket client) {
-        try {
-            client.setSoTimeout(10000); // 10s timeout prevents hangs
-            InputStream rawIn = client.getInputStream();
-            OutputStream rawOut = client.getOutputStream();
-            
-            // 1. Read Headers (Raw Bytes to handle \r\n\r\n reliably)
-            ByteArrayOutputStream headerBuffer = new ByteArrayOutputStream();
-            int b;
-            while ((b = rawIn.read()) != -1) {
-                headerBuffer.write(b);
-                // Simple check for \r\n\r\n (end of headers)
-                if (b == '\n') {
-                    String s = headerBuffer.toString("UTF-8");
-                    if (s.endsWith("\r\n\r\n") || s.endsWith("\n\n")) break;
-                }
-            }
-            
-            if (headerBuffer.size() == 0) return;
-            
-            String headerStr = headerBuffer.toString("UTF-8");
-            String[] lines = headerStr.split("\r?\n");
-            
-            // Parse Request Line
-            if (lines.length == 0) return;
-            String[] requestParts = lines[0].split(" ");
-            String method = requestParts.length > 0 ? requestParts[0] : "GET";
-            
-            // Parse Headers
-            int contentLength = 0;
-            for (String line : lines) {
-                if (line.toLowerCase().startsWith("content-length:")) {
-                    try {
-                        contentLength = Integer.parseInt(line.split(":", 2)[1].trim());
-                    } catch (Exception ignored) {}
-                }
-            }
-            
-            // 2. Handle Preflight (OPTIONS)
-            if ("OPTIONS".equals(method)) {
-                writeResponse(rawOut, 200, "", true);
+    final int HEADER_LIMIT = 32 * 1024;     // 32 KB
+    final int BODY_LIMIT = 5_000_000;       // 5 MB (safe upper bound for our use)
+    try {
+        client.setSoTimeout(10_000); // 10s socket read timeout
+        InputStream rawIn = client.getInputStream();
+        OutputStream rawOut = client.getOutputStream();
+
+        // --- Read headers (byte-wise, robust, and bounded) ---
+        ByteArrayOutputStream headerBuffer = new ByteArrayOutputStream();
+        byte[] last4 = new byte[4];
+        int idx = 0;
+        int b;
+        while (true) {
+            b = rawIn.read();
+            if (b == -1) {
+                // EOF before headers complete
+                Log.w(TAG, "EOF while reading headers");
                 return;
             }
-            
-            // 3. Read Body (Raw Bytes)
-            // Use byte array to respect Content-Length correctly (UTF-8 safety)
-            String jsonRequest = "{}";
-            if (contentLength > 0) {
-                byte[] bodyBytes = new byte[contentLength];
-                int totalRead = 0;
-                while (totalRead < contentLength) {
-                    int count = rawIn.read(bodyBytes, totalRead, contentLength - totalRead);
-                    if (count == -1) break; // EOF
-                    totalRead += count;
+            headerBuffer.write(b);
+            last4[idx++ % 4] = (byte) b;
+
+            // detect CRLF CRLF (HTTP standard) or LF LF (lenient)
+            if (idx >= 4) {
+                if (last4[(idx - 4) & 3] == '\r' &&
+                    last4[(idx - 3) & 3] == '\n' &&
+                    last4[(idx - 2) & 3] == '\r' &&
+                    last4[(idx - 1) & 3] == '\n') {
+                    break;
                 }
-                jsonRequest = new String(bodyBytes, 0, totalRead, StandardCharsets.UTF_8);
             }
-            
-            // 4. Process Logic
-            String jsonResponse = processRequest(appContext, jsonRequest);
-            writeResponse(rawOut, 200, jsonResponse, true);
-            
-        } catch (java.net.SocketTimeoutException e) {
-            // Expected for empty/dead connections, suppress log spam
-        } catch (Exception e) {
-            Log.e(TAG, "Request Error", e);
-        } finally {
-            try { client.close(); } catch (Exception ignored) {}
+            if (idx >= 2) {
+                if (last4[(idx - 2) & 3] == '\n' &&
+                    last4[(idx - 1) & 3] == '\n') {
+                    break;
+                }
+            }
+
+            if (headerBuffer.size() > HEADER_LIMIT) {
+                writeResponse(rawOut, 413, error("Headers too large"), true);
+                return;
+            }
         }
+
+        // decode headers using ISO-8859-1 per HTTP spec (lossless for headers)
+        String headerStr = new String(headerBuffer.toByteArray(), StandardCharsets.ISO_8859_1);
+        String[] lines = headerStr.split("\r?\n");
+
+        if (lines.length == 0) {
+            writeResponse(rawOut, 400, error("Invalid request"), true);
+            return;
+        }
+
+        // Parse request line: METHOD PATH VERSION
+        String[] requestParts = lines[0].split(" ");
+        String method = requestParts.length > 0 ? requestParts[0].trim() : "GET";
+
+        // Build header map (lowercased keys)
+        java.util.Map<String, String> hdrs = new java.util.HashMap<>();
+        for (int i = 1; i < lines.length; i++) {
+            String line = lines[i];
+            if (line == null || line.length() == 0) break;
+            int colon = line.indexOf(':');
+            if (colon <= 0) continue;
+            String name = line.substring(0, colon).trim().toLowerCase();
+            String value = line.substring(colon + 1).trim();
+            hdrs.put(name, value);
+        }
+
+        // Handle Transfer-Encoding (we do not support chunked here)
+        String transferEnc = hdrs.get("transfer-encoding");
+        if (transferEnc != null && transferEnc.toLowerCase().contains("chunk")) {
+            writeResponse(rawOut, 501, error("Chunked transfer-encoding not supported"), true);
+            return;
+        }
+
+        // Handle Expect: 100-continue
+        String expect = hdrs.get("expect");
+        if (expect != null && expect.equalsIgnoreCase("100-continue")) {
+            try {
+                rawOut.write("HTTP/1.1 100 Continue\r\n\r\n".getBytes(StandardCharsets.US_ASCII));
+                rawOut.flush();
+            } catch (Exception e) {
+                Log.w(TAG, "Failed to send 100-continue", e);
+            }
+        }
+
+        // Parse Content-Length
+        int contentLength = 0;
+        String cl = hdrs.get("content-length");
+        if (cl != null) {
+            try {
+                contentLength = Integer.parseInt(cl.trim());
+            } catch (NumberFormatException ignored) {
+                writeResponse(rawOut, 400, error("Invalid Content-Length"), true);
+                return;
+            }
+        }
+
+        // OPTIONS preflight (CORS)
+        if ("OPTIONS".equalsIgnoreCase(method)) {
+            writeResponse(rawOut, 200, "", true);
+            return;
+        }
+
+        // Only POST is allowed for API calls
+        if (!"POST".equalsIgnoreCase(method)) {
+            writeResponse(rawOut, 405, error("Method not allowed"), true);
+            return;
+        }
+
+        // Sanity checks on Content-Length
+        if (contentLength < 0) {
+            writeResponse(rawOut, 400, error("Invalid Content-Length"), true);
+            return;
+        }
+        if (contentLength > BODY_LIMIT) {
+            writeResponse(rawOut, 413, error("Body too large"), true);
+            return;
+        }
+
+        // Read body (exactly contentLength bytes)
+        String jsonRequest = "{}";
+        if (contentLength > 0) {
+            byte[] body = new byte[contentLength];
+            int totalRead = 0;
+            while (totalRead < contentLength) {
+                int r = rawIn.read(body, totalRead, contentLength - totalRead);
+                if (r == -1) {
+                    writeResponse(rawOut, 400, error("Unexpected EOF while reading body"), true);
+                    return;
+                }
+                totalRead += r;
+            }
+            // decode body as UTF-8 (handles Japanese and other Unicode)
+            jsonRequest = new String(body, 0, totalRead, StandardCharsets.UTF_8);
+        }
+
+        // Process and respond
+        String jsonResponse = processRequest(appContext, jsonRequest);
+        writeResponse(rawOut, 200, jsonResponse, true);
+
+    } catch (java.net.SocketTimeoutException ste) {
+        // read timed out — log and drop the connection
+        Log.w(TAG, "Request timed out");
+    } catch (Exception e) {
+        Log.e(TAG, "Request Error", e);
+        try {
+            // Try to return 500 error to client
+            OutputStream out = client.getOutputStream();
+            writeResponse(out, 500, error(e.getMessage()), true);
+        } catch (Exception ignored) {}
+    } finally {
+        try { client.close(); } catch (Exception ignored) {}
     }
+}
     
     private static void writeResponse(OutputStream out, int code, String body, boolean cors) throws Exception {
         byte[] bytes = body.getBytes(StandardCharsets.UTF_8);
