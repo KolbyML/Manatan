@@ -96,6 +96,14 @@ struct Cli {
     /// Opens the web interface in the default browser after server start (Requires --headless)
     #[arg(long, requires = "headless")]
     open_page: bool,
+
+    /// Sets the IP address to bind the server to
+    #[arg(long, default_value = "0.0.0.0", env = "MANGATAN_HOST")]
+    host: String,
+
+    /// Sets the Port to bind the server to
+    #[arg(long, default_value_t = 4568, env = "MANGATAN_PORT")]
+    port: u16,
 }
 
 fn main() -> eframe::Result<()> {
@@ -115,6 +123,9 @@ fn main() -> eframe::Result<()> {
     let server_data_dir = data_dir.clone();
     let gui_data_dir = data_dir.clone();
 
+    let host = args.host.clone();
+    let port = args.port;
+
     if args.headless {
         info!("👻 Starting in Headless Mode (No GUI)...");
 
@@ -122,7 +133,8 @@ fn main() -> eframe::Result<()> {
 
         rt.block_on(async {
             if args.open_page {
-                tokio::spawn(async { open_webpage_when_ready().await });
+                let h = host.clone();
+                tokio::spawn(async move { open_webpage_when_ready(h, port).await });
             }
 
             let (shutdown_tx, shutdown_rx) = tokio::sync::mpsc::channel::<()>(1);
@@ -140,7 +152,7 @@ fn main() -> eframe::Result<()> {
                 }
             });
 
-            if let Err(err) = run_server(shutdown_rx, &server_data_dir).await {
+            if let Err(err) = run_server(shutdown_rx, &server_data_dir, host, port).await {
                 error!("Server crashed: {err}");
             }
         });
@@ -151,15 +163,17 @@ fn main() -> eframe::Result<()> {
     let (shutdown_tx, shutdown_rx) = tokio::sync::mpsc::channel::<()>(1);
     let (server_stopped_tx, server_stopped_rx) = std::sync::mpsc::channel::<()>();
 
+    let thread_host = host.clone();
     thread::spawn(move || {
         let rt = tokio::runtime::Runtime::new().expect("Failed to create Tokio runtime");
         rt.block_on(async {
-            tokio::spawn(async { open_webpage_when_ready().await });
+            let h = thread_host.clone();
+            tokio::spawn(async move { open_webpage_when_ready(h, port).await });
             let _guard = ServerGuard {
                 tx: server_stopped_tx,
             };
 
-            if let Err(err) = run_server(shutdown_rx, &server_data_dir).await {
+            if let Err(err) = run_server(shutdown_rx, &server_data_dir, thread_host, port).await {
                 error!("Server crashed: {err}");
             }
         });
@@ -180,11 +194,13 @@ fn main() -> eframe::Result<()> {
     let result = eframe::run_native(
         "Mangatan",
         options,
-        Box::new(|_cc| {
+        Box::new(move |_cc| {
             Ok(Box::new(MyApp::new(
                 shutdown_tx,
                 server_stopped_rx,
                 gui_data_dir,
+                host.clone(),
+                port,
             )))
         }),
     );
@@ -214,6 +230,8 @@ struct MyApp {
     is_shutting_down: bool,
     data_dir: PathBuf,
     update_status: Arc<Mutex<UpdateStatus>>,
+    host: String,
+    port: u16
 }
 
 impl MyApp {
@@ -221,6 +239,8 @@ impl MyApp {
         shutdown_tx: tokio::sync::mpsc::Sender<()>,
         server_stopped_rx: Receiver<()>,
         data_dir: PathBuf,
+        host: String,
+        port: u16
     ) -> Self {
         // Initialize status
         let update_status = Arc::new(Mutex::new(UpdateStatus::Idle));
@@ -239,6 +259,8 @@ impl MyApp {
             is_shutting_down: false,
             data_dir,
             update_status,
+            host,
+            port,
         }
     }
 
@@ -403,7 +425,9 @@ impl eframe::App for MyApp {
                         .min_size(btn_size);
 
                 if ui.add(btn).clicked() {
-                    let _ = open::that("http://localhost:4568");
+                    let host_target = if self.host == "0.0.0.0" { "localhost" } else { &self.host };
+                    let url = format!("http://{}:{}", host_target, self.port);
+                    let _ = open::that(url);
                 }
             });
 
@@ -458,6 +482,8 @@ impl eframe::App for MyApp {
 async fn run_server(
     mut shutdown_signal: tokio::sync::mpsc::Receiver<()>,
     data_dir: &PathBuf,
+    host: String,
+    port: u16,
 ) -> Result<(), Box<anyhow::Error>> {
     info!("🚀 Initializing Mangatan Launcher...");
     info!("📂 Data Directory: {}", data_dir.display());
@@ -515,7 +541,7 @@ async fn run_server(
         .spawn()
         .map_err(|err| anyhow!("Failed to launch suwayomi {err:?}"))?;
 
-    info!("🌍 Starting Web Interface at http://localhost:4568");
+    info!("🌍 Starting Web Interface at http://{}:{}", host, port);
 
     let ocr_router = mangatan_ocr_server::create_router(data_dir.clone());
     let yomitan_router = mangatan_yomitan_server::create_router(data_dir.clone(), true);
@@ -554,9 +580,10 @@ async fn run_server(
         .fallback(serve_react_app)
         .layer(cors);
 
-    let listener = tokio::net::TcpListener::bind("0.0.0.0:4568")
+    let listener_addr = format!("{}:{}", host, port);
+    let listener = tokio::net::TcpListener::bind(&listener_addr)
         .await
-        .map_err(|err| anyhow!("Failed create main server socket: {err:?}"))?;
+        .map_err(|err| anyhow!("Failed to create main server socket: {err:?}"))?;
 
     let server_future = axum::serve(listener, app).with_graceful_shutdown(async move {
         let _ = shutdown_signal.recv().await;
@@ -926,9 +953,12 @@ fn perform_update() -> Result<(), Box<dyn std::error::Error>> {
     Ok(())
 }
 
-async fn open_webpage_when_ready() {
+async fn open_webpage_when_ready(host: String, port: u16) {
     let client = Client::new();
     let query_payload = r#"{"query": "query AllCategories { categories { nodes { mangas { nodes { title } } } } }"}"#;
+
+    let host_target = if host == "0.0.0.0" { "127.0.0.1" } else { &host };
+    let url = format!("http://{}:{}", host_target, port);
 
     info!("⏳ Polling GraphQL endpoint for readiness (timeout 10s)...");
 
@@ -936,7 +966,7 @@ async fn open_webpage_when_ready() {
     let polling_task = async {
         loop {
             let request = client
-                .post("http://127.0.0.1:4568/api/graphql")
+                .post("http://127.0.0.1:4567/api/graphql")
                 .header("Content-Type", "application/json")
                 .body(query_payload);
 
@@ -945,7 +975,7 @@ async fn open_webpage_when_ready() {
                     if resp.status().is_success() || resp.status() == StatusCode::UNAUTHORIZED =>
                 {
                     info!("✅ Server is responsive! Opening browser...");
-                    if let Err(e) = open::that("http://localhost:4568") {
+                    if let Err(e) = open::that(&url) {
                         error!("❌ Failed to open browser: {}", e);
                     }
                     return;
