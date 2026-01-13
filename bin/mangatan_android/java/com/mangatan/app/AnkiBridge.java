@@ -490,7 +490,7 @@ public class AnkiBridge {
     }
 
     private static String saveMedia(Context ctx, String name, String b64) throws Exception {
-        byte[] data = Base64.decode(b64, Base64.DEFAULT);
+        byte[] data = Base64.decode(b64, Base64.NO_WRAP);
         File file = new File(ctx.getCacheDir(), name);
         try (FileOutputStream fos = new FileOutputStream(file)) { fos.write(data); }
         
@@ -535,19 +535,56 @@ public class AnkiBridge {
         } catch (Exception e) { return 0; }
     }
     
-    private static long findDeckId(Context ctx, String name) throws Exception {
-        try (Cursor c = ctx.getContentResolver().query(DECKS_URI, new String[]{DECK_ID}, DECK_NAME + " = ?", new String[]{name}, null)) {
-            if (c != null && c.moveToFirst()) return c.getLong(0);
+    private static long findDeckId(Context ctx, String targetDeckName) throws Exception {
+    
+    
+    try (Cursor c = ctx.getContentResolver().query(
+        DECKS_URI, 
+        new String[]{DECK_ID, DECK_NAME}, 
+        null,  
+        null,  
+        null)) {
+        
+        if (c != null) {
+            while (c.moveToNext()) {
+                long deckId = c.getLong(c.getColumnIndex(DECK_ID));
+                String deckName = c.getString(c.getColumnIndex(DECK_NAME));
+                
+                // Manual string comparison
+                if (deckName != null && deckName.equals(targetDeckName)) {
+                    Log.d(TAG, "✅ Found deck: '" + deckName + "' with ID: " + deckId);
+                    return deckId;
+                }
+            }
         }
-        throw new Exception("Deck '" + name + "' not found. Create it in AnkiDroid first.");
+    } catch (Exception e) {
+        Log.e(TAG, "Error querying decks", e);
+        throw e;
     }
     
-    private static long findModelId(Context ctx, String name) throws Exception {
-        try (Cursor c = ctx.getContentResolver().query(MODELS_URI, new String[]{MODEL_ID}, MODEL_NAME + " = ?", new String[]{name}, null)) {
-            if (c != null && c.moveToFirst()) return c.getLong(0);
+    throw new Exception("Deck '" + targetDeckName + "' not found. Available decks can be queried with deckNames action.");
+}
+    
+   private static long findModelId(Context ctx, String targetModelName) throws Exception {
+    try (Cursor c = ctx.getContentResolver().query(
+        MODELS_URI, 
+        new String[]{MODEL_ID, MODEL_NAME}, 
+        null,  
+        null, 
+        null)) {
+        
+        if (c != null) {
+            while (c.moveToNext()) {
+                long modelId = c.getLong(c.getColumnIndex(MODEL_ID));
+                String modelName = c.getString(c.getColumnIndex(MODEL_NAME));
+                if (modelName != null && modelName.equals(targetModelName)) {
+                    return modelId;
+                }
+            }
         }
-        throw new Exception("Model '" + name + "' not found.");
     }
+    throw new Exception("Model '" + targetModelName + "' not found.");
+}
     
     private static String[] getModelFields(Context ctx, long id) throws Exception {
         try (Cursor c = ctx.getContentResolver().query(MODELS_URI, new String[]{MODEL_FIELD_NAMES}, MODEL_ID + " = ?", new String[]{String.valueOf(id)}, null)) {
@@ -561,31 +598,152 @@ public class AnkiBridge {
     private static String joinTags(Set<String> tags) { return String.join(" ", tags); }
     
     private static String success(Object result) {
-        try { return new JSONObject().put("result", result == null ? JSONObject.NULL : result).put("error", JSONObject.NULL).toString(); } 
-        catch (Exception e) { return "{}"; }
+    try { 
+        JSONObject response = new JSONObject();
+        response.put("result", result == null ? JSONObject.NULL : result);
+        response.put("error", JSONObject.NULL);
+        return response.toString(); 
+    } catch (Exception e) { 
+        return "{\"result\":null,\"error\":\"JSON encoding failed\"}"; 
     }
-    private static String error(String msg) {
-        try { return new JSONObject().put("result", JSONObject.NULL).put("error", msg).toString(); } 
-        catch (Exception e) { return "{}"; }
+}
+
+private static String error(String msg) {
+    try { 
+        JSONObject response = new JSONObject();
+        response.put("result", JSONObject.NULL);
+        response.put("error", msg == null ? JSONObject.NULL : msg);
+        return response.toString(); 
+    } catch (Exception e) { 
+        return "{\"result\":null,\"error\":\"Unknown error\"}"; 
     }
+}
     
     public static class MediaFileProvider extends android.content.ContentProvider {
-        private static final android.content.UriMatcher MATCHER = new android.content.UriMatcher(android.content.UriMatcher.NO_MATCH);
-        @Override public boolean onCreate() {
-            MATCHER.addURI("com.mangatan.app.fileprovider", "cache/*", 1);
-            return true;
-        }
-        @Override public android.os.ParcelFileDescriptor openFile(Uri uri, String mode) throws java.io.FileNotFoundException {
-            if (MATCHER.match(uri) == 1) {
-                File file = new File(getContext().getCacheDir(), uri.getLastPathSegment());
-                if (file.exists()) return android.os.ParcelFileDescriptor.open(file, android.os.ParcelFileDescriptor.MODE_READ_ONLY);
-            }
-            throw new java.io.FileNotFoundException(uri.toString());
-        }
-        @Override public String getType(Uri uri) { return "application/octet-stream"; }
-        @Override public Cursor query(Uri u, String[] p, String s, String[] a, String o) { return null; }
-        @Override public Uri insert(Uri u, ContentValues v) { return null; }
-        @Override public int delete(Uri u, String s, String[] a) { return 0; }
-        @Override public int update(Uri u, ContentValues v, String s, String[] a) { return 0; }
+    private static final String TAG = "MediaFileProvider";
+    private static final android.content.UriMatcher MATCHER = new android.content.UriMatcher(android.content.UriMatcher.NO_MATCH);
+    private static final String AUTHORITY = "com.mangatan.app.fileprovider";
+    private static final int CACHE_FILE = 1;
+    
+    @Override 
+    public boolean onCreate() {
+        MATCHER.addURI(AUTHORITY, "cache/*", CACHE_FILE);
+        return true;
     }
+    
+    @Override 
+    public android.os.ParcelFileDescriptor openFile(Uri uri, String mode) throws java.io.FileNotFoundException {
+        if (MATCHER.match(uri) != CACHE_FILE) {
+            throw new IllegalArgumentException("Invalid URI: " + uri);
+        }
+        
+        Context ctx = getContext();
+        if (ctx == null) {
+            throw new java.io.FileNotFoundException("Context is null");
+        }
+        
+        String filename = uri.getLastPathSegment();
+        if (filename == null || filename.isEmpty()) {
+            throw new IllegalArgumentException("Filename is null or empty");
+        }
+        
+        filename = Uri.decode(filename);
+        
+        File cacheDir = ctx.getCacheDir();
+        File requestedFile = new File(cacheDir, filename);
+        
+        try {
+            String canonicalPath = requestedFile.getCanonicalPath();
+            String cacheDirPath = cacheDir.getCanonicalPath();
+            
+            if (!canonicalPath.startsWith(cacheDirPath + File.separator)) {
+                Log.e(TAG, "Path traversal attempt detected! Requested: " + canonicalPath + ", Expected: " + cacheDirPath);
+                throw new SecurityException("Path traversal attempt detected");
+            }
+        } catch (java.io.IOException e) {
+            Log.e(TAG, "Failed to canonicalize path", e);
+            throw new java.io.FileNotFoundException("Invalid file path");
+        }
+        
+        if (!requestedFile.exists()) {
+            throw new java.io.FileNotFoundException("File not found: " + filename);
+        }
+        
+        int modeInt;
+        try {
+            modeInt = android.os.ParcelFileDescriptor.parseMode(mode);
+        } catch (IllegalArgumentException e) {
+            throw new IllegalArgumentException("Invalid mode: " + mode);
+        }
+        
+        Log.d(TAG, "✅ Opening file: " + filename + " with mode: " + mode);
+        return android.os.ParcelFileDescriptor.open(requestedFile, modeInt);
+    }
+    
+    @Override 
+    public String getType(Uri uri) {
+        String filename = uri.getLastPathSegment();
+        if (filename == null) return "application/octet-stream";
+        
+        if (filename.endsWith(".jpg") || filename.endsWith(".jpeg")) return "image/jpeg";
+        if (filename.endsWith(".png")) return "image/png";
+        if (filename.endsWith(".webp")) return "image/webp";
+        if (filename.endsWith(".gif")) return "image/gif";
+        if (filename.endsWith(".mp3")) return "audio/mpeg";
+        if (filename.endsWith(".ogg")) return "audio/ogg";
+        if (filename.endsWith(".m4a") || filename.endsWith(".aac")) return "audio/mp4";
+        if (filename.endsWith(".wav")) return "audio/wav";
+        
+        return "application/octet-stream";
+    }
+    
+    @Override 
+    public android.database.Cursor query(Uri uri, String[] projection, String selection, String[] selectionArgs, String sortOrder) {
+        if (MATCHER.match(uri) == CACHE_FILE) {
+            String filename = uri.getLastPathSegment();
+            if (filename == null) return null;
+            
+            Context ctx = getContext();
+            if (ctx == null) return null;
+            
+            File file = new File(ctx.getCacheDir(), Uri.decode(filename));
+            
+            try {
+                if (!file.getCanonicalPath().startsWith(ctx.getCacheDir().getCanonicalPath() + File.separator)) {
+                    return null;
+                }
+            } catch (Exception e) {
+                return null;
+            }
+            
+            if (!file.exists()) return null;
+            
+            android.database.MatrixCursor cursor = new android.database.MatrixCursor(
+                new String[] {
+                    android.provider.OpenableColumns.DISPLAY_NAME,
+                    android.provider.OpenableColumns.SIZE
+                }, 
+                1
+            );
+            cursor.addRow(new Object[] { file.getName(), file.length() });
+            return cursor;
+        }
+        return null;
+    }
+    
+    @Override 
+    public Uri insert(Uri uri, android.content.ContentValues values) { 
+        throw new UnsupportedOperationException("Insert not supported"); 
+    }
+    
+    @Override 
+    public int delete(Uri uri, String selection, String[] selectionArgs) { 
+        return 0; 
+    }
+    
+    @Override 
+    public int update(Uri uri, android.content.ContentValues values, String selection, String[] selectionArgs) { 
+        return 0; 
+    }
+}
 }
