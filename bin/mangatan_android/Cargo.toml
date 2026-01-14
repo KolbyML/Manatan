@@ -26,6 +26,7 @@ resources = "res"
 min_sdk_version = 23
 target_sdk_version = 29
 
+# --- PERMISSIONS ---
 [[package.metadata.android.uses_permission]]
 name = "android.permission.FOREGROUND_SERVICE_DATA_SYNC"
 
@@ -64,6 +65,15 @@ name = "android.permission.POST_NOTIFICATIONS"
 
 [[package.metadata.android.uses_permission]]
 name = "android.permission.REQUEST_INSTALL_PACKAGES"
+# AnkiDroid Permission
+[[package.metadata.android.uses_permission]]
+name = "com.ichi2.anki.permission.READ_WRITE_DATABASE"
+
+[[package.metadata.android.extra_manifest_elements]]
+tag = "queries"
+children = [
+    { tag = "package", attributes = { "android:name" = "com.ichi2.anki" } }
+]
 
 [package.metadata.android.application]
 allow_native_heap_pointer_tagging = false
@@ -126,6 +136,7 @@ serde.workspace = true
 # Web Server & Networking
 # IMPORTANT: reqwest 0.12 uses http 1.0, matching axum 0.7
 reqwest = { version = "0.12", default-features = false, features = ["rustls-tls", "stream"] }
+serde_json = "1.0"
 tar = "0.4"
 tokio = { version = "1", features = ["full"] }
 
