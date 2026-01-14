@@ -393,7 +393,6 @@ fn tungstenite_to_axum(msg: TungsteniteMessage) -> Message {
 }
 
 async fn current_version_handler(State(state): State<AppState>) -> impl IntoResponse {
-    let version = env!("CARGO_PKG_VERSION");
     axum::Json(VersionResponse {
         version: state.app_version,
         variant: "ios".to_string(),

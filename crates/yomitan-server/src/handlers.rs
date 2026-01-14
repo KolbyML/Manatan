@@ -196,7 +196,7 @@ pub async fn reset_db_handler(State(state): State<ServerState>) -> Json<Value> {
     state.app.set_loading(false);
 
     match res {
-        Ok(msg) => Json(json!({ "status": "ok", "message": "Database reset successfully." })),
+        Ok(_) => Json(json!({ "status": "ok", "message": "Database reset successfully." })),
         Err(e) => {
             error!("❌ [Reset] Failed: {}", e);
             Json(json!({ "status": "error", "message": e.to_string() }))

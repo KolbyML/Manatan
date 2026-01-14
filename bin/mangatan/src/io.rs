@@ -1,6 +1,8 @@
+#[cfg(feature = "embed-jre")]
+use std::io::{self, Cursor};
 use std::{
     fs::{self, File},
-    io::{self, Cursor, Write},
+    io::Write,
     path::{Path, PathBuf},
 };
 
@@ -22,20 +24,6 @@ pub fn extract_file(dir: &Path, name: &str, bytes: &[u8]) -> std::io::Result<Pat
     info!("   Writing {} bytes...", bytes.len());
     file.write_all(bytes)?;
     info!("   File extraction complete.");
-    Ok(path)
-}
-
-pub fn extract_executable(dir: &Path, name: &str, bytes: &[u8]) -> std::io::Result<PathBuf> {
-    let path = extract_file(dir, name, bytes)?;
-
-    #[cfg(unix)]
-    {
-        use std::os::unix::fs::PermissionsExt;
-        let mut perms = fs::metadata(&path)?.permissions();
-        perms.set_mode(0o755); // rwxr-xr-x
-        fs::set_permissions(&path, perms)?;
-    }
-
     Ok(path)
 }
 
@@ -93,6 +81,7 @@ pub fn resolve_java(data_dir: &Path) -> std::io::Result<PathBuf> {
     }
 }
 
+#[cfg(feature = "embed-jre")]
 pub fn extract_zip(zip_bytes: &[u8], target_dir: &Path) -> std::io::Result<()> {
     let reader = Cursor::new(zip_bytes);
     let mut archive = zip::ZipArchive::new(reader).map_err(io::Error::other)?;
