@@ -3,6 +3,7 @@ mod io;
 use std::{
     env,
     fs::{self},
+    net::Ipv4Addr,
     path::PathBuf,
     process::Stdio,
     sync::{
@@ -99,7 +100,7 @@ struct Cli {
 
     /// Sets the IP address to bind the server to
     #[arg(long, default_value = "0.0.0.0", env = "MANGATAN_HOST")]
-    host: String,
+    host: Ipv4Addr,
 
     /// Sets the Port to bind the server to
     #[arg(long, default_value_t = 4568, env = "MANGATAN_PORT")]
@@ -123,7 +124,7 @@ fn main() -> eframe::Result<()> {
     let server_data_dir = data_dir.clone();
     let gui_data_dir = data_dir.clone();
 
-    let host = args.host.clone();
+    let host = args.host;
     let port = args.port;
 
     if args.headless {
@@ -133,8 +134,7 @@ fn main() -> eframe::Result<()> {
 
         rt.block_on(async {
             if args.open_page {
-                let h = host.clone();
-                tokio::spawn(async move { open_webpage_when_ready(h, port).await });
+                tokio::spawn(async move { open_webpage_when_ready(host, port).await });
             }
 
             let (shutdown_tx, shutdown_rx) = tokio::sync::mpsc::channel::<()>(1);
@@ -230,8 +230,8 @@ struct MyApp {
     is_shutting_down: bool,
     data_dir: PathBuf,
     update_status: Arc<Mutex<UpdateStatus>>,
-    host: String,
-    port: u16
+    host: Ipv4Addr,
+    port: u16,
 }
 
 impl MyApp {
@@ -239,8 +239,8 @@ impl MyApp {
         shutdown_tx: tokio::sync::mpsc::Sender<()>,
         server_stopped_rx: Receiver<()>,
         data_dir: PathBuf,
-        host: String,
-        port: u16
+        host: Ipv4Addr,
+        port: u16,
     ) -> Self {
         // Initialize status
         let update_status = Arc::new(Mutex::new(UpdateStatus::Idle));
@@ -425,8 +425,12 @@ impl eframe::App for MyApp {
                         .min_size(btn_size);
 
                 if ui.add(btn).clicked() {
-                    let host_target = if self.host == "0.0.0.0" { "localhost" } else { &self.host };
-                    let url = format!("http://{}:{}", host_target, self.port);
+                    let host_target = if self.host == Ipv4Addr::new(0, 0, 0, 0) {
+                        "localhost".to_string()
+                    } else {
+                        self.host.to_string()
+                    };
+                    let url = format!("http://{host_target}:{}", self.port);
                     let _ = open::that(url);
                 }
             });
@@ -482,7 +486,7 @@ impl eframe::App for MyApp {
 async fn run_server(
     mut shutdown_signal: tokio::sync::mpsc::Receiver<()>,
     data_dir: &PathBuf,
-    host: String,
+    host: Ipv4Addr,
     port: u16,
 ) -> Result<(), Box<anyhow::Error>> {
     info!("🚀 Initializing Mangatan Launcher...");
@@ -953,12 +957,16 @@ fn perform_update() -> Result<(), Box<dyn std::error::Error>> {
     Ok(())
 }
 
-async fn open_webpage_when_ready(host: String, port: u16) {
+async fn open_webpage_when_ready(host: Ipv4Addr, port: u16) {
     let client = Client::new();
     let query_payload = r#"{"query": "query AllCategories { categories { nodes { mangas { nodes { title } } } } }"}"#;
 
-    let host_target = if host == "0.0.0.0" { "127.0.0.1" } else { &host };
-    let url = format!("http://{}:{}", host_target, port);
+    let host_target = if host == Ipv4Addr::new(0, 0, 0, 0) {
+        "localhost".to_string()
+    } else {
+        host.to_string()
+    };
+    let url = format!("http://{host_target}:{port}");
 
     info!("⏳ Polling GraphQL endpoint for readiness (timeout 10s)...");
 
