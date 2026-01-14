@@ -111,13 +111,6 @@ enabled = true
 exported = false
 foreground_service_type = "dataSync"
 
-# --- PROVIDER REGISTRATION ---
-[[package.metadata.android.application.provider]]
-name = "com.mangatan.app.AnkiBridge$MediaFileProvider"
-authorities = "com.mangatan.app.fileprovider"
-exported = false
-grant_uri_permissions = true
-
 [lib]
 name = "mangatan_android"
 crate-type = ["cdylib"]
