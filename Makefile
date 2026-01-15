@@ -208,7 +208,7 @@ download_android_natives: bin/mangatan_android/assets/natives.tar
 bin/mangatan_android/assets/Suwayomi-Server.jar:
 	@echo "Downloading Android Suwayomi Server JAR..."
 	mkdir -p bin/mangatan_android/assets
-	curl -L "https://github.com/Suwayomi/Suwayomi-Server-preview/releases/download/v2.1.2038/Suwayomi-Server-v2.1.2038.jar" -o bin/mangatan_android/assets/Suwayomi-Server.jar
+	curl -L "https://github.com/KolbyML/Suwayomi-Server/releases/download/v1.0.4/Suwayomi-Server-v2.1.2062.jar" -o bin/mangatan_android/assets/Suwayomi-Server.jar
 
 .PHONY: download_android_jar
 download_android_jar: bin/mangatan_android/assets/Suwayomi-Server.jar
