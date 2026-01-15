@@ -276,7 +276,7 @@ download_ios_jar:
 	@echo "Downloading iOS Suwayomi Server JAR..."
 	mkdir -p bin/mangatan_ios/Mangatan/jar
 	rm -f bin/mangatan_ios/Mangatan/jar/suwayomi-server.jar
-	curl -L "https://github.com/Suwayomi/Suwayomi-Server-preview/releases/download/v2.1.2038/Suwayomi-Server-v2.1.2038.jar" -o bin/mangatan_ios/Mangatan/jar/suwayomi-server.jar
+	curl -L "https://github.com/KolbyML/Suwayomi-Server/releases/download/v1.0.4/Suwayomi-Server-v2.1.2062.jar" -o bin/mangatan_ios/Mangatan/jar/suwayomi-server.jar
 
 
 .PHONY: ios_framework
