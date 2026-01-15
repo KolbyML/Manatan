@@ -126,6 +126,7 @@ int main(int argc, char * argv[]) {
     options[optCount++].optionString = "-Dsuwayomi.tachidesk.config.server.initialOpenInBrowserEnabled=false";
     options[optCount++].optionString = "-Dsuwayomi.tachidesk.config.server.systemTrayEnabled=false";
     options[optCount++].optionString = "-Dsuwayomi.tachidesk.config.server.kcefEnable=false";
+    options[optCount++].optionString = "-Dsuwayomi.tachidesk.config.server.enableCookieApi=true";
     
     // Root Dir (for configs/settings) is the SUBFOLDER
     options[optCount++].optionString = strdup([[NSString stringWithFormat:@"-Dsuwayomi.tachidesk.config.server.rootDir=%@", suwayomiDataDir] UTF8String]);
