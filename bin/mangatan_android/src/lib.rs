@@ -48,6 +48,7 @@ use tokio_tungstenite::{
     },
 };
 use tower_http::cors::{AllowOrigin, CorsLayer};
+use tracing::warn;
 use tracing::{error, info, trace};
 use tracing_log::LogTracer;
 use tracing_subscriber::{EnvFilter, fmt::MakeWriter};
@@ -370,6 +371,9 @@ fn android_main(app: AndroidApp) {
     let files_dir = app.internal_data_path().expect("Failed to get data path");
     let files_dir_clone = files_dir.clone();
 
+    let app_clone_2 = app.clone();
+    let files_dir_clone_2 = files_dir.clone();
+
     let server_ready = Arc::new(AtomicBool::new(false));
     let server_ready_bg = server_ready.clone();
     let server_ready_gui = server_ready.clone();
@@ -396,6 +400,11 @@ fn android_main(app: AndroidApp) {
                     Ok(resp) if resp.status().is_success() || resp.status() == StatusCode::UNAUTHORIZED => {
                         if !server_ready_bg.load(Ordering::Relaxed) {
                             server_ready_bg.store(true, Ordering::Relaxed);
+                            let app_clone_3 = app_clone_2.clone();
+                            let files_dir_clone_3 = files_dir_clone_2.clone();
+                            tokio::task::spawn_blocking(move || {
+                                update_server_conf_local_source(&app_clone_3, &files_dir_clone_3);
+                            });
                         }
                     }
                     _ => {
@@ -950,80 +959,57 @@ fn start_background_services(app: AndroidApp, files_dir: PathBuf) {
         );
 
         let config_marker = files_dir.join(".config_local_source_v1");
-
-        // Check if this is an update by looking for existing server configuration
-        // Note: tachidesk_data is defined earlier in this function
-        let server_conf = tachidesk_data.join("server.conf");
-        let is_existing_user = server_conf.exists();
+        let server_conf_exists = tachidesk_data.join("server.conf").exists();
 
         if !config_marker.exists() {
-            info!("Configuration check: Existing User = {}", is_existing_user);
+            info!(
+                "Configuration check: Existing User = {}",
+                server_conf_exists
+            );
 
-            // 1. Attach to Android VM to resolve External Storage Path
             let android_vm = JavaVM::from_raw(app.vm_as_ptr() as *mut jni::sys::JavaVM).unwrap();
-
             match android_vm.attach_current_thread() {
                 Ok(mut android_env) => {
-                    let env_cls_res = android_env.find_class("android/os/Environment");
-                    if let Ok(env_cls) = env_cls_res {
-                        let dir_res = android_env.call_static_method(
+                    let env_cls = android_env.find_class("android/os/Environment").unwrap();
+                    let dir_obj = android_env
+                        .call_static_method(
                             env_cls,
                             "getExternalStorageDirectory",
                             "()Ljava/io/File;",
                             &[],
-                        );
+                        )
+                        .unwrap()
+                        .l()
+                        .unwrap();
+                    let path_obj = android_env
+                        .call_method(&dir_obj, "getAbsolutePath", "()Ljava/lang/String;", &[])
+                        .unwrap()
+                        .l()
+                        .unwrap();
+                    let path_jstr: JString = path_obj.into();
+                    let path_rust: String = android_env.get_string(&path_jstr).unwrap().into();
 
-                        // FIXED: Use .l() to extract JObject safely from JValue
-                        if let Ok(file_obj) = dir_res.and_then(|v| v.l()) {
-                            let path_res = android_env.call_method(
-                                &file_obj,
-                                "getAbsolutePath",
-                                "()Ljava/lang/String;",
-                                &[],
-                            );
+                    let target_path = format!("{}/Mangatan/local-sources", path_rust);
+                    info!("Ensuring local source directory exists: {}", target_path);
+                    let _ = std::fs::create_dir_all(&target_path);
 
-                            // FIXED: Use .l() to extract JObject safely from JValue
-                            if let Ok(path_jstr_obj) = path_res.and_then(|v| v.l()) {
-                                // FIXED: Convert owned JObject to JString using .into()
-                                let path_jstr: JString = path_jstr_obj.into();
+                    if !server_conf_exists {
+                        info!("Fresh install detected: Setting localSourcePath flag.");
+                        options_vec.push(format!(
+                            "-Dsuwayomi.tachidesk.config.server.localSourcePath={}",
+                            target_path
+                        ));
 
-                                // Get the Rust String
-                                if let Ok(path_rust_str) = android_env.get_string(&path_jstr) {
-                                    let path_rust: String = path_rust_str.into();
+                        // --- IMPORTANT: Create pending marker HERE ---
+                        // This ensures we only patch server.conf if this specific code block runs.
+                        let pending_marker = files_dir.join(".pending_local_source_config");
+                        let _ = File::create(&pending_marker);
+                    } else {
+                        info!("Legacy update detected: NOT setting localSourcePath flag.");
+                    }
 
-                                    // 2. Construct the target path
-                                    let target_path =
-                                        format!("{}/Mangatan/local-sources", path_rust);
-
-                                    // 3. Always create the directory
-                                    info!(
-                                        "Ensuring local source directory exists: {}",
-                                        target_path
-                                    );
-                                    let _ = std::fs::create_dir_all(&target_path);
-
-                                    // 4. Only set the flag if it is a FRESH install
-                                    if !is_existing_user {
-                                        info!(
-                                            "Fresh install detected: Setting localSourcePath flag."
-                                        );
-                                        options_vec.push(format!(
-                                            "-Dsuwayomi.tachidesk.config.server.localSourcePath={}",
-                                            target_path
-                                        ));
-                                    } else {
-                                        info!(
-                                            "Legacy update detected: NOT setting localSourcePath flag."
-                                        );
-                                    }
-
-                                    // 5. Create the marker
-                                    if let Err(e) = std::fs::write(&config_marker, "configured") {
-                                        error!("Failed to write config marker: {:?}", e);
-                                    }
-                                }
-                            }
-                        }
+                    if let Err(e) = std::fs::write(&config_marker, "configured") {
+                        error!("Failed to write config marker: {:?}", e);
                     }
                 }
                 Err(e) => error!(
@@ -2258,4 +2244,123 @@ async fn webview_shim_handler() -> impl IntoResponse {
     ";
 
     ([(axum::http::header::CONTENT_TYPE, "text/html")], html)
+}
+
+fn update_server_conf_local_source(app: &AndroidApp, files_dir: &Path) {
+    let pending_marker = files_dir.join(".pending_local_source_config");
+
+    // Safety check: Only proceed if the marker exists (meaning we ran the JNI setup logic)
+    if !pending_marker.exists() {
+        return;
+    }
+
+    info!("🔄 Attempting to patch server.conf with localSourcePath (Fresh Install)...");
+
+    // 1. Get Path via JNI
+    let vm_ptr = app.vm_as_ptr() as *mut jni::sys::JavaVM;
+    let vm = unsafe { JavaVM::from_raw(vm_ptr).unwrap() };
+
+    let mut env = match vm.attach_current_thread() {
+        Ok(env) => env,
+        Err(e) => {
+            error!("Failed to attach thread for config patch: {:?}", e);
+            return;
+        }
+    };
+
+    let env_cls = match env.find_class("android/os/Environment") {
+        Ok(c) => c,
+        Err(e) => {
+            error!("JNI Error finding Environment: {:?}", e);
+            return;
+        }
+    };
+
+    let dir_obj = match env.call_static_method(
+        env_cls,
+        "getExternalStorageDirectory",
+        "()Ljava/io/File;",
+        &[],
+    ) {
+        Ok(v) => v.l().unwrap(),
+        Err(e) => {
+            error!("JNI Error getExternalStorageDirectory: {:?}", e);
+            return;
+        }
+    };
+
+    let path_obj = match env.call_method(&dir_obj, "getAbsolutePath", "()Ljava/lang/String;", &[]) {
+        Ok(v) => v.l().unwrap(),
+        Err(e) => {
+            error!("JNI Error getAbsolutePath: {:?}", e);
+            return;
+        }
+    };
+
+    let path_jstr: JString = path_obj.into();
+    let path_rust: String = match env.get_string(&path_jstr) {
+        Ok(s) => s.into(),
+        Err(e) => {
+            error!("JNI Error get_string: {:?}", e);
+            return;
+        }
+    };
+
+    // Construct the target directory
+    let target_path = format!("{}/Mangatan/local-sources", path_rust);
+
+    if let Err(e) = std::fs::create_dir_all(&target_path) {
+        error!("Failed to create local sources dir: {:?}", e);
+    }
+
+    // 2. Read server.conf
+    let conf_path = files_dir.join("tachidesk_data/server.conf");
+    if !conf_path.exists() {
+        warn!(
+            "server.conf not found at {:?}, skipping patch. (Server might not have created it yet?)",
+            conf_path
+        );
+        return;
+    }
+
+    let content = match fs::read_to_string(&conf_path) {
+        Ok(c) => c,
+        Err(e) => {
+            error!("Failed to read server.conf: {:?}", e);
+            return;
+        }
+    };
+
+    // 3. Update Line
+    let mut new_lines = Vec::new();
+    let mut patched = false;
+
+    for line in content.lines() {
+        if line.trim().starts_with("server.localSourcePath =") {
+            new_lines.push(format!(
+                "server.localSourcePath = \"{}\" # Autoconfigured by Mangatan",
+                target_path
+            ));
+            patched = true;
+        } else {
+            new_lines.push(line.to_string());
+        }
+    }
+
+    if patched {
+        let new_content = new_lines.join("\n");
+        if let Err(e) = fs::write(&conf_path, new_content) {
+            error!("Failed to write server.conf: {:?}", e);
+            return;
+        }
+        info!(
+            "✅ Successfully patched server.conf with localSourcePath: {}",
+            target_path
+        );
+
+        // Remove marker so we don't do this again
+        let _ = fs::remove_file(&pending_marker);
+    } else {
+        warn!("Could not find 'server.localSourcePath' key in server.conf");
+    }
 }
