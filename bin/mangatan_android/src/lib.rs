@@ -37,6 +37,7 @@ use jni::{
 use lazy_static::lazy_static;
 use reqwest::Client;
 use serde::{Deserialize, Serialize};
+use serde_json::json;
 use tar::Archive;
 use tokio::{fs as tokio_fs, net::TcpListener};
 use tokio_tungstenite::{
@@ -555,30 +556,24 @@ async fn start_web_server(data_dir: PathBuf) -> Result<(), Box<dyn std::error::E
         ])
         .allow_credentials(true);
 
-    let proxy_router: Router<AppState> = Router::new()
-        .route("/api/{*path}", any(proxy_suwayomi_handler))
-        .into();
-
-    let app: Router<AppState> = Router::new()
+    let app = Router::new()
+        .route("/api/v1/webview", any(webview_shim_handler))
+        .route("/api/system/version", any(current_version_handler))
+        .route(
+            "/api/system/download-update",
+            axum::routing::post(download_update_handler),
+        )
+        .route("/api/system/install-update", any(install_update_handler))
         .nest_service("/api/ocr", ocr_router)
         .nest_service("/api/yomitan", yomitan_router)
-        .nest(
-            "/api/system",
-            Router::new()
-                .route("/version", any(current_version_handler))
-                .route("/download-update", any(download_update_handler))
-                .route("/install-update", any(install_update_handler)),
-        )
-        .merge(proxy_router)
+        .route("/api/{*path}", any(proxy_suwayomi_handler))
         .fallback(serve_react_app)
         .layer(cors)
-        .into();
-
-    let app_with_state = app.with_state(state);
+        .with_state(state);
 
     let listener = TcpListener::bind("0.0.0.0:4568").await?;
     info!("✅ Web Server listening on 0.0.0.0:4568");
-    axum::serve(listener, app_with_state).await?;
+    axum::serve(listener, app).await?;
     Ok(())
 }
 
@@ -943,6 +938,7 @@ fn start_background_services(app: AndroidApp, files_dir: PathBuf) {
         options_vec.push("-XX:TieredStopAtLevel=1".to_string());
         options_vec.push("-Dsuwayomi.tachidesk.config.server.webUIChannel=BUNDLED".to_string());
         options_vec.push("-Dsuwayomi.tachidesk.config.server.kcefEnable=false".to_string());
+        options_vec.push("-Dsuwayomi.tachidesk.config.server.enableCookieApi=true".to_string());
         options_vec.push(
             "-Dsuwayomi.tachidesk.config.server.initialOpenInBrowserEnabled=false".to_string(),
         );
@@ -2045,4 +2041,221 @@ fn native_trigger_install() -> Result<(), Box<dyn std::error::Error>> {
 
     info!("✅ Install Intent Started");
     Ok(())
+}
+
+fn read_suwayomi_cookies(files_dir: &Path) -> String {
+    let cookie_path = files_dir.join("tachidesk_data/settings/cookie_store.xml");
+
+    // Fail silently with empty array if file doesn't exist
+    let content = match fs::read_to_string(&cookie_path) {
+        Ok(c) => c,
+        Err(_) => return "[]".to_string(),
+    };
+
+    let mut cookies = Vec::new();
+
+    // Naive XML Parsing for <entry key="domain.index">NAME=VALUE...</entry>
+    for line in content.lines() {
+        let line = line.trim();
+        if !line.starts_with("<entry key=\"") {
+            continue;
+        }
+
+        // Extract Key
+        let key_start = 12;
+        let Some(key_end) = line[key_start..].find('"') else {
+            continue;
+        };
+        let key = &line[key_start..key_start + key_end];
+
+        // Skip metadata keys (e.g. "google.com.size")
+        if key.ends_with(".size") {
+            continue;
+        }
+
+        // Extract Value (between "> and </entry>)
+        let Some(val_start_marker) = line.find("\">") else {
+            continue;
+        };
+        let val_start = val_start_marker + 2;
+        let Some(val_end) = line[val_start..].find("</entry>") else {
+            continue;
+        };
+        let full_value = &line[val_start..val_start + val_end];
+
+        // Parse Cookie String: "NAME=VALUE; expires=...; ..."
+        let parts: Vec<&str> = full_value.split(';').collect();
+        if parts.is_empty() {
+            continue;
+        }
+
+        let main_pair = parts[0].trim();
+        // Fixed: changed main_part to main_pair
+        let Some(eq_idx) = main_pair.find('=') else {
+            continue;
+        };
+        let name = &main_pair[..eq_idx];
+        let value = &main_pair[eq_idx + 1..];
+
+        // Infer Domain from Key (remove last .index)
+        // Key: "barmanonymity.shop.0" -> "barmanonymity.shop"
+        let domain = if let Some(dot_idx) = key.rfind('.') {
+            &key[..dot_idx]
+        } else {
+            key
+        };
+
+        cookies.push(json!({
+            "name": name,
+            "value": value,
+            "domain": domain,
+            "path": "/",
+            "secure": full_value.contains("secure"),
+            "httpOnly": full_value.contains("HttpOnly")
+        }));
+    }
+
+    serde_json::to_string(&cookies).unwrap_or("[]".to_string())
+}
+
+fn launch_native_webview_with_cookies(target_url: &str) -> Result<(), Box<dyn std::error::Error>> {
+    let ctx = ndk_context::android_context();
+    let vm = unsafe { jni::JavaVM::from_raw(ctx.vm().cast()) }?;
+    let mut env = vm.attach_current_thread()?;
+    let context_obj = unsafe { jni::objects::JObject::from_raw(ctx.context().cast()) };
+
+    // 1. Get Files Dir to find cookies
+    let files_dir_jstr = env
+        .call_method(&context_obj, "getFilesDir", "()Ljava/io/File;", &[])?
+        .l()?;
+    let files_dir_path = env
+        .call_method(
+            files_dir_jstr,
+            "getAbsolutePath",
+            "()Ljava/lang/String;",
+            &[],
+        )?
+        .l()?;
+    let files_dir_str: String = env.get_string(&files_dir_path.into())?.into();
+
+    // 2. Parse Cookies
+    let cookies_json = read_suwayomi_cookies(Path::new(&files_dir_str));
+
+    // 3. Launch Activity
+    let pkg_name = "com.mangatan.app";
+    let cls_name = "com.mangatan.app.WebviewActivity";
+
+    let intent_cls = env.find_class("android/content/Intent")?;
+    let intent = env.new_object(intent_cls, "()V", &[])?;
+
+    let pkg_j = env.new_string(pkg_name)?;
+    let cls_j = env.new_string(cls_name)?;
+
+    env.call_method(
+        &intent,
+        "setClassName",
+        "(Ljava/lang/String;Ljava/lang/String;)Landroid/content/Intent;",
+        &[(&pkg_j).into(), (&cls_j).into()],
+    )?;
+
+    // Extras
+    let url_key = env.new_string("TARGET_URL")?;
+    let url_val = env.new_string(target_url)?;
+    env.call_method(
+        &intent,
+        "putExtra",
+        "(Ljava/lang/String;Ljava/lang/String;)Landroid/content/Intent;",
+        &[(&url_key).into(), (&url_val).into()],
+    )?;
+
+    let cookie_key = env.new_string("INITIAL_COOKIES")?;
+    let cookie_val = env.new_string(&cookies_json)?;
+    env.call_method(
+        &intent,
+        "putExtra",
+        "(Ljava/lang/String;Ljava/lang/String;)Landroid/content/Intent;",
+        &[(&cookie_key).into(), (&cookie_val).into()],
+    )?;
+
+    env.call_method(
+        &intent,
+        "addFlags",
+        "(I)Landroid/content/Intent;",
+        &[268435456.into()],
+    )?; // FLAG_ACTIVITY_NEW_TASK
+
+    env.call_method(
+        &context_obj,
+        "startActivity",
+        "(Landroid/content/Intent;)V",
+        &[(&intent).into()],
+    )?;
+
+    Ok(())
+}
+
+#[derive(Deserialize)]
+struct WebviewLaunchRequest {
+    url: String,
+}
+
+async fn webview_shim_handler() -> impl IntoResponse {
+    info!("⚡ Shim Handler Hit");
+
+    // We use a standard string with \" escapes to ensure the JS string doesn't break if formatted.
+    let html = "
+    <!DOCTYPE html>
+    <html lang=\"en\">
+    <head>
+        <meta charset=\"UTF-8\">
+        <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">
+        <title>Opening App...</title>
+        <style>
+            body { background-color: #121212; color: #fff; font-family: sans-serif; display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; margin: 0; padding: 20px; text-align: center; }
+            a { color: #4dabf7; text-decoration: none; border: 1px solid #4dabf7; padding: 10px 20px; border-radius: 5px; margin-top: 20px; display: inline-block;}
+            .debug { color: #555; font-size: 0.8rem; margin-top: 20px; word-break: break-all; }
+        </style>
+    </head>
+    <body>
+        <p id=\"status\">Opening App...</p>
+        <a id=\"link\" href=\"#\" style=\"display:none\">Click Manual Open</a>
+        <div id=\"debug\" class=\"debug\"></div>
+        
+        <script>
+            try {
+                var target = window.location.hash.substring(1);
+                
+                if (target) {
+                    // Split the long string to prevent 'Unexpected End of Input' if lines wrap
+                    var part1 = \"intent://launch?url=\" + encodeURIComponent(target);
+                    var part2 = \"#Intent;scheme=mangatan;package=com.mangatan.app;\";
+                    var part3 = \"category=android.intent.category.BROWSABLE;end\";
+                    
+                    var intentUrl = part1 + part2 + part3;
+                    
+                    document.getElementById('debug').innerText = \"Target: \" + target;
+                    
+                    // Attempt redirect
+                    window.location.replace(intentUrl);
+                    
+                    // Setup manual link
+                    var link = document.getElementById('link');
+                    link.href = intentUrl;
+                    
+                    setTimeout(function() {
+                        link.style.display = 'block';
+                        document.getElementById('status').innerText = \"Tap below to switch to app:\";
+                    }, 1000);
+                } else {
+                    document.getElementById('status').innerText = \"Error: No URL found in hash.\";
+                }
+            } catch (e) {
+                alert(\"JS Error: \" + e.message);
+            }
+        </script>
+    </body>
+    </html>
+    ";
+
+    ([(axum::http::header::CONTENT_TYPE, "text/html")], html)
 }

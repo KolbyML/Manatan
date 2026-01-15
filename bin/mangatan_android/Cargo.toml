@@ -96,6 +96,12 @@ name = ".MangatanActivity"
 label = "Mangatan"
 config_changes = "orientation|keyboardHidden|screenSize"
 exported = true
+launch_mode = "singleTask"
+
+[[package.metadata.android.application.activity.intent_filter]]
+actions = ["android.intent.action.VIEW"]
+categories = ["android.intent.category.DEFAULT", "android.intent.category.BROWSABLE"]
+data = [{ scheme = "mangatan", host = "launch" }]
 
 [[package.metadata.android.application.activity.intent_filter]]
 actions = ["android.intent.action.VIEW", "android.intent.action.MAIN"]
