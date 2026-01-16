@@ -527,15 +527,21 @@ jobs:
       - name: Update Xcode Marketing Version
         run: |
           CLEAN_VERSION="${{ needs.prepare_version.outputs.clean_version }}"
+          BUILD_NUMBER=$(date +%s)
           PBXPROJ="bin/mangatan_ios/Mangatan.xcodeproj/project.pbxproj"
           
-          echo "Updating MARKETING_VERSION to $CLEAN_VERSION in $PBXPROJ..."
+          echo "Setting Version to: $CLEAN_VERSION"
+          echo "Setting Build Number to: $BUILD_NUMBER"
           
-          # Use sed to replace the existing version with the clean version
+          # Update Marketing Version (Visible Version like 1.0.0)
           sed -i '' "s/MARKETING_VERSION = .*;/MARKETING_VERSION = $CLEAN_VERSION;/g" "$PBXPROJ"
           
-          # Verify the change in the logs
-          grep "MARKETING_VERSION" "$PBXPROJ"
+          # Update Project Version (Build Number like 1768493021)
+          sed -i '' "s/CURRENT_PROJECT_VERSION = .*;/CURRENT_PROJECT_VERSION = $BUILD_NUMBER;/g" "$PBXPROJ"
+          
+          # Verify
+          grep "MARKETING_VERSION" "$PBXPROJ" | head -n 1
+          grep "CURRENT_PROJECT_VERSION" "$PBXPROJ" | head -n 1
 
       - name: Download WebUI Assets
         uses: actions/download-artifact@v4
