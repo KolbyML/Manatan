@@ -2,7 +2,7 @@ use std::{io::Cursor, time::Duration};
 
 use anyhow::anyhow;
 use chrome_lens_ocr::LensClient;
-use image::{DynamicImage, GenericImageView, ImageBuffer, ImageFormat, ImageReader};
+use image::{GenericImageView, ImageFormat, ImageReader};
 use reqwest::header::{ACCEPT, CONTENT_TYPE};
 use serde::{Deserialize, Serialize};
 
@@ -233,64 +233,6 @@ pub fn get_cache_key(url: &str) -> String {
     url.split('?').next().unwrap_or(url).to_string()
 }
 
-fn decode_avif_custom(bytes: &[u8]) -> anyhow::Result<DynamicImage> {
-    let mut reader = Cursor::new(bytes);
-
-    let decoder = avif_decode::Decoder::from_reader(&mut reader)
-        .map_err(|e| anyhow!("avif-decode failed to parse: {e:?}"))?;
-
-    let image = decoder
-        .to_image()
-        .map_err(|e| anyhow!("avif-decode failed to decode: {e:?}"))?;
-
-    match image {
-        avif_decode::Image::Rgb8(img) => {
-            let raw_data: Vec<u8> = img.buf().iter().flat_map(|p| [p.r, p.g, p.b]).collect();
-            let buffer = ImageBuffer::from_raw(img.width() as u32, img.height() as u32, raw_data)
-                .ok_or_else(|| anyhow!("Failed to create RGB8 buffer"))?;
-            Ok(DynamicImage::ImageRgb8(buffer))
-        }
-        avif_decode::Image::Rgba8(img) => {
-            let raw_data: Vec<u8> = img
-                .buf()
-                .iter()
-                .flat_map(|p| [p.r, p.g, p.b, p.a])
-                .collect();
-            let buffer = ImageBuffer::from_raw(img.width() as u32, img.height() as u32, raw_data)
-                .ok_or_else(|| anyhow!("Failed to create RGBA8 buffer"))?;
-            Ok(DynamicImage::ImageRgba8(buffer))
-        }
-        avif_decode::Image::Rgb16(img) => {
-            let raw_data: Vec<u8> = img
-                .buf()
-                .iter()
-                .flat_map(|p| [(p.r >> 8) as u8, (p.g >> 8) as u8, (p.b >> 8) as u8])
-                .collect();
-            let buffer = ImageBuffer::from_raw(img.width() as u32, img.height() as u32, raw_data)
-                .ok_or_else(|| anyhow!("Failed to create RGB8 buffer from 16-bit"))?;
-            Ok(DynamicImage::ImageRgb8(buffer))
-        }
-        avif_decode::Image::Rgba16(img) => {
-            let raw_data: Vec<u8> = img
-                .buf()
-                .iter()
-                .flat_map(|p| {
-                    [
-                        (p.r >> 8) as u8,
-                        (p.g >> 8) as u8,
-                        (p.b >> 8) as u8,
-                        (p.a >> 8) as u8,
-                    ]
-                })
-                .collect();
-            let buffer = ImageBuffer::from_raw(img.width() as u32, img.height() as u32, raw_data)
-                .ok_or_else(|| anyhow!("Failed to create RGBA8 buffer from 16-bit"))?;
-            Ok(DynamicImage::ImageRgba8(buffer))
-        }
-        _ => Err(anyhow!("Unsupported AVIF color type")),
-    }
-}
-
 pub async fn fetch_and_process(
     url: &str,
     user: Option<String>,
@@ -341,19 +283,19 @@ async fn fetch_and_process_internal(
         .map_err(|err| anyhow!("Failed error_for_status (URL: {target_url}): {err:?}"))?;
     let bytes = resp.bytes().await?.to_vec();
 
-    // 2. Decode Image (With AVIF Fix)
-    // We guess the format first. If it is AVIF, we use our custom function.
+    // 2. Decode Image
     let reader = ImageReader::new(Cursor::new(&bytes))
         .with_guessed_format()
         .map_err(|err| anyhow!("Failed with_guessed_format: {err:?}"))?;
 
-    let img = if reader.format() == Some(ImageFormat::Avif) {
-        decode_avif_custom(&bytes)?
-    } else {
-        reader
-            .decode()
-            .map_err(|err| anyhow!("Failed decode: {err:?}"))?
-    };
+    // AVIF format is not supported without additional dependencies
+    if reader.format() == Some(ImageFormat::Avif) {
+        return Err(anyhow!("AVIF format is not supported. Please use JPEG, PNG, or WebP images."));
+    }
+
+    let img = reader
+        .decode()
+        .map_err(|err| anyhow!("Failed decode: {err:?}"))?;
 
     let full_w = img.width();
     let full_h = img.height();

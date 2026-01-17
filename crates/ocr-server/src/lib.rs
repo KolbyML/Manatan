@@ -4,18 +4,17 @@ pub mod logic;
 pub mod merge;
 pub mod state;
 
-use std::path::PathBuf;
-
 use axum::{
     Router,
     extract::DefaultBodyLimit,
     routing::{get, post},
 };
+use mangatan_stats_server::StatsDb;
 use state::AppState;
 
 /// Creates the OCR Router.
-pub fn create_router(cache_dir: PathBuf) -> Router {
-    let state = AppState::new(cache_dir);
+pub fn create_router(stats_db: StatsDb) -> Router {
+    let state = AppState::new(stats_db);
 
     // Spawn the job worker if you want strict concurrency,
     // or we just spawn tasks per request (handled in handlers).

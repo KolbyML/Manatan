@@ -1,4 +1,4 @@
-use std::{collections::hash_map::Entry, sync::atomic::Ordering};
+use std::sync::atomic::Ordering;
 
 use axum::{
     Json,
@@ -8,10 +8,7 @@ use axum::{
 use serde::Deserialize;
 use tracing::{info, warn};
 
-use crate::{
-    jobs, logic,
-    state::{AppState, CacheEntry},
-};
+use crate::{jobs, logic, state::AppState};
 
 #[derive(Deserialize)]
 pub struct OcrRequest {
@@ -29,12 +26,10 @@ fn default_context() -> String {
 // --- Handlers ---
 
 pub async fn status_handler(State(state): State<AppState>) -> Json<serde_json::Value> {
-    let cache_size = state.cache.read().expect("cache lock poisoned").len();
     Json(serde_json::json!({
         "status": "running",
         "backend": "Rust (mangatan-ocr-server)",
         "requests_processed": state.requests_processed.load(Ordering::Relaxed),
-        "items_in_cache": cache_size,
         "active_jobs": state.active_jobs.load(Ordering::Relaxed),
     }))
 }
@@ -46,11 +41,27 @@ pub async fn ocr_handler(
     let cache_key = logic::get_cache_key(&params.url);
     info!("OCR Handler: Incoming request for cache_key={}", cache_key);
 
-    info!("OCR Handler: Attempting to acquire cache read lock for check...");
-    if let Some(entry) = state.cache.read().expect("lock").get(&cache_key) {
+    info!("OCR Handler: Attempting to check cache...");
+    if let Some(cached) = mangatan_stats_server::get_ocr_cache(&state.stats_db, &cache_key) {
         info!("OCR Handler: Cache HIT for cache_key={}", cache_key);
         state.requests_processed.fetch_add(1, Ordering::Relaxed);
-        return Ok(Json(entry.data.clone()));
+        // Convert CachedOcrResult back to OcrResult
+        let results: Vec<crate::logic::OcrResult> = cached
+            .data
+            .into_iter()
+            .map(|r| crate::logic::OcrResult {
+                text: r.text,
+                tight_bounding_box: crate::logic::BoundingBox {
+                    x: r.tight_bounding_box.x,
+                    y: r.tight_bounding_box.y,
+                    width: r.tight_bounding_box.width,
+                    height: r.tight_bounding_box.height,
+                },
+                is_merged: r.is_merged,
+                forced_orientation: r.forced_orientation,
+            })
+            .collect();
+        return Ok(Json(results));
     }
     info!(
         "OCR Handler: Cache MISS for cache_key={}. Starting processing.",
@@ -68,23 +79,25 @@ pub async fn ocr_handler(
                 cache_key
             );
 
-            info!("OCR Handler: Attempting to acquire cache write lock for insertion...");
-            {
-                let mut w = state.cache.write().expect("lock");
-                info!("OCR Handler: Cache write lock acquired.");
-                w.insert(
-                    cache_key.clone(),
-                    CacheEntry {
-                        context: params.context,
-                        data: data.clone(),
+            // Convert OcrResult to OcrResultEntry for storage
+            let entries: Vec<mangatan_stats_server::OcrResultEntry> = data
+                .iter()
+                .map(|r| mangatan_stats_server::OcrResultEntry {
+                    text: r.text.clone(),
+                    tight_bounding_box: mangatan_stats_server::BoundingBox {
+                        x: r.tight_bounding_box.x,
+                        y: r.tight_bounding_box.y,
+                        width: r.tight_bounding_box.width,
+                        height: r.tight_bounding_box.height,
                     },
-                );
-                info!("OCR Handler: Cache data inserted. Releasing write lock.");
-            }
+                    is_merged: r.is_merged,
+                    forced_orientation: r.forced_orientation.clone(),
+                })
+                .collect();
 
-            info!("OCR Handler: Triggering cache save to disk...");
-            state.save_cache();
-            info!("OCR Handler: Cache save complete.");
+            info!("OCR Handler: Storing in SQLite cache...");
+            let _ = mangatan_stats_server::set_ocr_cache(&state.stats_db, &cache_key, &params.context, &entries);
+            info!("OCR Handler: Cache store complete.");
 
             Ok(Json(data))
         }
@@ -130,24 +143,14 @@ pub async fn is_chapter_preprocessed_handler(
 
     let chapter_base_path = logic::get_cache_key(&req.base_url);
 
-    let total = state
-        .chapter_pages_map
-        .read()
-        .expect("pages map lock poisoned")
-        .get(&chapter_base_path)
-        .cloned();
+    let total = mangatan_stats_server::get_chapter_pages(&state.stats_db, &chapter_base_path);
 
     let total = match total {
         Some(total) => total,
         None => {
             match logic::resolve_total_pages_from_graphql(&req.base_url, req.user, req.pass).await {
                 Ok(total) => {
-                    state
-                        .chapter_pages_map
-                        .write()
-                        .expect("lock")
-                        .insert(chapter_base_path.clone(), total);
-                    state.save_cache();
+                    let _ = mangatan_stats_server::set_chapter_pages(&state.stats_db, &chapter_base_path, total);
                     total
                 }
                 Err(e) => {
@@ -161,12 +164,16 @@ pub async fn is_chapter_preprocessed_handler(
         }
     };
 
+    // Count cached pages for this chapter by checking each page
+    // This is a simplified approach - we count pages 0 to total-1
     let mut cached_count = 0;
-    for key in state.cache.read().expect("cache lock poisoned").keys() {
-        if key.starts_with(&chapter_base_path) {
+    for page_num in 0..total {
+        let page_key = format!("{}/{}", chapter_base_path, page_num);
+        if mangatan_stats_server::get_ocr_cache(&state.stats_db, &page_key).is_some() {
             cached_count += 1;
         }
     }
+
     if cached_count >= total {
         return Json(
             serde_json::json!({ "status": "processed", "cached_count": cached_count, "total_expected": total }),
@@ -215,40 +222,62 @@ pub async fn preprocess_handler(
 }
 
 pub async fn purge_cache_handler(State(state): State<AppState>) -> Json<serde_json::Value> {
-    let mut cache = state.cache.write().expect("lock");
-    cache.clear();
+    // Purge OCR cache using direct SQL
+    let conn = state.stats_db.pool.get().expect("Failed to get connection");
+    let deleted = conn.execute("DELETE FROM ocr_cache", []).unwrap_or(0);
+    Json(serde_json::json!({ "status": "cleared", "deleted": deleted }))
+}
 
-    drop(cache);
-
-    state.save_cache();
-    Json(serde_json::json!({ "status": "cleared" }))
+#[derive(serde::Serialize)]
+pub struct ExportCacheEntry {
+    pub context: String,
+    pub data: Vec<mangatan_stats_server::OcrResultEntry>,
 }
 
 pub async fn export_cache_handler(
     State(state): State<AppState>,
-) -> Json<std::collections::HashMap<String, CacheEntry>> {
-    let cache = state.cache.read().expect("lock");
-    Json(cache.clone())
+) -> Json<std::collections::HashMap<String, ExportCacheEntry>> {
+    let conn = state.stats_db.pool.get().expect("Failed to get connection");
+    let mut stmt = conn.prepare("SELECT page_url, context, ocr_json FROM ocr_cache").expect("prepare failed");
+    
+    let mut result: std::collections::HashMap<String, ExportCacheEntry> = std::collections::HashMap::new();
+    
+    let rows = stmt.query_map([], |row| {
+        let page_url: String = row.get(0)?;
+        let context: String = row.get(1)?;
+        let ocr_json: String = row.get(2)?;
+        Ok((page_url, context, ocr_json))
+    }).expect("query failed");
+    
+    for row in rows.flatten() {
+        let (page_url, context, ocr_json) = row;
+        if let Ok(data) = serde_json::from_str::<Vec<mangatan_stats_server::OcrResultEntry>>(&ocr_json) {
+            result.insert(page_url, ExportCacheEntry { context, data });
+        }
+    }
+    
+    Json(result)
+}
+
+#[derive(serde::Deserialize)]
+pub struct ImportCacheEntry {
+    pub context: String,
+    pub data: Vec<mangatan_stats_server::OcrResultEntry>,
 }
 
 pub async fn import_cache_handler(
     State(state): State<AppState>,
-    Json(data): Json<std::collections::HashMap<String, CacheEntry>>,
+    Json(data): Json<std::collections::HashMap<String, ImportCacheEntry>>,
 ) -> Json<serde_json::Value> {
     let mut added = 0;
 
-    {
-        let mut cache = state.cache.write().expect("lock");
-        for (k, v) in data {
-            if let Entry::Vacant(e) = cache.entry(k) {
-                e.insert(v);
-                added += 1;
-            }
+    for (page_url, entry) in data {
+        // Check if already exists
+        if mangatan_stats_server::get_ocr_cache(&state.stats_db, &page_url).is_none() {
+            let _ = mangatan_stats_server::set_ocr_cache(&state.stats_db, &page_url, &entry.context, &entry.data);
+            added += 1;
         }
     }
 
-    if added > 0 {
-        state.save_cache();
-    }
     Json(serde_json::json!({ "message": "Import successful", "added": added }))
 }

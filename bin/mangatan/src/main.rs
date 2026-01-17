@@ -34,6 +34,7 @@ use futures::{SinkExt, StreamExt, TryStreamExt};
 #[cfg(feature = "embed-jre")]
 use mangatan_core::io::extract_zip;
 use mangatan_core::io::{extract_file, resolve_java};
+use mangatan_stats_server::StatsDb;
 use reqwest::{
     Client, Method,
     header::{
@@ -496,7 +497,12 @@ async fn run_server(
 
     info!("🌍 Starting Web Interface at http://localhost:4568");
 
-    let ocr_router = mangatan_ocr_server::create_router(data_dir.clone());
+    // Create shared StatsDb for both OCR and stats servers
+    let stats_db = StatsDb::new(data_dir.clone());
+
+    // Create routers with shared database
+    let stats_router = mangatan_stats_server::create_router(stats_db.clone());
+    let ocr_router = mangatan_ocr_server::create_router(stats_db);
     let yomitan_router = mangatan_yomitan_server::create_router(data_dir.clone());
 
     let client = Client::new();
@@ -527,6 +533,7 @@ async fn run_server(
     let app = Router::new()
         .nest("/api/ocr", ocr_router)
         .nest("/api/yomitan", yomitan_router)
+        .nest("/api/stats", stats_router)
         .merge(proxy_router)
         .fallback(serve_react_app)
         .layer(cors);

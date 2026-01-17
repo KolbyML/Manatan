@@ -5,7 +5,8 @@ members = [
     "bin/mangatan_android",
     "bin/mangatan_ios/backend",
     "crates/core",
-    "crates/ocr-server", 
+    "crates/ocr-server",
+    "crates/stats-server",
     "crates/yomitan-server",
 ]
 exclude = ["bin/mangatan"]
@@ -38,10 +39,10 @@ wildcard_imports = "warn"
 
 [workspace.dependencies]
 anyhow = "1.0"
-avif-decode = "1.0"
 axum = { version = "0.8.7", features = ["macros", "multipart", "ws"] }
 base64 = "0.22"
 bytes = "1.11"
+chrono = { version = "0.4", features = ["serde"] }
 chrome_lens_ocr = "0.2.3"
 clap = { version = "4.0", features = ["env", "derive"] }
 directories = "6.0"
@@ -75,6 +76,7 @@ zip = "6.0"
 # Internal Dependencies
 mangatan-core = { path = "crates/core" }
 mangatan-ocr-server = { path = "crates/ocr-server" }
+mangatan-stats-server = { path = "crates/stats-server" }
 mangatan-yomitan-server = { path = "crates/yomitan-server" }
 
 [profile.test]

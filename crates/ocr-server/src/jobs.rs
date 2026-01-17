@@ -4,9 +4,15 @@ use std::sync::{
 };
 
 use futures::StreamExt;
-use tokio::sync::Mutex;
+use serde::Serialize;
 
-use crate::state::{AppState, JobProgress};
+use crate::state::AppState;
+
+#[derive(Clone, Copy, Serialize, Debug)]
+pub struct JobProgress {
+    pub current: usize,
+    pub total: usize,
+}
 
 pub async fn run_chapter_job(
     state: AppState,
@@ -31,7 +37,6 @@ pub async fn run_chapter_job(
     tracing::info!("[Job] Started for {} ({} pages)", context, total);
 
     let completed_counter = Arc::new(AtomicUsize::new(0));
-    let save_lock = Arc::new(Mutex::new(()));
     let stream = futures::stream::iter(pages.into_iter());
 
     // Change from 6 to 2 or 3 for Android stability
@@ -45,13 +50,12 @@ pub async fn run_chapter_job(
             let pass = pass.clone();
             let context = context.clone();
             let completed_counter = completed_counter.clone();
-            let save_lock = save_lock.clone();
 
             let page_id = url.split('/').next_back().unwrap_or("unknown").to_string();
 
             async move {
                 let cache_key = crate::logic::get_cache_key(&url);
-                let exists = { state.cache.read().expect("lock").contains_key(&cache_key) };
+                let exists = mangatan_stats_server::get_ocr_cache(&state.stats_db, &cache_key).is_some();
                 if exists {
                     tracing::info!("[Page {page_id}] Skip (Cached)");
                 } else {
@@ -59,13 +63,22 @@ pub async fn run_chapter_job(
 
                     match crate::logic::fetch_and_process(&url, user, pass).await {
                         Ok(res) => {
-                            state.cache.write().expect("lock").insert(
-                                cache_key,
-                                crate::state::CacheEntry {
-                                    context: context.clone(),
-                                    data: res,
-                                },
-                            );
+                            // Convert OcrResult to OcrResultEntry for storage
+                            let entries: Vec<mangatan_stats_server::OcrResultEntry> = res
+                                .iter()
+                                .map(|r| mangatan_stats_server::OcrResultEntry {
+                                    text: r.text.clone(),
+                                    tight_bounding_box: mangatan_stats_server::BoundingBox {
+                                        x: r.tight_bounding_box.x,
+                                        y: r.tight_bounding_box.y,
+                                        width: r.tight_bounding_box.width,
+                                        height: r.tight_bounding_box.height,
+                                    },
+                                    is_merged: r.is_merged,
+                                    forced_orientation: r.forced_orientation.clone(),
+                                })
+                                .collect();
+                            let _ = mangatan_stats_server::set_ocr_cache(&state.stats_db, &cache_key, &context, &entries);
                         }
                         Err(err) => {
                             tracing::warn!("[Page {page_id}] Failed: {err:?}");
@@ -85,20 +98,11 @@ pub async fn run_chapter_job(
                         prog.current = current;
                     }
                 }
-
-                if current.is_multiple_of(5)
-                    && let Ok(_guard) = save_lock.try_lock()
-                {
-                    state.save_cache();
-                }
             }
         })
         .await;
 
-    // Final Save
-    tracing::info!("[Job {job_id}] Final save...");
-    state.save_cache();
-    tracing::info!("[Job {job_id}] Final save complete.");
+    tracing::info!("[Job {job_id}] Processing complete.");
 
     state.active_jobs.fetch_sub(1, Ordering::Relaxed);
 
