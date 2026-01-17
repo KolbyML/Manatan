@@ -14,6 +14,8 @@ use crate::{PREBAKED_DICT, ServerState, import};
 pub struct LookupParams {
     pub text: String,
     pub index: Option<usize>,
+    // Optional toggle for grouping results (defaults to true in handler)
+    pub group: Option<bool>,
 }
 
 #[derive(Serialize)]
@@ -209,6 +211,8 @@ pub async fn lookup_handler(
     Query(params): Query<LookupParams>,
 ) -> Result<Json<Vec<ApiGroupedResult>>, (StatusCode, Json<Value>)> {
     let cursor_idx = params.index.unwrap_or(0);
+    // determine if we should group results or return raw dictionary entries
+    let should_group = params.group.unwrap_or(true);
 
     if state.app.is_loading() {
         return Err((
@@ -234,6 +238,8 @@ pub async fn lookup_handler(
     }
 
     let mut map: Vec<Aggregator> = Vec::new();
+    
+    let mut flat_results: Vec<ApiGroupedResult> = Vec::new();
 
     for entry in raw_results {
         let (headword, reading) = match &entry.term {
@@ -281,53 +287,74 @@ pub async fn lookup_handler(
             content: content_val,
         };
 
-        if let Some(existing) = map
-            .iter_mut()
-            .find(|agg| agg.headword == headword && agg.reading == reading)
-        {
-            let is_duplicate_def = existing.definitions.iter().any(|d| {
-                d.dictionary_name == def_obj.dictionary_name
-                    && d.content.to_string() == def_obj.content.to_string()
-            });
+        if should_group {
+            // === LOGIC A: GROUPING ===
+            if let Some(existing) = map
+                .iter_mut()
+                .find(|agg| agg.headword == headword && agg.reading == reading)
+            {
+                let is_duplicate_def = existing.definitions.iter().any(|d| {
+                    d.dictionary_name == def_obj.dictionary_name
+                        && d.content.to_string() == def_obj.content.to_string()
+                });
 
-            if !is_duplicate_def {
-                existing.definitions.push(def_obj);
+                if !is_duplicate_def {
+                    existing.definitions.push(def_obj);
+                }
+            } else {
+                map.push(Aggregator {
+                    headword: headword.clone(),
+                    reading: reading.clone(),
+                    furigana: calculate_furigana(&headword, &reading),
+                    definitions: vec![def_obj],
+                    forms_set: vec![(headword.clone(), reading.clone())],
+                    match_len,
+                });
             }
         } else {
-            map.push(Aggregator {
+            // === LOGIC B: NO GROUPING ===
+            flat_results.push(ApiGroupedResult {
                 headword: headword.clone(),
                 reading: reading.clone(),
                 furigana: calculate_furigana(&headword, &reading),
                 definitions: vec![def_obj],
-                forms_set: vec![(headword.clone(), reading.clone())],
-                match_len, // Capture match length
+                forms: vec![ApiForm {
+                    headword: headword.clone(),
+                    reading: reading.clone(),
+                }],
+                match_len,
             });
         }
     }
 
-    let final_results: Vec<ApiGroupedResult> = map
-        .into_iter()
-        .map(|agg| {
-            let mut forms_vec = Vec::new();
-            for (h, r) in agg.forms_set {
-                forms_vec.push(ApiForm {
-                    headword: h,
-                    reading: r,
-                });
-            }
+    if should_group {
+        // Transform the Aggregators into the final ApiGroupedResult format
+        let grouped_final: Vec<ApiGroupedResult> = map
+            .into_iter()
+            .map(|agg| {
+                let mut forms_vec = Vec::new();
+                for (h, r) in agg.forms_set {
+                    forms_vec.push(ApiForm {
+                        headword: h,
+                        reading: r,
+                    });
+                }
 
-            ApiGroupedResult {
-                headword: agg.headword,
-                reading: agg.reading,
-                furigana: agg.furigana,
-                definitions: agg.definitions,
-                forms: forms_vec,
-                match_len: agg.match_len, // Expose match length
-            }
-        })
-        .collect();
-
-    Ok(Json(final_results))
+                ApiGroupedResult {
+                    headword: agg.headword,
+                    reading: agg.reading,
+                    furigana: agg.furigana,
+                    definitions: agg.definitions,
+                    forms: forms_vec,
+                    match_len: agg.match_len,
+                }
+            })
+            .collect();
+        Ok(Json(grouped_final))
+    } else {
+        // Return the flat results directly
+        Ok(Json(flat_results))
+    }
 }
 
 fn calculate_furigana(headword: &str, reading: &str) -> Vec<(String, String)> {
