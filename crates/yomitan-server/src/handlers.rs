@@ -7,7 +7,7 @@ use serde::{Deserialize, Serialize};
 use serde_json::{Value, Value as JsonValue, json};
 use tracing::{error, info};
 use wordbase_api::{DictionaryId, Record, Term, dict::yomitan::GlossaryTag};
-
+use std::collections::HashMap;
 use crate::{PREBAKED_DICT, ServerState, import};
 
 #[derive(Deserialize)]
@@ -250,6 +250,8 @@ pub async fn lookup_handler(
 
     let mut map: Vec<Aggregator> = Vec::new();
 
+    let mut freq_map: HashMap<(String, String), Vec<ApiFrequency>> = HashMap::new(); 
+
     let mut flat_results: Vec<ApiGroupedResult> = Vec::new();
 
     for entry in raw_results {
@@ -304,45 +306,21 @@ pub async fn lookup_handler(
                 dictionary_name: dict_name,
                 value: val_str,
             };
-            if should_group {
-                if let Some(existing) = map
-                    .iter_mut()
-                    .find(|agg| agg.headword == headword && agg.reading == reading)
-                {
-                    existing.frequencies.push(freq_obj);
-                } else {
-                    map.push(Aggregator {
-                        headword: headword.clone(),
-                        reading: reading.clone(),
-                        furigana: calculate_furigana(&headword, &reading),
-                        definitions: vec![],
-                        term_tags: vec![],
-                        frequencies: vec![freq_obj],
-                        forms_set: vec![(headword.clone(), reading.clone())],
-                        match_len,
-                    });
-                }
-            } else {
-                flat_results.push(ApiGroupedResult {
-                    headword: headword.clone(),
-                    reading: reading.clone(),
-                    furigana: calculate_furigana(&headword, &reading),
-                    definitions: vec![],
-                    frequencies: vec![freq_obj],
-                    term_tags: vec![],
-                    forms: vec![ApiForm {
-                        headword: headword.clone(),
-                        reading: reading.clone(),
-                    }],
-                    match_len,
-                });
-            }
+
+            // Store in map instead of pushing to results immediately.
+            freq_map
+                .entry((headword.clone(), reading.clone()))
+                .or_default()
+                .push(freq_obj);
+
         } else {
+            // === DEFINITION LOGIC ===
             let def_obj = ApiDefinition {
                 dictionary_name: dict_name,
                 tags,
                 content: content_val,
             };
+
             if should_group {
                 if let Some(existing) = map
                     .iter_mut()
@@ -361,7 +339,7 @@ pub async fn lookup_handler(
                         reading: reading.clone(),
                         furigana: calculate_furigana(&headword, &reading),
                         definitions: vec![def_obj],
-                        frequencies: vec![],
+                        frequencies: vec![], // Will be filled in final pass
                         term_tags: entry.1.unwrap_or_default(),
                         forms_set: vec![(headword.clone(), reading.clone())],
                         match_len,
@@ -373,7 +351,7 @@ pub async fn lookup_handler(
                     reading: reading.clone(),
                     furigana: calculate_furigana(&headword, &reading),
                     definitions: vec![def_obj],
-                    frequencies: vec![],
+                    frequencies: vec![], // Will be filled in final pass
                     term_tags: entry.1.unwrap_or_default(),
                     forms: vec![ApiForm {
                         headword: headword.clone(),
@@ -385,29 +363,35 @@ pub async fn lookup_handler(
         }
     }
 
+    
     if should_group {
-        Ok(Json(
-            map.into_iter()
-                .map(|agg| ApiGroupedResult {
-                    headword: agg.headword,
-                    reading: agg.reading,
-                    furigana: agg.furigana,
-                    definitions: agg.definitions,
-                    frequencies: agg.frequencies,
-                    term_tags: agg.term_tags,
-                    forms: agg
-                        .forms_set
-                        .into_iter()
-                        .map(|(h, r)| ApiForm {
-                            headword: h,
-                            reading: r,
-                        })
-                        .collect(),
-                    match_len: agg.match_len,
-                })
-                .collect(),
-        ))
+        let final_results = map.into_iter().map(|mut agg| {
+            // Attach frequencies if they exist for this word
+            if let Some(freqs) = freq_map.get(&(agg.headword.clone(), agg.reading.clone())) {
+                agg.frequencies.extend(freqs.clone());
+            }
+            
+            ApiGroupedResult {
+                headword: agg.headword,
+                reading: agg.reading,
+                furigana: agg.furigana,
+                definitions: agg.definitions,
+                frequencies: agg.frequencies,
+                term_tags: agg.term_tags,
+                forms: agg.forms_set.into_iter().map(|(h, r)| ApiForm { headword: h, reading: r }).collect(),
+                match_len: agg.match_len,
+            }
+        }).collect();
+        
+        Ok(Json(final_results))
     } else {
+        // Iterate through results and attach frequencies to ALL of them.
+        for res in &mut flat_results {
+            if let Some(freqs) = freq_map.get(&(res.headword.clone(), res.reading.clone())) {
+                res.frequencies.extend(freqs.clone());
+            }
+        }
+        
         Ok(Json(flat_results))
     }
 }
