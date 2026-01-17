@@ -247,7 +247,7 @@ pub async fn lookup_handler(
     }
 
     let mut map: Vec<Aggregator> = Vec::new();
-    
+
     let mut flat_results: Vec<ApiGroupedResult> = Vec::new();
 
     for entry in raw_results {
@@ -264,7 +264,7 @@ pub async fn lookup_handler(
         let match_len = entry.span_chars.end as usize;
 
         let mut is_freq = false;
-        
+
         let (content_val, tags) = if let Record::YomitanGlossary(gloss) = &entry.record {
             use wordbase_api::dict::yomitan::structured::Content;
             if let Some(Content::String(s)) = gloss.content.first() {
@@ -277,91 +277,165 @@ pub async fn lookup_handler(
             (json!(entry.record), vec![])
         };
 
-        let dict_name = dict_meta.get(&entry.source).cloned().unwrap_or("Unknown".to_string());
+        let dict_name = dict_meta
+            .get(&entry.source)
+            .cloned()
+            .unwrap_or("Unknown".to_string());
 
         if is_freq {
             let mut val_str = "Unknown".to_string();
             if let Some(arr) = content_val.as_array() {
                 if let Some(first) = arr.get(0) {
-                     let raw = first.as_str().unwrap_or(""); 
-                     val_str = raw.replace("Frequency: ", "").trim().to_string();
-                     if raw.is_empty() {
-                         if let Some(obj) = first.get("content") {
-                             if let Some(s) = obj.as_str() { val_str = s.replace("Frequency: ", "").trim().to_string(); }
-                         }
-                     }
+                    let raw = first.as_str().unwrap_or("");
+                    val_str = raw.replace("Frequency: ", "").trim().to_string();
+                    if raw.is_empty() {
+                        if let Some(obj) = first.get("content") {
+                            if let Some(s) = obj.as_str() {
+                                val_str = s.replace("Frequency: ", "").trim().to_string();
+                            }
+                        }
+                    }
                 }
             }
 
-            let freq_obj = ApiFrequency { dictionary_name: dict_name, value: val_str };
+            let freq_obj = ApiFrequency {
+                dictionary_name: dict_name,
+                value: val_str,
+            };
             if should_group {
-                if let Some(existing) = map.iter_mut().find(|agg| agg.headword == headword && agg.reading == reading) {
+                if let Some(existing) = map
+                    .iter_mut()
+                    .find(|agg| agg.headword == headword && agg.reading == reading)
+                {
                     existing.frequencies.push(freq_obj);
                 } else {
                     map.push(Aggregator {
-                        headword: headword.clone(), reading: reading.clone(),
+                        headword: headword.clone(),
+                        reading: reading.clone(),
                         furigana: calculate_furigana(&headword, &reading),
-                        definitions: vec![], frequencies: vec![freq_obj],
-                        forms_set: vec![(headword.clone(), reading.clone())], match_len,
+                        definitions: vec![],
+                        frequencies: vec![freq_obj],
+                        forms_set: vec![(headword.clone(), reading.clone())],
+                        match_len,
                     });
                 }
             } else {
                 flat_results.push(ApiGroupedResult {
-                    headword: headword.clone(), reading: reading.clone(),
+                    headword: headword.clone(),
+                    reading: reading.clone(),
                     furigana: calculate_furigana(&headword, &reading),
-                    definitions: vec![], frequencies: vec![freq_obj],
-                    forms: vec![ApiForm { headword: headword.clone(), reading: reading.clone() }], match_len,
+                    definitions: vec![],
+                    frequencies: vec![freq_obj],
+                    forms: vec![ApiForm {
+                        headword: headword.clone(),
+                        reading: reading.clone(),
+                    }],
+                    match_len,
                 });
             }
         } else {
-            let def_obj = ApiDefinition { dictionary_name: dict_name, tags, content: content_val };
+            let def_obj = ApiDefinition {
+                dictionary_name: dict_name,
+                tags,
+                content: content_val,
+            };
             if should_group {
-                if let Some(existing) = map.iter_mut().find(|agg| agg.headword == headword && agg.reading == reading) {
-                    let is_dup = existing.definitions.iter().any(|d| d.dictionary_name == def_obj.dictionary_name && d.content.to_string() == def_obj.content.to_string());
-                    if !is_dup { existing.definitions.push(def_obj); }
+                if let Some(existing) = map
+                    .iter_mut()
+                    .find(|agg| agg.headword == headword && agg.reading == reading)
+                {
+                    let is_dup = existing.definitions.iter().any(|d| {
+                        d.dictionary_name == def_obj.dictionary_name
+                            && d.content.to_string() == def_obj.content.to_string()
+                    });
+                    if !is_dup {
+                        existing.definitions.push(def_obj);
+                    }
                 } else {
                     map.push(Aggregator {
-                        headword: headword.clone(), reading: reading.clone(),
+                        headword: headword.clone(),
+                        reading: reading.clone(),
                         furigana: calculate_furigana(&headword, &reading),
-                        definitions: vec![def_obj], frequencies: vec![],
-                        forms_set: vec![(headword.clone(), reading.clone())], match_len,
+                        definitions: vec![def_obj],
+                        frequencies: vec![],
+                        forms_set: vec![(headword.clone(), reading.clone())],
+                        match_len,
                     });
                 }
             } else {
                 flat_results.push(ApiGroupedResult {
-                    headword: headword.clone(), reading: reading.clone(),
+                    headword: headword.clone(),
+                    reading: reading.clone(),
                     furigana: calculate_furigana(&headword, &reading),
-                    definitions: vec![def_obj], frequencies: vec![],
-                    forms: vec![ApiForm { headword: headword.clone(), reading: reading.clone() }], match_len,
+                    definitions: vec![def_obj],
+                    frequencies: vec![],
+                    forms: vec![ApiForm {
+                        headword: headword.clone(),
+                        reading: reading.clone(),
+                    }],
+                    match_len,
                 });
             }
         }
     }
 
     if should_group {
-        Ok(Json(map.into_iter().map(|agg| ApiGroupedResult {
-            headword: agg.headword, reading: agg.reading, furigana: agg.furigana,
-            definitions: agg.definitions, frequencies: agg.frequencies,
-            forms: agg.forms_set.into_iter().map(|(h, r)| ApiForm { headword: h, reading: r }).collect(),
-            match_len: agg.match_len,
-        }).collect()))
+        Ok(Json(
+            map.into_iter()
+                .map(|agg| ApiGroupedResult {
+                    headword: agg.headword,
+                    reading: agg.reading,
+                    furigana: agg.furigana,
+                    definitions: agg.definitions,
+                    frequencies: agg.frequencies,
+                    forms: agg
+                        .forms_set
+                        .into_iter()
+                        .map(|(h, r)| ApiForm {
+                            headword: h,
+                            reading: r,
+                        })
+                        .collect(),
+                    match_len: agg.match_len,
+                })
+                .collect(),
+        ))
     } else {
         Ok(Json(flat_results))
     }
 }
 
 fn calculate_furigana(headword: &str, reading: &str) -> Vec<(String, String)> {
-    if reading.is_empty() || headword == reading { return vec![(headword.to_string(), String::new())]; }
+    if reading.is_empty() || headword == reading {
+        return vec![(headword.to_string(), String::new())];
+    }
     let h_chars: Vec<char> = headword.chars().collect();
     let r_chars: Vec<char> = reading.chars().collect();
-    let mut h_start = 0; let mut h_end = h_chars.len();
-    let mut r_start = 0; let mut r_end = r_chars.len();
-    while h_start < h_end && r_start < r_end && h_chars[h_start] == r_chars[r_start] { h_start += 1; r_start += 1; }
-    while h_end > h_start && r_end > r_start && h_chars[h_end - 1] == r_chars[r_end - 1] { h_end -= 1; r_end -= 1; }
+    let mut h_start = 0;
+    let mut h_end = h_chars.len();
+    let mut r_start = 0;
+    let mut r_end = r_chars.len();
+    while h_start < h_end && r_start < r_end && h_chars[h_start] == r_chars[r_start] {
+        h_start += 1;
+        r_start += 1;
+    }
+    while h_end > h_start && r_end > r_start && h_chars[h_end - 1] == r_chars[r_end - 1] {
+        h_end -= 1;
+        r_end -= 1;
+    }
     let mut parts = Vec::new();
-    if h_start > 0 { parts.push((h_chars[0..h_start].iter().collect(), String::new())); }
-    if h_start < h_end { parts.push((h_chars[h_start..h_end].iter().collect(), r_chars[r_start..r_end].iter().collect())); }
-    if h_end < h_chars.len() { parts.push((h_chars[h_end..].iter().collect(), String::new())); }
+    if h_start > 0 {
+        parts.push((h_chars[0..h_start].iter().collect(), String::new()));
+    }
+    if h_start < h_end {
+        parts.push((
+            h_chars[h_start..h_end].iter().collect(),
+            r_chars[r_start..r_end].iter().collect(),
+        ));
+    }
+    if h_end < h_chars.len() {
+        parts.push((h_chars[h_end..].iter().collect(), String::new()));
+    }
     parts
 }
 
@@ -369,21 +443,45 @@ pub async fn list_dictionaries_handler(State(state): State<ServerState>) -> Json
     let dicts = state.app.dictionaries.read().expect("lock");
     let mut list: Vec<_> = dicts.values().cloned().collect();
     list.sort_by_key(|d| d.priority);
-    Json(json!({ "dictionaries": list, "status": if state.app.is_loading() { "loading" } else { "ready" } }))
+    Json(
+        json!({ "dictionaries": list, "status": if state.app.is_loading() { "loading" } else { "ready" } }),
+    )
 }
 
-pub async fn import_handler(State(state): State<ServerState>, mut multipart: Multipart) -> Json<Value> {
+pub async fn import_handler(
+    State(state): State<ServerState>,
+    mut multipart: Multipart,
+) -> Json<Value> {
     loop {
         match multipart.next_field().await {
-            Ok(Some(field)) if field.name() == Some("file") => {
-                match field.bytes().await {
-                    Ok(data) => {
-                        info!("📥 [Import API] Received upload ({} bytes)", data.len());
-                        let app_state = state.app.clone();
-                        let res = tokio::task::spawn_blocking(move || import::import_zip(&app_state, &data)).await.unwrap();
-                        return match res { Ok(msg) => { info!("✅ {}", msg); Json(json!({ "status": "ok", "message": msg })) }, Err(e) => { error!("❌ {}", e); Json(json!({ "status": "error", "message": e.to_string() })) } };
+            Ok(Some(field)) => {
+                if field.name() == Some("file") {
+                    match field.bytes().await {
+                        Ok(data) => {
+                            info!("📥 [Import API] Received upload ({} bytes)", data.len());
+                            let app_state = state.app.clone();
+                            let res = tokio::task::spawn_blocking(move || {
+                                import::import_zip(&app_state, &data)
+                            })
+                            .await
+                            .unwrap();
+                            return match res {
+                                Ok(msg) => {
+                                    info!("✅ {}", msg);
+                                    Json(json!({ "status": "ok", "message": msg }))
+                                }
+                                Err(e) => {
+                                    error!("❌ {}", e);
+                                    Json(json!({ "status": "error", "message": e.to_string() }))
+                                }
+                            };
+                        }
+                        Err(e) => {
+                            return Json(
+                                json!({ "status": "error", "message": format!("Upload Failed: {}", e) }),
+                            );
+                        }
                     }
-                    Err(e) => return Json(json!({ "status": "error", "message": format!("Upload Failed: {}", e) })),
                 }
             }
             Ok(None) => break,
