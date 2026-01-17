@@ -125,6 +125,7 @@ int main(int argc, char * argv[]) {
     // Local Source is the ROOT FOLDER (as requested)
     options[optCount++].optionString = strdup([[NSString stringWithFormat:@"-Dsuwayomi.tachidesk.config.server.localSourcePath=%@", localSourcePath] UTF8String]);
     options[optCount++].optionString = "-Dsuwayomi.tachidesk.config.server.ip =\"127.0.0.1\"";
+    options[optCount++].optionString = "-Dsuwayomi.tachidesk.config.server.webUIEnabled=false";
     options[optCount++].optionString = "-Dsuwayomi.tachidesk.config.server.initialOpenInBrowserEnabled=false";
     options[optCount++].optionString = "-Dsuwayomi.tachidesk.config.server.systemTrayEnabled=false";
     options[optCount++].optionString = "-Dsuwayomi.tachidesk.config.server.kcefEnable=false";

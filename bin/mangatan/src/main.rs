@@ -532,7 +532,7 @@ async fn run_server(
         .current_dir(data_dir)
         .env("JAVA_HOME", java_home)
         .arg("-Dsuwayomi.tachidesk.config.server.initialOpenInBrowserEnabled=false")
-        .arg("-Dsuwayomi.tachidesk.config.server.webUIChannel=BUNDLED")
+        .arg("-Dsuwayomi.tachidesk.config.server.webUIEnabled=false")
         .arg("-XX:+ExitOnOutOfMemoryError")
         .arg("--enable-native-access=ALL-UNNAMED")
         .arg("--add-opens=java.desktop/sun.awt=ALL-UNNAMED")
