@@ -1,11 +1,11 @@
 use std::io::Read;
-
+use std::collections::{HashSet, HashMap};
 use anyhow::Result;
-use serde_json::{Value, json};
+use serde_json::Value;
 use tracing::info;
 use wordbase_api::{
     DictionaryId, DictionaryKind, DictionaryMeta, Record,
-    dict::yomitan::{Glossary, structured},
+    dict::yomitan::{Glossary, GlossaryTag, structured},
 };
 use zip::ZipArchive;
 
@@ -88,9 +88,11 @@ pub fn import_zip(state: &AppState, data: &[u8]) -> Result<String> {
     // Create reusable encoder
     let mut encoder = snap::raw::Encoder::new();
 
-    for name in file_names {
-        if name.contains("term_bank") && name.ends_with(".json") {
-            info!("   -> Processing {}", name);
+    for name in &file_names {
+        
+        // === BRANCH 1: Standard Definitions (term_bank) ===
+        if name.contains("term_bank") && !name.contains("term_meta") && name.ends_with(".json") {
+            info!("   -> Processing Definitions: {}", name);
             let mut file = zip.by_name(&name)?;
             let mut s = String::new();
             file.read_to_string(&mut s)?;
@@ -103,32 +105,46 @@ pub fn import_zip(state: &AppState, data: &[u8]) -> Result<String> {
 
             for entry in bank {
                 if let Some(arr) = entry.as_array() {
+                    // Min items 8 per schema
+                    if arr.len() < 8 { continue; }
+
                     let headword = arr.get(0).and_then(|v| v.as_str()).unwrap_or("");
                     let reading = arr.get(1).and_then(|v| v.as_str()).unwrap_or("");
 
-                    let definition_arr = arr.get(5).and_then(|v| v.as_array());
+                    if headword.is_empty() { continue; }
+
+                    // --- Tags Parsing (Indices 2 and 7 are string of space-separated tags) ---
+                    let mut tags_vec = Vec::new();
+                    let mut seen_tags = HashSet::new();
+
+                    let parse_tags = |idx: usize, tags: &mut Vec<GlossaryTag>, seen: &mut HashSet<String>| {
+                        if let Some(tag_str) = arr.get(idx).and_then(|v| v.as_str()) {
+                            for t in tag_str.split_whitespace() {
+                                if !t.is_empty() && seen.insert(t.to_string()) {
+                                    // Treat as string, wrap for API compatibility
+                                    tags.push(GlossaryTag {
+                                        name: t.to_string(),
+                                        category: String::new(),
+                                        description: String::new(),
+                                        order: 0,
+                                    });
+                                }
+                            }
+                        }
+                    };
+
+                    parse_tags(2, &mut tags_vec, &mut seen_tags); // Definition tags
+                    parse_tags(7, &mut tags_vec, &mut seen_tags); // Term tags
+
+                    // --- Content (Index 5) ---
                     let mut content_list = Vec::new();
-                    if let Some(defs) = definition_arr {
+                    if let Some(defs) = arr.get(5).and_then(|v| v.as_array()) {
                         for d in defs {
                             if let Some(str_def) = d.as_str() {
                                 content_list.push(structured::Content::String(str_def.to_string()));
-                            } else if let Some(obj_def) = d.as_object() {
-                                let json_str = serde_json::to_string(&obj_def).unwrap_or_default();
+                            } else if d.is_object() || d.is_array() {
+                                let json_str = serde_json::to_string(&d).unwrap_or_default();
                                 content_list.push(structured::Content::String(json_str));
-                            }
-                        }
-                    }
-
-                    if headword.is_empty() {
-                        continue;
-                    }
-
-                    let tags_raw = arr.get(2).and_then(|v| v.as_str()).unwrap_or("");
-                    let mut tags_vec = Vec::new();
-                    if !tags_raw.is_empty() {
-                        for t_str in tags_raw.split_whitespace() {
-                            if let Ok(tag) = serde_json::from_value(json!(t_str)) {
-                                tags_vec.push(tag);
                             }
                         }
                     }
@@ -162,6 +178,131 @@ pub fn import_zip(state: &AppState, data: &[u8]) -> Result<String> {
                     // Insert Reading mapping
                     if let Some(r) = stored_reading {
                         stmt.execute(rusqlite::params![r, dict_id.0, compressed])?;
+                    }
+                }
+            }
+        }
+        
+        // === BRANCH 2: Metadata / Frequencies (term_meta_bank) ===
+        else if name.contains("term_meta_bank") && name.ends_with(".json") {
+            info!("   -> Processing Metadata: {}", name);
+            let mut file = zip.by_name(&name)?;
+            let mut s = String::new();
+            file.read_to_string(&mut s)?;
+
+            let bank: Vec<Value> = serde_json::from_str(&s).unwrap_or_default();
+            
+            // PREPARE STATEMENT LOCALLY FOR THIS BATCH
+            let mut stmt = tx.prepare("INSERT INTO terms (term, dictionary_id, json) VALUES (?, ?, ?)")?;
+
+            struct MetaEntry {
+                reading: Option<String>,
+                value: String,
+            }
+            let mut file_freq_map: HashMap<String, Vec<MetaEntry>> = HashMap::new();
+
+            for entry in bank {
+                if let Some(arr) = entry.as_array() {
+                    if arr.len() < 3 { continue; }
+                    
+                    let term = arr.get(0).and_then(|v| v.as_str()).unwrap_or("");
+                    let mode = arr.get(1).and_then(|v| v.as_str()).unwrap_or("");
+                    let data_blob = arr.get(2).unwrap();
+
+                    if term.is_empty() { continue; }
+
+                    if mode == "freq" {
+                        let mut display_val = String::new();
+                        let mut specific_reading = None;
+
+                        // Case 1: Object (may contain reading + value)
+                        if let Some(obj) = data_blob.as_object() {
+                            if let Some(r) = obj.get("reading").and_then(|v| v.as_str()) {
+                                specific_reading = Some(r.to_string());
+                            }
+                            
+                            // Frequency object might be nested or direct
+                            let freq_data = obj.get("frequency").unwrap_or(data_blob);
+                            
+                            if let Some(freq_obj) = freq_data.as_object() {
+                                if let Some(dv) = freq_obj.get("displayValue").and_then(|v| v.as_str()) {
+                                    display_val = dv.to_string();
+                                } else if let Some(v) = freq_obj.get("value") {
+                                    display_val = v.to_string();
+                                }
+                            } else if let Some(v) = freq_data.as_i64() {
+                                display_val = v.to_string();
+                            } else if let Some(s) = freq_data.as_str() {
+                                display_val = s.to_string();
+                            }
+                        } 
+                        // Case 2: Primitive (just the value)
+                        else if let Some(s) = data_blob.as_str() {
+                            display_val = s.to_string();
+                        } else if let Some(n) = data_blob.as_i64() {
+                            display_val = n.to_string();
+                        }
+
+                        if display_val.is_empty() {
+                            display_val = data_blob.to_string();
+                        }
+
+                        file_freq_map.entry(term.to_string()).or_default().push(MetaEntry {
+                            reading: specific_reading,
+                            value: display_val
+                        });
+                    }
+                }
+            }
+
+            // Insert Frequencies
+            for (term, entries) in file_freq_map {
+                let general_value = entries.iter()
+                    .find(|e| e.reading.is_none())
+                    .map(|e| e.value.clone());
+                
+                for entry in &entries {
+                    // Deduplication logic
+                    if let Some(read) = &entry.reading {
+                        if let Some(general_val) = &general_value {
+                            if general_val == &entry.value && read == &term {
+                                continue;
+                            }
+                        }
+                    }
+
+                    let content_str = if let Some(read) = &entry.reading {
+                        if read != &term {
+                            format!("Frequency: {} ({})", entry.value, read)
+                        } else {
+                            format!("Frequency: {}", entry.value)
+                        }
+                    } else {
+                        format!("Frequency: {}", entry.value)
+                    };
+
+                    let record = Record::YomitanGlossary(Glossary {
+                        popularity: 0,
+                        tags: vec![],
+                        content: vec![structured::Content::String(content_str)],
+                    });
+
+                    let stored = StoredRecord {
+                        dictionary_id: dict_id,
+                        record,
+                        reading: entry.reading.clone(),
+                    };
+
+                    let json_bytes = serde_json::to_vec(&stored)?;
+                    let compressed = encoder.compress_vec(&json_bytes)?;
+
+                    stmt.execute(rusqlite::params![term, dict_id.0, compressed])?;
+                    terms_found += 1;
+
+                    if let Some(r) = &entry.reading {
+                        if r != &term {
+                            stmt.execute(rusqlite::params![r, dict_id.0, compressed])?;
+                        }
                     }
                 }
             }
