@@ -59,9 +59,9 @@ clean:
 	rm -rf bin/mangatan_android/assets/*
 	rm -f bin/mangatan_android/mangatan-webui.tar
 	# rm -rf bin/mangatan_ios/Mangatan/webui/*
-	# rm -rf bin/mangatan_ios/Mangatan/lib/*
-	# rm -rf bin/mangatan_ios/Mangatan/jar/suwayomi-server.jar
-	# rm -rf bin/mangatan_ios/frameworks/OpenJDK.xcframework
+	rm -rf bin/mangatan_ios/Mangatan/lib/*
+	rm -rf bin/mangatan_ios/Mangatan/jar/suwayomi-server.jar
+	rm -rf bin/mangatan_ios/frameworks/OpenJDK.xcframework
 	rm -f jogamp.7z
 	rm -rf temp_natives 
 	rm -f mangatan-linux-*.tar.gz
@@ -281,7 +281,7 @@ bin/mangatan_ios/Mangatan/jar/suwayomi-server.jar:
 	@echo "Downloading iOS Suwayomi Server JAR..."
 	mkdir -p bin/mangatan_ios/Mangatan/jar
 	rm -f bin/mangatan_ios/Mangatan/jar/suwayomi-server.jar
-	curl -L "https://github.com/KolbyML/Suwayomi-Server/releases/download/v1.0.4/Suwayomi-Server-v2.1.2062.jar" -o $@
+	curl -L "https://github.com/KolbyML/Suwayomi-Server/releases/download/v1.0.14/Suwayomi-Server-v2.1.2062.jar" -o $@
 
 .PHONY: download_ios_jar
 download_ios_jar: bin/mangatan_ios/Mangatan/jar/suwayomi-server.jar
@@ -317,7 +317,7 @@ bin/mangatan_ios/Mangatan/lib/lib/modules:
 	rm -f ios_jre.zip
 
 	@echo "Downloading..."
-	curl -L "https://github.com/KolbyML/java_assets/releases/download/1/ios_jre.zip" -o ios_jre.zip
+	curl -L "https://github.com/KolbyML/ios-tools/releases/download/snapshot/ios_jre.zip" -o ios_jre.zip
 
 	@echo "Extracting..."
 	unzip -q ios_jre.zip -d temp_ios_jre_extract
