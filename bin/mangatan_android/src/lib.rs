@@ -993,6 +993,15 @@ fn start_background_services(app: AndroidApp, files_dir: PathBuf) {
                     info!("Ensuring local source directory exists: {}", target_path);
                     let _ = std::fs::create_dir_all(&target_path);
 
+                    let nomedia_path = format!("{target_path}/.nomedia");
+                    if !std::path::Path::new(&nomedia_path).exists() {
+                        if let Err(err) = std::fs::File::create(&nomedia_path) {
+                            error!("Failed to create .nomedia in local-sources: {err:?}");
+                        } else {
+                            info!("✅ Created .nomedia in local-sources");
+                        }
+                    }
+
                     if !server_conf_exists {
                         info!("Fresh install detected: Setting localSourcePath flag.");
                         options_vec.push(format!(
@@ -2311,15 +2320,6 @@ fn update_server_conf_local_source(app: &AndroidApp, files_dir: &Path) {
 
     if let Err(err) = std::fs::create_dir_all(&target_path) {
         error!("Failed to create local sources dir: {err:?}");
-    }
-
-    let nomedia_path = format!("{target_path}/.nomedia");
-    if !std::path::Path::new(&nomedia_path).exists() {
-        if let Err(err) = std::fs::File::create(&nomedia_path) {
-            error!("Failed to create .nomedia in local-sources: {err:?}");
-        } else {
-            info!("✅ Created .nomedia in local-sources");
-        }
     }
 
     // 2. Read server.conf
