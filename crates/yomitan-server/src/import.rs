@@ -4,8 +4,8 @@ use std::collections::{HashMap, HashSet};
 use std::io::Read;
 use tracing::info;
 use wordbase_api::{
+    dict::yomitan::{structured, Glossary, GlossaryTag},
     DictionaryId, DictionaryKind, DictionaryMeta, Record,
-    dict::yomitan::{Glossary, GlossaryTag, structured},
 };
 use zip::ZipArchive;
 
@@ -177,6 +177,7 @@ pub fn import_zip(state: &AppState, data: &[u8]) -> Result<String> {
                         record,
                         term_tags,
                         reading: stored_reading.clone(),
+                        headword: Some(headword.to_string()),
                     };
 
                     // CHANGED: Serialize to bytes -> Compress -> Insert
@@ -314,6 +315,7 @@ pub fn import_zip(state: &AppState, data: &[u8]) -> Result<String> {
                         record,
                         term_tags: None,
                         reading: entry.reading.clone(),
+                        headword: Some(term.clone()),
                     };
 
                     let json_bytes = serde_json::to_vec(&stored)?;

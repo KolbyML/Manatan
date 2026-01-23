@@ -1,24 +1,16 @@
-use std::{
-    collections::{HashMap, HashSet},
-    sync::Arc,
-};
+use std::collections::{HashMap, HashSet};
 
-use lindera::{
-    dictionary::{DictionaryKind, load_dictionary_from_kind},
-    mode::Mode,
-    segmenter::Segmenter,
-    tokenizer::Tokenizer,
-};
-use tracing::{error, info};
+use tracing::error;
 use wordbase_api::{
-    DictionaryId, FrequencyValue, Record, RecordEntry, RecordId, Span, Term,
-    dict::yomitan::GlossaryTag,
+    dict::yomitan::GlossaryTag, DictionaryId, FrequencyValue, Record, RecordEntry, RecordId, Span,
+    Term,
 };
 
+use crate::deinflector::{Deinflector, Language as DeinflectLanguage};
 use crate::state::{AppState, StoredRecord};
 
 pub struct LookupService {
-    tokenizer: Arc<Tokenizer>,
+    deinflector: Deinflector,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
@@ -39,18 +31,12 @@ enum Script {
 
 impl LookupService {
     pub fn new() -> Self {
-        info!("⏳ [Lookup] Initializing Lindera (UniDic)...");
-        let dictionary = load_dictionary_from_kind(DictionaryKind::UniDic)
-            .expect("Failed to load UniDic dictionary");
-
-        let segmenter = Segmenter::new(Mode::Normal, dictionary, None);
-        let tokenizer = Tokenizer::new(segmenter);
-        info!("✅ [Lookup] Lindera Initialized.");
-
         Self {
-            tokenizer: Arc::new(tokenizer),
+            deinflector: Deinflector::new(),
         }
     }
+
+    pub fn unload_tokenizer(&self) {}
 
     pub fn search(
         &self,
@@ -142,13 +128,15 @@ impl LookupService {
                                 {
                                     let match_len = candidate.source_len;
 
-                                    let term_obj = Term::from_parts(
-                                        Some(candidate.word.as_str()),
-                                        stored.reading.as_deref(),
-                                    )
-                                    .unwrap_or_else(|| {
-                                        Term::from_headword(candidate.word.clone()).unwrap()
-                                    });
+                                    let headword = stored
+                                        .headword
+                                        .as_deref()
+                                        .unwrap_or(candidate.word.as_str());
+                                    let term_obj =
+                                        Term::from_parts(Some(headword), stored.reading.as_deref())
+                                            .unwrap_or_else(|| {
+                                                Term::from_headword(headword.to_string()).unwrap()
+                                            });
 
                                     let mut freq = 0;
                                     if let Record::YomitanGlossary(g) = &stored.record {
@@ -279,329 +267,148 @@ impl LookupService {
         c >= '\u{4E00}' && c <= '\u{9FFF}'
     }
 
+    fn katakana_to_hiragana(&self, text: &str) -> String {
+        text.chars()
+            .map(|c| {
+                let code = c as u32;
+                if (0x30A1..=0x30F6).contains(&code) {
+                    std::char::from_u32(code - 0x60).unwrap_or(c)
+                } else {
+                    c
+                }
+            })
+            .collect()
+    }
+
+    fn replace_prolonged_sound_mark(&self, text: &str) -> String {
+        let mut result = String::with_capacity(text.len());
+        let mut previous = None;
+
+        for c in text.chars() {
+            if c == 'ー' {
+                if let Some(prev) = previous {
+                    if let Some(vowel) = self.prolonged_vowel(prev) {
+                        result.push(vowel);
+                        previous = Some(vowel);
+                        continue;
+                    }
+                }
+            }
+
+            result.push(c);
+            previous = Some(c);
+        }
+
+        result
+    }
+
+    fn prolonged_vowel(&self, kana: char) -> Option<char> {
+        const A_ROW: &str = "ぁあかがさざただなはばぱまやゃらわゎ";
+        const I_ROW: &str = "ぃいきぎしじちぢにひびぴみりゐ";
+        const U_ROW: &str = "ぅうくぐすずつづぬふぶぷむゆゅる";
+        const E_ROW: &str = "ぇえけげせぜてでねへべぺめれゑ";
+        const O_ROW: &str = "ぉおこごそぞとどのほぼぽもよょろを";
+
+        if A_ROW.contains(kana) {
+            Some('あ')
+        } else if I_ROW.contains(kana) {
+            Some('い')
+        } else if U_ROW.contains(kana) {
+            Some('う')
+        } else if E_ROW.contains(kana) {
+            Some('え')
+        } else if O_ROW.contains(kana) {
+            Some('う')
+        } else {
+            None
+        }
+    }
+
     fn generate_candidates(&self, text: &str, script: &Script) -> Vec<Candidate> {
         let mut candidates = Vec::new();
+        let source_len = text.chars().count();
 
         candidates.push(Candidate {
             word: text.to_string(),
-            source_len: text.chars().count(),
+            source_len,
             _reason: "Original".to_string(),
         });
 
         match script {
             Script::Japanese => {
-                if let Ok(mut tokens) = self.tokenizer.tokenize(text) {
-                    if let Some(first_token) = tokens.first_mut() {
-                        let details = first_token.details();
-                        if details.len() >= 8 {
-                            let lemma = &details[7];
-                            if *lemma != "*" && *lemma != text {
-                                candidates.push(Candidate {
-                                    word: lemma.to_string(),
-                                    source_len: first_token.text.chars().count(),
-                                    _reason: "Lindera".to_string(),
-                                });
-                            }
-                        }
-                    }
+                let mut variants = HashSet::new();
+                variants.insert(text.to_string());
+
+                let normalized = self.katakana_to_hiragana(text);
+                variants.insert(normalized.clone());
+
+                let prolonged = self.replace_prolonged_sound_mark(&normalized);
+                variants.insert(prolonged);
+
+                for variant in variants {
+                    self.add_deinflections(
+                        DeinflectLanguage::Japanese,
+                        &variant,
+                        source_len,
+                        &mut candidates,
+                    );
                 }
             }
             Script::Korean => {
-                candidates.extend(self.generate_korean_candidates(text));
+                self.add_deinflections(
+                    DeinflectLanguage::Korean,
+                    text,
+                    source_len,
+                    &mut candidates,
+                );
             }
             Script::Latin => {
-                candidates.extend(self.generate_english_candidates(text));
+                let lower = text.to_lowercase();
+                let sources = if lower == text {
+                    vec![text.to_string()]
+                } else {
+                    vec![text.to_string(), lower]
+                };
+
+                for source in sources {
+                    self.add_deinflections(
+                        DeinflectLanguage::English,
+                        &source,
+                        source_len,
+                        &mut candidates,
+                    );
+                }
             }
-            _ => {}
+            Script::Chinese => {
+                self.add_deinflections(
+                    DeinflectLanguage::Chinese,
+                    text,
+                    source_len,
+                    &mut candidates,
+                );
+            }
+            Script::Other => {}
         }
 
         candidates
     }
 
-    fn generate_korean_candidates(&self, text: &str) -> Vec<Candidate> {
-        let mut results = Vec::new();
-        let src_len = text.chars().count();
-        let jamo = self.decompose_hangul(text);
-
-        let rules = vec![
-            ("ㅎㅏㄱㅔ", "ㅎㅏㄷㅏ"),
-            ("ㅅㅡㅂㄴㅣㄷㅏ", "ㄷㅏ"),
-            ("ㅂㄴㅣㄷㅏ", "ㄷㅏ"),
-            ("ㅎㅐ", "ㅎㅏㄷㅏ"),
-            ("ㅎㅐㅇㅛ", "ㅎㅏㄷㅏ"),
-            ("ㅇㅛ", ""),
-            ("ㅇㅛ", "ㄷㅏ"),
-            ("ㄱㅗ", "ㄷㅏ"),
-            ("ㄱㅔ", "ㄷㅏ"),
-            ("ㄱㅣ", "ㄷㅏ"),
-            ("ㅈㅣ", "ㄷㅏ"),
-            ("ㅁㅕ", "ㄷㅏ"),
-            ("ㅁㅕㄴ", "ㄷㅏ"),
-            ("ㄴㅣ", "ㄷㅏ"),
-            ("ㄴㅏ", "ㄷㅏ"),
-            ("ㄴㅡㄴ", "ㄷㅏ"),
-            ("ㅇㅡㄴ", "ㄷㅏ"),
-            ("ㄹ", "ㄷㅏ"),
-            ("ㅇㅡㄹ", "ㄷㅏ"),
-            ("ㄷㅓㄴ", "ㄷㅏ"),
-            ("ㄷㅗ", ""),
-            ("ㅁㅏㄴ", ""),
-            ("ㄹㅡㄹ", ""),
-            ("ㅇㅡㄹ", ""),
-            ("ㄱㅏ", ""),
-            ("ㅇㅣ", ""),
-            ("ㄴㅡㄴ", ""),
-            ("ㅇㅡㄴ", ""),
-            ("ㅆㄷㅏ", "ㄷㅏ"),
-            ("ㅆㅇㅓ", "ㄷㅏ"),
-            ("ㅆㅇㅓㅇㅛ", "ㄷㅏ"),
-            ("ㅇㅏㅆ", "ㄷㅏ"),
-            ("ㅇㅓㅆ", "ㄷㅏ"),
-            ("ㅈㅛ", "ㄷㅏ"),
-            ("ㅈㅛ", ""),
-            ("ㅅㅓ", "ㄷㅏ"),
-        ];
-
-        for (suffix, repl) in rules {
-            if jamo.ends_with(suffix) {
-                let stem_len = jamo.chars().count() - suffix.chars().count();
-                let stem: String = jamo.chars().take(stem_len).collect();
-                let new_jamo = format!("{}{}", stem, repl);
-                let recomposed = self.compose_hangul(&new_jamo);
-
-                if recomposed != text && !recomposed.is_empty() {
-                    results.push(Candidate {
-                        word: recomposed,
-                        source_len: src_len,
-                        _reason: "Ko-Deinflect".to_string(),
-                    });
-                }
+    fn add_deinflections(
+        &self,
+        language: DeinflectLanguage,
+        text: &str,
+        source_len: usize,
+        candidates: &mut Vec<Candidate>,
+    ) {
+        for word in self.deinflector.deinflect(language, text) {
+            if word.is_empty() {
+                continue;
             }
-        }
-        results
-    }
-
-    fn decompose_hangul(&self, text: &str) -> String {
-        let mut result = String::new();
-        let cho_map = [
-            'ㄱ', 'ㄲ', 'ㄴ', 'ㄷ', 'ㄸ', 'ㄹ', 'ㅁ', 'ㅂ', 'ㅃ', 'ㅅ', 'ㅆ', 'ㅇ', 'ㅈ', 'ㅉ',
-            'ㅊ', 'ㅋ', 'ㅌ', 'ㅍ', 'ㅎ',
-        ];
-        let jung_map = [
-            'ㅏ', 'ㅐ', 'ㅑ', 'ㅒ', 'ㅓ', 'ㅔ', 'ㅕ', 'ㅖ', 'ㅗ', 'ㅘ', 'ㅙ', 'ㅚ', 'ㅛ', 'ㅜ',
-            'ㅝ', 'ㅞ', 'ㅟ', 'ㅠ', 'ㅡ', 'ㅢ', 'ㅣ',
-        ];
-        let jong_map = [
-            '\0', 'ㄱ', 'ㄲ', 'ㄳ', 'ㄴ', 'ㄵ', 'ㄶ', 'ㄷ', 'ㄹ', 'ㄺ', 'ㄻ', 'ㄼ', 'ㄽ', 'ㄾ',
-            'ㄿ', 'ㅀ', 'ㅁ', 'ㅂ', 'ㅄ', 'ㅅ', 'ㅆ', 'ㅇ', 'ㅈ', 'ㅊ', 'ㅋ', 'ㅌ', 'ㅍ', 'ㅎ',
-        ];
-
-        for c in text.chars() {
-            let u = c as u32;
-            if u >= 0xAC00 && u <= 0xD7A3 {
-                let idx = u - 0xAC00;
-                let jong = idx % 28;
-                let jung = (idx / 28) % 21;
-                let cho = idx / 28 / 21;
-
-                result.push(cho_map[cho as usize]);
-                result.push(jung_map[jung as usize]);
-                if jong > 0 {
-                    result.push(jong_map[jong as usize]);
-                }
-            } else {
-                result.push(c);
-            }
-        }
-        result
-    }
-
-    fn compose_hangul(&self, jamo: &str) -> String {
-        let mut result = String::new();
-        let chars: Vec<char> = jamo.chars().collect();
-        let mut i = 0;
-
-        while i < chars.len() {
-            let c1 = chars[i];
-            if self.is_cho(c1) {
-                if i + 1 < chars.len() && self.is_jung(chars[i + 1]) {
-                    let c2 = chars[i + 1];
-                    let cho_idx = self.get_cho_idx(c1);
-                    let jung_idx = self.get_jung_idx(c2);
-
-                    let mut jong_idx = 0;
-                    let mut consumed = 2;
-
-                    if i + 2 < chars.len() {
-                        let c3 = chars[i + 2];
-                        if self.is_jong(c3) {
-                            let is_next_vowel = if i + 3 < chars.len() {
-                                self.is_jung(chars[i + 3])
-                            } else {
-                                false
-                            };
-
-                            if !is_next_vowel {
-                                jong_idx = self.get_jong_idx(c3);
-                                consumed = 3;
-
-                                if i + 3 < chars.len() {
-                                    let c4 = chars[i + 3];
-                                    if let Some(complex_jong) = self.combine_jong(c3, c4) {
-                                        let is_next_next_vowel = if i + 4 < chars.len() {
-                                            self.is_jung(chars[i + 4])
-                                        } else {
-                                            false
-                                        };
-                                        if !is_next_next_vowel {
-                                            jong_idx = self.get_jong_idx(complex_jong);
-                                            consumed = 4;
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
-
-                    let u = 0xAC00 + (cho_idx * 21 * 28) + (jung_idx * 28) + jong_idx;
-                    if let Some(chr) = std::char::from_u32(u) {
-                        result.push(chr);
-                    }
-                    i += consumed;
-                    continue;
-                }
-            }
-            result.push(c1);
-            i += 1;
-        }
-        result
-    }
-
-    fn is_cho(&self, c: char) -> bool {
-        "ㄱㄲㄴㄷㄸㄹㅁㅂㅃㅅㅆㅇㅈㅉㅊㅋㅌㅍㅎ".contains(c)
-    }
-    fn is_jung(&self, c: char) -> bool {
-        "ㅏㅐㅑㅒㅓㅔㅕㅖㅗㅘㅙㅚㅛㅜㅝㅞㅟㅠㅡㅢㅣ".contains(c)
-    }
-    fn is_jong(&self, c: char) -> bool {
-        "ㄱㄲㄳㄴㄵㄶㄷㄹㄺㄻㄼㄽㄾㄿㅀㅁㅂㅄㅅㅆㅇㅈㅊㅋㅌㅍㅎ".contains(c)
-    }
-    fn get_cho_idx(&self, c: char) -> u32 {
-        "ㄱㄲㄴㄷㄸㄹㅁㅂㅃㅅㅆㅇㅈㅉㅊㅋㅌㅍㅎ"
-            .chars()
-            .position(|x| x == c)
-            .unwrap_or(0) as u32
-    }
-    fn get_jung_idx(&self, c: char) -> u32 {
-        "ㅏㅐㅑㅒㅓㅔㅕㅖㅗㅘㅙㅚㅛㅜㅝㅞㅟㅠㅡㅢㅣ"
-            .chars()
-            .position(|x| x == c)
-            .unwrap_or(0) as u32
-    }
-    fn get_jong_idx(&self, c: char) -> u32 {
-        "ㄱㄲㄳㄴㄵㄶㄷㄹㄺㄻㄼㄽㄾㄿㅀㅁㅂㅄㅅㅆㅇㅈㅊㅋㅌㅍㅎ"
-            .chars()
-            .position(|x| x == c)
-            .map(|p| p as u32 + 1)
-            .unwrap_or(0)
-    }
-    fn combine_jong(&self, c1: char, c2: char) -> Option<char> {
-        match (c1, c2) {
-            ('ㄱ', 'ㅅ') => Some('ㄳ'),
-            ('ㄴ', 'ㅈ') => Some('ㄵ'),
-            ('ㄴ', 'ㅎ') => Some('ㄶ'),
-            ('ㄹ', 'ㄱ') => Some('ㄺ'),
-            ('ㄹ', 'ㅁ') => Some('ㄻ'),
-            ('ㄹ', 'ㅂ') => Some('ㄼ'),
-            ('ㄹ', 'ㅅ') => Some('ㄽ'),
-            ('ㄹ', 'ㅌ') => Some('ㄾ'),
-            ('ㄹ', 'ㅍ') => Some('ㄿ'),
-            ('ㄹ', 'ㅎ') => Some('ㅀ'),
-            ('ㅂ', 'ㅅ') => Some('ㅄ'),
-            _ => None,
-        }
-    }
-
-    // --- ENGLISH PROCESSING ---
-
-    fn generate_english_candidates(&self, text: &str) -> Vec<Candidate> {
-        let mut results = Vec::new();
-        let src_len = text.chars().count();
-        let lower = text.to_lowercase();
-
-        if lower != text {
-            results.push(Candidate {
-                word: lower.clone(),
-                source_len: src_len,
-                _reason: "Lowercase".to_string(),
+            candidates.push(Candidate {
+                word,
+                source_len,
+                _reason: "Deinflect".to_string(),
             });
         }
-
-        // 1. Prefixes
-        let prefixes = vec![("un", ""), ("re", "")];
-
-        for (pre, repl) in &prefixes {
-            if lower.starts_with(pre) {
-                let stem = &lower[pre.len()..];
-                results.push(Candidate {
-                    word: format!("{}{}", repl, stem),
-                    source_len: src_len,
-                    _reason: "En-Prefix".to_string(),
-                });
-            }
-        }
-
-        // 2. Suffixes (suffix, replacement, check_doubled_consonant)
-        let suffixes = vec![
-            ("s", "", false),
-            ("es", "", false),
-            ("ies", "y", false),  // cherries -> cherry
-            ("ves", "f", false),  // wolves -> wolf
-            ("ves", "fe", false), // knives -> knife
-            ("ing", "", true),    // running -> run
-            ("ing", "e", false),  // dancing -> dance
-            ("ed", "", true),     // stopped -> stop
-            ("ed", "e", false),   // baked -> bake
-            ("er", "", true),     // hotter -> hot
-            ("er", "e", false),   // later -> late
-            ("est", "", true),
-            ("est", "e", false),
-            ("ly", "", false),
-            ("able", "", true),
-            ("able", "e", false),
-        ];
-
-        let double_consonants = "bdgklmnprstz";
-
-        for (suffix, repl, check_double) in suffixes {
-            if lower.ends_with(suffix) {
-                let stem_len = lower.len() - suffix.len();
-                let stem = &lower[0..stem_len];
-
-                // Normal replacement
-                results.push(Candidate {
-                    word: format!("{}{}", stem, repl),
-                    source_len: src_len,
-                    _reason: "En-Suffix".to_string(),
-                });
-
-                // Double consonant check (e.g. running -> runn -> run)
-                if check_double && stem.len() >= 2 {
-                    let last_char = stem.chars().last().unwrap();
-                    let second_last = stem.chars().nth(stem.len() - 2).unwrap();
-
-                    if last_char == second_last && double_consonants.contains(last_char) {
-                        let reduced_stem = &stem[0..stem.len() - 1];
-                        results.push(Candidate {
-                            word: format!("{}{}", reduced_stem, repl),
-                            source_len: src_len,
-                            _reason: "En-Double".to_string(),
-                        });
-                    }
-                }
-            }
-        }
-
-        results
     }
 }

@@ -1,0 +1,43 @@
+mod chinese;
+mod english;
+mod japanese;
+mod korean;
+pub mod transformer;
+
+use transformer::LanguageTransformer;
+
+#[derive(Debug, Clone, Copy)]
+pub enum Language {
+    Japanese,
+    English,
+    Korean,
+    Chinese,
+}
+
+#[derive(Debug, Clone)]
+pub struct Deinflector {
+    japanese: LanguageTransformer,
+    english: LanguageTransformer,
+    korean: LanguageTransformer,
+    chinese: LanguageTransformer,
+}
+
+impl Deinflector {
+    pub fn new() -> Self {
+        Self {
+            japanese: japanese::transformer(),
+            english: english::transformer(),
+            korean: korean::transformer(),
+            chinese: chinese::transformer(),
+        }
+    }
+
+    pub fn deinflect(&self, language: Language, text: &str) -> Vec<String> {
+        match language {
+            Language::Japanese => self.japanese.deinflect_terms(text),
+            Language::English => self.english.deinflect_terms(text),
+            Language::Korean => korean::deinflect(&self.korean, text),
+            Language::Chinese => self.chinese.deinflect_terms(text),
+        }
+    }
+}

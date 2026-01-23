@@ -9,6 +9,7 @@ use tower_http::{cors::CorsLayer, limit::RequestBodyLimitLayer};
 use tracing::{error, info};
 
 pub mod handlers;
+pub mod deinflector;
 pub mod import;
 pub mod lookup;
 pub mod state;

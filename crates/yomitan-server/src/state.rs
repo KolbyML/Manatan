@@ -2,8 +2,8 @@ use std::{
     collections::HashMap,
     path::PathBuf,
     sync::{
-        Arc, RwLock,
         atomic::{AtomicBool, Ordering},
+        Arc, RwLock,
     },
 };
 
@@ -11,7 +11,7 @@ use r2d2::Pool;
 use r2d2_sqlite::SqliteConnectionManager;
 use serde::{Deserialize, Serialize};
 use tracing::info;
-use wordbase_api::{DictionaryId, Record, dict::yomitan::GlossaryTag};
+use wordbase_api::{dict::yomitan::GlossaryTag, DictionaryId, Record};
 
 pub type DbPool = Pool<SqliteConnectionManager>;
 
@@ -38,6 +38,8 @@ pub struct StoredRecord {
     pub record: Record,
     pub term_tags: Option<Vec<GlossaryTag>>,
     pub reading: Option<String>,
+    #[serde(default)]
+    pub headword: Option<String>,
 }
 
 impl AppState {
