@@ -39,17 +39,20 @@ Run the executable, then visit `http://127.0.0.1:4568/` in your web browser to a
 
 https://github.com/user-attachments/assets/38c63c86-289d-45a4-ba85-e29f1b812ceb
 
-## Setup (Windows)
+## Setup
 
-1.  Download the `.zip` file for `windows-x86` from the [releases](https://github.com/KolbyML/Mangatan/releases) page.
-2.  Extract the `.zip`, and inside it launch `mangatan.exe`.
-    * *Note: If prompted by Windows Defender SmartScreen, click **More info** > **Run anyway**. If it doesn't run on double-click, right-click the file > **Properties** > **Unblock**.*
-3.  A "Mangatan Launcher" window will appear. Click "**Open Web UI**".
-4.  Allow Windows Firewall connections if prompted. The Suwayomi web interface (`127.0.0.1:4568/`) should open in a new browser tab.
+1.  Download the latest release for your platform from the [releases](https://github.com/KolbyML/Mangatan/releases) page.
+    * **Windows:** Download the `.zip` file for `windows-x86`, extract it, then launch `mangatan.exe`.
+      * *Note: If prompted by Windows Defender SmartScreen, click **More info** > **Run anyway**. If it doesn't run on double-click, right-click the file > **Properties** > **Unblock**.*
+    * **macOS:** Download the macOS build, unzip it, then open `Mangatan.app`.
+      * *If macOS blocks the app because it is unsigned, go to **System Settings** > **Privacy & Security** and click **Open Anyway** for Mangatan, then reopen the app.*
+2.  A "Mangatan Launcher" window will appear. Click "**Open Web UI**".
+3.  **Windows:** Allow Windows Firewall connections if prompted.
+4.  The Mangatan web interface (`127.0.0.1:4568/`) should open in a new browser tab.
     * *Please wait ~30 seconds for the initial setup to finish. Reload the page to access the library.*
 5.  **Adding Sources:**
     * Go to **Settings** > **Browse** > **Extension repositories** > **Add Repository**.
-    * Paste a valid Suwayomi `index.min.json` extension repository URL (search "mihon extension repos" on Google to find one) and click **OK**.
+    * Paste a valid Mihon `index.min.json` extension repository URL (search "mihon extension repos" on Google to find one) and click **OK**.
 6.  **Installing Extensions:**
     * Go to **"Browse"** on the left sidebar, then the **"Extensions"** tab.
     * Click **"Install"** on your desired source.
