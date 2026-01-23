@@ -1,13 +1,15 @@
 use std::{
     collections::HashMap,
-    fs,
-    io::Write,
-    path::PathBuf,
-    sync::{Arc, RwLock, atomic::AtomicUsize},
+    path::{Path, PathBuf},
+    sync::{atomic::AtomicUsize, Arc, RwLock},
+    time::{SystemTime, UNIX_EPOCH},
 };
 
+use r2d2::Pool;
+use r2d2_sqlite::SqliteConnectionManager;
+use rusqlite::{params, OptionalExtension};
 use serde::{Deserialize, Serialize};
-use tracing::warn;
+use tracing::{info, warn};
 
 use crate::logic::OcrResult;
 
@@ -19,12 +21,11 @@ pub struct JobProgress {
 
 #[derive(Clone)]
 pub struct AppState {
-    pub cache: Arc<RwLock<HashMap<String, CacheEntry>>>,
-    pub cache_path: PathBuf,
+    pub pool: DbPool,
+    pub cache_dir: PathBuf,
     pub active_jobs: Arc<AtomicUsize>,
     pub requests_processed: Arc<AtomicUsize>,
     pub active_chapter_jobs: Arc<RwLock<HashMap<String, JobProgress>>>,
-    pub chapter_pages_map: Arc<RwLock<HashMap<String, usize>>>,
 }
 
 #[derive(Serialize, Deserialize, Clone)]
@@ -33,7 +34,9 @@ pub struct CacheEntry {
     pub data: Vec<OcrResult>,
 }
 
-// Struct for the persistent state (cache and metadata)
+pub type DbPool = Pool<SqliteConnectionManager>;
+
+// Struct for the legacy persistent state (cache and metadata)
 #[derive(Serialize, Deserialize, Default)]
 struct PersistentState {
     cache: HashMap<String, CacheEntry>,
@@ -42,56 +45,359 @@ struct PersistentState {
 
 impl AppState {
     pub fn new(cache_dir: PathBuf) -> Self {
-        let cache_path = cache_dir.join("ocr-cache.json");
+        if !cache_dir.exists() {
+            let _ = std::fs::create_dir_all(&cache_dir);
+        }
 
-        let persistent_state = if cache_path.exists() {
-            if let Ok(file) = fs::File::open(&cache_path) {
-                serde_json::from_reader(file).unwrap_or_else(|e| {
-                    warn!("Failed to deserialize cache file: {e}. Starting fresh.");
-                    PersistentState::default()
-                })
-            } else {
-                warn!("Failed to open cache file. Starting fresh.");
-                PersistentState::default()
-            }
-        } else {
-            PersistentState::default()
-        };
+        let db_path = cache_dir.join("ocr-cache.db");
+        let manager = SqliteConnectionManager::file(&db_path);
+        let pool = Pool::new(manager).expect("Failed to create OCR DB pool");
+        let mut conn = pool.get().expect("Failed to get OCR DB connection");
+
+        conn.execute_batch(
+            "PRAGMA journal_mode = DELETE;
+             PRAGMA synchronous = NORMAL;
+
+             CREATE TABLE IF NOT EXISTS metadata (
+                key TEXT PRIMARY KEY,
+                value TEXT
+             );
+
+             CREATE TABLE IF NOT EXISTS ocr_cache (
+                cache_key TEXT PRIMARY KEY,
+                context TEXT NOT NULL,
+                data BLOB NOT NULL,
+                created_at INTEGER NOT NULL,
+                last_processed_at INTEGER NOT NULL,
+                last_accessed_at INTEGER NOT NULL,
+                access_count INTEGER NOT NULL
+             );
+
+             CREATE INDEX IF NOT EXISTS idx_ocr_cache_accessed
+                ON ocr_cache(last_accessed_at);
+
+             CREATE TABLE IF NOT EXISTS chapter_pages (
+                chapter_key TEXT PRIMARY KEY,
+                page_count INTEGER NOT NULL,
+                created_at INTEGER NOT NULL,
+                last_accessed_at INTEGER NOT NULL
+             );
+
+             CREATE INDEX IF NOT EXISTS idx_chapter_pages_accessed
+                ON chapter_pages(last_accessed_at);",
+        )
+        .expect("Failed to initialize OCR cache database");
+
+        migrate_legacy_cache(&mut conn, &cache_dir);
 
         Self {
-            cache: Arc::new(RwLock::new(persistent_state.cache)),
-            chapter_pages_map: Arc::new(RwLock::new(persistent_state.chapter_pages_map)),
-            cache_path,
+            pool,
+            cache_dir,
             active_jobs: Arc::new(AtomicUsize::new(0)),
             requests_processed: Arc::new(AtomicUsize::new(0)),
             active_chapter_jobs: Arc::new(RwLock::new(HashMap::new())),
         }
     }
+}
 
-    pub fn save_cache(&self) {
-        let state_to_save = {
-            let cache = self.cache.read().expect("cache lock poisoned");
-            let pages_map = self
-                .chapter_pages_map
-                .read()
-                .expect("pages map lock poisoned");
+impl AppState {
+    pub fn cache_len(&self) -> usize {
+        let Ok(conn) = self.pool.get() else {
+            warn!("Failed to get DB connection for cache_len");
+            return 0;
+        };
+        conn.query_row("SELECT COUNT(*) FROM ocr_cache", [], |row| {
+            row.get::<_, i64>(0)
+        })
+        .map(|count| count as usize)
+        .unwrap_or(0)
+    }
 
-            let state = PersistentState {
-                cache: cache.clone(),
-                chapter_pages_map: pages_map.clone(),
-            };
-            serde_json::to_vec_pretty(&state).unwrap_or_default()
+    pub fn has_cache_entry(&self, cache_key: &str) -> bool {
+        let Ok(conn) = self.pool.get() else {
+            warn!("Failed to get DB connection for has_cache_entry");
+            return false;
+        };
+        conn.query_row(
+            "SELECT 1 FROM ocr_cache WHERE cache_key = ? LIMIT 1",
+            params![cache_key],
+            |_| Ok(()),
+        )
+        .optional()
+        .map(|v| v.is_some())
+        .unwrap_or(false)
+    }
+
+    pub fn get_cache_entry(&self, cache_key: &str) -> Option<CacheEntry> {
+        let Ok(conn) = self.pool.get() else {
+            warn!("Failed to get DB connection for get_cache_entry");
+            return None;
         };
 
-        let tmp_path = self.cache_path.with_extension("tmp");
+        let entry = conn
+            .query_row(
+                "SELECT context, data FROM ocr_cache WHERE cache_key = ?",
+                params![cache_key],
+                |row| {
+                    let context: String = row.get(0)?;
+                    let data_blob: Vec<u8> = row.get(1)?;
+                    let data = serde_json::from_slice(&data_blob).unwrap_or_default();
+                    Ok(CacheEntry { context, data })
+                },
+            )
+            .optional()
+            .unwrap_or(None);
 
-        if let Ok(mut file) = fs::File::create(&tmp_path) {
-            if file.write_all(&state_to_save).is_ok() {
-                let _ = file.sync_all();
-                let _ = fs::rename(&tmp_path, &self.cache_path);
-            }
-        } else {
-            tracing::error!("Failed to create temp file for saving cache");
+        if entry.is_some() {
+            let now = now_unix();
+            let _ = conn.execute(
+                "UPDATE ocr_cache
+                 SET last_accessed_at = ?, access_count = access_count + 1
+                 WHERE cache_key = ?",
+                params![now, cache_key],
+            );
         }
+
+        entry
+    }
+
+    pub fn insert_cache_entry(&self, cache_key: &str, entry: &CacheEntry) {
+        let Ok(conn) = self.pool.get() else {
+            warn!("Failed to get DB connection for insert_cache_entry");
+            return;
+        };
+        let now = now_unix();
+        let data_blob = serde_json::to_vec(&entry.data).unwrap_or_default();
+        let _ = conn.execute(
+            "INSERT INTO ocr_cache
+                (cache_key, context, data, created_at, last_processed_at, last_accessed_at, access_count)
+             VALUES (?, ?, ?, ?, ?, ?, ?)
+             ON CONFLICT(cache_key) DO UPDATE SET
+                context = excluded.context,
+                data = excluded.data,
+                last_processed_at = excluded.last_processed_at,
+                last_accessed_at = excluded.last_accessed_at,
+                access_count = ocr_cache.access_count + 1",
+            params![
+                cache_key,
+                entry.context.as_str(),
+                data_blob,
+                now,
+                now,
+                now,
+                1i64
+            ],
+        );
+    }
+
+    pub fn count_cached_for_prefix(&self, prefix: &str) -> usize {
+        let Ok(conn) = self.pool.get() else {
+            warn!("Failed to get DB connection for count_cached_for_prefix");
+            return 0;
+        };
+        let like_pattern = format!("{}%", prefix);
+        conn.query_row(
+            "SELECT COUNT(*) FROM ocr_cache WHERE cache_key LIKE ?",
+            params![like_pattern],
+            |row| row.get::<_, i64>(0),
+        )
+        .map(|count| count as usize)
+        .unwrap_or(0)
+    }
+
+    pub fn clear_cache(&self) {
+        let Ok(conn) = self.pool.get() else {
+            warn!("Failed to get DB connection for clear_cache");
+            return;
+        };
+        let _ = conn.execute("DELETE FROM ocr_cache", []);
+    }
+
+    pub fn export_cache(&self) -> HashMap<String, CacheEntry> {
+        let Ok(conn) = self.pool.get() else {
+            warn!("Failed to get DB connection for export_cache");
+            return HashMap::new();
+        };
+        let mut out = HashMap::new();
+        let mut stmt = match conn.prepare("SELECT cache_key, context, data FROM ocr_cache") {
+            Ok(stmt) => stmt,
+            Err(err) => {
+                warn!("Failed to prepare export_cache: {err}");
+                return out;
+            }
+        };
+
+        if let Ok(rows) = stmt.query_map([], |row| {
+            let key: String = row.get(0)?;
+            let context: String = row.get(1)?;
+            let data_blob: Vec<u8> = row.get(2)?;
+            let data = serde_json::from_slice(&data_blob).unwrap_or_default();
+            Ok((key, CacheEntry { context, data }))
+        }) {
+            for row in rows.flatten() {
+                out.insert(row.0, row.1);
+            }
+        }
+
+        out
+    }
+
+    pub fn import_cache(&self, data: HashMap<String, CacheEntry>) -> usize {
+        let Ok(mut conn) = self.pool.get() else {
+            warn!("Failed to get DB connection for import_cache");
+            return 0;
+        };
+
+        let now = now_unix();
+        let tx = match conn.transaction() {
+            Ok(tx) => tx,
+            Err(err) => {
+                warn!("Failed to start import transaction: {err}");
+                return 0;
+            }
+        };
+        let mut added = 0;
+        for (key, entry) in data {
+            let data_blob = serde_json::to_vec(&entry.data).unwrap_or_default();
+            if let Ok(changes) = tx.execute(
+                "INSERT OR IGNORE INTO ocr_cache
+                    (cache_key, context, data, created_at, last_processed_at, last_accessed_at, access_count)
+                 VALUES (?, ?, ?, ?, ?, ?, ?)",
+                params![key, entry.context, data_blob, now, now, now, 1i64],
+            ) {
+                if changes > 0 {
+                    added += 1;
+                }
+            }
+        }
+        let _ = tx.commit();
+        added
+    }
+
+    pub fn get_chapter_pages(&self, chapter_key: &str) -> Option<usize> {
+        let Ok(conn) = self.pool.get() else {
+            warn!("Failed to get DB connection for get_chapter_pages");
+            return None;
+        };
+        let count = conn
+            .query_row(
+                "SELECT page_count FROM chapter_pages WHERE chapter_key = ?",
+                params![chapter_key],
+                |row| row.get::<_, i64>(0),
+            )
+            .optional()
+            .unwrap_or(None);
+
+        if count.is_some() {
+            let now = now_unix();
+            let _ = conn.execute(
+                "UPDATE chapter_pages SET last_accessed_at = ? WHERE chapter_key = ?",
+                params![now, chapter_key],
+            );
+        }
+
+        count.map(|val| val as usize)
+    }
+
+    pub fn set_chapter_pages(&self, chapter_key: &str, page_count: usize) {
+        let Ok(conn) = self.pool.get() else {
+            warn!("Failed to get DB connection for set_chapter_pages");
+            return;
+        };
+        let now = now_unix();
+        let _ = conn.execute(
+            "INSERT INTO chapter_pages (chapter_key, page_count, created_at, last_accessed_at)
+             VALUES (?, ?, ?, ?)
+             ON CONFLICT(chapter_key) DO UPDATE SET
+                page_count = excluded.page_count,
+                last_accessed_at = excluded.last_accessed_at",
+            params![chapter_key, page_count as i64, now, now],
+        );
+    }
+}
+
+fn now_unix() -> i64 {
+    SystemTime::now()
+        .duration_since(UNIX_EPOCH)
+        .unwrap_or_default()
+        .as_secs() as i64
+}
+
+fn migrate_legacy_cache(conn: &mut rusqlite::Connection, cache_dir: &Path) {
+    let migrated: Option<String> = conn
+        .query_row(
+            "SELECT value FROM metadata WHERE key = 'legacy_json_migrated'",
+            [],
+            |row| row.get(0),
+        )
+        .optional()
+        .unwrap_or(None);
+
+    if migrated.as_deref() == Some("1") {
+        return;
+    }
+
+    let cache_path = cache_dir.join("ocr-cache.json");
+    if !cache_path.exists() {
+        return;
+    }
+
+    let file = match std::fs::File::open(&cache_path) {
+        Ok(file) => file,
+        Err(err) => {
+            warn!("Failed to open legacy cache file: {err}");
+            return;
+        }
+    };
+
+    let persistent_state: PersistentState = match serde_json::from_reader(file) {
+        Ok(state) => state,
+        Err(err) => {
+            warn!("Failed to deserialize legacy cache file: {err}");
+            return;
+        }
+    };
+
+    let now = now_unix();
+    let tx = match conn.transaction() {
+        Ok(tx) => tx,
+        Err(err) => {
+            warn!("Failed to start migration transaction: {err}");
+            return;
+        }
+    };
+
+    let mut imported = 0;
+    for (key, entry) in persistent_state.cache {
+        let data_blob = serde_json::to_vec(&entry.data).unwrap_or_default();
+        if let Ok(changes) = tx.execute(
+            "INSERT OR IGNORE INTO ocr_cache
+                (cache_key, context, data, created_at, last_processed_at, last_accessed_at, access_count)
+             VALUES (?, ?, ?, ?, ?, ?, ?)",
+            params![key, entry.context, data_blob, now, now, now, 1i64],
+        ) {
+            if changes > 0 {
+                imported += 1;
+            }
+        }
+    }
+
+    for (key, count) in persistent_state.chapter_pages_map {
+        let _ = tx.execute(
+            "INSERT OR IGNORE INTO chapter_pages
+                (chapter_key, page_count, created_at, last_accessed_at)
+             VALUES (?, ?, ?, ?)",
+            params![key, count as i64, now, now],
+        );
+    }
+
+    let _ = tx.execute(
+        "INSERT OR REPLACE INTO metadata (key, value) VALUES ('legacy_json_migrated', '1')",
+        [],
+    );
+
+    if tx.commit().is_ok() {
+        let _ = std::fs::remove_file(&cache_path);
+        info!("Migrated {} legacy OCR cache entries into SQLite", imported);
     }
 }

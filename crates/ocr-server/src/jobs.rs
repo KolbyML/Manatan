@@ -4,7 +4,6 @@ use std::sync::{
 };
 
 use futures::StreamExt;
-use tokio::sync::Mutex;
 
 use crate::state::{AppState, JobProgress};
 
@@ -32,7 +31,6 @@ pub async fn run_chapter_job(
     tracing::info!("[Job] Started for {} ({} pages)", context, total);
 
     let completed_counter = Arc::new(AtomicUsize::new(0));
-    let save_lock = Arc::new(Mutex::new(()));
     let stream = futures::stream::iter(pages.into_iter());
 
     // Change from 6 to 2 or 3 for Android stability
@@ -46,13 +44,12 @@ pub async fn run_chapter_job(
             let pass = pass.clone();
             let context = context.clone();
             let completed_counter = completed_counter.clone();
-            let save_lock = save_lock.clone();
 
             let page_id = url.split('/').next_back().unwrap_or("unknown").to_string();
 
             async move {
                 let cache_key = crate::logic::get_cache_key(&url);
-                let exists = { state.cache.read().expect("lock").contains_key(&cache_key) };
+                let exists = state.has_cache_entry(&cache_key);
                 if exists {
                     tracing::info!("[Page {page_id}] Skip (Cached)");
                 } else {
@@ -62,15 +59,13 @@ pub async fn run_chapter_job(
                     match crate::logic::fetch_and_process(&url, user, pass, add_space_on_merge)
                         .await
                     {
-                        Ok(res) => {
-                            state.cache.write().expect("lock").insert(
-                                cache_key,
-                                crate::state::CacheEntry {
-                                    context: context.clone(),
-                                    data: res,
-                                },
-                            );
-                        }
+                        Ok(res) => state.insert_cache_entry(
+                            &cache_key,
+                            &crate::state::CacheEntry {
+                                context: context.clone(),
+                                data: res,
+                            },
+                        ),
                         Err(err) => {
                             tracing::warn!("[Page {page_id}] Failed: {err:?}");
                         }
@@ -90,19 +85,11 @@ pub async fn run_chapter_job(
                     }
                 }
 
-                if current.is_multiple_of(5)
-                    && let Ok(_guard) = save_lock.try_lock()
-                {
-                    state.save_cache();
-                }
             }
         })
         .await;
 
-    // Final Save
-    tracing::info!("[Job {job_id}] Final save...");
-    state.save_cache();
-    tracing::info!("[Job {job_id}] Final save complete.");
+    tracing::info!("[Job {job_id}] Finalize...");
 
     state.active_jobs.fetch_sub(1, Ordering::Relaxed);
 

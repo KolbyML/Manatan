@@ -1,4 +1,4 @@
-use std::{collections::hash_map::Entry, sync::atomic::Ordering};
+use std::sync::atomic::Ordering;
 
 use axum::{
     Json,
@@ -30,7 +30,7 @@ fn default_context() -> String {
 // --- Handlers ---
 
 pub async fn status_handler(State(state): State<AppState>) -> Json<serde_json::Value> {
-    let cache_size = state.cache.read().expect("cache lock poisoned").len();
+    let cache_size = state.cache_len();
     Json(serde_json::json!({
         "status": "running",
         "backend": "Rust (mangatan-ocr-server)",
@@ -47,11 +47,11 @@ pub async fn ocr_handler(
     let cache_key = logic::get_cache_key(&params.url);
     info!("OCR Handler: Incoming request for cache_key={}", cache_key);
 
-    info!("OCR Handler: Attempting to acquire cache read lock for check...");
-    if let Some(entry) = state.cache.read().expect("lock").get(&cache_key) {
+    info!("OCR Handler: Checking cache...");
+    if let Some(entry) = state.get_cache_entry(&cache_key) {
         info!("OCR Handler: Cache HIT for cache_key={}", cache_key);
         state.requests_processed.fetch_add(1, Ordering::Relaxed);
-        return Ok(Json(entry.data.clone()));
+        return Ok(Json(entry.data));
     }
     info!(
         "OCR Handler: Cache MISS for cache_key={}. Starting processing.",
@@ -74,23 +74,15 @@ pub async fn ocr_handler(
                 cache_key
             );
 
-            info!("OCR Handler: Attempting to acquire cache write lock for insertion...");
-            {
-                let mut w = state.cache.write().expect("lock");
-                info!("OCR Handler: Cache write lock acquired.");
-                w.insert(
-                    cache_key.clone(),
-                    CacheEntry {
-                        context: params.context,
-                        data: data.clone(),
-                    },
-                );
-                info!("OCR Handler: Cache data inserted. Releasing write lock.");
-            }
-
-            info!("OCR Handler: Triggering cache save to disk...");
-            state.save_cache();
-            info!("OCR Handler: Cache save complete.");
+            info!("OCR Handler: Writing cache entry to DB...");
+            state.insert_cache_entry(
+                &cache_key,
+                &CacheEntry {
+                    context: params.context,
+                    data: data.clone(),
+                },
+            );
+            info!("OCR Handler: Cache write complete.");
 
             Ok(Json(data))
         }
@@ -137,24 +129,14 @@ pub async fn is_chapter_preprocessed_handler(
 
     let chapter_base_path = logic::get_cache_key(&req.base_url);
 
-    let total = state
-        .chapter_pages_map
-        .read()
-        .expect("pages map lock poisoned")
-        .get(&chapter_base_path)
-        .cloned();
+    let total = state.get_chapter_pages(&chapter_base_path);
 
     let total = match total {
         Some(total) => total,
         None => {
             match logic::resolve_total_pages_from_graphql(&req.base_url, req.user, req.pass).await {
                 Ok(total) => {
-                    state
-                        .chapter_pages_map
-                        .write()
-                        .expect("lock")
-                        .insert(chapter_base_path.clone(), total);
-                    state.save_cache();
+                    state.set_chapter_pages(&chapter_base_path, total);
                     total
                 }
                 Err(e) => {
@@ -168,12 +150,7 @@ pub async fn is_chapter_preprocessed_handler(
         }
     };
 
-    let mut cached_count = 0;
-    for key in state.cache.read().expect("cache lock poisoned").keys() {
-        if key.starts_with(&chapter_base_path) {
-            cached_count += 1;
-        }
-    }
+    let cached_count = state.count_cached_for_prefix(&chapter_base_path);
     if cached_count >= total {
         return Json(
             serde_json::json!({ "status": "processed", "cached_count": cached_count, "total_expected": total }),
@@ -223,40 +200,20 @@ pub async fn preprocess_handler(
 }
 
 pub async fn purge_cache_handler(State(state): State<AppState>) -> Json<serde_json::Value> {
-    let mut cache = state.cache.write().expect("lock");
-    cache.clear();
-
-    drop(cache);
-
-    state.save_cache();
+    state.clear_cache();
     Json(serde_json::json!({ "status": "cleared" }))
 }
 
 pub async fn export_cache_handler(
     State(state): State<AppState>,
 ) -> Json<std::collections::HashMap<String, CacheEntry>> {
-    let cache = state.cache.read().expect("lock");
-    Json(cache.clone())
+    Json(state.export_cache())
 }
 
 pub async fn import_cache_handler(
     State(state): State<AppState>,
     Json(data): Json<std::collections::HashMap<String, CacheEntry>>,
 ) -> Json<serde_json::Value> {
-    let mut added = 0;
-
-    {
-        let mut cache = state.cache.write().expect("lock");
-        for (k, v) in data {
-            if let Entry::Vacant(e) = cache.entry(k) {
-                e.insert(v);
-                added += 1;
-            }
-        }
-    }
-
-    if added > 0 {
-        state.save_cache();
-    }
+    let added = state.import_cache(data);
     Json(serde_json::json!({ "message": "Import successful", "added": added }))
 }
