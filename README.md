@@ -1,10 +1,10 @@
-# Mangatan
+# Manatan
 <div align="center">
 
-[![Github All Releases](https://img.shields.io/github/downloads/kolbyml/mangatan/total.svg)](https://github.com/kolbyml/mangatan/releases)
+[![Github All Releases](https://img.shields.io/github/downloads/kolbyml/manatan/total.svg)](https://github.com/kolbyml/manatan/releases)
 [![GitHub Sponsors](https://img.shields.io/github/sponsors/kolbyml)](https://github.com/sponsors/kolbyml)
 [![Static Badge](https://img.shields.io/badge/donate-ko--fi-ed6760?label=donate)](https://ko-fi.com/kolbyml)
-[![GitHub License](https://img.shields.io/github/license/kolbyml/mangatan)](https://github.com/kolbyml/mangatan?tab=MIT-1-ov-file)
+[![GitHub License](https://img.shields.io/github/license/kolbyml/manatan)](https://github.com/kolbyml/manatan?tab=MIT-1-ov-file)
 [![Discord](https://img.shields.io/discord/1448140648950530182?color=%237785cc)](https://discord.gg/tDAtpPN8KK)
 
 </div>
@@ -13,13 +13,13 @@
 
 Discord Server: https://discord.gg/tDAtpPN8KK
 
-## ✨ Why Mangatan?
+## ✨ Why Manatan?
 
 Traditional setups for reading manga with Japanese lookup (OCR) can be complicated, often requiring users to install Python scripts, browser extensions (like userscripts), and configure local servers manually.
 
-**Mangatan simplifies everything into a single app:**
+**Manatan simplifies everything into a single app:**
 * **Zero Configuration:** No need to install "Monkey scripts," configure Optical Character Recognition (OCR) tools, or mess with command lines.
-* **Universal Language Support:** Mangatan supports every language.
+* **Universal Language Support:** Manatan supports every language.
 * **Built-in OCR:** Just hover over text to get selectable text for dictionary lookups.
 * **Cross-Platform:** Run the exact same interface on your PC, Mac, Android, or iOS device.
 * **Browser Interface:** Uses the familiar [Suwayomi](https://github.com/Suwayomi/Suwayomi-Server) interface in your favorite web browser.
@@ -33,22 +33,22 @@ Traditional setups for reading manga with Japanese lookup (OCR) can be complicat
 
 ## 🚀 Getting Started
 
-Download the latest release for your platform from the [Releases](https://github.com/KolbyML/Mangatan/releases) page.
+Download the latest release for your platform from the [Releases](https://github.com/KolbyML/Manatan/releases) page.
 
-Run the executable, then visit `http://127.0.0.1:4568/` in your web browser to access the Mangatan web interface.
+Run the executable, then visit `http://127.0.0.1:4568/` in your web browser to access the Manatan web interface.
 
 https://github.com/user-attachments/assets/38c63c86-289d-45a4-ba85-e29f1b812ceb
 
 ## Setup
 
-1.  Download the latest release for your platform from the [releases](https://github.com/KolbyML/Mangatan/releases) page.
-    * **Windows:** Download the `.zip` file for `windows-x86`, extract it, then launch `mangatan.exe`.
+1.  Download the latest release for your platform from the [releases](https://github.com/KolbyML/Manatan/releases) page.
+    * **Windows:** Download the `.zip` file for `windows-x86`, extract it, then launch `manatan.exe`.
       * *Note: If prompted by Windows Defender SmartScreen, click **More info** > **Run anyway**. If it doesn't run on double-click, right-click the file > **Properties** > **Unblock**.*
-    * **macOS:** Download the macOS build, unzip it, then open `Mangatan.app`.
-      * *If macOS blocks the app because it is unsigned, go to **System Settings** > **Privacy & Security** and click **Open Anyway** for Mangatan, then reopen the app.*
-2.  A "Mangatan Launcher" window will appear. Click "**Open Web UI**".
+    * **macOS:** Download the macOS build, unzip it, then open `Manatan.app`.
+      * *If macOS blocks the app because it is unsigned, go to **System Settings** > **Privacy & Security** and click **Open Anyway** for Manatan, then reopen the app.*
+2.  A "Manatan Launcher" window will appear. Click "**Open Web UI**".
 3.  **Windows:** Allow Windows Firewall connections if prompted.
-4.  The Mangatan web interface (`127.0.0.1:4568/`) should open in a new browser tab.
+4.  The Manatan web interface (`127.0.0.1:4568/`) should open in a new browser tab.
     * *Please wait ~30 seconds for the initial setup to finish. Reload the page to access the library.*
 5.  **Adding Sources:**
     * Go to **Settings** > **Browse** > **Extension repositories** > **Add Repository**.
@@ -77,24 +77,24 @@ Refer to the [Suwayomi Local Source documentation](https://github.com/Suwayomi/S
 
 To fully clear cache and data from previous installs, delete the following folders and try again:
 
-* `mangatan-windows-x86` (Your extraction folder)
+* `manatan-windows-x86` (Your extraction folder)
 * `%LOCALAPPDATA%\Tachidesk`
-* `%APPDATA%\mangatan`
+* `%APPDATA%\manatan`
 * `%Temp%\Suwayomi*`
 * `%Temp%\Tachidesk*`
 * **Browser Data:** Clear Site data & cookies for `127.0.0.1`
 
 ## Roadmap
 
-- [x] Package Mangatan, OCR Server, and Suwayomi into a single binary
-- [x] Add Android Support https://github.com/KolbyML/Mangatan/issues/17
-- [x] Add iOS Support https://github.com/KolbyML/Mangatan/issues/19
-- [ ] Add Manga Immersion Stats page https://github.com/KolbyML/Mangatan/issues/1
-- [ ] Suggest more features https://github.com/KolbyML/Mangatan/issues/new
+- [x] Package Manatan, OCR Server, and Suwayomi into a single binary
+- [x] Add Android Support https://github.com/KolbyML/Manatan/issues/17
+- [x] Add iOS Support https://github.com/KolbyML/Manatan/issues/19
+- [ ] Add Manga Immersion Stats page https://github.com/KolbyML/Manatan/issues/1
+- [ ] Suggest more features https://github.com/KolbyML/Manatan/issues/new
 
 ## 🤝 Help Improve OCR Accuracy
 
-Mangatan's text overlay precision relies on a robust set of test cases. We are crowdsourcing data to fine-tune our engine, fix merging errors, and ensure text detection works perfectly across all manga styles.
+Manatan's text overlay precision relies on a robust set of test cases. We are crowdsourcing data to fine-tune our engine, fix merging errors, and ensure text detection works perfectly across all manga styles.
 
 **We need your help!**
 If you have examples of complex text bubbles, or just want to help us prevent future bugs, please contribute to our test suite:
@@ -116,8 +116,8 @@ We have detailed build instructions for each platform. Please refer to the speci
 
 1.  **Clone the repository:**
     ```bash
-    git clone --recursive https://github.com/KolbyML/Mangatan
-    cd Mangatan
+    git clone --recursive https://github.com/KolbyML/Manatan
+    cd Manatan
     ```
 
 2.  **Run in Development Mode:**
@@ -131,11 +131,11 @@ The following links, repos, companies and projects have been important in the de
 - https://github.com/kaihouguide/Mangatan
 - https://github.com/exn251/Mangatan/
 - https://github.com/Suwayomi/Suwayomi-Server
-- https://github.com/Suwayomi/Mangatan-WebUI
+- https://github.com/KolbyML/Manatan-WebUI
 
 ## Privacy Policy
 
-Mangatan does not collect, transmit, or share any user data. All data including imported comics, reading progress, bookmarks, and saved vocabulary words are stored locally on your device and never leave it.
+Manatan does not collect, transmit, or share any user data. All data including imported comics, reading progress, bookmarks, and saved vocabulary words are stored locally on your device and never leave it.
 
 The only external communication occurs during OCR which is optional and uses Google Cloud Vision API. When enabled, selected image regions are sent over HTTPS for text recognition only. No user accounts are used, and images are not linked to personal identity. OCR can be disabled at any time in Settings.
 
@@ -145,4 +145,4 @@ Last updated: 12/23/2025
 
 ## Star History
 
-[![Star History Chart](https://api.star-history.com/svg?repos=KolbyML/Mangatan&type=date&legend=top-left)](https://www.star-history.com/#KolbyML/Mangatan&type=date&legend=top-left)
+[![Star History Chart](https://api.star-history.com/svg?repos=KolbyML/Manatan&type=date&legend=top-left)](https://www.star-history.com/#KolbyML/Manatan&type=date&legend=top-left)

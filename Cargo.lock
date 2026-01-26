@@ -3211,7 +3211,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "mangatan"
+name = "manatan"
 version = "0.1.0"
 dependencies = [
  "anyhow",
@@ -3222,8 +3222,8 @@ dependencies = [
  "futures",
  "futures-util",
  "image",
- "mangatan-ocr-server",
- "mangatan-yomitan-server",
+ "manatan-ocr-server",
+ "manatan-yomitan-server",
  "mime_guess",
  "open",
  "reqwest",
@@ -3239,7 +3239,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "mangatan-ocr-server"
+name = "manatan-ocr-server"
 version = "0.1.0"
 dependencies = [
  "anyhow",
@@ -3265,7 +3265,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "mangatan-yomitan-server"
+name = "manatan-yomitan-server"
 version = "0.1.0"
 dependencies = [
  "anyhow",
@@ -3289,7 +3289,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "mangatan_android"
+name = "manatan_android"
 version = "0.1.0"
 dependencies = [
  "android-activity",
@@ -3302,8 +3302,8 @@ dependencies = [
  "lazy_static",
  "libc",
  "libloading 0.8.9",
- "mangatan-ocr-server",
- "mangatan-yomitan-server",
+ "manatan-ocr-server",
+ "manatan-yomitan-server",
  "mime_guess",
  "ndk-context",
  "openssl",
@@ -3321,7 +3321,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "mangatan_ios_backend"
+name = "manatan_ios_backend"
 version = "0.1.0"
 dependencies = [
  "axum",
@@ -3330,8 +3330,8 @@ dependencies = [
  "jni",
  "libc",
  "libloading 0.8.9",
- "mangatan-ocr-server",
- "mangatan-yomitan-server",
+ "manatan-ocr-server",
+ "manatan-yomitan-server",
  "mime_guess",
  "reqwest",
  "serde",

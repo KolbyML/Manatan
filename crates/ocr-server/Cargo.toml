@@ -1,5 +1,5 @@
 [package]
-name = "mangatan-ocr-server"
+name = "manatan-ocr-server"
 authors.workspace = true
 edition.workspace = true
 keywords.workspace = true

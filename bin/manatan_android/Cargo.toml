@@ -1,0 +1,161 @@
+[package]
+name = "manatan_android"
+authors.workspace = true
+edition.workspace = true
+keywords.workspace = true
+license.workspace = true
+readme.workspace = true
+repository.workspace = true
+rust-version.workspace = true
+version.workspace = true
+autobins = false 
+
+[features]
+default = []
+# When enabled, the app shows a loading spinner then launches a native Android Webview
+native_webview = []
+
+[package.metadata.android]
+package = "com.mangatan.app"
+build_targets = ["Arm64V8a"]
+assets = "assets"
+java_sources = "java"
+resources = "res"
+
+[package.metadata.android.sdk]
+min_sdk_version = 23
+target_sdk_version = 29
+
+# --- PERMISSIONS ---
+[[package.metadata.android.uses_permission]]
+name = "android.permission.FOREGROUND_SERVICE_DATA_SYNC"
+
+[[package.metadata.android.uses_permission]]
+name = "android.permission.INTERNET"
+
+[[package.metadata.android.uses_permission]]
+name = "android.permission.ACCESS_NETWORK_STATE"
+
+[[package.metadata.android.uses_permission]]
+name = "android.permission.REQUEST_IGNORE_BATTERY_OPTIMIZATIONS"
+
+[[package.metadata.android.uses_permission]]
+name = "android.permission.READ_EXTERNAL_STORAGE"
+
+[[package.metadata.android.uses_permission]]
+name = "android.permission.WRITE_EXTERNAL_STORAGE"
+
+[[package.metadata.android.uses_permission]]
+name = "android.permission.MANAGE_EXTERNAL_STORAGE"
+
+[[package.metadata.android.uses_permission]]
+name = "android.permission.WAKE_LOCK"
+
+[[package.metadata.android.uses_permission]]
+name = "android.permission.ACCESS_WIFI_STATE"
+
+[[package.metadata.android.uses_permission]]
+name = "android.permission.CHANGE_WIFI_STATE"
+
+[[package.metadata.android.uses_permission]]
+name = "android.permission.FOREGROUND_SERVICE"
+
+[[package.metadata.android.uses_permission]]
+name = "android.permission.POST_NOTIFICATIONS"
+
+[[package.metadata.android.uses_permission]]
+name = "android.permission.REQUEST_INSTALL_PACKAGES"
+# AnkiDroid Permission
+[[package.metadata.android.uses_permission]]
+name = "com.ichi2.anki.permission.READ_WRITE_DATABASE"
+
+[[package.metadata.android.extra_manifest_elements]]
+tag = "queries"
+children = [
+    { tag = "package", attributes = { "android:name" = "com.ichi2.anki" } }
+]
+
+[package.metadata.android.application]
+allow_native_heap_pointer_tagging = false
+request_legacy_external_storage = true
+has_code = true
+has_fragile_user_data = true
+label = "Manatan"
+icon = "@mipmap/ic_launcher"
+uses_cleartext_traffic = true
+
+[[package.metadata.android.application.activity]]
+name = ".WebviewActivity"
+label = "Manatan Reader"
+config_changes = "orientation|keyboardHidden|screenSize"
+exported = false
+theme = "@android:style/Theme.NoTitleBar"
+
+[[package.metadata.android.application.activity]]
+name = ".MangatanActivity"
+label = "Manatan"
+config_changes = "orientation|keyboardHidden|screenSize"
+exported = true
+launch_mode = "singleTask"
+
+[[package.metadata.android.application.activity.intent_filter]]
+actions = ["android.intent.action.VIEW"]
+categories = ["android.intent.category.DEFAULT", "android.intent.category.BROWSABLE"]
+data = [
+    { scheme = "mangatan", host = "launch" },
+    { scheme = "manatan", host = "launch" },
+]
+
+[[package.metadata.android.application.activity.intent_filter]]
+actions = ["android.intent.action.VIEW", "android.intent.action.MAIN"]
+categories = ["android.intent.category.LAUNCHER"]
+
+[[package.metadata.android.application.activity.meta_data]]
+name = "android.app.lib_name"
+value = "manatan_android" 
+
+[[package.metadata.android.application.service]]
+name = ".ManatanService"
+enabled = true
+exported = false
+foreground_service_type = "dataSync"
+
+[lib]
+name = "manatan_android"
+crate-type = ["cdylib"]
+
+[target.'cfg(target_os = "android")'.dependencies]
+
+android-activity = { version = "0.6", features = ["native-activity"] }
+axum.workspace = true
+# GUI
+eframe = { version = "0.29", default-features = false, features = ["wgpu", "android-native-activity" ] }
+egui = "0.29"
+futures = "0.3"
+jni = "0.21"
+lazy_static = "1.4"
+libc = "0.2"
+libloading = "0.8"
+manatan-ocr-server.workspace = true
+manatan-yomitan-server.workspace = true
+mime_guess = "2"
+openssl = { version = "0.10", features = ["vendored"] }
+ndk-context = "0.1"
+serde.workspace = true
+# Web Server & Networking
+# IMPORTANT: reqwest 0.12 uses http 1.0, matching axum 0.7
+reqwest = { version = "0.12", default-features = false, features = ["rustls-tls", "stream"] }
+serde_json = "1.0"
+tar = "0.4"
+tokio = { version = "1", features = ["full"] }
+
+# WebSockets
+tokio-tungstenite = { version = "0.21", features = ["rustls-tls-native-roots"] }
+tower-http = { version = "0.5", features = ["cors", "fs", "trace"] }
+
+# System
+tracing = "0.1"
+tracing-log = "0.2"
+tracing-subscriber = { version = "0.3", features = ["env-filter"] }
+winit = "0.30"
+flate2 = { version = "1.0", default-features = false, features = ["rust_backend"] }

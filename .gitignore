@@ -139,32 +139,32 @@ vite.config.js.timestamp-*
 vite.config.ts.timestamp-*
 
 */uploads
-bin/mangatan_android/assets/*
-bin/mangatan/resources/mangatan-webui*
-bin/mangatan/resources/natives.zip
-bin/mangatan/resources/Suwayomi-Server.jar
-bin/mangatan/resources/jre_bundle.zip
-bin/mangatan_ios/.build/*
-bin/mangatan_ios/Mangatan/assets/*
-bin/mangatan_ios/Mangatan/lib/*
-bin/mangatan_ios/frameworks/*
+bin/manatan_android/assets/*
+bin/manatan/resources/manatan-webui*
+bin/manatan/resources/natives.zip
+bin/manatan/resources/Suwayomi-Server.jar
+bin/manatan/resources/jre_bundle.zip
+bin/manatan_ios/.build/*
+bin/manatan_ios/Manatan/assets/*
+bin/manatan_ios/Manatan/lib/*
+bin/manatan_ios/frameworks/*
 ios_framework.zip
-!bin/mangatan_ios/Mangatan/lib/empty.txt
-bin/mangatan_ios/Mangatan/jar/*
-!bin/mangatan_ios/Mangatan/jar/empty.txt
-bin/mangatan_ios/Mangatan/webui/*
-!bin/mangatan_ios/Mangatan/webui/empty.txt
+!bin/manatan_ios/Manatan/lib/empty.txt
+bin/manatan_ios/Manatan/jar/*
+!bin/manatan_ios/Manatan/jar/empty.txt
+bin/manatan_ios/Manatan/webui/*
+!bin/manatan_ios/Manatan/webui/empty.txt
 jre_bundle
 temp_natives/*
 jogamp.7z
 data/*
-mangatan-linux-*.tar.gz
+manatan-linux-*.tar.gz
 
 # ==========================================
 # iOS / Xcode (Updated)
 # ==========================================
 # Ignore user-specific Xcode settings that cause merge conflicts
-bin/mangatan_ios/Mangatan.xcodeproj/xcuserdata/
+bin/manatan_ios/Manatan.xcodeproj/xcuserdata/
 *.xcuserstate
 *.xcuserdatad
 

@@ -33,7 +33,7 @@ pub async fn status_handler(State(state): State<AppState>) -> Json<serde_json::V
     let cache_size = state.cache_len();
     Json(serde_json::json!({
         "status": "running",
-        "backend": "Rust (mangatan-ocr-server)",
+        "backend": "Rust (manatan-ocr-server)",
         "requests_processed": state.requests_processed.load(Ordering::Relaxed),
         "items_in_cache": cache_size,
         "active_jobs": state.active_jobs.load(Ordering::Relaxed),

@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<component type="desktop-application">
+  <id>io.github.kolbyml.Manatan</id>
+  <metadata_license>CC0-1.0</metadata_license>
+  <project_license>MIT</project_license>
+  <name>Manatan</name>
+  <summary>Manga Reader with OCR and Instant Dictionary</summary>
+  <description>
+    <p>
+      Manatan is a manga reader designed for Japanese language learners. It features built-in
+      OCR and instant popup dictionary lookups.
+    </p>
+    <ul>
+      <li>Click any text bubble to OCR it instantly.</li>
+      <li>Click words in the overlay to see readings and meanings.</li>
+      <li>Supports local files (ZIP, EPUB, CBZ, RAR).</li>
+      <li>Connects to self-hosted servers like Komga.</li>
+    </ul>
+  </description>
+  <launchable type="desktop-id">io.github.kolbyml.Manatan.desktop</launchable>
+  <content_rating type="oars-1.1" />
+  <releases>
+    <release version="0.1.0" date="2025-01-01" />
+  </releases>
+</component>

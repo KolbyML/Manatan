@@ -1,6 +1,6 @@
 # Building on Windows (via WSL2)
 
-These instructions detail how to set up a development environment and build the **Linux Desktop** version of Mangatan using the Windows Subsystem for Linux (WSL2).
+These instructions detail how to set up a development environment and build the **Linux Desktop** version of Manatan using the Windows Subsystem for Linux (WSL2).
 
 ## Prerequisites
 
@@ -49,13 +49,13 @@ npm install --global yarn
 
 ```
 
-## 3. Build Mangatan
+## 3. Build Manatan
 
 Clone the repository (if you haven't already) and run the automated build commands.
 
 ```bash
-git clone --recursive https://github.com/kolbyml/mangatan.git
-cd mangatan
+git clone --recursive https://github.com/kolbyml/manatan.git
+cd manatan
 
 ```
 
