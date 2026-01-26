@@ -13,15 +13,15 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 
 # Create non-root user
 RUN userdel -r ubuntu || true && \
-    useradd -m -u 1000 -s /bin/bash mangatan
+    useradd -m -u 1000 -s /bin/bash manatan
 
 WORKDIR /app
 
 ARG TARGETARCH
 
 # Copy artifacts
-COPY mangatan-linux-amd64.tar.gz /tmp/amd64.tar.gz
-COPY mangatan-linux-arm64.tar.gz /tmp/arm64.tar.gz
+COPY manatan-linux-amd64.tar.gz /tmp/amd64.tar.gz
+COPY manatan-linux-arm64.tar.gz /tmp/arm64.tar.gz
 
 # Extract based on architecture
 # REMOVED --strip-components=1 to handle flat tarball structure
@@ -35,18 +35,18 @@ RUN if [ "$TARGETARCH" = "amd64" ]; then \
     && rm /tmp/*.tar.gz
 
 # Set permissions
-RUN chown -R mangatan:mangatan /app && \
-    chmod +x /app/mangatan
+RUN chown -R manatan:manatan /app && \
+    chmod +x /app/manatan
 
-USER mangatan
+USER manatan
 
 EXPOSE 4568
 
 # Default to headless mode
-ENV MANGATAN_HEADLESS=true
+ENV MANATAN_HEADLESS=true
 
 # Ensure UTF-8 filesystem encoding for Java
 ENV LANG=C.UTF-8
 ENV LC_ALL=C.UTF-8
 
-ENTRYPOINT ["/app/mangatan"]
+ENTRYPOINT ["/app/manatan"]

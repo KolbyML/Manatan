@@ -1,29 +1,29 @@
 [workspace]
-default-members = ["bin/mangatan"]
+default-members = ["bin/manatan"]
 members = [
-    "bin/mangatan",
-    "bin/mangatan_android",
-    "bin/mangatan_ios/backend",
+    "bin/manatan",
+    "bin/manatan_android",
+    "bin/manatan_ios/backend",
     "crates/ocr-server", 
     "crates/yomitan-server",
 ]
-exclude = ["bin/mangatan"]
+exclude = ["bin/manatan"]
 resolver = "2"
 
 [workspace.package]
-authors = ["https://github.com/KolbyML/Mangatan/graphs/contributors"]
+authors = ["https://github.com/KolbyML/Manatan/graphs/contributors"]
 edition = "2024"
 keywords = [
     "manga",
     "suwayomi",
-    "mangatan",
+    "manatan",
     "ocr",
     "language learning",
     "japanese",
 ]
 license = "MIT"
 readme = "README.md"
-repository = "https://github.com/KolbyML/Mangatan"
+repository = "https://github.com/KolbyML/Manatan"
 rust-version = "1.88.0"
 version = "0.1.0"
 
@@ -72,8 +72,8 @@ tracing-subscriber = { version = "0.3.20", features = ["env-filter"] }
 zip = "6.0"
 
 # Internal Dependencies
-mangatan-ocr-server = { path = "crates/ocr-server" }
-mangatan-yomitan-server = { path = "crates/yomitan-server" }
+manatan-ocr-server = { path = "crates/ocr-server" }
+manatan-yomitan-server = { path = "crates/yomitan-server" }
 
 [profile.test]
 inherits = "release"

@@ -56,7 +56,7 @@ jobs:
       - name: Download Linux AMD64 Artifacts
         uses: actions/download-artifact@v4
         with:
-          name: mangatan-linux-amd64
+          name: manatan-linux-amd64
           path: download_amd64
           run-id: ${{ inputs.run_id || github.event.workflow_run.id }}
           github-token: ${{ secrets.GITHUB_TOKEN }}
@@ -64,7 +64,7 @@ jobs:
       - name: Download Linux ARM64 Artifacts
         uses: actions/download-artifact@v4
         with:
-          name: mangatan-linux-arm64
+          name: manatan-linux-arm64
           path: download_arm64
           run-id: ${{ inputs.run_id || github.event.workflow_run.id }}
           github-token: ${{ secrets.GITHUB_TOKEN }}
@@ -73,8 +73,8 @@ jobs:
         run: |
           # Rename files to exactly what the Dockerfile expects
           # Note: We look in download_amd64 now, not download_x64
-          find download_amd64 -name "*.tar.gz" -exec cp {} mangatan-linux-amd64.tar.gz \;
-          find download_arm64 -name "*.tar.gz" -exec cp {} mangatan-linux-arm64.tar.gz \;
+          find download_amd64 -name "*.tar.gz" -exec cp {} manatan-linux-amd64.tar.gz \;
+          find download_arm64 -name "*.tar.gz" -exec cp {} manatan-linux-arm64.tar.gz \;
           
           ls -lh *.tar.gz
 

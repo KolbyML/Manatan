@@ -105,19 +105,19 @@ cargo install --git https://github.com/kolbyml/cargo-apk2
 
 1. **Build the App:**
 ```bash
-git clone --recursive https://github.com/kolbyml/mangatan.git
-cd mangatan
+git clone --recursive https://github.com/kolbyml/manatan.git
+cd manatan
 make android_webui
 make download_android_jar
 make download_android_jre
-cd bin/mangatan_android && cargo apk2 run
+ cd bin/manatan_android && cargo apk2 run
 
 ```
 2. **Run the App:**
 * Enable **Developer Options** and **USB Debugging** on your Android phone.
 * Download and extract [SDK Platform Tools](https://dl.google.com/android/repository/platform-tools-latest-windows.zip)
 * Open CMD in Directory
-* Install apk with `adb install -r "\\wsl.localhost\Ubuntu\home\user\mangatan\target\debug\apk\mangatan_android.apk"`
+* Install apk with `adb install -r "\\wsl.localhost\Ubuntu\home\user\manatan\target\debug\apk\mangatan_android.apk"`
 
 **Troubleshooting Notes:**
 

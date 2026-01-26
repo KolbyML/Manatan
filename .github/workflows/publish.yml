@@ -118,29 +118,29 @@ jobs:
       - name: Set up NodeJs
         uses: actions/setup-node@v4
         with:
-          node-version-file: 'Mangatan-WebUI/package.json'
+          node-version-file: 'Manatan-WebUI/package.json'
           cache: 'yarn'
-          cache-dependency-path: 'Mangatan-WebUI/yarn.lock'
+          cache-dependency-path: 'Manatan-WebUI/yarn.lock'
       - name: Build WebUI Assets
         run: |
-          cd Mangatan-WebUI
+          cd Manatan-WebUI
           yarn install --frozen-lockfile
           yarn build
-          tar -czf ../mangatan-webui-dist.tar.gz build/
+          tar -czf ../manatan-webui-dist.tar.gz build/
       - name: Upload WebUI Artifact
         uses: actions/upload-artifact@v4
         with:
           name: webui-assets
-          path: Mangatan-WebUI/build 
+          path: Manatan-WebUI/build 
       - name: Upload WebUI Dist (Tarball)
         uses: actions/upload-artifact@v4
         with:
           name: webui-dist
-          path: mangatan-webui-dist.tar.gz          
+          path: manatan-webui-dist.tar.gz          
 
-  # --- JOB 4: Build Mangatan Launcher ---
-  build_mangatan:
-    name: Build Mangatan Desktop (${{ matrix.name }})
+  # --- JOB 4: Build Manatan Launcher ---
+  build_manatan:
+    name: Build Manatan Desktop (${{ matrix.name }})
     needs: [jlink, build_webui, prepare_version]
     runs-on: ${{ matrix.os }}
     strategy:
@@ -206,7 +206,7 @@ jobs:
 
       - name: Create Resources Directory
         shell: bash
-        run: mkdir -p bin/mangatan/resources
+        run: mkdir -p bin/manatan/resources
 
       - name: Prepare JogAmp Natives
         shell: bash
@@ -216,9 +216,9 @@ jobs:
           mkdir natives_temp && mv jogamp-all-platforms/lib/${{ matrix.jogamp_target }} natives_temp/
           cd natives_temp
           if [ "${{ runner.os }}" == "Windows" ]; then
-            7z a -tzip ../bin/mangatan/resources/natives.zip ${{ matrix.jogamp_target }}
+            7z a -tzip ../bin/manatan/resources/natives.zip ${{ matrix.jogamp_target }}
           else
-            zip -r ../bin/mangatan/resources/natives.zip ${{ matrix.jogamp_target }}
+            zip -r ../bin/manatan/resources/natives.zip ${{ matrix.jogamp_target }}
           fi
 
       - name: Download JRE
@@ -232,9 +232,9 @@ jobs:
         run: |
           cd temp_jre
           if [ "${{ runner.os }}" == "Windows" ]; then
-            7z a -tzip ../bin/mangatan/resources/jre_bundle.zip *
+            7z a -tzip ../bin/manatan/resources/jre_bundle.zip *
           else
-            zip -r ../bin/mangatan/resources/jre_bundle.zip .
+            zip -r ../bin/manatan/resources/jre_bundle.zip .
           fi
 
       - name: Download Suwayomi JAR
@@ -245,14 +245,14 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: webui-assets
-          path: bin/mangatan/resources/mangatan-webui
+          path: bin/manatan/resources/manatan-webui
 
       - name: Build Binary
         shell: bash
         env:
           CARGO_TARGET_DIR: ${{ github.workspace }}/target
         run: |
-          cd bin/mangatan
+          cd bin/manatan
           cargo build --release --target ${{ matrix.target }} --features embed-jre
 
       - name: Package Windows
@@ -260,16 +260,16 @@ jobs:
         shell: bash
         run: |
           mkdir output
-          cp "${{ github.workspace }}/target/${{ matrix.target }}/release/mangatan.exe" output/
-          cd output && 7z a -tzip ../mangatan-windows-x64.zip * && cd ..
-          mkdir final_artifact && mv mangatan-windows-x64.zip final_artifact/
+          cp "${{ github.workspace }}/target/${{ matrix.target }}/release/manatan.exe" output/
+          cd output && 7z a -tzip ../manatan-windows-x64.zip * && cd ..
+          mkdir final_artifact && mv manatan-windows-x64.zip final_artifact/
 
       - name: Package Linux
         if: runner.os == 'Linux'
         shell: bash
         run: |
-          BINARY_PATH="${{ github.workspace }}/target/${{ matrix.target }}/release/mangatan"
-          ICON_PATH="bin/mangatan/resources/faviconlogo.png"
+          BINARY_PATH="${{ github.workspace }}/target/${{ matrix.target }}/release/manatan"
+          ICON_PATH="bin/manatan/resources/faviconlogo.png"
           CLEAN_VERSION="${{ needs.prepare_version.outputs.clean_version }}"
           
           DEB_ARCH="amd64"
@@ -277,70 +277,70 @@ jobs:
             DEB_ARCH="arm64"
           fi
           
-          mkdir -p output deb_pkg/usr/lib/mangatan deb_pkg/usr/bin deb_pkg/usr/share/applications deb_pkg/usr/share/icons/hicolor/512x512/apps deb_pkg/DEBIAN
+          mkdir -p output deb_pkg/usr/lib/manatan deb_pkg/usr/bin deb_pkg/usr/share/applications deb_pkg/usr/share/icons/hicolor/512x512/apps deb_pkg/DEBIAN
           
-          cp "$BINARY_PATH" deb_pkg/usr/lib/mangatan/mangatan-server
+          cp "$BINARY_PATH" deb_pkg/usr/lib/manatan/manatan-server
           
-          cat > deb_pkg/usr/bin/mangatan <<'EOF'
+          cat > deb_pkg/usr/bin/manatan <<'EOF'
           #!/bin/bash
           set -e
-          SYSTEM_BIN="/usr/lib/mangatan/mangatan-server"
-          USER_DIR="$HOME/.local/share/mangatan/bin"
-          USER_BIN="$USER_DIR/mangatan"
+          SYSTEM_BIN="/usr/lib/manatan/manatan-server"
+          USER_DIR="$HOME/.local/share/manatan/bin"
+          USER_BIN="$USER_DIR/manatan"
           mkdir -p "$USER_DIR"
           if [ -f "$SYSTEM_BIN" ]; then cp -u "$SYSTEM_BIN" "$USER_BIN"; fi
           chmod +x "$USER_BIN"
           exec "$USER_BIN" "$@"
           EOF
-          chmod +x deb_pkg/usr/bin/mangatan
+          chmod +x deb_pkg/usr/bin/manatan
           
-          cp "$ICON_PATH" deb_pkg/usr/share/icons/hicolor/512x512/apps/mangatan.png
+          cp "$ICON_PATH" deb_pkg/usr/share/icons/hicolor/512x512/apps/manatan.png
           
           cat > deb_pkg/DEBIAN/control <<EOF
-          Package: mangatan
+          Package: manatan
           Version: $CLEAN_VERSION
           Section: utils
           Priority: optional
           Architecture: $DEB_ARCH
-          Maintainer: Mangatan Team
-          Description: Mangatan Server
+          Maintainer: Manatan Team
+          Description: Manatan Server
            A robust manga server application.
           EOF
           
-          cat > deb_pkg/usr/share/applications/mangatan.desktop <<EOF
+          cat > deb_pkg/usr/share/applications/manatan.desktop <<EOF
           [Desktop Entry]
-          Name=Mangatan
-          Exec=/usr/bin/mangatan
-          Icon=mangatan
+          Name=Manatan
+          Exec=/usr/bin/manatan
+          Icon=manatan
           Type=Application
           Categories=Utility;
           Terminal=false
           EOF
           
-          dpkg-deb --build deb_pkg output/mangatan_${CLEAN_VERSION}_${DEB_ARCH}.deb
+          dpkg-deb --build deb_pkg output/manatan_${CLEAN_VERSION}_${DEB_ARCH}.deb
 
           mkdir -p tar_staging
-          cp "$BINARY_PATH" tar_staging/mangatan
-          chmod +x tar_staging/mangatan
-          cd tar_staging && tar -czvf ../output/mangatan-${{ matrix.arch_name }}.tar.gz mangatan && cd ..
+          cp "$BINARY_PATH" tar_staging/manatan
+          chmod +x tar_staging/manatan
+          cd tar_staging && tar -czvf ../output/manatan-${{ matrix.arch_name }}.tar.gz manatan && cd ..
 
       - name: Package macOS
         if: runner.os == 'macOS'
         shell: bash
         run: |
           mkdir output
-          cp "${{ github.workspace }}/target/${{ matrix.target }}/release/mangatan" output/
-          cd output && zip mangatan-macos.zip mangatan
+          cp "${{ github.workspace }}/target/${{ matrix.target }}/release/manatan" output/
+          cd output && zip manatan-macos.zip manatan
 
       - name: Upload Artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: mangatan-${{ matrix.arch_name }}
+          name: manatan-${{ matrix.arch_name }}
           path: |
-            final_artifact/mangatan-windows-x64.zip
-            output/mangatan-*.deb
-            output/mangatan-*.tar.gz
-            output/mangatan-macos.zip
+            final_artifact/manatan-windows-x64.zip
+            output/manatan-*.deb
+            output/manatan-*.tar.gz
+            output/manatan-macos.zip
 
   # --- JOB 5: Build Android APK ---
   build_android:
@@ -358,7 +358,7 @@ jobs:
         run: |
           CLEAN_VERSION="${{ needs.prepare_version.outputs.clean_version }}"
           sed "s/^version = \"0.1.0\"/version = \"$CLEAN_VERSION\"/" Cargo.toml > Cargo.toml.tmp && mv Cargo.toml.tmp Cargo.toml
-          sed "s/^version.workspace = true/version = \"$CLEAN_VERSION\"/" bin/mangatan_android/Cargo.toml > bin/mangatan_android/Cargo.toml.tmp && mv bin/mangatan_android/Cargo.toml.tmp bin/mangatan_android/Cargo.toml
+          sed "s/^version.workspace = true/version = \"$CLEAN_VERSION\"/" bin/manatan_android/Cargo.toml > bin/manatan_android/Cargo.toml.tmp && mv bin/manatan_android/Cargo.toml.tmp bin/manatan_android/Cargo.toml
 
       - name: Set up JDK 17
         uses: actions/setup-java@v4
@@ -386,18 +386,18 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: webui-assets
-          path: Mangatan-WebUI/build
+          path: Manatan-WebUI/build
 
       - name: Prepare Assets
         run: |
-          mkdir -p bin/mangatan_android/assets
-          tar -cf bin/mangatan_android/assets/mangatan-webui.tar -C Mangatan-WebUI/build .
+          mkdir -p bin/manatan_android/assets
+          tar -cf bin/manatan_android/assets/manatan-webui.tar -C Manatan-WebUI/build .
           make download_android_jar
           make download_android_jre
           make android_icon
 
       - name: Configure Dummy Keystore
-        working-directory: bin/mangatan_android
+        working-directory: bin/manatan_android
         run: |
           keytool -genkey -v -keystore dummy.keystore -alias dummy -keyalg RSA -keysize 2048 -validity 10000 -storepass password -keypass password -dname "CN=Dummy,O=Dummy,C=US"
           cat >> Cargo.toml <<EOF
@@ -409,7 +409,7 @@ jobs:
           EOF
 
       - name: Build APKs
-        working-directory: bin/mangatan_android
+        working-directory: bin/manatan_android
         run: |
           NDK_ROOT=${ANDROID_NDK_HOME}
           if [ -z "$NDK_ROOT" ]; then NDK_ROOT=$(ls -d /usr/local/lib/android/sdk/ndk/* | sort -V | tail -n1); fi
@@ -428,19 +428,19 @@ jobs:
 
           echo "🏗️ Building Browser Version..."
           cargo apk2 build --release
-          cp $(find ../../target -name "*.apk" | grep "release/apk" | head -n 1) ../../signing_stage/mangatan-browser-unsigned.apk
+          cp $(find ../../target -name "*.apk" | grep "release/apk" | head -n 1) ../../signing_stage/manatan-browser-unsigned.apk
           rm $(find ../../target -name "*.apk" | grep "release/apk" | head -n 1)
 
           echo "🏗️ Building Native Webview Version..."
           cargo apk2 build --release --features native_webview
-          cp $(find ../../target -name "*.apk" | grep "release/apk" | head -n 1) ../../signing_stage/mangatan-native-webview-unsigned.apk
+          cp $(find ../../target -name "*.apk" | grep "release/apk" | head -n 1) ../../signing_stage/manatan-native-webview-unsigned.apk
 
       - name: Sign APKs
         env:
           SIGNING_KEY_BASE64: ${{ secrets.ANDROID_SIGNING_KEY }}
           KEY_STORE_PASSWORD: ${{ secrets.ANDROID_KEY_STORE_PASSWORD }}
           KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
-          ALIAS: mangatan
+          ALIAS: manatan
         run: |
           echo "$SIGNING_KEY_BASE64" | base64 -d --ignore-garbage > release.keystore
           BUILD_TOOLS_PATH="$ANDROID_HOME/build-tools/30.0.3"
@@ -455,7 +455,7 @@ jobs:
       - name: Upload Android Artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: mangatan-android
+          name: manatan-android
           path: signed_apks/*.apk
 
   # --- JOB 6: Build iOS IPA & Upload ---
@@ -485,7 +485,7 @@ jobs:
         with:
           node-version: '22.12.0'
           cache: 'yarn'
-          cache-dependency-path: 'Mangatan-WebUI/yarn.lock'
+          cache-dependency-path: 'Manatan-WebUI/yarn.lock'
 
       # --- NEW: Install Signing Certificates & Profile ---
       - name: Install Apple Certificates and Profiles
@@ -522,13 +522,13 @@ jobs:
           security list-keychains -s $KEYCHAIN_PATH
 
       - name: Patch Xcode Project
-        run: find bin/mangatan_ios -name "project.pbxproj" -exec sed -i '' 's/unset SDKROOT/# unset SDKROOT/g' {} +
+        run: find bin/manatan_ios -name "project.pbxproj" -exec sed -i '' 's/unset SDKROOT/# unset SDKROOT/g' {} +
 
       - name: Update Xcode Marketing Version
         run: |
           CLEAN_VERSION="${{ needs.prepare_version.outputs.clean_version }}"
           BUILD_NUMBER=$(date +%s)
-          PBXPROJ="bin/mangatan_ios/Mangatan.xcodeproj/project.pbxproj"
+          PBXPROJ="bin/manatan_ios/Manatan.xcodeproj/project.pbxproj"
           
           echo "Setting Version to: $CLEAN_VERSION"
           echo "Setting Build Number to: $BUILD_NUMBER"
@@ -547,7 +547,7 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: webui-assets
-          path: bin/mangatan_ios/Mangatan/webui
+          path: bin/manatan_ios/Manatan/webui
 
       - name: Disable Xcode WebUI Build
         run: |
@@ -562,16 +562,16 @@ jobs:
       - name: Pre-build Rust Backend
         run: |
           export SDKROOT=$(xcrun --sdk iphoneos --show-sdk-path)
-          cd bin/mangatan_ios/backend
+          cd bin/manatan_ios/backend
           cargo build --release --target aarch64-apple-ios
 
       # --- CHANGED: Build Archive (Signed) ---
       - name: Archive App
         run: |
-          cd bin/mangatan_ios
-          xcodebuild -scheme Mangatan \
+          cd bin/manatan_ios
+          xcodebuild -scheme Manatan \
             -destination "generic/platform=iOS" \
-            -archivePath Mangatan.xcarchive \
+            -archivePath Manatan.xcarchive \
             archive \
             CODE_SIGN_STYLE="Manual" \
             CODE_SIGN_IDENTITY="Apple Distribution" \
@@ -581,7 +581,7 @@ jobs:
       # --- NEW: Export IPA (Standard Format) ---
       - name: Export Signed IPA
         run: |
-          cd bin/mangatan_ios
+          cd bin/manatan_ios
           
           # Create ExportOptions.plist for App Store
           cat > ExportOptions.plist <<EOF
@@ -599,15 +599,15 @@ jobs:
               <string>manual</string>
               <key>provisioningProfiles</key>
               <dict>
-                  <key>app.mangatan.mangatan</key>
-                  <string>Mangatan App Store CI</string>
+                  <key>app.manatan.manatan</key>
+                  <string>Manatan App Store CI</string>
               </dict>
           </dict>
           </plist>
           EOF
           
           xcodebuild -exportArchive \
-            -archivePath Mangatan.xcarchive \
+            -archivePath Manatan.xcarchive \
             -exportOptionsPlist ExportOptions.plist \
             -exportPath output \
             -allowProvisioningUpdates
@@ -626,19 +626,19 @@ jobs:
           echo "Uploading IPA..."
           xcrun altool --upload-app \
             --type ios \
-            --file bin/mangatan_ios/output/Mangatan.ipa \
+            --file bin/manatan_ios/output/Manatan.ipa \
             --apiKey "$API_KEY_ID" \
             --apiIssuer "$ISSUER_ID"
 
       - name: Upload iOS Artifact
         uses: actions/upload-artifact@v4
         with:
-          name: mangatan-ios
-          path: bin/mangatan_ios/output/Mangatan.ipa
+          name: manatan-ios
+          path: bin/manatan_ios/output/Manatan.ipa
 
   # --- JOB 7: Release ---
   release:
-    needs: [build_mangatan, build_android, build_ios, prepare_version]
+    needs: [build_manatan, build_android, build_ios, prepare_version]
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -656,20 +656,20 @@ jobs:
           VERSION=${{ needs.prepare_version.outputs.version_tag }}
           
           # Flatten the download-artifact structure
-          cp release/mangatan-windows-x64/final_artifact/mangatan-windows-x64.zip final_release/Mangatan-${VERSION}-Windows-x64.zip
-          cp release/mangatan-linux-amd64/output/*.deb final_release/Mangatan-${VERSION}-Linux-amd64.deb || true
-          cp release/mangatan-linux-amd64/output/*.tar.gz final_release/Mangatan-${VERSION}-Linux-amd64.tar.gz || true
-          cp release/mangatan-linux-arm64/output/*.deb final_release/Mangatan-${VERSION}-Linux-arm64.deb || true
-          cp release/mangatan-linux-arm64/output/*.tar.gz final_release/Mangatan-${VERSION}-Linux-arm64.tar.gz || true
-          cp release/mangatan-macOS-x64/output/mangatan-macos.zip final_release/Mangatan-${VERSION}-macOS-Intel.zip
-          cp release/mangatan-macOS-arm64/output/mangatan-macos.zip final_release/Mangatan-${VERSION}-macOS-Silicon.zip
+          cp release/manatan-windows-x64/final_artifact/manatan-windows-x64.zip final_release/Manatan-${VERSION}-Windows-x64.zip
+          cp release/manatan-linux-amd64/output/*.deb final_release/Manatan-${VERSION}-Linux-amd64.deb || true
+          cp release/manatan-linux-amd64/output/*.tar.gz final_release/Manatan-${VERSION}-Linux-amd64.tar.gz || true
+          cp release/manatan-linux-arm64/output/*.deb final_release/Manatan-${VERSION}-Linux-arm64.deb || true
+          cp release/manatan-linux-arm64/output/*.tar.gz final_release/Manatan-${VERSION}-Linux-arm64.tar.gz || true
+          cp release/manatan-macOS-x64/output/manatan-macos.zip final_release/Manatan-${VERSION}-macOS-Intel.zip
+          cp release/manatan-macOS-arm64/output/manatan-macos.zip final_release/Manatan-${VERSION}-macOS-Silicon.zip
           
-          cp release/mangatan-android/mangatan-browser.apk final_release/Mangatan-${VERSION}-Android-Browser-Advanced-Users.apk
-          cp release/mangatan-android/mangatan-native-webview.apk final_release/Mangatan-${VERSION}-Android-NativeWebview-Recommended.apk
-          cp release/mangatan-ios/Mangatan.ipa final_release/Mangatan-${VERSION}-iOS.ipa
+          cp release/manatan-android/manatan-browser.apk final_release/Manatan-${VERSION}-Android-Browser-Advanced-Users.apk
+          cp release/manatan-android/manatan-native-webview.apk final_release/Manatan-${VERSION}-Android-NativeWebview-Recommended.apk
+          cp release/manatan-ios/Manatan.ipa final_release/Manatan-${VERSION}-iOS.ipa
           
           # WebUI Tarball
-          cp release/webui-dist/mangatan-webui-dist.tar.gz final_release/mangatan-webui-dist.tar.gz
+          cp release/webui-dist/manatan-webui-dist.tar.gz final_release/manatan-webui-dist.tar.gz
 
       - name: Generate Checksums
         run: cd final_release && sha256sum * > Checksums.sha256

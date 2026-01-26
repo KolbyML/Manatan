@@ -1,6 +1,6 @@
 use std::{fs, path::PathBuf};
 
-use mangatan_ocr_server::{
+use manatan_ocr_server::{
     logic::{self, RawChunk},
     merge::{self, MergeConfig},
 };

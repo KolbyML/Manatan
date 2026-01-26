@@ -1,6 +1,6 @@
 # Building on Linux
 
-These instructions detail how to set up a development environment and build the **Linux Desktop** version of Mangatan.
+These instructions detail how to set up a development environment and build the **Linux Desktop** version of Manatan.
 
 ## Prerequisites
 
@@ -66,13 +66,13 @@ npm install --global yarn
 
 ```
 
-## 3. Build Mangatan
+## 3. Build Manatan
 
 Clone the repository and enter the directory:
 
 ```bash
-git clone --recursive https://github.com/kolbyml/mangatan.git
-cd mangatan
+git clone --recursive https://github.com/kolbyml/manatan.git
+cd manatan
 
 ```
 
@@ -116,5 +116,5 @@ The final executable will be located at: `target/release/mangatan`
 ## Troubleshooting
 
 * **"Pkg-config" Errors:** If the build fails saying it cannot find `gtk+-3.0` or `glib-2.0`, ensure you have installed the `-dev` (Debian/Ubuntu) or `-devel` (Fedora) packages listed in Step 1.
-* **Wayland Issues:** Mangatan uses X11 libraries (libxdo). It generally runs fine on Wayland via XWayland, but if you encounter windowing issues, try running with `GDK_BACKEND=x11`.
+* **Wayland Issues:** Manatan uses X11 libraries (libxdo). It generally runs fine on Wayland via XWayland, but if you encounter windowing issues, try running with `GDK_BACKEND=x11`.
 * **AppIndicator:** If the tray icon is missing, ensure `libappindicator3` is installed. GNOME users may need the "AppIndicator Support" extension.

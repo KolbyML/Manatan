@@ -1,0 +1,10 @@
+[Desktop Entry]
+Name=Manatan
+Comment=Manga Reader with OCR and Instant Dictionary
+Exec=manatan
+Icon=io.github.kolbyml.Manatan
+Terminal=false
+Type=Application
+Categories=Utility;Education;
+Keywords=Manga;Japanese;OCR;Dictionary;
+StartupNotify=true

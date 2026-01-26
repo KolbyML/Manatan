@@ -1,6 +1,6 @@
 # Building on macOS
 
-These instructions detail how to set up a development environment and build the **macOS Desktop** version of Mangatan.
+These instructions detail how to set up a development environment and build the **macOS Desktop** version of Manatan.
 
 ## Prerequisites
 
@@ -61,13 +61,13 @@ npm install --global yarn
 
 ```
 
-## 3. Build Mangatan
+## 3. Build Manatan
 
 Clone the repository and enter the directory:
 
 ```bash
-git clone --recursive https://github.com/kolbyml/mangatan.git
-cd mangatan
+git clone --recursive https://github.com/kolbyml/manatan.git
+cd manatan
 
 ```
 

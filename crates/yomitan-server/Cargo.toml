@@ -1,5 +1,5 @@
 [package]
-name = "mangatan-yomitan-server"
+name = "manatan-yomitan-server"
 authors.workspace = true
 edition.workspace = true
 keywords.workspace = true

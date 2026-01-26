@@ -1,20 +1,20 @@
 services:
   init-permissions:
     image: busybox
-    command: sh -c "mkdir -p /data/Tachidesk /data/mangatan && chown -R 1000:1000 /data"
+    command: sh -c "mkdir -p /data/Tachidesk /data/manatan && chown -R 1000:1000 /data"
     user: root
     volumes:
       - ./data:/data
 
-  mangatan:
-    image: ghcr.io/kolbyml/mangatan:latest
+  manatan:
+    image: ghcr.io/kolbyml/manatan:latest
     # user: 1000:1000
     environment:
       - TZ=Etc/UTC # Use TZ database name from https://en.wikipedia.org/wiki/List_of_tz_database_time_zones
       # Comment these out if you do not use the flaresolverr container at the bottom of this file
       - FLARESOLVERR_ENABLED=true
       - FLARESOLVERR_URL=http://flaresolverr:8191
-      - MANGATAN_HEADLESS=true
+      - MANATAN_HEADLESS=true
 #  #################################################################################################
 #
 #    !!! IMPORTANT !!!
@@ -34,8 +34,8 @@ services:
 #      - AUTH_PASSWORD=hello123
 #      - EXTENSION_REPOS=["http://github.com/orginazation-name/repo-name", "http://github.com/orginazation-name-2/repo-name-2"]
     volumes:
-      - ./data/Tachidesk:/home/mangatan/.local/share/Tachidesk
-      - ./data/mangatan:/home/mangatan/.local/share/mangatan
+      - ./data/Tachidesk:/home/manatan/.local/share/Tachidesk
+      - ./data/manatan:/home/manatan/.local/share/manatan
     ports:
       - "4568:4568"
     restart: unless-stopped

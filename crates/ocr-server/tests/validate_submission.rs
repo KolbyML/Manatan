@@ -1,6 +1,6 @@
 use std::{collections::HashMap, fs, path::Path};
 
-use mangatan_ocr_server::logic::{self, RawChunk};
+use manatan_ocr_server::logic::{self, RawChunk};
 use serde_json::Value;
 use walkdir::WalkDir;
 

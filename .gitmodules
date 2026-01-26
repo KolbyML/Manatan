@@ -1,3 +1,4 @@
-[submodule "Mangatan-WebUI"]
-    path = Mangatan-WebUI
-    url = https://github.com/KolbyML/Mangatan-WebUI.git
+
+[submodule "Manatan-WebUI"]
+	path = Manatan-WebUI
+	url = https://github.com/KolbyML/Manatan-WebUI.git
