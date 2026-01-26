@@ -4,23 +4,25 @@
 [![Github All Releases](https://img.shields.io/github/downloads/kolbyml/manatan/total.svg)](https://github.com/kolbyml/manatan/releases)
 [![GitHub Sponsors](https://img.shields.io/github/sponsors/kolbyml)](https://github.com/sponsors/kolbyml)
 [![Static Badge](https://img.shields.io/badge/donate-ko--fi-ed6760?label=donate)](https://ko-fi.com/kolbyml)
+[![Static Badge](https://img.shields.io/badge/donate-patreon-f96854?label=donate)](https://www.patreon.com/cw/Manatan)
 [![GitHub License](https://img.shields.io/github/license/kolbyml/manatan)](https://github.com/kolbyml/manatan?tab=MIT-1-ov-file)
 [![Discord](https://img.shields.io/discord/1448140648950530182?color=%237785cc)](https://discord.gg/tDAtpPN8KK)
 
 </div>
 
-**The easiest way to read manga with instant OCR lookup.** *No scripts, no complex setup—just download and read.*
+**The easiest way to watch anime or read manga with instant OCR/subtitle lookup.** *No scripts, no complex setup—just download and go.*
 
 Discord Server: https://discord.gg/tDAtpPN8KK
 
 ## ✨ Why Manatan?
 
-Traditional setups for reading manga with Japanese lookup (OCR) can be complicated, often requiring users to install Python scripts, browser extensions (like userscripts), and configure local servers manually.
+Traditional setups for watching anime or reading manga with Japanese lookup can be complicated, often requiring users to install Python scripts, browser extensions (like userscripts), and configure local servers manually.
 
 **Manatan simplifies everything into a single app:**
 * **Zero Configuration:** No need to install "Monkey scripts," configure Optical Character Recognition (OCR) tools, or mess with command lines.
 * **Universal Language Support:** Manatan supports every language.
 * **Built-in OCR:** Just hover over text to get selectable text for dictionary lookups.
+* **Anime Support:** Subtitle parsing with popup dictionary lookups while you watch.
 * **Cross-Platform:** Run the exact same interface on your PC, Mac, Android, or iOS device.
 * **Browser Interface:** Uses the familiar [Suwayomi](https://github.com/Suwayomi/Suwayomi-Server) interface in your favorite web browser.
 
@@ -56,9 +58,9 @@ https://github.com/user-attachments/assets/38c63c86-289d-45a4-ba85-e29f1b812ceb
 6.  **Installing Extensions:**
     * Go to **"Browse"** on the left sidebar, then the **"Extensions"** tab.
     * Click **"Install"** on your desired source.
-7.  **Start Reading:**
-    * Go to the **"Sources"** tab, click your installed source, and find a manga.
-    * **OCR is automatically active!** You can use tools like Yomitan immediately.
+7.  **Start Watching or Reading:**
+    * Go to the **"Sources"** tab, click your installed source, and find an anime or manga.
+    * **OCR and subtitle lookup are automatically active!** You can use tools like Yomitan immediately.
 * For Yomitan Users:
    * To ensure sentences are parsed correctly for Anki cards, go to Text parsing in Yomitan's settings (enable Advanced), and set Sentence Termination to "Custom, No New Lines". This prevents OCR line breaks from being treated as sentence endings.
    * Disabling ellipsis `…` as a sentence terminator is also recommended.

@@ -1,14 +1,17 @@
-use crate::{PREBAKED_DICT, ServerState, import};
+use crate::{ServerState, import};
 use axum::{
     Json,
     extract::{Multipart, Query, State},
     http::StatusCode,
 };
+use reqwest::Client;
 use serde::{Deserialize, Serialize};
 use serde_json::{Value, Value as JsonValue, json};
 use std::collections::HashMap;
 use tracing::{error, info};
 use wordbase_api::{DictionaryId, Record, Term, dict::yomitan::GlossaryTag};
+
+use crate::state::AppState;
 
 #[cfg(target_os = "ios")]
 unsafe extern "C" {
@@ -66,6 +69,149 @@ pub enum DictionaryAction {
     Toggle { id: i64, enabled: bool },
     Delete { id: i64 },
     Reorder { order: Vec<i64> },
+}
+
+#[derive(Clone, Copy, Debug, Deserialize, Serialize)]
+#[serde(rename_all = "lowercase")]
+pub enum DictionaryLanguage {
+    Japanese,
+    English,
+    Chinese,
+    Korean,
+}
+
+impl DictionaryLanguage {
+    fn as_str(&self) -> &'static str {
+        match self {
+            DictionaryLanguage::Japanese => "japanese",
+            DictionaryLanguage::English => "english",
+            DictionaryLanguage::Chinese => "chinese",
+            DictionaryLanguage::Korean => "korean",
+        }
+    }
+
+    fn from_str(value: &str) -> Option<Self> {
+        match value.trim().to_lowercase().as_str() {
+            "japanese" => Some(DictionaryLanguage::Japanese),
+            "english" => Some(DictionaryLanguage::English),
+            "chinese" => Some(DictionaryLanguage::Chinese),
+            "korean" => Some(DictionaryLanguage::Korean),
+            _ => None,
+        }
+    }
+}
+
+impl std::fmt::Display for DictionaryLanguage {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{}", self.as_str())
+    }
+}
+
+#[derive(Deserialize)]
+pub struct LanguageRequest {
+    pub language: Option<DictionaryLanguage>,
+}
+
+pub fn load_preferred_language(app_state: &AppState) -> Option<DictionaryLanguage> {
+    let mut conn = app_state.pool.get().ok()?;
+    let mut stmt = conn
+        .prepare("SELECT value FROM metadata WHERE key = ?")
+        .ok()?;
+    let value: Option<String> = stmt
+        .query_row(["preferred_language"], |row| row.get(0))
+        .ok();
+    value.and_then(|val| DictionaryLanguage::from_str(&val))
+}
+
+fn store_preferred_language(app_state: &AppState, language: DictionaryLanguage) {
+    if let Ok(mut conn) = app_state.pool.get() {
+        let _ = conn.execute(
+            "INSERT OR REPLACE INTO metadata (key, value) VALUES ('preferred_language', ?)",
+            [language.as_str()],
+        );
+    }
+}
+
+fn resolve_language(
+    app_state: &AppState,
+    language: Option<DictionaryLanguage>,
+) -> DictionaryLanguage {
+    language
+        .or_else(|| load_preferred_language(app_state))
+        .unwrap_or(DictionaryLanguage::Japanese)
+}
+
+fn dictionary_url(language: DictionaryLanguage) -> &'static str {
+    match language {
+        DictionaryLanguage::Japanese => {
+            "https://github.com/yomidevs/jmdict-yomitan/releases/download/2026-01-26/JMdict_english.zip"
+        }
+        DictionaryLanguage::Korean => {
+            "https://pub-c3d38cca4dc2403b88934c56748f5144.r2.dev/releases/latest/kty-ko-en.zip"
+        }
+        DictionaryLanguage::English => {
+            "https://pub-c3d38cca4dc2403b88934c56748f5144.r2.dev/releases/latest/kty-en-en.zip"
+        }
+        DictionaryLanguage::Chinese => {
+            "https://github.com/MarvNC/cc-cedict-yomitan/releases/latest/download/CC-CEDICT.zip"
+        }
+    }
+}
+
+async fn download_dictionary_bytes(language: DictionaryLanguage) -> Result<Vec<u8>, String> {
+    let url = dictionary_url(language);
+    let client = Client::new();
+    let response = client
+        .get(url)
+        .send()
+        .await
+        .map_err(|e| format!("Dictionary download failed: {e}"))?;
+
+    if !response.status().is_success() {
+        return Err(format!(
+            "Dictionary download failed ({}): {}",
+            response.status(),
+            url
+        ));
+    }
+
+    let bytes = response
+        .bytes()
+        .await
+        .map_err(|e| format!("Failed to read dictionary bytes: {e}"))?;
+
+    Ok(bytes.to_vec())
+}
+
+fn clear_dictionary_state(app_state: &AppState) {
+    let mut dicts = app_state.dictionaries.write().expect("lock");
+    dicts.clear();
+    let mut next_id = app_state.next_dict_id.write().expect("lock");
+    *next_id = 1;
+
+    if let Ok(mut conn) = app_state.pool.get() {
+        if let Ok(tx) = conn.transaction() {
+            let _ = tx.execute("DELETE FROM terms", []);
+            let _ = tx.execute("DELETE FROM dictionaries", []);
+            let _ = tx.execute("DELETE FROM metadata", []);
+            let _ = tx.commit();
+        }
+        info!("🧹 [Yomitan] Vacuuming after reset...");
+        let _ = conn.execute("VACUUM", []);
+    }
+}
+
+pub async fn install_language_internal(
+    app_state: AppState,
+    language: DictionaryLanguage,
+) -> Result<String, String> {
+    let dict_bytes = download_dictionary_bytes(language).await?;
+    let app_state_for_task = app_state.clone();
+    let res =
+        tokio::task::spawn_blocking(move || import::import_zip(&app_state_for_task, &dict_bytes))
+            .await
+            .map_err(|e| e.to_string())?;
+    res.map_err(|e| e.to_string())
 }
 
 pub async fn manage_dictionaries_handler(
@@ -174,74 +320,106 @@ pub async fn unload_handler(State(state): State<ServerState>) -> Json<Value> {
     Json(json!({ "status": "ok", "message": "Tokenizer unloaded and memory purged" }))
 }
 
-pub async fn install_defaults_handler(State(state): State<ServerState>) -> Json<Value> {
+pub async fn install_defaults_handler(
+    State(state): State<ServerState>,
+    payload: Option<Json<LanguageRequest>>,
+) -> Json<Value> {
     let app_state = state.app.clone();
+    let language = resolve_language(&app_state, payload.and_then(|val| val.0.language));
 
     {
         let dicts = app_state.dictionaries.read().expect("lock");
         if !dicts.is_empty() {
+            store_preferred_language(&app_state, language);
             return Json(json!({ "status": "ok", "message": "Dictionaries already exist." }));
         }
     }
 
-    info!("📥 [Yomitan] User requested default dictionary installation...");
+    info!("📥 [Yomitan] User requested dictionary install ({language})...");
     app_state.set_loading(true);
 
-    let app_state_for_task = app_state.clone();
-
-    let res =
-        tokio::task::spawn_blocking(move || import::import_zip(&app_state_for_task, PREBAKED_DICT))
-            .await
-            .unwrap();
+    let res = install_language_internal(app_state.clone(), language).await;
 
     app_state.set_loading(false);
 
     match res {
-        Ok(msg) => Json(json!({ "status": "ok", "message": msg })),
+        Ok(msg) => {
+            store_preferred_language(&app_state, language);
+            Json(json!({ "status": "ok", "message": msg }))
+        }
         Err(e) => {
             error!("❌ [Install Defaults] Failed: {}", e);
-            Json(json!({ "status": "error", "message": e.to_string() }))
+            Json(json!({ "status": "error", "message": e }))
         }
     }
 }
 
-pub async fn reset_db_handler(State(state): State<ServerState>) -> Json<Value> {
-    info!("🧨 [Yomitan] Resetting Database to Default...");
+pub async fn install_language_handler(
+    State(state): State<ServerState>,
+    payload: Option<Json<LanguageRequest>>,
+) -> Json<Value> {
+    let app_state = state.app.clone();
+    let language = resolve_language(&app_state, payload.and_then(|val| val.0.language));
+
+    {
+        let dicts = app_state.dictionaries.read().expect("lock");
+        if !dicts.is_empty() {
+            store_preferred_language(&app_state, language);
+            return Json(json!({ "status": "ok", "message": "Dictionaries already exist." }));
+        }
+    }
+
+    info!("📥 [Yomitan] Installing dictionary ({language})...");
+    app_state.set_loading(true);
+
+    let res = install_language_internal(app_state.clone(), language).await;
+
+    app_state.set_loading(false);
+
+    match res {
+        Ok(msg) => {
+            store_preferred_language(&app_state, language);
+            Json(json!({ "status": "ok", "message": msg }))
+        }
+        Err(e) => {
+            error!("❌ [Install Language] Failed: {}", e);
+            Json(json!({ "status": "error", "message": e }))
+        }
+    }
+}
+
+pub async fn reset_db_handler(
+    State(state): State<ServerState>,
+    payload: Option<Json<LanguageRequest>>,
+) -> Json<Value> {
+    let app_state = state.app.clone();
+    let language = resolve_language(&app_state, payload.and_then(|val| val.0.language));
+    info!("🧨 [Yomitan] Resetting Database ({language})...");
     state.app.set_loading(true);
 
-    let app_state = state.app.clone();
-
-    let res = tokio::task::spawn_blocking(move || {
-        {
-            let mut dicts = app_state.dictionaries.write().expect("lock");
-            dicts.clear();
-            let mut next_id = app_state.next_dict_id.write().expect("lock");
-            *next_id = 1;
-        }
-
-        if let Ok(mut conn) = app_state.pool.get() {
-            if let Ok(tx) = conn.transaction() {
-                let _ = tx.execute("DELETE FROM terms", []);
-                let _ = tx.execute("DELETE FROM dictionaries", []);
-                let _ = tx.execute("DELETE FROM metadata", []);
-                let _ = tx.commit();
-            }
-            info!("🧹 [Yomitan] Vacuuming after reset...");
-            let _ = conn.execute("VACUUM", []);
-        }
-
-        import::import_zip(&app_state, crate::PREBAKED_DICT)
+    let clear_state = state.app.clone();
+    let clear_res = tokio::task::spawn_blocking(move || {
+        clear_dictionary_state(&clear_state);
     })
-    .await
-    .unwrap();
+    .await;
 
+    if let Err(e) = clear_res {
+        state.app.set_loading(false);
+        error!("❌ [Reset] Failed to clear database: {}", e);
+        return Json(json!({ "status": "error", "message": e.to_string() }));
+    }
+
+    let res = install_language_internal(app_state.clone(), language).await;
     state.app.set_loading(false);
 
     match res {
-        Ok(_) => Json(json!({ "status": "ok", "message": "Database reset successfully." })),
+        Ok(_) => {
+            store_preferred_language(&app_state, language);
+            Json(json!({ "status": "ok", "message": "Database reset successfully." }))
+        }
         Err(e) => {
             error!("❌ [Reset] Failed: {}", e);
-            Json(json!({ "status": "error", "message": e.to_string() }))
+            Json(json!({ "status": "error", "message": e }))
         }
     }
 }

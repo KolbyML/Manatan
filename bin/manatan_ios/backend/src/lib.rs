@@ -139,7 +139,7 @@ async fn start_web_server(
 ) -> Result<(), Box<dyn std::error::Error>> {
     info!("🚀 Initializing Axum Proxy Server on port 4568...");
     let ocr_router = manatan_ocr_server::create_router(data_dir.clone());
-    let yomitan_router = manatan_yomitan_server::create_router(data_dir.clone(), true);
+    let yomitan_router = manatan_yomitan_server::create_router(data_dir.clone());
     let system_router = Router::new().route("/version", any(current_version_handler));
     let state = AppState {
         client: Client::new(),

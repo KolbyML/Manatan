@@ -672,7 +672,7 @@ async fn run_server(
     info!("🌍 Starting Web Interface at http://{}:{}", host, port);
 
     let ocr_router = manatan_ocr_server::create_router(data_dir.clone());
-    let yomitan_router = manatan_yomitan_server::create_router(data_dir.clone(), true);
+    let yomitan_router = manatan_yomitan_server::create_router(data_dir.clone());
     let system_router = Router::new().route("/version", any(current_version_handler));
 
     let client = Client::new();

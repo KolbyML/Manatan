@@ -715,18 +715,9 @@ async fn start_web_server(data_dir: PathBuf) -> Result<(), Box<dyn std::error::E
     info!("🚀 Initializing Axum Proxy Server on port 4568...");
     let ocr_router = manatan_ocr_server::create_router(data_dir.clone());
 
-    #[cfg(feature = "native_webview")]
-    let auto_install_yomitan = true;
 
-    #[cfg(not(feature = "native_webview"))]
-    let auto_install_yomitan = false;
-
-    info!(
-        "📚 Initializing Yomitan Server (Auto-Install: {})...",
-        auto_install_yomitan
-    );
-    let yomitan_router =
-        manatan_yomitan_server::create_router(data_dir.clone(), auto_install_yomitan);
+    info!("📚 Initializing Yomitan Server...");
+    let yomitan_router = manatan_yomitan_server::create_router(data_dir.clone());
 
     let webui_dir = data_dir.join("webui");
     let client = Client::new();
