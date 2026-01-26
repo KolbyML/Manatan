@@ -58,6 +58,194 @@ lazy_static! {
     static ref LOG_BUFFER: Mutex<VecDeque<String>> = Mutex::new(VecDeque::with_capacity(500));
 }
 
+const TACHI_DATA_DIR_NAME: &str = "tachidesk_data";
+
+fn get_files_dir_from_context(
+    env: &mut jni::JNIEnv,
+    context: &JObject,
+) -> Option<PathBuf> {
+    let dir_obj = env
+        .call_method(context, "getFilesDir", "()Ljava/io/File;", &[])
+        .ok()?
+        .l()
+        .ok()?;
+    if dir_obj.is_null() {
+        return None;
+    }
+    let path_obj = env
+        .call_method(&dir_obj, "getAbsolutePath", "()Ljava/lang/String;", &[])
+        .ok()?
+        .l()
+        .ok()?;
+    let path_jstr: JString = path_obj.into();
+    let path_rust: String = env.get_string(&path_jstr).ok()?.into();
+    Some(PathBuf::from(path_rust))
+}
+
+fn get_external_files_dir_from_context(
+    env: &mut jni::JNIEnv,
+    context: &JObject,
+) -> Option<PathBuf> {
+    let null_obj = JObject::null();
+    let dir_obj = env
+        .call_method(
+            context,
+            "getExternalFilesDir",
+            "(Ljava/lang/String;)Ljava/io/File;",
+            &[JValue::Object(&null_obj)],
+        )
+        .ok()?
+        .l()
+        .ok()?;
+    if dir_obj.is_null() {
+        return None;
+    }
+    let path_obj = env
+        .call_method(&dir_obj, "getAbsolutePath", "()Ljava/lang/String;", &[])
+        .ok()?
+        .l()
+        .ok()?;
+    let path_jstr: JString = path_obj.into();
+    let path_rust: String = env.get_string(&path_jstr).ok()?.into();
+    Some(PathBuf::from(path_rust))
+}
+
+fn get_external_files_dir(app: &AndroidApp) -> Option<PathBuf> {
+    let vm_ptr = app.vm_as_ptr() as *mut jni::sys::JavaVM;
+    let vm = unsafe { JavaVM::from_raw(vm_ptr).ok()? };
+    let mut env = vm.attach_current_thread().ok()?;
+    let activity_ptr = app.activity_as_ptr() as jni::sys::jobject;
+    let context = unsafe { JObject::from_raw(activity_ptr) };
+    get_external_files_dir_from_context(&mut env, &context)
+}
+
+fn resolve_tachidesk_data_dir_from_paths(
+    internal_base: &Path,
+    external_base: Option<PathBuf>,
+) -> PathBuf {
+    let internal_current = internal_base.join(TACHI_DATA_DIR_NAME);
+
+    if let Some(external_base) = external_base {
+        let external_dir = external_base.join(TACHI_DATA_DIR_NAME);
+        if external_dir.exists() {
+            return external_dir;
+        }
+        if internal_current.exists() {
+            return internal_current;
+        }
+        return external_dir;
+    }
+
+    if internal_current.exists() {
+        internal_current
+    } else {
+        internal_current
+    }
+}
+
+fn resolve_tachidesk_data_dir_with_migration(app: &AndroidApp, internal_base: &Path) -> PathBuf {
+    let internal_current = internal_base.join(TACHI_DATA_DIR_NAME);
+    let external_base = get_external_files_dir(app);
+
+    let Some(external_base) = external_base else {
+        return if internal_current.exists() {
+            internal_current
+        } else {
+            internal_current
+        };
+    };
+
+    let external_dir = external_base.join(TACHI_DATA_DIR_NAME);
+    if external_dir.exists() {
+        return external_dir;
+    }
+
+    let source_dir = if internal_current.exists() {
+        Some(internal_current)
+    } else {
+        None
+    };
+
+    if let Some(source_dir) = source_dir {
+        if let Some(parent) = external_dir.parent() {
+            if let Err(err) = fs::create_dir_all(parent) {
+                warn!(
+                    "Failed to create external data dir parent {}: {err}",
+                    parent.display()
+                );
+                return source_dir;
+            }
+        }
+
+        match fs::rename(&source_dir, &external_dir) {
+            Ok(()) => {
+                info!(
+                    "Migrated tachidesk data dir from {} to {}",
+                    source_dir.display(),
+                    external_dir.display()
+                );
+                return external_dir;
+            }
+            Err(err) => {
+                warn!(
+                    "Failed to move tachidesk data dir ({} -> {}): {err}. Falling back to copy.",
+                    source_dir.display(),
+                    external_dir.display()
+                );
+                match copy_dir_recursive(&source_dir, &external_dir) {
+                    Ok(()) => {
+                        info!(
+                            "Copied tachidesk data dir from {} to {}",
+                            source_dir.display(),
+                            external_dir.display()
+                        );
+                        return external_dir;
+                    }
+                    Err(copy_err) => {
+                        warn!(
+                            "Failed to copy tachidesk data dir ({} -> {}): {copy_err}",
+                            source_dir.display(),
+                            external_dir.display()
+                        );
+                        return source_dir;
+                    }
+                }
+            }
+        }
+    }
+
+    if let Err(err) = fs::create_dir_all(&external_dir) {
+        warn!(
+        "Failed to create external tachidesk data dir {}: {err}",
+        external_dir.display()
+    );
+    return internal_current;
+}
+
+    external_dir
+}
+
+fn copy_dir_recursive(src: &Path, dst: &Path) -> io::Result<()> {
+    if !dst.exists() {
+        fs::create_dir_all(dst)?;
+    }
+
+    for entry in fs::read_dir(src)? {
+        let entry = entry?;
+        let file_type = entry.file_type()?;
+        let src_path = entry.path();
+        let dst_path = dst.join(entry.file_name());
+
+        if file_type.is_dir() {
+            copy_dir_recursive(&src_path, &dst_path)?;
+        } else {
+            fs::copy(&src_path, &dst_path)?;
+        }
+    }
+
+    Ok(())
+}
+
 struct GuiWriter;
 impl io::Write for GuiWriter {
     fn write(&mut self, buf: &[u8]) -> io::Result<usize> {
@@ -844,7 +1032,7 @@ fn start_background_services(app: AndroidApp, files_dir: PathBuf) {
     fs::create_dir_all(&bin_dir).expect("Failed to create bin directory");
     let jar_path = bin_dir.join("Suwayomi-Server.jar");
 
-    let tachidesk_data = files_dir.join("tachidesk_data");
+    let tachidesk_data = resolve_tachidesk_data_dir_with_migration(&app, &files_dir);
     let tmp_dir = files_dir.join("tmp");
 
     if !tachidesk_data.exists() {
@@ -2044,8 +2232,8 @@ fn native_trigger_install() -> Result<(), Box<dyn std::error::Error>> {
     Ok(())
 }
 
-fn read_suwayomi_cookies(files_dir: &Path) -> String {
-    let cookie_path = files_dir.join("tachidesk_data/settings/cookie_store.xml");
+fn read_suwayomi_cookies(tachidesk_data_dir: &Path) -> String {
+    let cookie_path = tachidesk_data_dir.join("settings/cookie_store.xml");
 
     // Fail silently with empty array if file doesn't exist
     let content = match fs::read_to_string(&cookie_path) {
@@ -2125,22 +2313,15 @@ fn launch_native_webview_with_cookies(target_url: &str) -> Result<(), Box<dyn st
     let mut env = vm.attach_current_thread()?;
     let context_obj = unsafe { jni::objects::JObject::from_raw(ctx.context().cast()) };
 
-    // 1. Get Files Dir to find cookies
-    let files_dir_jstr = env
-        .call_method(&context_obj, "getFilesDir", "()Ljava/io/File;", &[])?
-        .l()?;
-    let files_dir_path = env
-        .call_method(
-            files_dir_jstr,
-            "getAbsolutePath",
-            "()Ljava/lang/String;",
-            &[],
-        )?
-        .l()?;
-    let files_dir_str: String = env.get_string(&files_dir_path.into())?.into();
+    // 1. Get data dir to find cookies
+    let internal_files_dir = get_files_dir_from_context(&mut env, &context_obj)
+        .ok_or("Failed to resolve internal files dir")?;
+    let external_files_dir = get_external_files_dir_from_context(&mut env, &context_obj);
+    let tachidesk_data_dir =
+        resolve_tachidesk_data_dir_from_paths(&internal_files_dir, external_files_dir);
 
     // 2. Parse Cookies
-    let cookies_json = read_suwayomi_cookies(Path::new(&files_dir_str));
+    let cookies_json = read_suwayomi_cookies(&tachidesk_data_dir);
 
     // 3. Launch Activity
     let pkg_name = "com.mangatan.app";
@@ -2334,8 +2515,10 @@ fn update_server_conf_local_source(app: &AndroidApp, files_dir: &Path) {
         error!("Failed to create local sources dir: {err:?}");
     }
 
+    let tachidesk_data_dir = resolve_tachidesk_data_dir_with_migration(app, files_dir);
+
     // 2. Read server.conf
-    let conf_path = files_dir.join("tachidesk_data/server.conf");
+    let conf_path = tachidesk_data_dir.join("server.conf");
     if !conf_path.exists() {
         warn!(
             "server.conf not found at {:?}, skipping patch. (Server might not have created it yet?)",
