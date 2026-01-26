@@ -242,6 +242,35 @@ dev: setup-depends
 dev-embedded: setup-depends bundle_jre
 	cargo run --release -p mangatan --features embed-jre
 
+.PHONY: dev-embedded-jar
+dev-embedded-jar: download_natives bundle_jre local_suwayomi_jar
+	@echo "Starting WebUI dev server (skipping release build)..."
+	@mkdir -p bin/mangatan/resources/mangatan-webui
+	@printf '%s\n' \
+		'<!doctype html>' \
+		'<html>' \
+		'  <head>' \
+		'    <meta charset="utf-8" />' \
+		'    <meta http-equiv="refresh" content="0; url=http://localhost:5173/" />' \
+		'    <title>Mangatan WebUI Dev</title>' \
+		'  </head>' \
+		'  <body>' \
+		'    <p>Redirecting to WebUI dev server at <a href="http://localhost:5173/">http://localhost:5173/</a></p>' \
+		'  </body>' \
+		'</html>' \
+		> bin/mangatan/resources/mangatan-webui/index.html
+	@export NVM_DIR="$$HOME/.nvm"; \
+	if [ -s "$$NVM_DIR/nvm.sh" ]; then \
+	    . "$$NVM_DIR/nvm.sh"; \
+	    nvm install 22.12.0; \
+	    nvm use 22.12.0; \
+	else \
+	    echo "Warning: NVM not found. Using system node version:"; \
+	    node -v; \
+	fi; \
+	(cd Mangatan-WebUI && yarn dev --host 0.0.0.0) & \
+	cargo run --release -p mangatan --features embed-jre
+
 .PHONY: dev-android
 dev-android: android_webui download_android_jar download_android_jre download_android_natives android_icon
 	cd bin/mangatan_android && cargo apk2 run
@@ -272,10 +301,44 @@ bundle_jre: bin/mangatan/resources/jre_bundle.zip
 bin/mangatan/resources/Suwayomi-Server.jar:
 	@echo "Downloading Suwayomi Server JAR..."
 	mkdir -p bin/mangatan/resources
-	curl -L "https://github.com/Suwayomi/Suwayomi-Server-preview/releases/download/v2.1.2038/Suwayomi-Server-v2.1.2038.jar" -o $@
+	curl -L "https://github.com/KolbyML/Suwayomi-Server/releases/download/v1.0.15/Suwayomi-Server-v2.1.2063.jar" -o $@
 
 .PHONY: download_jar
 download_jar: bin/mangatan/resources/Suwayomi-Server.jar
+
+SUWAYOMI_SERVER_DIR := ../Suwayomi-Server
+SUWAYOMI_SERVER_BUILD_DIR := $(SUWAYOMI_SERVER_DIR)/server/build
+SUWAYOMI_SERVER_JAR_GLOB := $(SUWAYOMI_SERVER_BUILD_DIR)/Suwayomi-Server-*.jar
+
+.PHONY: local_suwayomi_jar
+local_suwayomi_jar:
+	@echo "Checking local Suwayomi-Server JAR..."
+	@if [ ! -d "$(SUWAYOMI_SERVER_DIR)" ]; then \
+		echo "Error: $(SUWAYOMI_SERVER_DIR) not found."; \
+		exit 1; \
+	fi
+	@latest_jar=$$(ls -t $(SUWAYOMI_SERVER_JAR_GLOB) 2>/dev/null | head -n 1); \
+	if [ -z "$$latest_jar" ] || \
+		find $(SUWAYOMI_SERVER_DIR) -type f \
+			-not -path "$(SUWAYOMI_SERVER_DIR)/.git/*" \
+			-not -path "$(SUWAYOMI_SERVER_DIR)/**/.gradle/*" \
+			-not -path "$(SUWAYOMI_SERVER_DIR)/**/build/*" \
+			-not -path "$(SUWAYOMI_SERVER_DIR)/**/out/*" \
+			-not -path "$(SUWAYOMI_SERVER_DIR)/**/node_modules/*" \
+			-not -path "$(SUWAYOMI_SERVER_DIR)/.idea/*" \
+			-newer "$$latest_jar" | head -n 1 | read; then \
+		echo "Building local Suwayomi-Server JAR..."; \
+		(cd $(SUWAYOMI_SERVER_DIR) && ./gradlew :server:shadowJar); \
+		latest_jar=$$(ls -t $(SUWAYOMI_SERVER_JAR_GLOB) | head -n 1); \
+	else \
+		echo "Local Suwayomi-Server JAR is up to date."; \
+	fi; \
+	if [ -z "$$latest_jar" ]; then \
+		echo "Error: No Suwayomi-Server JAR found in $(SUWAYOMI_SERVER_BUILD_DIR)."; \
+		exit 1; \
+	fi; \
+	mkdir -p bin/mangatan/resources; \
+	cp "$$latest_jar" bin/mangatan/resources/Suwayomi-Server.jar
 
 bin/mangatan_ios/Mangatan/jar/suwayomi-server.jar:
 	@echo "Downloading iOS Suwayomi Server JAR..."
