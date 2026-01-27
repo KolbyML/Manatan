@@ -13,7 +13,7 @@ import android.os.Build;
 import android.os.IBinder;
 import android.os.Process;
 
-public class ManatanService extends Service {
+public class MangatanService extends Service {
     private static final String CHANNEL_ID = "ManatanBackgroundService";
     private static final String ACTION_EXIT = "com.mangatan.app.ACTION_EXIT";
     
@@ -47,7 +47,7 @@ public class ManatanService extends Service {
     public int onStartCommand(Intent intent, int flags, int startId) {
         createNotificationChannel();
 
-        Intent notificationIntent = new Intent(this, ManatanActivity.class);
+        Intent notificationIntent = new Intent(this, MangatanActivity.class);
         notificationIntent.setFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP);
         
         int pendingFlags = PendingIntent.FLAG_UPDATE_CURRENT;

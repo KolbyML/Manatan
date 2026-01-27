@@ -599,7 +599,7 @@ jobs:
               <string>manual</string>
               <key>provisioningProfiles</key>
               <dict>
-                  <key>app.manatan.manatan</key>
+                  <key>app.mangatan.mangatan</key>
                   <string>Manatan App Store CI</string>
               </dict>
           </dict>

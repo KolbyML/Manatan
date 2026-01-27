@@ -60,10 +60,7 @@ lazy_static! {
 
 const TACHI_DATA_DIR_NAME: &str = "tachidesk_data";
 
-fn get_files_dir_from_context(
-    env: &mut jni::JNIEnv,
-    context: &JObject,
-) -> Option<PathBuf> {
+fn get_files_dir_from_context(env: &mut jni::JNIEnv, context: &JObject) -> Option<PathBuf> {
     let dir_obj = env
         .call_method(context, "getFilesDir", "()Ljava/io/File;", &[])
         .ok()?
@@ -161,7 +158,7 @@ fn resolve_tachidesk_data_dir_with_migration(app: &AndroidApp, internal_base: &P
     }
 
     let source_dir = if internal_current.exists() {
-        Some(internal_current)
+        Some(internal_current.clone())
     } else {
         None
     };
@@ -216,11 +213,11 @@ fn resolve_tachidesk_data_dir_with_migration(app: &AndroidApp, internal_base: &P
 
     if let Err(err) = fs::create_dir_all(&external_dir) {
         warn!(
-        "Failed to create external tachidesk data dir {}: {err}",
-        external_dir.display()
-    );
-    return internal_current;
-}
+            "Failed to create external tachidesk data dir {}: {err}",
+            external_dir.display()
+        );
+        return internal_current;
+    }
 
     external_dir
 }
@@ -295,7 +292,7 @@ fn start_foreground_service(app: &AndroidApp) {
         .find_class("android/content/Context")
         .expect("Failed to find Context class");
     let service_class_name = env
-        .new_string("com.mangatan.app.ManatanService")
+        .new_string("com.mangatan.app.MangatanService")
         .expect("Failed to create string");
 
     let pkg_name = get_package_name(&mut env, &context).unwrap_or("com.mangatan.app".to_string());
@@ -714,7 +711,6 @@ fn launch_webview_activity(app: &AndroidApp) {
 async fn start_web_server(data_dir: PathBuf) -> Result<(), Box<dyn std::error::Error>> {
     info!("🚀 Initializing Axum Proxy Server on port 4568...");
     let ocr_router = manatan_ocr_server::create_router(data_dir.clone());
-
 
     info!("📚 Initializing Yomitan Server...");
     let yomitan_router = manatan_yomitan_server::create_router(data_dir.clone());
