@@ -115,7 +115,7 @@ name = "android.app.lib_name"
 value = "manatan_android" 
 
 [[package.metadata.android.application.service]]
-name = ".ManatanService"
+name = ".MangatanService"
 enabled = true
 exported = false
 foreground_service_type = "dataSync"

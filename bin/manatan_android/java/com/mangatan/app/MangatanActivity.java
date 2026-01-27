@@ -7,7 +7,7 @@ import android.os.Bundle;
 import android.util.Log;
 import android.widget.Toast;
 
-public class ManatanActivity extends NativeActivity {
+public class MangatanActivity extends NativeActivity {
 
     static {
         System.loadLibrary("manatan_android");
@@ -55,7 +55,7 @@ public class ManatanActivity extends NativeActivity {
     @Override
     public void onDestroy() {
         AnkiBridge.stopAnkiConnectServer();
-        Intent serviceIntent = new Intent(this, ManatanService.class);
+        Intent serviceIntent = new Intent(this, MangatanService.class);
         stopService(serviceIntent);
         android.os.Process.killProcess(android.os.Process.myPid());
         System.exit(0);
