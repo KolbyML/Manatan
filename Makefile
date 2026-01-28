@@ -242,6 +242,10 @@ dev: setup-depends
 dev-embedded: setup-depends bundle_jre
 	cargo run --release -p manatan --features embed-jre
 
+.PHONY: dev-embedded-local-jar
+dev-embedded-local-jar: download_natives desktop_webui local_suwayomi_jar bundle_jre
+	cargo run --release -p manatan --features embed-jre
+
 .PHONY: dev-embedded-jar
 dev-embedded-jar: download_natives bundle_jre local_suwayomi_jar
 	@echo "Starting WebUI dev server (skipping release build)..."
