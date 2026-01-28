@@ -279,6 +279,13 @@ dev-android: android_webui download_android_jar download_android_jre download_an
 dev-android-native: android_webui download_android_jar download_android_jre download_android_natives android_icon
 	cd bin/manatan_android && cargo apk2 run --features native_webview
 
+.PHONY: dev-android-native-embedded-jar
+dev-android-native-embedded-jar: android_webui download_android_jre download_android_natives android_icon local_suwayomi_jar
+	@echo "Using local Suwayomi-Server.jar for Android..."
+	mkdir -p bin/manatan_android/assets
+	cp bin/manatan/resources/Suwayomi-Server.jar bin/manatan_android/assets/Suwayomi-Server.jar
+	cd bin/manatan_android && cargo apk2 run --features native_webview
+
 jre_bundle:
 	@echo "Building custom JDK with jlink..."
 	rm -rf jre_bundle
