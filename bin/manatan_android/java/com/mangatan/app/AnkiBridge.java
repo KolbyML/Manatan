@@ -585,35 +585,39 @@ public class AnkiBridge {
     }
 
     private static void processMedia(Context ctx, JSONObject fields, Object mediaObj) throws Exception {
-        JSONArray arr = (mediaObj instanceof JSONArray) ? (JSONArray) mediaObj : new JSONArray().put(mediaObj);
+    JSONArray arr = (mediaObj instanceof JSONArray) ? (JSONArray) mediaObj : new JSONArray().put(mediaObj);
 
-        for (int i = 0; i < arr.length(); i++) {
-            JSONObject m = arr.getJSONObject(i);
-            if (!m.has("data") || !m.has("filename")) continue;
+    for (int i = 0; i < arr.length(); i++) {
+        JSONObject m = arr.getJSONObject(i);
+        if (!m.has("data") || !m.has("filename")) continue;
 
-            String storedFilename = saveMedia(ctx, m.getString("filename"), m.getString("data"));
-            if (storedFilename == null) continue;
+        String storedFilename = saveMedia(ctx, m.getString("filename"), m.getString("data"));
+        if (storedFilename == null) continue;
 
-            String val;
-            if (storedFilename.toLowerCase().endsWith(".mp3") ||
-                    storedFilename.toLowerCase().endsWith(".aac") ||
-                    storedFilename.toLowerCase().endsWith(".m4a") ||
-                    storedFilename.toLowerCase().endsWith(".wav")) {
-                val = "[sound:" + storedFilename + "]";
-            } else {
-                val = "<img src=\"" + storedFilename + "\">";
-            }
+        String val;
+        String lowerFilename = storedFilename.toLowerCase();
+        if (lowerFilename.endsWith(".mp3") ||
+                lowerFilename.endsWith(".aac") ||
+                lowerFilename.endsWith(".m4a") ||
+                lowerFilename.endsWith(".wav") ||
+                lowerFilename.endsWith(".webm") ||
+                lowerFilename.endsWith(".ogg") ||
+                lowerFilename.endsWith(".flac")) {
+            val = "[sound:" + storedFilename + "]";
+        } else {
+            val = "<img src=\"" + storedFilename + "\">";
+        }
 
-            JSONArray targets = m.optJSONArray("fields");
-            if (targets != null) {
-                for (int j = 0; j < targets.length(); j++) {
-                    String fName = targets.getString(j);
-                    String current = fields.optString(fName, "");
-                    fields.put(fName, current + val);
-                }
+        JSONArray targets = m.optJSONArray("fields");
+        if (targets != null) {
+            for (int j = 0; j < targets.length(); j++) {
+                String fName = targets.getString(j);
+                String current = fields.optString(fName, "");
+                fields.put(fName, current + val);
             }
         }
     }
+}
 
     private static String storeMediaFile(Context ctx, JSONObject params) throws Exception {
         return saveMedia(ctx, params.getString("filename"), params.getString("data"));
@@ -622,23 +626,69 @@ public class AnkiBridge {
     private static String saveMedia(Context ctx, String name, String b64) throws Exception {
     byte[] data = Base64.decode(b64, Base64.NO_WRAP);
     
+    // Detect file type from extension
+    String lowerName = name.toLowerCase();
+    boolean isAudio = lowerName.endsWith(".mp3") || lowerName.endsWith(".aac") || 
+                      lowerName.endsWith(".m4a") || lowerName.endsWith(".wav") ||
+                      lowerName.endsWith(".webm") || lowerName.endsWith(".ogg") ||
+                      lowerName.endsWith(".flac");
+    
     ContentValues values = new ContentValues();
     values.put(MediaStore.MediaColumns.DISPLAY_NAME, name);
-    values.put(MediaStore.MediaColumns.MIME_TYPE, "image/png");
-    String legacyPath = Environment.DIRECTORY_PICTURES + "/Mangatan";
-    String newPath = Environment.DIRECTORY_PICTURES + "/Manatan";
-    File legacyDir = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES), "Mangatan");
-    String relativePath = legacyDir.exists() ? legacyPath : newPath;
-    values.put(MediaStore.MediaColumns.RELATIVE_PATH, relativePath);
+    
+    Uri collection;
+    if (isAudio) {
+        // Set correct MIME type for audio
+        if (lowerName.endsWith(".mp3")) {
+            values.put(MediaStore.MediaColumns.MIME_TYPE, "audio/mpeg");
+        } else if (lowerName.endsWith(".m4a") || lowerName.endsWith(".aac")) {
+            values.put(MediaStore.MediaColumns.MIME_TYPE, "audio/mp4");
+        } else if (lowerName.endsWith(".wav")) {
+            values.put(MediaStore.MediaColumns.MIME_TYPE, "audio/wav");
+        } else if (lowerName.endsWith(".webm")) {
+            values.put(MediaStore.MediaColumns.MIME_TYPE, "audio/webm");
+        } else if (lowerName.endsWith(".ogg")) {
+            values.put(MediaStore.MediaColumns.MIME_TYPE, "audio/ogg");
+        } else if (lowerName.endsWith(".flac")) {
+            values.put(MediaStore.MediaColumns.MIME_TYPE, "audio/flac");
+        } else {
+            values.put(MediaStore.MediaColumns.MIME_TYPE, "audio/mpeg"); // default
+        }
+        
+        // Save to Music folder
+        values.put(MediaStore.MediaColumns.RELATIVE_PATH, Environment.DIRECTORY_MUSIC + "/Manatan");
+        collection = MediaStore.Audio.Media.EXTERNAL_CONTENT_URI;
+    } else {
+        // Image handling - support multiple formats
+        if (lowerName.endsWith(".webp")) {
+            values.put(MediaStore.MediaColumns.MIME_TYPE, "image/webp");
+        } else if (lowerName.endsWith(".jpg") || lowerName.endsWith(".jpeg")) {
+            values.put(MediaStore.MediaColumns.MIME_TYPE, "image/jpeg");
+        } else if (lowerName.endsWith(".png")) {
+            values.put(MediaStore.MediaColumns.MIME_TYPE, "image/png");
+        } else if (lowerName.endsWith(".gif")) {
+            values.put(MediaStore.MediaColumns.MIME_TYPE, "image/gif");
+        } else if (lowerName.endsWith(".bmp")) {
+            values.put(MediaStore.MediaColumns.MIME_TYPE, "image/bmp");
+        } else {
+            values.put(MediaStore.MediaColumns.MIME_TYPE, "image/png"); // default
+        }
+        
+        String legacyPath = Environment.DIRECTORY_PICTURES + "/Mangatan";
+        String newPath = Environment.DIRECTORY_PICTURES + "/Manatan";
+        File legacyDir = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES), "Mangatan");
+        String relativePath = legacyDir.exists() ? legacyPath : newPath;
+        values.put(MediaStore.MediaColumns.RELATIVE_PATH, relativePath);
+        collection = MediaStore.Images.Media.EXTERNAL_CONTENT_URI;
+    }
 
-    Uri externalUri = ctx.getContentResolver().insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, values);
+    Uri externalUri = ctx.getContentResolver().insert(collection, values);
     if (externalUri == null) throw new Exception("Failed to create MediaStore entry");
 
     try (OutputStream out = ctx.getContentResolver().openOutputStream(externalUri)) {
         out.write(data);
     }
 
-   
     ctx.grantUriPermission(
         "com.ichi2.anki", 
         externalUri, 
@@ -651,7 +701,6 @@ public class AnkiBridge {
 
     Log.i("AnkiBridge", "Asking AnkiDroid to copy: " + externalUri.toString());
     Uri res = ctx.getContentResolver().insert(MEDIA_URI, cv);
-    
     
     ctx.getContentResolver().delete(externalUri, null, null);
 
