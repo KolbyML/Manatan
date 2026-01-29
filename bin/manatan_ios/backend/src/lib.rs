@@ -140,6 +140,7 @@ async fn start_web_server(
     info!("🚀 Initializing Axum Proxy Server on port 4568...");
     let ocr_router = manatan_ocr_server::create_router(data_dir.clone());
     let yomitan_router = manatan_yomitan_server::create_router(data_dir.clone());
+    let audio_router = manatan_audio_server::create_router(data_dir.clone());
     let system_router = Router::new().route("/version", any(current_version_handler));
     let state = AppState {
         client: Client::new(),
@@ -173,6 +174,7 @@ async fn start_web_server(
     let app: Router<AppState> = Router::new()
         .nest_service("/api/ocr", ocr_router)
         .nest_service("/api/yomitan", yomitan_router)
+        .nest_service("/api/audio", audio_router)
         .nest("/api/system", system_router)
         .merge(proxy_router)
         .fallback(serve_react_app)

@@ -22,6 +22,7 @@ libc = "0.2"
 libloading = "0.8"
 manatan-ocr-server.workspace = true
 manatan-yomitan-server.workspace = true
+manatan-audio-server.workspace = true
 mime_guess = "2.0.4"
 reqwest = { version = "0.12.4", features = ["stream", "json"] }
 socket2 = { version = "0.5", features = ["all"] }
