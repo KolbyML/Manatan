@@ -338,7 +338,7 @@ jobs:
           name: manatan-${{ matrix.arch_name }}
           path: |
             final_artifact/manatan-windows-x64.zip
-            output/manatan-*.deb
+            output/manatan_*.deb
             output/manatan-*.tar.gz
             output/manatan-macos.zip
 
