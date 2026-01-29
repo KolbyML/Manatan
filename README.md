@@ -3,14 +3,13 @@
 
 [![Github All Releases](https://img.shields.io/github/downloads/kolbyml/manatan/total.svg)](https://github.com/kolbyml/manatan/releases)
 [![GitHub Sponsors](https://img.shields.io/github/sponsors/kolbyml)](https://github.com/sponsors/kolbyml)
-[![Static Badge](https://img.shields.io/badge/donate-ko--fi-ed6760?label=donate)](https://ko-fi.com/kolbyml)
-[![Static Badge](https://img.shields.io/badge/donate-patreon-f96854?label=donate)](https://www.patreon.com/cw/Manatan)
+[![Static Badge](https://img.shields.io/badge/donate-ko--fi-ed6760?label=donate)](https://ko-fi.com/manatancom)
 [![GitHub License](https://img.shields.io/github/license/kolbyml/manatan)](https://github.com/kolbyml/manatan?tab=MIT-1-ov-file)
 [![Discord](https://img.shields.io/discord/1448140648950530182?color=%237785cc)](https://discord.gg/tDAtpPN8KK)
 
 </div>
 
-**The easiest way to watch anime or read manga with instant OCR/subtitle lookup.** *No scripts, no complex setup—just download and go.*
+**The easiest way to watch anime or read manga, light novels, and EPUBs with instant OCR/subtitle lookup.** *No scripts, no complex setup—just download and go.*
 
 Discord Server: https://discord.gg/tDAtpPN8KK
 
@@ -23,6 +22,8 @@ Traditional setups for watching anime or reading manga with Japanese lookup can 
 * **Universal Language Support:** Manatan supports every language.
 * **Built-in OCR:** Just hover over text to get selectable text for dictionary lookups.
 * **Anime Support:** Subtitle parsing with popup dictionary lookups while you watch.
+* **1-Click Anime Cards:** Generate Anki cards from anime sentences with a single click, with sentence audio.
+* **Light Novels & EPUBs:** Read light novels and EPUBs with instant OCR/lookup.
 * **Cross-Platform:** Run the exact same interface on your PC, Mac, Android, or iOS device.
 * **Browser Interface:** Uses the familiar [Suwayomi](https://github.com/Suwayomi/Suwayomi-Server) interface in your favorite web browser.
 
@@ -40,6 +41,22 @@ Download the latest release for your platform from the [Releases](https://github
 Run the executable, then visit `http://127.0.0.1:4568/` in your web browser to access the Manatan web interface.
 
 https://github.com/user-attachments/assets/38c63c86-289d-45a4-ba85-e29f1b812ceb
+
+## Roadmap
+
+- [x] Package Manatan, OCR Server, and Suwayomi into a single binary
+- [x] Add Android Support https://github.com/KolbyML/Manatan/issues/17
+- [x] Add iOS Support https://github.com/KolbyML/Manatan/issues/19
+- [x] Add Anime Support
+- [x] 1 click anime/video cards
+- [x] LightNovel/Epub support
+- [ ] Rust backend rewrite, faster load times, smaller binary, smaller ram usage
+- [ ] Add Mangayomi, Aidoku, LNReader extension support, ontop of existing Mihon/Aniyomi extension support
+- [ ] Add local .mkv video support
+- [ ] Add 1 click setup local audio support for popup dictionary lookups
+- [ ] Local OCR engine support
+- [ ] Add Manga Immersion Stats page https://github.com/KolbyML/Manatan/issues/1
+- [ ] Suggest more features https://github.com/KolbyML/Manatan/issues/new
 
 ## Setup
 
@@ -85,14 +102,6 @@ To fully clear cache and data from previous installs, delete the following folde
 * `%Temp%\Suwayomi*`
 * `%Temp%\Tachidesk*`
 * **Browser Data:** Clear Site data & cookies for `127.0.0.1`
-
-## Roadmap
-
-- [x] Package Manatan, OCR Server, and Suwayomi into a single binary
-- [x] Add Android Support https://github.com/KolbyML/Manatan/issues/17
-- [x] Add iOS Support https://github.com/KolbyML/Manatan/issues/19
-- [ ] Add Manga Immersion Stats page https://github.com/KolbyML/Manatan/issues/1
-- [ ] Suggest more features https://github.com/KolbyML/Manatan/issues/new
 
 ## 🤝 Help Improve OCR Accuracy
 

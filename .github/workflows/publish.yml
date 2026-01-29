@@ -440,7 +440,7 @@ jobs:
           SIGNING_KEY_BASE64: ${{ secrets.ANDROID_SIGNING_KEY }}
           KEY_STORE_PASSWORD: ${{ secrets.ANDROID_KEY_STORE_PASSWORD }}
           KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
-          ALIAS: manatan
+          ALIAS: mangatan
         run: |
           echo "$SIGNING_KEY_BASE64" | base64 -d --ignore-garbage > release.keystore
           BUILD_TOOLS_PATH="$ANDROID_HOME/build-tools/30.0.3"
@@ -599,8 +599,8 @@ jobs:
               <string>manual</string>
               <key>provisioningProfiles</key>
               <dict>
-                  <key>app.mangatan.mangatan</key>
-                  <string>Manatan App Store CI</string>
+              <key>app.mangatan.mangatan</key>
+              <string>Mangatan App Store CI</string>
               </dict>
           </dict>
           </plist>

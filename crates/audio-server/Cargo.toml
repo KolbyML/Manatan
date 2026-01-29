@@ -1,0 +1,25 @@
+[package]
+name = "manatan-audio-server"
+authors.workspace = true
+edition.workspace = true
+keywords.workspace = true
+license.workspace = true
+readme.workspace = true
+repository.workspace = true
+rust-version.workspace = true
+version.workspace = true
+
+[dependencies]
+anyhow.workspace = true
+axum.workspace = true
+bytes.workspace = true
+reqwest.workspace = true
+serde.workspace = true
+tokio.workspace = true
+tracing.workspace = true
+hls_m3u8 = "0.5.1"
+symphonia = { version = "0.5.4", default-features = false, features = ["aac", "isomp4"] }
+url = "2.5.4"
+
+[lints]
+workspace = true

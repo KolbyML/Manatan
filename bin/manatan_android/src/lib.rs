@@ -715,6 +715,8 @@ async fn start_web_server(data_dir: PathBuf) -> Result<(), Box<dyn std::error::E
     info!("📚 Initializing Yomitan Server...");
     let yomitan_router = manatan_yomitan_server::create_router(data_dir.clone());
 
+    let audio_router = manatan_audio_server::create_router(data_dir.clone());
+
     let webui_dir = data_dir.join("webui");
     let client = Client::new();
 
@@ -750,6 +752,7 @@ async fn start_web_server(data_dir: PathBuf) -> Result<(), Box<dyn std::error::E
         .route("/api/system/install-update", any(install_update_handler))
         .nest_service("/api/ocr", ocr_router)
         .nest_service("/api/yomitan", yomitan_router)
+        .nest_service("/api/audio", audio_router)
         .route("/api/{*path}", any(proxy_suwayomi_handler))
         .fallback(serve_react_app)
         .layer(cors)
@@ -1171,8 +1174,15 @@ fn start_background_services(app: AndroidApp, files_dir: PathBuf) {
                     } else {
                         new_path
                     };
+                    let base_dir = Path::new(&target_path)
+                        .parent()
+                        .map(|p| p.to_string_lossy().to_string())
+                        .unwrap_or_else(|| path_rust.clone());
+                    let local_anime_path = format!("{base_dir}/local-anime");
                     info!("Ensuring local source directory exists: {}", target_path);
                     let _ = std::fs::create_dir_all(&target_path);
+                    info!("Ensuring local anime directory exists: {}", local_anime_path);
+                    let _ = std::fs::create_dir_all(&local_anime_path);
 
                     let nomedia_path = format!("{target_path}/.nomedia");
                     if !std::path::Path::new(&nomedia_path).exists() {
@@ -1183,11 +1193,24 @@ fn start_background_services(app: AndroidApp, files_dir: PathBuf) {
                         }
                     }
 
+                    let anime_nomedia_path = format!("{local_anime_path}/.nomedia");
+                    if !std::path::Path::new(&anime_nomedia_path).exists() {
+                        if let Err(err) = std::fs::File::create(&anime_nomedia_path) {
+                            error!("Failed to create .nomedia in local-anime: {err:?}");
+                        } else {
+                            info!("✅ Created .nomedia in local-anime");
+                        }
+                    }
+
                     if !server_conf_exists {
                         info!("Fresh install detected: Setting localSourcePath flag.");
                         options_vec.push(format!(
                             "-Dsuwayomi.tachidesk.config.server.localSourcePath={}",
                             target_path
+                        ));
+                        options_vec.push(format!(
+                            "-Dsuwayomi.tachidesk.config.server.localAnimeSourcePath={}",
+                            local_anime_path
                         ));
 
                         // --- IMPORTANT: Create pending marker HERE ---

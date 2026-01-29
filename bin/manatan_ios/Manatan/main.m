@@ -86,6 +86,7 @@ int main(int argc, char * argv[]) {
     
     // 2. Local Source & Tmp -> Main Docs Directory (Visible to User)
     NSString *localSourcePath = [docDir stringByAppendingPathComponent:@"local-source"];
+    NSString *localAnimePath = [docDir stringByAppendingPathComponent:@"local-anime"];
     NSString *tmpDir = [docDir stringByAppendingPathComponent:@"tmp"];
     
     NSString *libPath = [bundlePath stringByAppendingPathComponent:@"lib"];
@@ -98,6 +99,7 @@ int main(int argc, char * argv[]) {
     }
 
     [[NSFileManager defaultManager] createDirectoryAtPath:localSourcePath withIntermediateDirectories:YES attributes:nil error:nil];
+    [[NSFileManager defaultManager] createDirectoryAtPath:localAnimePath withIntermediateDirectories:YES attributes:nil error:nil];
     [[NSFileManager defaultManager] createDirectoryAtPath:tmpDir withIntermediateDirectories:YES attributes:nil error:nil];
 
     JavaVMInitArgs vm_args;
@@ -129,6 +131,7 @@ int main(int argc, char * argv[]) {
     
     // Local Source is the ROOT FOLDER (as requested)
     options[optCount++].optionString = strdup([[NSString stringWithFormat:@"-Dsuwayomi.tachidesk.config.server.localSourcePath=%@", localSourcePath] UTF8String]);
+    options[optCount++].optionString = strdup([[NSString stringWithFormat:@"-Dsuwayomi.tachidesk.config.server.localAnimeSourcePath=%@", localAnimePath] UTF8String]);
     options[optCount++].optionString = "-Dsuwayomi.tachidesk.config.server.ip =\"127.0.0.1\"";
     options[optCount++].optionString = "-Dsuwayomi.tachidesk.config.server.webUIEnabled=false";
     options[optCount++].optionString = "-Dsuwayomi.tachidesk.config.server.initialOpenInBrowserEnabled=false";

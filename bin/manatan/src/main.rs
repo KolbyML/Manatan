@@ -619,6 +619,12 @@ async fn run_server(
     if !data_dir.exists() {
         fs::create_dir_all(data_dir).map_err(|err| anyhow!("Failed to create data dir {err:?}"))?;
     }
+    let local_anime_dir = data_dir.join("local-anime");
+    if !local_anime_dir.exists() {
+        if let Err(err) = fs::create_dir_all(&local_anime_dir) {
+            warn!("Failed to create local anime dir {}: {err}", local_anime_dir.display());
+        }
+    }
     let bin_dir = data_dir.join("bin");
     if !bin_dir.exists() {
         fs::create_dir_all(&bin_dir).map_err(|err| anyhow!("Failed to create bin dir {err:?}"))?;
@@ -657,6 +663,10 @@ async fn run_server(
         .env("JAVA_HOME", java_home)
         .arg("-Dsuwayomi.tachidesk.config.server.initialOpenInBrowserEnabled=false")
         .arg("-Dsuwayomi.tachidesk.config.server.webUIEnabled=false")
+        .arg(format!(
+            "-Dsuwayomi.tachidesk.config.server.localAnimeSourcePath={}",
+            local_anime_dir.display()
+        ))
         .arg("-XX:+ExitOnOutOfMemoryError")
         .arg("--enable-native-access=ALL-UNNAMED")
         .arg("--add-opens=java.desktop/sun.awt=ALL-UNNAMED")
@@ -673,6 +683,7 @@ async fn run_server(
 
     let ocr_router = manatan_ocr_server::create_router(data_dir.clone());
     let yomitan_router = manatan_yomitan_server::create_router(data_dir.clone());
+    let audio_router = manatan_audio_server::create_router(data_dir.clone());
     let system_router = Router::new().route("/version", any(current_version_handler));
 
     let client = Client::new();
@@ -703,6 +714,7 @@ async fn run_server(
     let app = Router::new()
         .nest("/api/ocr", ocr_router)
         .nest("/api/yomitan", yomitan_router)
+        .nest("/api/audio", audio_router)
         .nest("/api/system", system_router)
         .merge(proxy_router)
         .fallback(serve_react_app)

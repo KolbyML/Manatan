@@ -65,6 +65,7 @@ name = "android.permission.POST_NOTIFICATIONS"
 
 [[package.metadata.android.uses_permission]]
 name = "android.permission.REQUEST_INSTALL_PACKAGES"
+
 # AnkiDroid Permission
 [[package.metadata.android.uses_permission]]
 name = "com.ichi2.anki.permission.READ_WRITE_DATABASE"
@@ -138,6 +139,7 @@ libc = "0.2"
 libloading = "0.8"
 manatan-ocr-server.workspace = true
 manatan-yomitan-server.workspace = true
+manatan-audio-server.workspace = true
 mime_guess = "2"
 openssl = { version = "0.10", features = ["vendored"] }
 ndk-context = "0.1"
