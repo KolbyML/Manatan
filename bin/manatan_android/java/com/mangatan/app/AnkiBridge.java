@@ -462,18 +462,44 @@ public class AnkiBridge {
     }
 
     private static JSONArray guiBrowse(Context ctx, JSONObject params) throws Exception {
-        String query = params.getString("query");
-        Uri uri = Uri.parse("anki://x-callback-url/browser?search=" + Uri.encode(query));
-        Intent intent = new Intent(Intent.ACTION_VIEW, uri);
-        intent.setPackage("com.ichi2.anki");
-        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
+    String query = params.getString("query");
+    String searchQuery = query;
+    
+    // If searching by note ID, add deck context
+    if (query.startsWith("nid:")) {
         try {
-            ctx.startActivity(intent);
-        } catch (Exception e) {
-            Log.w(TAG, "guiBrowse", e);
-        }
-        return new JSONArray();
+            long noteId = Long.parseLong(query.substring(4).trim());
+            Uri cardsUri = Uri.withAppendedPath(NOTES_URI, noteId + "/cards");
+            try (Cursor c = ctx.getContentResolver().query(cardsUri, new String[]{"deck_id"}, null, null, null)) {
+                if (c != null && c.moveToFirst()) {
+                    long deckId = c.getLong(0);
+                    // Find deck name using existing pattern
+                    try (Cursor d = ctx.getContentResolver().query(DECKS_URI, new String[]{DECK_ID, DECK_NAME}, null, null, null)) {
+                        if (d != null) {
+                            while (d.moveToNext()) {
+                                if (d.getLong(0) == deckId) {
+                                    searchQuery = "deck:\"" + d.getString(1) + "\" " + query;
+                                    break;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        } catch (Exception ignored) {}
     }
+    
+    Uri uri = Uri.parse("anki://x-callback-url/browser?search=" + Uri.encode(searchQuery));
+    Intent intent = new Intent(Intent.ACTION_VIEW, uri);
+    intent.setPackage("com.ichi2.anki");
+    intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
+    try {
+        ctx.startActivity(intent);
+    } catch (Exception e) {
+        Log.w(TAG, "guiBrowse", e);
+    }
+    return new JSONArray();
+}
 
     private static long addNote(Context ctx, JSONObject params) throws Exception {
         JSONObject note = params.getJSONObject("note");
