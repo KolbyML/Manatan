@@ -26,6 +26,7 @@ enum Script {
     Korean,
     Latin,
     Chinese,
+    Arabic,
     Other,
 }
 
@@ -230,6 +231,9 @@ impl LookupService {
             if c.is_ascii_alphabetic() || (c >= '\u{00C0}' && c <= '\u{00FF}') {
                 return Script::Latin;
             }
+            if self.is_arabic_char(c) {
+                return Script::Arabic;
+            }
             if c >= '\u{4E00}' && c <= '\u{9FFF}' {
                 return Script::Chinese;
             }
@@ -265,6 +269,13 @@ impl LookupService {
 
     fn is_ideograph(&self, c: char) -> bool {
         c >= '\u{4E00}' && c <= '\u{9FFF}'
+    }
+
+    fn is_arabic_char(&self, c: char) -> bool {
+        let u = c as u32;
+        (0x0600..=0x06FF).contains(&u)
+            || (0x0750..=0x077F).contains(&u)
+            || (0x08A0..=0x08FF).contains(&u)
     }
 
     fn katakana_to_hiragana(&self, text: &str) -> String {
@@ -386,6 +397,20 @@ impl LookupService {
                     source_len,
                     &mut candidates,
                 );
+            }
+            Script::Arabic => {
+                let mut variants = HashSet::new();
+                variants.insert(text.to_string());
+                let normalized = crate::deinflector::arabic::strip_diacritics(text);
+                variants.insert(normalized);
+                for variant in variants {
+                    self.add_deinflections(
+                        DeinflectLanguage::Arabic,
+                        &variant,
+                        source_len,
+                        &mut candidates,
+                    );
+                }
             }
             Script::Other => {}
         }

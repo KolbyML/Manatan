@@ -39,6 +39,15 @@ pub enum RuleKind {
         inflected: String,
         deinflected: String,
     },
+    Affix {
+        inflected_prefix: String,
+        deinflected_prefix: String,
+        inflected_suffix: String,
+        deinflected_suffix: String,
+        initial_disallow: Option<char>,
+        final_disallow: Option<char>,
+        require_arabic_letters: bool,
+    },
     EnglishPhrasalInterposedObject,
     EnglishPhrasalSuffix {
         inflected: String,
@@ -117,8 +126,22 @@ struct JsonTransform {
 struct JsonRule {
     #[serde(rename = "type")]
     rule_type: String,
-    inflected: String,
+    inflected: Option<String>,
     deinflected: Option<String>,
+    #[serde(rename = "inflectedPrefix")]
+    inflected_prefix: Option<String>,
+    #[serde(rename = "deinflectedPrefix")]
+    deinflected_prefix: Option<String>,
+    #[serde(rename = "inflectedSuffix")]
+    inflected_suffix: Option<String>,
+    #[serde(rename = "deinflectedSuffix")]
+    deinflected_suffix: Option<String>,
+    #[serde(rename = "initialDisallow")]
+    initial_disallow: Option<String>,
+    #[serde(rename = "finalDisallow")]
+    final_disallow: Option<String>,
+    #[serde(rename = "requireArabicLetters")]
+    require_arabic_letters: Option<bool>,
     #[serde(rename = "conditionsIn")]
     conditions_in: Vec<String>,
     #[serde(rename = "conditionsOut")]
@@ -197,18 +220,45 @@ impl LanguageTransformer {
         for transform in descriptor.transforms {
             let mut rules = Vec::new();
             for rule in transform.rules {
-                let kind = match rule.rule_type.as_str() {
+                let JsonRule {
+                    rule_type,
+                    inflected,
+                    deinflected,
+                    inflected_prefix,
+                    deinflected_prefix,
+                    inflected_suffix,
+                    deinflected_suffix,
+                    initial_disallow,
+                    final_disallow,
+                    require_arabic_letters,
+                    conditions_in,
+                    conditions_out,
+                } = rule;
+                let kind = match rule_type.as_str() {
                     "suffix" => RuleKind::Suffix {
-                        inflected: rule.inflected,
-                        deinflected: rule.deinflected.unwrap_or_default(),
+                        inflected: inflected
+                            .ok_or_else(|| anyhow::anyhow!("Missing inflected for suffix rule"))?,
+                        deinflected: deinflected.unwrap_or_default(),
                     },
                     "prefix" => RuleKind::Prefix {
-                        inflected: rule.inflected,
-                        deinflected: rule.deinflected.unwrap_or_default(),
+                        inflected: inflected
+                            .ok_or_else(|| anyhow::anyhow!("Missing inflected for prefix rule"))?,
+                        deinflected: deinflected.unwrap_or_default(),
                     },
                     "wholeWord" => RuleKind::WholeWord {
-                        inflected: rule.inflected,
-                        deinflected: rule.deinflected.unwrap_or_default(),
+                        inflected: inflected.ok_or_else(|| {
+                            anyhow::anyhow!("Missing inflected for wholeWord rule")
+                        })?,
+                        deinflected: deinflected.unwrap_or_default(),
+                    },
+                    "affix" => RuleKind::Affix {
+                        inflected_prefix: inflected_prefix.unwrap_or_default(),
+                        deinflected_prefix: deinflected_prefix.unwrap_or_default(),
+                        inflected_suffix: inflected_suffix.unwrap_or_default(),
+                        deinflected_suffix: deinflected_suffix.unwrap_or_default(),
+                        initial_disallow: parse_json_char(initial_disallow.as_deref())?,
+                        final_disallow: parse_json_char(final_disallow.as_deref())?,
+                        require_arabic_letters: require_arabic_letters.unwrap_or(false),
                     },
                     other => {
                         return Err(anyhow::anyhow!("Unsupported rule type: {}", other));
@@ -217,8 +267,8 @@ impl LanguageTransformer {
 
                 rules.push(RuleDefinition {
                     kind,
-                    conditions_in: rule.conditions_in,
-                    conditions_out: rule.conditions_out,
+                    conditions_in,
+                    conditions_out,
                 });
             }
             transforms.push(TransformDefinition {
@@ -336,12 +386,41 @@ impl LanguageTransformer {
     }
 }
 
+fn parse_json_char(value: Option<&str>) -> Result<Option<char>> {
+    let Some(value) = value else {
+        return Ok(None);
+    };
+    let mut chars = value.chars();
+    let Some(first) = chars.next() else {
+        return Ok(None);
+    };
+    if chars.next().is_some() {
+        return Err(anyhow::anyhow!("Expected single character, got {}", value));
+    }
+    Ok(Some(first))
+}
+
 impl RuleKind {
     fn is_inflected(&self, text: &str) -> bool {
         match self {
             RuleKind::Suffix { inflected, .. } => text.ends_with(inflected),
             RuleKind::Prefix { inflected, .. } => text.starts_with(inflected),
             RuleKind::WholeWord { inflected, .. } => text == inflected,
+            RuleKind::Affix {
+                inflected_prefix,
+                inflected_suffix,
+                initial_disallow,
+                final_disallow,
+                require_arabic_letters,
+                ..
+            } => matches_affix(
+                text,
+                inflected_prefix,
+                inflected_suffix,
+                *initial_disallow,
+                *final_disallow,
+                *require_arabic_letters,
+            ),
             RuleKind::EnglishPhrasalInterposedObject => {
                 english_phrasal_interposed_object(text).is_some()
             }
@@ -377,6 +456,19 @@ impl RuleKind {
                     None
                 }
             }
+            RuleKind::Affix {
+                inflected_prefix,
+                deinflected_prefix,
+                inflected_suffix,
+                deinflected_suffix,
+                ..
+            } => deinflect_affix(
+                text,
+                inflected_prefix,
+                deinflected_prefix,
+                inflected_suffix,
+                deinflected_suffix,
+            ),
             RuleKind::EnglishPhrasalInterposedObject => english_phrasal_interposed_object(text),
             RuleKind::EnglishPhrasalSuffix {
                 inflected,
@@ -385,6 +477,68 @@ impl RuleKind {
                 .map(|(stem, particle)| format!("{}{} {}", stem, deinflected, particle)),
         }
     }
+}
+
+fn matches_affix(
+    text: &str,
+    inflected_prefix: &str,
+    inflected_suffix: &str,
+    initial_disallow: Option<char>,
+    final_disallow: Option<char>,
+    require_arabic_letters: bool,
+) -> bool {
+    let stripped_prefix = match text.strip_prefix(inflected_prefix) {
+        Some(value) => value,
+        None => return false,
+    };
+    let middle = match stripped_prefix.strip_suffix(inflected_suffix) {
+        Some(value) => value,
+        None => return false,
+    };
+    if require_arabic_letters {
+        if middle.is_empty() {
+            return false;
+        }
+        if !middle.chars().all(is_arabic_letter) {
+            return false;
+        }
+    }
+    if let Some(disallow) = initial_disallow {
+        if matches!(middle.chars().next(), Some(value) if value == disallow) {
+            return false;
+        }
+    }
+    if let Some(disallow) = final_disallow {
+        if matches!(middle.chars().last(), Some(value) if value == disallow) {
+            return false;
+        }
+    }
+    true
+}
+
+fn deinflect_affix(
+    text: &str,
+    inflected_prefix: &str,
+    deinflected_prefix: &str,
+    inflected_suffix: &str,
+    deinflected_suffix: &str,
+) -> Option<String> {
+    let stripped_prefix = text.strip_prefix(inflected_prefix)?;
+    let middle = stripped_prefix.strip_suffix(inflected_suffix)?;
+    Some(format!(
+        "{}{}{}",
+        deinflected_prefix, middle, deinflected_suffix
+    ))
+}
+
+fn is_arabic_letter(c: char) -> bool {
+    let u = c as u32;
+    (0x0620..=0x065F).contains(&u)
+        || (0x066E..=0x06D3).contains(&u)
+        || u == 0x06D5
+        || (0x06EE..=0x06EF).contains(&u)
+        || (0x06FA..=0x06FC).contains(&u)
+        || u == 0x06FF
 }
 
 fn conditions_match(current: u32, next: u32) -> bool {

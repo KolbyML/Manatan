@@ -78,6 +78,7 @@ pub enum DictionaryLanguage {
     English,
     Chinese,
     Korean,
+    Arabic,
 }
 
 impl DictionaryLanguage {
@@ -87,6 +88,7 @@ impl DictionaryLanguage {
             DictionaryLanguage::English => "english",
             DictionaryLanguage::Chinese => "chinese",
             DictionaryLanguage::Korean => "korean",
+            DictionaryLanguage::Arabic => "arabic",
         }
     }
 
@@ -96,6 +98,7 @@ impl DictionaryLanguage {
             "english" => Some(DictionaryLanguage::English),
             "chinese" => Some(DictionaryLanguage::Chinese),
             "korean" => Some(DictionaryLanguage::Korean),
+            "arabic" => Some(DictionaryLanguage::Arabic),
             _ => None,
         }
     }
@@ -154,6 +157,9 @@ fn dictionary_url(language: DictionaryLanguage) -> &'static str {
         }
         DictionaryLanguage::Chinese => {
             "https://github.com/MarvNC/cc-cedict-yomitan/releases/latest/download/CC-CEDICT.zip"
+        }
+        DictionaryLanguage::Arabic => {
+            "https://pub-c3d38cca4dc2403b88934c56748f5144.r2.dev/releases/latest/kty-ar-en.zip"
         }
     }
 }

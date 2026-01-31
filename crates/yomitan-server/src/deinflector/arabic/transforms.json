@@ -1,0 +1,5303 @@
+{
+  "_metadata": {
+    "language": "arabic",
+    "generatedBy": "manatan-deinflectors Rust generator",
+    "generatorVersion": "0.1.0",
+    "sourceFormat": "programmatic",
+    "note": "MSA affix rules for common noun/adjective clitics, case endings, number/gender suffixes, and finite verb affixes. Root-and-pattern morphology is handled by dedicated analyzers.",
+    "sources": [
+      {
+        "title": "FSI Written Arabic Course",
+        "url": "https://www.fsi-language-courses.org/fsi-written-arabic-course/",
+        "license": "US government public domain",
+        "usage": "Reference for Modern Standard Written Arabic morphology."
+      },
+      {
+        "title": "Wright, A Grammar of the Arabic Language",
+        "url": "https://commons.wikimedia.org/wiki/File:A_Grammar_Of_The_Arabic_Language_Vol.2_(IA_in.ernet.dli.2015.31098).pdf",
+        "license": "Public domain",
+        "usage": "Reference for classical/MSA inflection classes, case endings, pronoun suffixes, and finite verb affixes."
+      }
+    ]
+  },
+  "conditions": {
+    "adj": {
+      "subConditions": null
+    },
+    "base": {
+      "subConditions": null
+    },
+    "nominal": {
+      "subConditions": [
+        "adj",
+        "noun"
+      ]
+    },
+    "nominal-prefixed": {
+      "subConditions": null
+    },
+    "nominal-suffixed": {
+      "subConditions": null
+    },
+    "noun": {
+      "subConditions": null
+    },
+    "verb": {
+      "subConditions": null
+    },
+    "verb-prefixed": {
+      "subConditions": null
+    },
+    "verb-suffixed": {
+      "subConditions": null
+    },
+    "word": {
+      "subConditions": [
+        "adj",
+        "noun",
+        "verb"
+      ]
+    }
+  },
+  "transforms": [
+    {
+      "id": "nominal prefixes",
+      "rules": [
+        {
+          "type": "prefix",
+          "inflected": "ال",
+          "deinflected": "",
+          "conditionsIn": [
+            "nominal",
+            "nominal-suffixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "الـ",
+          "deinflected": "",
+          "conditionsIn": [
+            "nominal",
+            "nominal-suffixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "ب",
+          "deinflected": "",
+          "conditionsIn": [
+            "nominal",
+            "nominal-suffixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "بال",
+          "deinflected": "",
+          "conditionsIn": [
+            "nominal",
+            "nominal-suffixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "بالـ",
+          "deinflected": "",
+          "conditionsIn": [
+            "nominal",
+            "nominal-suffixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "ف",
+          "deinflected": "",
+          "conditionsIn": [
+            "nominal",
+            "nominal-suffixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "فال",
+          "deinflected": "",
+          "conditionsIn": [
+            "nominal",
+            "nominal-suffixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "فالـ",
+          "deinflected": "",
+          "conditionsIn": [
+            "nominal",
+            "nominal-suffixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "فب",
+          "deinflected": "",
+          "conditionsIn": [
+            "nominal",
+            "nominal-suffixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "فبال",
+          "deinflected": "",
+          "conditionsIn": [
+            "nominal",
+            "nominal-suffixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "فبالـ",
+          "deinflected": "",
+          "conditionsIn": [
+            "nominal",
+            "nominal-suffixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "فك",
+          "deinflected": "",
+          "conditionsIn": [
+            "nominal",
+            "nominal-suffixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "فكال",
+          "deinflected": "",
+          "conditionsIn": [
+            "nominal",
+            "nominal-suffixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "فكالـ",
+          "deinflected": "",
+          "conditionsIn": [
+            "nominal",
+            "nominal-suffixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "فل",
+          "deinflected": "",
+          "conditionsIn": [
+            "nominal",
+            "nominal-suffixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "فلل",
+          "deinflected": "",
+          "conditionsIn": [
+            "nominal",
+            "nominal-suffixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "فللـ",
+          "deinflected": "",
+          "conditionsIn": [
+            "nominal",
+            "nominal-suffixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "ك",
+          "deinflected": "",
+          "conditionsIn": [
+            "nominal",
+            "nominal-suffixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "كال",
+          "deinflected": "",
+          "conditionsIn": [
+            "nominal",
+            "nominal-suffixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "كالـ",
+          "deinflected": "",
+          "conditionsIn": [
+            "nominal",
+            "nominal-suffixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "ل",
+          "deinflected": "",
+          "conditionsIn": [
+            "nominal",
+            "nominal-suffixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "لل",
+          "deinflected": "",
+          "conditionsIn": [
+            "nominal",
+            "nominal-suffixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "للـ",
+          "deinflected": "",
+          "conditionsIn": [
+            "nominal",
+            "nominal-suffixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "و",
+          "deinflected": "",
+          "conditionsIn": [
+            "nominal",
+            "nominal-suffixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "وال",
+          "deinflected": "",
+          "conditionsIn": [
+            "nominal",
+            "nominal-suffixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "والـ",
+          "deinflected": "",
+          "conditionsIn": [
+            "nominal",
+            "nominal-suffixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "وب",
+          "deinflected": "",
+          "conditionsIn": [
+            "nominal",
+            "nominal-suffixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "وبال",
+          "deinflected": "",
+          "conditionsIn": [
+            "nominal",
+            "nominal-suffixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "وبالـ",
+          "deinflected": "",
+          "conditionsIn": [
+            "nominal",
+            "nominal-suffixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "وك",
+          "deinflected": "",
+          "conditionsIn": [
+            "nominal",
+            "nominal-suffixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "وكال",
+          "deinflected": "",
+          "conditionsIn": [
+            "nominal",
+            "nominal-suffixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "وكالـ",
+          "deinflected": "",
+          "conditionsIn": [
+            "nominal",
+            "nominal-suffixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "ول",
+          "deinflected": "",
+          "conditionsIn": [
+            "nominal",
+            "nominal-suffixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "ولل",
+          "deinflected": "",
+          "conditionsIn": [
+            "nominal",
+            "nominal-suffixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "وللـ",
+          "deinflected": "",
+          "conditionsIn": [
+            "nominal",
+            "nominal-suffixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "nominal prefix before suffix",
+      "rules": [
+        {
+          "type": "prefix",
+          "inflected": "ال",
+          "deinflected": "",
+          "conditionsIn": [
+            "nominal"
+          ],
+          "conditionsOut": [
+            "nominal-prefixed"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "الـ",
+          "deinflected": "",
+          "conditionsIn": [
+            "nominal"
+          ],
+          "conditionsOut": [
+            "nominal-prefixed"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "ب",
+          "deinflected": "",
+          "conditionsIn": [
+            "nominal"
+          ],
+          "conditionsOut": [
+            "nominal-prefixed"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "بال",
+          "deinflected": "",
+          "conditionsIn": [
+            "nominal"
+          ],
+          "conditionsOut": [
+            "nominal-prefixed"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "بالـ",
+          "deinflected": "",
+          "conditionsIn": [
+            "nominal"
+          ],
+          "conditionsOut": [
+            "nominal-prefixed"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "ف",
+          "deinflected": "",
+          "conditionsIn": [
+            "nominal"
+          ],
+          "conditionsOut": [
+            "nominal-prefixed"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "فال",
+          "deinflected": "",
+          "conditionsIn": [
+            "nominal"
+          ],
+          "conditionsOut": [
+            "nominal-prefixed"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "فالـ",
+          "deinflected": "",
+          "conditionsIn": [
+            "nominal"
+          ],
+          "conditionsOut": [
+            "nominal-prefixed"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "فب",
+          "deinflected": "",
+          "conditionsIn": [
+            "nominal"
+          ],
+          "conditionsOut": [
+            "nominal-prefixed"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "فبال",
+          "deinflected": "",
+          "conditionsIn": [
+            "nominal"
+          ],
+          "conditionsOut": [
+            "nominal-prefixed"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "فبالـ",
+          "deinflected": "",
+          "conditionsIn": [
+            "nominal"
+          ],
+          "conditionsOut": [
+            "nominal-prefixed"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "فك",
+          "deinflected": "",
+          "conditionsIn": [
+            "nominal"
+          ],
+          "conditionsOut": [
+            "nominal-prefixed"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "فكال",
+          "deinflected": "",
+          "conditionsIn": [
+            "nominal"
+          ],
+          "conditionsOut": [
+            "nominal-prefixed"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "فكالـ",
+          "deinflected": "",
+          "conditionsIn": [
+            "nominal"
+          ],
+          "conditionsOut": [
+            "nominal-prefixed"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "فل",
+          "deinflected": "",
+          "conditionsIn": [
+            "nominal"
+          ],
+          "conditionsOut": [
+            "nominal-prefixed"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "فلل",
+          "deinflected": "",
+          "conditionsIn": [
+            "nominal"
+          ],
+          "conditionsOut": [
+            "nominal-prefixed"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "فللـ",
+          "deinflected": "",
+          "conditionsIn": [
+            "nominal"
+          ],
+          "conditionsOut": [
+            "nominal-prefixed"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "ك",
+          "deinflected": "",
+          "conditionsIn": [
+            "nominal"
+          ],
+          "conditionsOut": [
+            "nominal-prefixed"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "كال",
+          "deinflected": "",
+          "conditionsIn": [
+            "nominal"
+          ],
+          "conditionsOut": [
+            "nominal-prefixed"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "كالـ",
+          "deinflected": "",
+          "conditionsIn": [
+            "nominal"
+          ],
+          "conditionsOut": [
+            "nominal-prefixed"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "ل",
+          "deinflected": "",
+          "conditionsIn": [
+            "nominal"
+          ],
+          "conditionsOut": [
+            "nominal-prefixed"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "لل",
+          "deinflected": "",
+          "conditionsIn": [
+            "nominal"
+          ],
+          "conditionsOut": [
+            "nominal-prefixed"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "للـ",
+          "deinflected": "",
+          "conditionsIn": [
+            "nominal"
+          ],
+          "conditionsOut": [
+            "nominal-prefixed"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "و",
+          "deinflected": "",
+          "conditionsIn": [
+            "nominal"
+          ],
+          "conditionsOut": [
+            "nominal-prefixed"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "وال",
+          "deinflected": "",
+          "conditionsIn": [
+            "nominal"
+          ],
+          "conditionsOut": [
+            "nominal-prefixed"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "والـ",
+          "deinflected": "",
+          "conditionsIn": [
+            "nominal"
+          ],
+          "conditionsOut": [
+            "nominal-prefixed"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "وب",
+          "deinflected": "",
+          "conditionsIn": [
+            "nominal"
+          ],
+          "conditionsOut": [
+            "nominal-prefixed"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "وبال",
+          "deinflected": "",
+          "conditionsIn": [
+            "nominal"
+          ],
+          "conditionsOut": [
+            "nominal-prefixed"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "وبالـ",
+          "deinflected": "",
+          "conditionsIn": [
+            "nominal"
+          ],
+          "conditionsOut": [
+            "nominal-prefixed"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "وك",
+          "deinflected": "",
+          "conditionsIn": [
+            "nominal"
+          ],
+          "conditionsOut": [
+            "nominal-prefixed"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "وكال",
+          "deinflected": "",
+          "conditionsIn": [
+            "nominal"
+          ],
+          "conditionsOut": [
+            "nominal-prefixed"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "وكالـ",
+          "deinflected": "",
+          "conditionsIn": [
+            "nominal"
+          ],
+          "conditionsOut": [
+            "nominal-prefixed"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "ول",
+          "deinflected": "",
+          "conditionsIn": [
+            "nominal"
+          ],
+          "conditionsOut": [
+            "nominal-prefixed"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "ولل",
+          "deinflected": "",
+          "conditionsIn": [
+            "nominal"
+          ],
+          "conditionsOut": [
+            "nominal-prefixed"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "وللـ",
+          "deinflected": "",
+          "conditionsIn": [
+            "nominal"
+          ],
+          "conditionsOut": [
+            "nominal-prefixed"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "nominal pronoun suffixes",
+      "rules": [
+        {
+          "type": "suffix",
+          "inflected": "كما",
+          "deinflected": "",
+          "conditionsIn": [
+            "nominal",
+            "nominal-prefixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "هما",
+          "deinflected": "",
+          "conditionsIn": [
+            "nominal",
+            "nominal-prefixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "هم",
+          "deinflected": "",
+          "conditionsIn": [
+            "nominal",
+            "nominal-prefixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "هن",
+          "deinflected": "",
+          "conditionsIn": [
+            "nominal",
+            "nominal-prefixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "كم",
+          "deinflected": "",
+          "conditionsIn": [
+            "nominal",
+            "nominal-prefixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "كن",
+          "deinflected": "",
+          "conditionsIn": [
+            "nominal",
+            "nominal-prefixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "نا",
+          "deinflected": "",
+          "conditionsIn": [
+            "nominal",
+            "nominal-prefixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "ها",
+          "deinflected": "",
+          "conditionsIn": [
+            "nominal",
+            "nominal-prefixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "ه",
+          "deinflected": "",
+          "conditionsIn": [
+            "nominal",
+            "nominal-prefixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "ك",
+          "deinflected": "",
+          "conditionsIn": [
+            "nominal",
+            "nominal-prefixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "ي",
+          "deinflected": "",
+          "conditionsIn": [
+            "nominal",
+            "nominal-prefixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "nominal suffix before prefix",
+      "rules": [
+        {
+          "type": "suffix",
+          "inflected": "كما",
+          "deinflected": "",
+          "conditionsIn": [
+            "nominal"
+          ],
+          "conditionsOut": [
+            "nominal-suffixed"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "هما",
+          "deinflected": "",
+          "conditionsIn": [
+            "nominal"
+          ],
+          "conditionsOut": [
+            "nominal-suffixed"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "هم",
+          "deinflected": "",
+          "conditionsIn": [
+            "nominal"
+          ],
+          "conditionsOut": [
+            "nominal-suffixed"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "هن",
+          "deinflected": "",
+          "conditionsIn": [
+            "nominal"
+          ],
+          "conditionsOut": [
+            "nominal-suffixed"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "كم",
+          "deinflected": "",
+          "conditionsIn": [
+            "nominal"
+          ],
+          "conditionsOut": [
+            "nominal-suffixed"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "كن",
+          "deinflected": "",
+          "conditionsIn": [
+            "nominal"
+          ],
+          "conditionsOut": [
+            "nominal-suffixed"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "نا",
+          "deinflected": "",
+          "conditionsIn": [
+            "nominal"
+          ],
+          "conditionsOut": [
+            "nominal-suffixed"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "ها",
+          "deinflected": "",
+          "conditionsIn": [
+            "nominal"
+          ],
+          "conditionsOut": [
+            "nominal-suffixed"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "ه",
+          "deinflected": "",
+          "conditionsIn": [
+            "nominal"
+          ],
+          "conditionsOut": [
+            "nominal-suffixed"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "ك",
+          "deinflected": "",
+          "conditionsIn": [
+            "nominal"
+          ],
+          "conditionsOut": [
+            "nominal-suffixed"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "ي",
+          "deinflected": "",
+          "conditionsIn": [
+            "nominal"
+          ],
+          "conditionsOut": [
+            "nominal-suffixed"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "ات",
+          "deinflected": "ة",
+          "conditionsIn": [
+            "nominal"
+          ],
+          "conditionsOut": [
+            "nominal-suffixed"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "ات",
+          "deinflected": "",
+          "conditionsIn": [
+            "nominal"
+          ],
+          "conditionsOut": [
+            "nominal-suffixed"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "يات",
+          "deinflected": "ية",
+          "conditionsIn": [
+            "nominal"
+          ],
+          "conditionsOut": [
+            "nominal-suffixed"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "تان",
+          "deinflected": "ة",
+          "conditionsIn": [
+            "nominal"
+          ],
+          "conditionsOut": [
+            "nominal-suffixed"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "تين",
+          "deinflected": "ة",
+          "conditionsIn": [
+            "nominal"
+          ],
+          "conditionsOut": [
+            "nominal-suffixed"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "تا",
+          "deinflected": "ة",
+          "conditionsIn": [
+            "nominal"
+          ],
+          "conditionsOut": [
+            "nominal-suffixed"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "تي",
+          "deinflected": "ة",
+          "conditionsIn": [
+            "nominal"
+          ],
+          "conditionsOut": [
+            "nominal-suffixed"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "ان",
+          "deinflected": "",
+          "conditionsIn": [
+            "nominal"
+          ],
+          "conditionsOut": [
+            "nominal-suffixed"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "ين",
+          "deinflected": "",
+          "conditionsIn": [
+            "nominal"
+          ],
+          "conditionsOut": [
+            "nominal-suffixed"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "ون",
+          "deinflected": "",
+          "conditionsIn": [
+            "nominal"
+          ],
+          "conditionsOut": [
+            "nominal-suffixed"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "و",
+          "deinflected": "",
+          "conditionsIn": [
+            "nominal"
+          ],
+          "conditionsOut": [
+            "nominal-suffixed"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "ي",
+          "deinflected": "",
+          "conditionsIn": [
+            "nominal"
+          ],
+          "conditionsOut": [
+            "nominal-suffixed"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "ا",
+          "deinflected": "",
+          "conditionsIn": [
+            "nominal"
+          ],
+          "conditionsOut": [
+            "nominal-suffixed"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "ة",
+          "deinflected": "",
+          "conditionsIn": [
+            "nominal"
+          ],
+          "conditionsOut": [
+            "nominal-suffixed"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "ت",
+          "deinflected": "ة",
+          "conditionsIn": [
+            "nominal"
+          ],
+          "conditionsOut": [
+            "nominal-suffixed"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "ى",
+          "deinflected": "ا",
+          "conditionsIn": [
+            "nominal"
+          ],
+          "conditionsOut": [
+            "nominal-suffixed"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "ى",
+          "deinflected": "ي",
+          "conditionsIn": [
+            "nominal"
+          ],
+          "conditionsOut": [
+            "nominal-suffixed"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "اء",
+          "deinflected": "",
+          "conditionsIn": [
+            "nominal"
+          ],
+          "conditionsOut": [
+            "nominal-suffixed"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "nominal number/gender endings",
+      "rules": [
+        {
+          "type": "suffix",
+          "inflected": "ات",
+          "deinflected": "ة",
+          "conditionsIn": [
+            "nominal",
+            "nominal-prefixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "ات",
+          "deinflected": "",
+          "conditionsIn": [
+            "nominal",
+            "nominal-prefixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "يات",
+          "deinflected": "ية",
+          "conditionsIn": [
+            "nominal",
+            "nominal-prefixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "تان",
+          "deinflected": "ة",
+          "conditionsIn": [
+            "nominal",
+            "nominal-prefixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "تين",
+          "deinflected": "ة",
+          "conditionsIn": [
+            "nominal",
+            "nominal-prefixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "تا",
+          "deinflected": "ة",
+          "conditionsIn": [
+            "nominal",
+            "nominal-prefixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "تي",
+          "deinflected": "ة",
+          "conditionsIn": [
+            "nominal",
+            "nominal-prefixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "ان",
+          "deinflected": "",
+          "conditionsIn": [
+            "nominal",
+            "nominal-prefixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "ين",
+          "deinflected": "",
+          "conditionsIn": [
+            "nominal",
+            "nominal-prefixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "ون",
+          "deinflected": "",
+          "conditionsIn": [
+            "nominal",
+            "nominal-prefixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "و",
+          "deinflected": "",
+          "conditionsIn": [
+            "nominal",
+            "nominal-prefixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "ي",
+          "deinflected": "",
+          "conditionsIn": [
+            "nominal",
+            "nominal-prefixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "ا",
+          "deinflected": "",
+          "conditionsIn": [
+            "nominal",
+            "nominal-prefixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "ة",
+          "deinflected": "",
+          "conditionsIn": [
+            "nominal",
+            "nominal-prefixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "ت",
+          "deinflected": "ة",
+          "conditionsIn": [
+            "nominal",
+            "nominal-prefixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "ى",
+          "deinflected": "ا",
+          "conditionsIn": [
+            "nominal",
+            "nominal-prefixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "ى",
+          "deinflected": "ي",
+          "conditionsIn": [
+            "nominal",
+            "nominal-prefixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "اء",
+          "deinflected": "",
+          "conditionsIn": [
+            "nominal",
+            "nominal-prefixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "verb prefixes",
+      "rules": [
+        {
+          "type": "prefix",
+          "inflected": "أ",
+          "deinflected": "",
+          "conditionsIn": [
+            "verb",
+            "verb-suffixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "إ",
+          "deinflected": "",
+          "conditionsIn": [
+            "verb",
+            "verb-suffixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "ا",
+          "deinflected": "",
+          "conditionsIn": [
+            "verb",
+            "verb-suffixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "ت",
+          "deinflected": "",
+          "conditionsIn": [
+            "verb",
+            "verb-suffixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "س",
+          "deinflected": "",
+          "conditionsIn": [
+            "verb",
+            "verb-suffixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "سأ",
+          "deinflected": "",
+          "conditionsIn": [
+            "verb",
+            "verb-suffixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "سا",
+          "deinflected": "",
+          "conditionsIn": [
+            "verb",
+            "verb-suffixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "ست",
+          "deinflected": "",
+          "conditionsIn": [
+            "verb",
+            "verb-suffixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "سن",
+          "deinflected": "",
+          "conditionsIn": [
+            "verb",
+            "verb-suffixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "سوف",
+          "deinflected": "",
+          "conditionsIn": [
+            "verb",
+            "verb-suffixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "سي",
+          "deinflected": "",
+          "conditionsIn": [
+            "verb",
+            "verb-suffixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "ف",
+          "deinflected": "",
+          "conditionsIn": [
+            "verb",
+            "verb-suffixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "فأ",
+          "deinflected": "",
+          "conditionsIn": [
+            "verb",
+            "verb-suffixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "فإ",
+          "deinflected": "",
+          "conditionsIn": [
+            "verb",
+            "verb-suffixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "فا",
+          "deinflected": "",
+          "conditionsIn": [
+            "verb",
+            "verb-suffixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "فت",
+          "deinflected": "",
+          "conditionsIn": [
+            "verb",
+            "verb-suffixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "فس",
+          "deinflected": "",
+          "conditionsIn": [
+            "verb",
+            "verb-suffixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "فسأ",
+          "deinflected": "",
+          "conditionsIn": [
+            "verb",
+            "verb-suffixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "فسا",
+          "deinflected": "",
+          "conditionsIn": [
+            "verb",
+            "verb-suffixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "فست",
+          "deinflected": "",
+          "conditionsIn": [
+            "verb",
+            "verb-suffixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "فسن",
+          "deinflected": "",
+          "conditionsIn": [
+            "verb",
+            "verb-suffixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "فسوف",
+          "deinflected": "",
+          "conditionsIn": [
+            "verb",
+            "verb-suffixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "فسي",
+          "deinflected": "",
+          "conditionsIn": [
+            "verb",
+            "verb-suffixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "فل",
+          "deinflected": "",
+          "conditionsIn": [
+            "verb",
+            "verb-suffixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "فلأ",
+          "deinflected": "",
+          "conditionsIn": [
+            "verb",
+            "verb-suffixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "فلا",
+          "deinflected": "",
+          "conditionsIn": [
+            "verb",
+            "verb-suffixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "فلت",
+          "deinflected": "",
+          "conditionsIn": [
+            "verb",
+            "verb-suffixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "فلن",
+          "deinflected": "",
+          "conditionsIn": [
+            "verb",
+            "verb-suffixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "فلي",
+          "deinflected": "",
+          "conditionsIn": [
+            "verb",
+            "verb-suffixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "فن",
+          "deinflected": "",
+          "conditionsIn": [
+            "verb",
+            "verb-suffixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "في",
+          "deinflected": "",
+          "conditionsIn": [
+            "verb",
+            "verb-suffixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "ل",
+          "deinflected": "",
+          "conditionsIn": [
+            "verb",
+            "verb-suffixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "لأ",
+          "deinflected": "",
+          "conditionsIn": [
+            "verb",
+            "verb-suffixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "لا",
+          "deinflected": "",
+          "conditionsIn": [
+            "verb",
+            "verb-suffixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "لت",
+          "deinflected": "",
+          "conditionsIn": [
+            "verb",
+            "verb-suffixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "لن",
+          "deinflected": "",
+          "conditionsIn": [
+            "verb",
+            "verb-suffixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "لي",
+          "deinflected": "",
+          "conditionsIn": [
+            "verb",
+            "verb-suffixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "ن",
+          "deinflected": "",
+          "conditionsIn": [
+            "verb",
+            "verb-suffixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "و",
+          "deinflected": "",
+          "conditionsIn": [
+            "verb",
+            "verb-suffixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "وأ",
+          "deinflected": "",
+          "conditionsIn": [
+            "verb",
+            "verb-suffixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "وإ",
+          "deinflected": "",
+          "conditionsIn": [
+            "verb",
+            "verb-suffixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "وا",
+          "deinflected": "",
+          "conditionsIn": [
+            "verb",
+            "verb-suffixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "وت",
+          "deinflected": "",
+          "conditionsIn": [
+            "verb",
+            "verb-suffixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "وس",
+          "deinflected": "",
+          "conditionsIn": [
+            "verb",
+            "verb-suffixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "وسأ",
+          "deinflected": "",
+          "conditionsIn": [
+            "verb",
+            "verb-suffixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "وسا",
+          "deinflected": "",
+          "conditionsIn": [
+            "verb",
+            "verb-suffixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "وست",
+          "deinflected": "",
+          "conditionsIn": [
+            "verb",
+            "verb-suffixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "وسن",
+          "deinflected": "",
+          "conditionsIn": [
+            "verb",
+            "verb-suffixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "وسوف",
+          "deinflected": "",
+          "conditionsIn": [
+            "verb",
+            "verb-suffixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "وسي",
+          "deinflected": "",
+          "conditionsIn": [
+            "verb",
+            "verb-suffixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "ول",
+          "deinflected": "",
+          "conditionsIn": [
+            "verb",
+            "verb-suffixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "ولأ",
+          "deinflected": "",
+          "conditionsIn": [
+            "verb",
+            "verb-suffixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "ولا",
+          "deinflected": "",
+          "conditionsIn": [
+            "verb",
+            "verb-suffixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "ولت",
+          "deinflected": "",
+          "conditionsIn": [
+            "verb",
+            "verb-suffixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "ولن",
+          "deinflected": "",
+          "conditionsIn": [
+            "verb",
+            "verb-suffixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "ولي",
+          "deinflected": "",
+          "conditionsIn": [
+            "verb",
+            "verb-suffixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "ون",
+          "deinflected": "",
+          "conditionsIn": [
+            "verb",
+            "verb-suffixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "وي",
+          "deinflected": "",
+          "conditionsIn": [
+            "verb",
+            "verb-suffixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "ي",
+          "deinflected": "",
+          "conditionsIn": [
+            "verb",
+            "verb-suffixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "verb prefix before suffix",
+      "rules": [
+        {
+          "type": "prefix",
+          "inflected": "أ",
+          "deinflected": "",
+          "conditionsIn": [
+            "verb"
+          ],
+          "conditionsOut": [
+            "verb-prefixed"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "إ",
+          "deinflected": "",
+          "conditionsIn": [
+            "verb"
+          ],
+          "conditionsOut": [
+            "verb-prefixed"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "ا",
+          "deinflected": "",
+          "conditionsIn": [
+            "verb"
+          ],
+          "conditionsOut": [
+            "verb-prefixed"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "ت",
+          "deinflected": "",
+          "conditionsIn": [
+            "verb"
+          ],
+          "conditionsOut": [
+            "verb-prefixed"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "س",
+          "deinflected": "",
+          "conditionsIn": [
+            "verb"
+          ],
+          "conditionsOut": [
+            "verb-prefixed"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "سأ",
+          "deinflected": "",
+          "conditionsIn": [
+            "verb"
+          ],
+          "conditionsOut": [
+            "verb-prefixed"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "سا",
+          "deinflected": "",
+          "conditionsIn": [
+            "verb"
+          ],
+          "conditionsOut": [
+            "verb-prefixed"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "ست",
+          "deinflected": "",
+          "conditionsIn": [
+            "verb"
+          ],
+          "conditionsOut": [
+            "verb-prefixed"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "سن",
+          "deinflected": "",
+          "conditionsIn": [
+            "verb"
+          ],
+          "conditionsOut": [
+            "verb-prefixed"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "سوف",
+          "deinflected": "",
+          "conditionsIn": [
+            "verb"
+          ],
+          "conditionsOut": [
+            "verb-prefixed"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "سي",
+          "deinflected": "",
+          "conditionsIn": [
+            "verb"
+          ],
+          "conditionsOut": [
+            "verb-prefixed"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "ف",
+          "deinflected": "",
+          "conditionsIn": [
+            "verb"
+          ],
+          "conditionsOut": [
+            "verb-prefixed"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "فأ",
+          "deinflected": "",
+          "conditionsIn": [
+            "verb"
+          ],
+          "conditionsOut": [
+            "verb-prefixed"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "فإ",
+          "deinflected": "",
+          "conditionsIn": [
+            "verb"
+          ],
+          "conditionsOut": [
+            "verb-prefixed"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "فا",
+          "deinflected": "",
+          "conditionsIn": [
+            "verb"
+          ],
+          "conditionsOut": [
+            "verb-prefixed"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "فت",
+          "deinflected": "",
+          "conditionsIn": [
+            "verb"
+          ],
+          "conditionsOut": [
+            "verb-prefixed"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "فس",
+          "deinflected": "",
+          "conditionsIn": [
+            "verb"
+          ],
+          "conditionsOut": [
+            "verb-prefixed"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "فسأ",
+          "deinflected": "",
+          "conditionsIn": [
+            "verb"
+          ],
+          "conditionsOut": [
+            "verb-prefixed"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "فسا",
+          "deinflected": "",
+          "conditionsIn": [
+            "verb"
+          ],
+          "conditionsOut": [
+            "verb-prefixed"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "فست",
+          "deinflected": "",
+          "conditionsIn": [
+            "verb"
+          ],
+          "conditionsOut": [
+            "verb-prefixed"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "فسن",
+          "deinflected": "",
+          "conditionsIn": [
+            "verb"
+          ],
+          "conditionsOut": [
+            "verb-prefixed"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "فسوف",
+          "deinflected": "",
+          "conditionsIn": [
+            "verb"
+          ],
+          "conditionsOut": [
+            "verb-prefixed"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "فسي",
+          "deinflected": "",
+          "conditionsIn": [
+            "verb"
+          ],
+          "conditionsOut": [
+            "verb-prefixed"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "فل",
+          "deinflected": "",
+          "conditionsIn": [
+            "verb"
+          ],
+          "conditionsOut": [
+            "verb-prefixed"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "فلأ",
+          "deinflected": "",
+          "conditionsIn": [
+            "verb"
+          ],
+          "conditionsOut": [
+            "verb-prefixed"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "فلا",
+          "deinflected": "",
+          "conditionsIn": [
+            "verb"
+          ],
+          "conditionsOut": [
+            "verb-prefixed"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "فلت",
+          "deinflected": "",
+          "conditionsIn": [
+            "verb"
+          ],
+          "conditionsOut": [
+            "verb-prefixed"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "فلن",
+          "deinflected": "",
+          "conditionsIn": [
+            "verb"
+          ],
+          "conditionsOut": [
+            "verb-prefixed"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "فلي",
+          "deinflected": "",
+          "conditionsIn": [
+            "verb"
+          ],
+          "conditionsOut": [
+            "verb-prefixed"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "فن",
+          "deinflected": "",
+          "conditionsIn": [
+            "verb"
+          ],
+          "conditionsOut": [
+            "verb-prefixed"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "في",
+          "deinflected": "",
+          "conditionsIn": [
+            "verb"
+          ],
+          "conditionsOut": [
+            "verb-prefixed"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "ل",
+          "deinflected": "",
+          "conditionsIn": [
+            "verb"
+          ],
+          "conditionsOut": [
+            "verb-prefixed"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "لأ",
+          "deinflected": "",
+          "conditionsIn": [
+            "verb"
+          ],
+          "conditionsOut": [
+            "verb-prefixed"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "لا",
+          "deinflected": "",
+          "conditionsIn": [
+            "verb"
+          ],
+          "conditionsOut": [
+            "verb-prefixed"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "لت",
+          "deinflected": "",
+          "conditionsIn": [
+            "verb"
+          ],
+          "conditionsOut": [
+            "verb-prefixed"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "لن",
+          "deinflected": "",
+          "conditionsIn": [
+            "verb"
+          ],
+          "conditionsOut": [
+            "verb-prefixed"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "لي",
+          "deinflected": "",
+          "conditionsIn": [
+            "verb"
+          ],
+          "conditionsOut": [
+            "verb-prefixed"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "ن",
+          "deinflected": "",
+          "conditionsIn": [
+            "verb"
+          ],
+          "conditionsOut": [
+            "verb-prefixed"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "و",
+          "deinflected": "",
+          "conditionsIn": [
+            "verb"
+          ],
+          "conditionsOut": [
+            "verb-prefixed"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "وأ",
+          "deinflected": "",
+          "conditionsIn": [
+            "verb"
+          ],
+          "conditionsOut": [
+            "verb-prefixed"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "وإ",
+          "deinflected": "",
+          "conditionsIn": [
+            "verb"
+          ],
+          "conditionsOut": [
+            "verb-prefixed"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "وا",
+          "deinflected": "",
+          "conditionsIn": [
+            "verb"
+          ],
+          "conditionsOut": [
+            "verb-prefixed"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "وت",
+          "deinflected": "",
+          "conditionsIn": [
+            "verb"
+          ],
+          "conditionsOut": [
+            "verb-prefixed"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "وس",
+          "deinflected": "",
+          "conditionsIn": [
+            "verb"
+          ],
+          "conditionsOut": [
+            "verb-prefixed"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "وسأ",
+          "deinflected": "",
+          "conditionsIn": [
+            "verb"
+          ],
+          "conditionsOut": [
+            "verb-prefixed"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "وسا",
+          "deinflected": "",
+          "conditionsIn": [
+            "verb"
+          ],
+          "conditionsOut": [
+            "verb-prefixed"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "وست",
+          "deinflected": "",
+          "conditionsIn": [
+            "verb"
+          ],
+          "conditionsOut": [
+            "verb-prefixed"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "وسن",
+          "deinflected": "",
+          "conditionsIn": [
+            "verb"
+          ],
+          "conditionsOut": [
+            "verb-prefixed"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "وسوف",
+          "deinflected": "",
+          "conditionsIn": [
+            "verb"
+          ],
+          "conditionsOut": [
+            "verb-prefixed"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "وسي",
+          "deinflected": "",
+          "conditionsIn": [
+            "verb"
+          ],
+          "conditionsOut": [
+            "verb-prefixed"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "ول",
+          "deinflected": "",
+          "conditionsIn": [
+            "verb"
+          ],
+          "conditionsOut": [
+            "verb-prefixed"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "ولأ",
+          "deinflected": "",
+          "conditionsIn": [
+            "verb"
+          ],
+          "conditionsOut": [
+            "verb-prefixed"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "ولا",
+          "deinflected": "",
+          "conditionsIn": [
+            "verb"
+          ],
+          "conditionsOut": [
+            "verb-prefixed"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "ولت",
+          "deinflected": "",
+          "conditionsIn": [
+            "verb"
+          ],
+          "conditionsOut": [
+            "verb-prefixed"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "ولن",
+          "deinflected": "",
+          "conditionsIn": [
+            "verb"
+          ],
+          "conditionsOut": [
+            "verb-prefixed"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "ولي",
+          "deinflected": "",
+          "conditionsIn": [
+            "verb"
+          ],
+          "conditionsOut": [
+            "verb-prefixed"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "ون",
+          "deinflected": "",
+          "conditionsIn": [
+            "verb"
+          ],
+          "conditionsOut": [
+            "verb-prefixed"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "وي",
+          "deinflected": "",
+          "conditionsIn": [
+            "verb"
+          ],
+          "conditionsOut": [
+            "verb-prefixed"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "ي",
+          "deinflected": "",
+          "conditionsIn": [
+            "verb"
+          ],
+          "conditionsOut": [
+            "verb-prefixed"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "verb subject suffixes",
+      "rules": [
+        {
+          "type": "suffix",
+          "inflected": "تما",
+          "deinflected": "",
+          "conditionsIn": [
+            "verb",
+            "verb-prefixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "تم",
+          "deinflected": "",
+          "conditionsIn": [
+            "verb",
+            "verb-prefixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "تن",
+          "deinflected": "",
+          "conditionsIn": [
+            "verb",
+            "verb-prefixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "نا",
+          "deinflected": "",
+          "conditionsIn": [
+            "verb",
+            "verb-prefixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "وا",
+          "deinflected": "",
+          "conditionsIn": [
+            "verb",
+            "verb-prefixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "و",
+          "deinflected": "",
+          "conditionsIn": [
+            "verb",
+            "verb-prefixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "ن",
+          "deinflected": "",
+          "conditionsIn": [
+            "verb",
+            "verb-prefixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "ت",
+          "deinflected": "",
+          "conditionsIn": [
+            "verb",
+            "verb-prefixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "ا",
+          "deinflected": "",
+          "conditionsIn": [
+            "verb",
+            "verb-prefixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "ون",
+          "deinflected": "",
+          "conditionsIn": [
+            "verb",
+            "verb-prefixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "ين",
+          "deinflected": "",
+          "conditionsIn": [
+            "verb",
+            "verb-prefixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "ان",
+          "deinflected": "",
+          "conditionsIn": [
+            "verb",
+            "verb-prefixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "انِ",
+          "deinflected": "",
+          "conditionsIn": [
+            "verb",
+            "verb-prefixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "ونَ",
+          "deinflected": "",
+          "conditionsIn": [
+            "verb",
+            "verb-prefixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "ينَ",
+          "deinflected": "",
+          "conditionsIn": [
+            "verb",
+            "verb-prefixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "نَ",
+          "deinflected": "",
+          "conditionsIn": [
+            "verb",
+            "verb-prefixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "نّ",
+          "deinflected": "",
+          "conditionsIn": [
+            "verb",
+            "verb-prefixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "اْ",
+          "deinflected": "",
+          "conditionsIn": [
+            "verb",
+            "verb-prefixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "verb suffix before prefix",
+      "rules": [
+        {
+          "type": "suffix",
+          "inflected": "تما",
+          "deinflected": "",
+          "conditionsIn": [
+            "verb"
+          ],
+          "conditionsOut": [
+            "verb-suffixed"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "تم",
+          "deinflected": "",
+          "conditionsIn": [
+            "verb"
+          ],
+          "conditionsOut": [
+            "verb-suffixed"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "تن",
+          "deinflected": "",
+          "conditionsIn": [
+            "verb"
+          ],
+          "conditionsOut": [
+            "verb-suffixed"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "نا",
+          "deinflected": "",
+          "conditionsIn": [
+            "verb"
+          ],
+          "conditionsOut": [
+            "verb-suffixed"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "وا",
+          "deinflected": "",
+          "conditionsIn": [
+            "verb"
+          ],
+          "conditionsOut": [
+            "verb-suffixed"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "و",
+          "deinflected": "",
+          "conditionsIn": [
+            "verb"
+          ],
+          "conditionsOut": [
+            "verb-suffixed"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "ن",
+          "deinflected": "",
+          "conditionsIn": [
+            "verb"
+          ],
+          "conditionsOut": [
+            "verb-suffixed"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "ت",
+          "deinflected": "",
+          "conditionsIn": [
+            "verb"
+          ],
+          "conditionsOut": [
+            "verb-suffixed"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "ا",
+          "deinflected": "",
+          "conditionsIn": [
+            "verb"
+          ],
+          "conditionsOut": [
+            "verb-suffixed"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "ون",
+          "deinflected": "",
+          "conditionsIn": [
+            "verb"
+          ],
+          "conditionsOut": [
+            "verb-suffixed"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "ين",
+          "deinflected": "",
+          "conditionsIn": [
+            "verb"
+          ],
+          "conditionsOut": [
+            "verb-suffixed"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "ان",
+          "deinflected": "",
+          "conditionsIn": [
+            "verb"
+          ],
+          "conditionsOut": [
+            "verb-suffixed"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "انِ",
+          "deinflected": "",
+          "conditionsIn": [
+            "verb"
+          ],
+          "conditionsOut": [
+            "verb-suffixed"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "ونَ",
+          "deinflected": "",
+          "conditionsIn": [
+            "verb"
+          ],
+          "conditionsOut": [
+            "verb-suffixed"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "ينَ",
+          "deinflected": "",
+          "conditionsIn": [
+            "verb"
+          ],
+          "conditionsOut": [
+            "verb-suffixed"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "نَ",
+          "deinflected": "",
+          "conditionsIn": [
+            "verb"
+          ],
+          "conditionsOut": [
+            "verb-suffixed"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "نّ",
+          "deinflected": "",
+          "conditionsIn": [
+            "verb"
+          ],
+          "conditionsOut": [
+            "verb-suffixed"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "اْ",
+          "deinflected": "",
+          "conditionsIn": [
+            "verb"
+          ],
+          "conditionsOut": [
+            "verb-suffixed"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "ني",
+          "deinflected": "",
+          "conditionsIn": [
+            "verb"
+          ],
+          "conditionsOut": [
+            "verb-suffixed"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "كما",
+          "deinflected": "",
+          "conditionsIn": [
+            "verb"
+          ],
+          "conditionsOut": [
+            "verb-suffixed"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "هما",
+          "deinflected": "",
+          "conditionsIn": [
+            "verb"
+          ],
+          "conditionsOut": [
+            "verb-suffixed"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "هم",
+          "deinflected": "",
+          "conditionsIn": [
+            "verb"
+          ],
+          "conditionsOut": [
+            "verb-suffixed"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "هن",
+          "deinflected": "",
+          "conditionsIn": [
+            "verb"
+          ],
+          "conditionsOut": [
+            "verb-suffixed"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "كم",
+          "deinflected": "",
+          "conditionsIn": [
+            "verb"
+          ],
+          "conditionsOut": [
+            "verb-suffixed"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "كن",
+          "deinflected": "",
+          "conditionsIn": [
+            "verb"
+          ],
+          "conditionsOut": [
+            "verb-suffixed"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "نا",
+          "deinflected": "",
+          "conditionsIn": [
+            "verb"
+          ],
+          "conditionsOut": [
+            "verb-suffixed"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "ها",
+          "deinflected": "",
+          "conditionsIn": [
+            "verb"
+          ],
+          "conditionsOut": [
+            "verb-suffixed"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "ه",
+          "deinflected": "",
+          "conditionsIn": [
+            "verb"
+          ],
+          "conditionsOut": [
+            "verb-suffixed"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "ك",
+          "deinflected": "",
+          "conditionsIn": [
+            "verb"
+          ],
+          "conditionsOut": [
+            "verb-suffixed"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "ي",
+          "deinflected": "",
+          "conditionsIn": [
+            "verb"
+          ],
+          "conditionsOut": [
+            "verb-suffixed"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "verb object suffixes",
+      "rules": [
+        {
+          "type": "suffix",
+          "inflected": "ني",
+          "deinflected": "",
+          "conditionsIn": [
+            "verb",
+            "verb-prefixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "كما",
+          "deinflected": "",
+          "conditionsIn": [
+            "verb",
+            "verb-prefixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "هما",
+          "deinflected": "",
+          "conditionsIn": [
+            "verb",
+            "verb-prefixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "هم",
+          "deinflected": "",
+          "conditionsIn": [
+            "verb",
+            "verb-prefixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "هن",
+          "deinflected": "",
+          "conditionsIn": [
+            "verb",
+            "verb-prefixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "كم",
+          "deinflected": "",
+          "conditionsIn": [
+            "verb",
+            "verb-prefixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "كن",
+          "deinflected": "",
+          "conditionsIn": [
+            "verb",
+            "verb-prefixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "نا",
+          "deinflected": "",
+          "conditionsIn": [
+            "verb",
+            "verb-prefixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "ها",
+          "deinflected": "",
+          "conditionsIn": [
+            "verb",
+            "verb-prefixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "ه",
+          "deinflected": "",
+          "conditionsIn": [
+            "verb",
+            "verb-prefixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "ك",
+          "deinflected": "",
+          "conditionsIn": [
+            "verb",
+            "verb-prefixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "ي",
+          "deinflected": "",
+          "conditionsIn": [
+            "verb",
+            "verb-prefixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "verb compound subject/object suffixes",
+      "rules": [
+        {
+          "type": "suffix",
+          "inflected": "انك",
+          "deinflected": "",
+          "conditionsIn": [
+            "verb",
+            "verb-prefixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "انكم",
+          "deinflected": "",
+          "conditionsIn": [
+            "verb",
+            "verb-prefixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "انكما",
+          "deinflected": "",
+          "conditionsIn": [
+            "verb",
+            "verb-prefixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "انكن",
+          "deinflected": "",
+          "conditionsIn": [
+            "verb",
+            "verb-prefixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "اننا",
+          "deinflected": "",
+          "conditionsIn": [
+            "verb",
+            "verb-prefixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "انني",
+          "deinflected": "",
+          "conditionsIn": [
+            "verb",
+            "verb-prefixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "انه",
+          "deinflected": "",
+          "conditionsIn": [
+            "verb",
+            "verb-prefixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "انها",
+          "deinflected": "",
+          "conditionsIn": [
+            "verb",
+            "verb-prefixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "انهم",
+          "deinflected": "",
+          "conditionsIn": [
+            "verb",
+            "verb-prefixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "انهما",
+          "deinflected": "",
+          "conditionsIn": [
+            "verb",
+            "verb-prefixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "انهن",
+          "deinflected": "",
+          "conditionsIn": [
+            "verb",
+            "verb-prefixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "تك",
+          "deinflected": "",
+          "conditionsIn": [
+            "verb",
+            "verb-prefixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "تكم",
+          "deinflected": "",
+          "conditionsIn": [
+            "verb",
+            "verb-prefixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "تكما",
+          "deinflected": "",
+          "conditionsIn": [
+            "verb",
+            "verb-prefixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "تكن",
+          "deinflected": "",
+          "conditionsIn": [
+            "verb",
+            "verb-prefixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "تماك",
+          "deinflected": "",
+          "conditionsIn": [
+            "verb",
+            "verb-prefixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "تماكم",
+          "deinflected": "",
+          "conditionsIn": [
+            "verb",
+            "verb-prefixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "تماكما",
+          "deinflected": "",
+          "conditionsIn": [
+            "verb",
+            "verb-prefixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "تماكن",
+          "deinflected": "",
+          "conditionsIn": [
+            "verb",
+            "verb-prefixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "تمانا",
+          "deinflected": "",
+          "conditionsIn": [
+            "verb",
+            "verb-prefixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "تماني",
+          "deinflected": "",
+          "conditionsIn": [
+            "verb",
+            "verb-prefixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "تماه",
+          "deinflected": "",
+          "conditionsIn": [
+            "verb",
+            "verb-prefixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "تماها",
+          "deinflected": "",
+          "conditionsIn": [
+            "verb",
+            "verb-prefixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "تماهم",
+          "deinflected": "",
+          "conditionsIn": [
+            "verb",
+            "verb-prefixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "تماهما",
+          "deinflected": "",
+          "conditionsIn": [
+            "verb",
+            "verb-prefixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "تماهن",
+          "deinflected": "",
+          "conditionsIn": [
+            "verb",
+            "verb-prefixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "تمك",
+          "deinflected": "",
+          "conditionsIn": [
+            "verb",
+            "verb-prefixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "تمكم",
+          "deinflected": "",
+          "conditionsIn": [
+            "verb",
+            "verb-prefixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "تمكما",
+          "deinflected": "",
+          "conditionsIn": [
+            "verb",
+            "verb-prefixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "تمكن",
+          "deinflected": "",
+          "conditionsIn": [
+            "verb",
+            "verb-prefixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "تمنا",
+          "deinflected": "",
+          "conditionsIn": [
+            "verb",
+            "verb-prefixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "تمني",
+          "deinflected": "",
+          "conditionsIn": [
+            "verb",
+            "verb-prefixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "تمه",
+          "deinflected": "",
+          "conditionsIn": [
+            "verb",
+            "verb-prefixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "تمها",
+          "deinflected": "",
+          "conditionsIn": [
+            "verb",
+            "verb-prefixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "تمهم",
+          "deinflected": "",
+          "conditionsIn": [
+            "verb",
+            "verb-prefixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "تمهما",
+          "deinflected": "",
+          "conditionsIn": [
+            "verb",
+            "verb-prefixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "تمهن",
+          "deinflected": "",
+          "conditionsIn": [
+            "verb",
+            "verb-prefixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "تنا",
+          "deinflected": "",
+          "conditionsIn": [
+            "verb",
+            "verb-prefixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "تنك",
+          "deinflected": "",
+          "conditionsIn": [
+            "verb",
+            "verb-prefixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "تنكم",
+          "deinflected": "",
+          "conditionsIn": [
+            "verb",
+            "verb-prefixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "تنكما",
+          "deinflected": "",
+          "conditionsIn": [
+            "verb",
+            "verb-prefixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "تنكن",
+          "deinflected": "",
+          "conditionsIn": [
+            "verb",
+            "verb-prefixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "تننا",
+          "deinflected": "",
+          "conditionsIn": [
+            "verb",
+            "verb-prefixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "تنني",
+          "deinflected": "",
+          "conditionsIn": [
+            "verb",
+            "verb-prefixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "تنه",
+          "deinflected": "",
+          "conditionsIn": [
+            "verb",
+            "verb-prefixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "تنها",
+          "deinflected": "",
+          "conditionsIn": [
+            "verb",
+            "verb-prefixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "تنهم",
+          "deinflected": "",
+          "conditionsIn": [
+            "verb",
+            "verb-prefixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "تنهما",
+          "deinflected": "",
+          "conditionsIn": [
+            "verb",
+            "verb-prefixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "تنهن",
+          "deinflected": "",
+          "conditionsIn": [
+            "verb",
+            "verb-prefixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "تني",
+          "deinflected": "",
+          "conditionsIn": [
+            "verb",
+            "verb-prefixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "ته",
+          "deinflected": "",
+          "conditionsIn": [
+            "verb",
+            "verb-prefixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "تها",
+          "deinflected": "",
+          "conditionsIn": [
+            "verb",
+            "verb-prefixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "تهم",
+          "deinflected": "",
+          "conditionsIn": [
+            "verb",
+            "verb-prefixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "تهما",
+          "deinflected": "",
+          "conditionsIn": [
+            "verb",
+            "verb-prefixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "تهن",
+          "deinflected": "",
+          "conditionsIn": [
+            "verb",
+            "verb-prefixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "ناك",
+          "deinflected": "",
+          "conditionsIn": [
+            "verb",
+            "verb-prefixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "ناكم",
+          "deinflected": "",
+          "conditionsIn": [
+            "verb",
+            "verb-prefixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "ناكما",
+          "deinflected": "",
+          "conditionsIn": [
+            "verb",
+            "verb-prefixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "ناكن",
+          "deinflected": "",
+          "conditionsIn": [
+            "verb",
+            "verb-prefixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "نانا",
+          "deinflected": "",
+          "conditionsIn": [
+            "verb",
+            "verb-prefixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "ناني",
+          "deinflected": "",
+          "conditionsIn": [
+            "verb",
+            "verb-prefixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "ناه",
+          "deinflected": "",
+          "conditionsIn": [
+            "verb",
+            "verb-prefixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "ناها",
+          "deinflected": "",
+          "conditionsIn": [
+            "verb",
+            "verb-prefixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "ناهم",
+          "deinflected": "",
+          "conditionsIn": [
+            "verb",
+            "verb-prefixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "ناهما",
+          "deinflected": "",
+          "conditionsIn": [
+            "verb",
+            "verb-prefixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "ناهن",
+          "deinflected": "",
+          "conditionsIn": [
+            "verb",
+            "verb-prefixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "نك",
+          "deinflected": "",
+          "conditionsIn": [
+            "verb",
+            "verb-prefixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "نكم",
+          "deinflected": "",
+          "conditionsIn": [
+            "verb",
+            "verb-prefixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "نكما",
+          "deinflected": "",
+          "conditionsIn": [
+            "verb",
+            "verb-prefixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "نكن",
+          "deinflected": "",
+          "conditionsIn": [
+            "verb",
+            "verb-prefixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "ننا",
+          "deinflected": "",
+          "conditionsIn": [
+            "verb",
+            "verb-prefixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "نني",
+          "deinflected": "",
+          "conditionsIn": [
+            "verb",
+            "verb-prefixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "نه",
+          "deinflected": "",
+          "conditionsIn": [
+            "verb",
+            "verb-prefixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "نها",
+          "deinflected": "",
+          "conditionsIn": [
+            "verb",
+            "verb-prefixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "نهم",
+          "deinflected": "",
+          "conditionsIn": [
+            "verb",
+            "verb-prefixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "نهما",
+          "deinflected": "",
+          "conditionsIn": [
+            "verb",
+            "verb-prefixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "نهن",
+          "deinflected": "",
+          "conditionsIn": [
+            "verb",
+            "verb-prefixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "واك",
+          "deinflected": "",
+          "conditionsIn": [
+            "verb",
+            "verb-prefixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "واكم",
+          "deinflected": "",
+          "conditionsIn": [
+            "verb",
+            "verb-prefixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "واكما",
+          "deinflected": "",
+          "conditionsIn": [
+            "verb",
+            "verb-prefixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "واكن",
+          "deinflected": "",
+          "conditionsIn": [
+            "verb",
+            "verb-prefixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "وانا",
+          "deinflected": "",
+          "conditionsIn": [
+            "verb",
+            "verb-prefixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "واني",
+          "deinflected": "",
+          "conditionsIn": [
+            "verb",
+            "verb-prefixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "واه",
+          "deinflected": "",
+          "conditionsIn": [
+            "verb",
+            "verb-prefixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "واها",
+          "deinflected": "",
+          "conditionsIn": [
+            "verb",
+            "verb-prefixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "واهم",
+          "deinflected": "",
+          "conditionsIn": [
+            "verb",
+            "verb-prefixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "واهما",
+          "deinflected": "",
+          "conditionsIn": [
+            "verb",
+            "verb-prefixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "واهن",
+          "deinflected": "",
+          "conditionsIn": [
+            "verb",
+            "verb-prefixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "وك",
+          "deinflected": "",
+          "conditionsIn": [
+            "verb",
+            "verb-prefixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "وكم",
+          "deinflected": "",
+          "conditionsIn": [
+            "verb",
+            "verb-prefixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "وكما",
+          "deinflected": "",
+          "conditionsIn": [
+            "verb",
+            "verb-prefixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "وكن",
+          "deinflected": "",
+          "conditionsIn": [
+            "verb",
+            "verb-prefixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "ونا",
+          "deinflected": "",
+          "conditionsIn": [
+            "verb",
+            "verb-prefixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "ونك",
+          "deinflected": "",
+          "conditionsIn": [
+            "verb",
+            "verb-prefixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "ونكم",
+          "deinflected": "",
+          "conditionsIn": [
+            "verb",
+            "verb-prefixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "ونكما",
+          "deinflected": "",
+          "conditionsIn": [
+            "verb",
+            "verb-prefixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "ونكن",
+          "deinflected": "",
+          "conditionsIn": [
+            "verb",
+            "verb-prefixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "وننا",
+          "deinflected": "",
+          "conditionsIn": [
+            "verb",
+            "verb-prefixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "ونني",
+          "deinflected": "",
+          "conditionsIn": [
+            "verb",
+            "verb-prefixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "ونه",
+          "deinflected": "",
+          "conditionsIn": [
+            "verb",
+            "verb-prefixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "ونها",
+          "deinflected": "",
+          "conditionsIn": [
+            "verb",
+            "verb-prefixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "ونهم",
+          "deinflected": "",
+          "conditionsIn": [
+            "verb",
+            "verb-prefixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "ونهما",
+          "deinflected": "",
+          "conditionsIn": [
+            "verb",
+            "verb-prefixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "ونهن",
+          "deinflected": "",
+          "conditionsIn": [
+            "verb",
+            "verb-prefixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "وني",
+          "deinflected": "",
+          "conditionsIn": [
+            "verb",
+            "verb-prefixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "وه",
+          "deinflected": "",
+          "conditionsIn": [
+            "verb",
+            "verb-prefixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "وها",
+          "deinflected": "",
+          "conditionsIn": [
+            "verb",
+            "verb-prefixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "وهم",
+          "deinflected": "",
+          "conditionsIn": [
+            "verb",
+            "verb-prefixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "وهما",
+          "deinflected": "",
+          "conditionsIn": [
+            "verb",
+            "verb-prefixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "وهن",
+          "deinflected": "",
+          "conditionsIn": [
+            "verb",
+            "verb-prefixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "ينك",
+          "deinflected": "",
+          "conditionsIn": [
+            "verb",
+            "verb-prefixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "ينكم",
+          "deinflected": "",
+          "conditionsIn": [
+            "verb",
+            "verb-prefixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "ينكما",
+          "deinflected": "",
+          "conditionsIn": [
+            "verb",
+            "verb-prefixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "ينكن",
+          "deinflected": "",
+          "conditionsIn": [
+            "verb",
+            "verb-prefixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "يننا",
+          "deinflected": "",
+          "conditionsIn": [
+            "verb",
+            "verb-prefixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "ينني",
+          "deinflected": "",
+          "conditionsIn": [
+            "verb",
+            "verb-prefixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "ينه",
+          "deinflected": "",
+          "conditionsIn": [
+            "verb",
+            "verb-prefixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "ينها",
+          "deinflected": "",
+          "conditionsIn": [
+            "verb",
+            "verb-prefixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "ينهم",
+          "deinflected": "",
+          "conditionsIn": [
+            "verb",
+            "verb-prefixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "ينهما",
+          "deinflected": "",
+          "conditionsIn": [
+            "verb",
+            "verb-prefixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "ينهن",
+          "deinflected": "",
+          "conditionsIn": [
+            "verb",
+            "verb-prefixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "final diacritics and case spellings",
+      "rules": [
+        {
+          "type": "suffix",
+          "inflected": "ً",
+          "deinflected": "",
+          "conditionsIn": [
+            "word",
+            "nominal-prefixed",
+            "verb-prefixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "ٌ",
+          "deinflected": "",
+          "conditionsIn": [
+            "word",
+            "nominal-prefixed",
+            "verb-prefixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "ٍ",
+          "deinflected": "",
+          "conditionsIn": [
+            "word",
+            "nominal-prefixed",
+            "verb-prefixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "َ",
+          "deinflected": "",
+          "conditionsIn": [
+            "word",
+            "nominal-prefixed",
+            "verb-prefixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "ُ",
+          "deinflected": "",
+          "conditionsIn": [
+            "word",
+            "nominal-prefixed",
+            "verb-prefixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "ِ",
+          "deinflected": "",
+          "conditionsIn": [
+            "word",
+            "nominal-prefixed",
+            "verb-prefixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "ْ",
+          "deinflected": "",
+          "conditionsIn": [
+            "word",
+            "nominal-prefixed",
+            "verb-prefixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "ّ",
+          "deinflected": "",
+          "conditionsIn": [
+            "word",
+            "nominal-prefixed",
+            "verb-prefixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "اً",
+          "deinflected": "",
+          "conditionsIn": [
+            "word",
+            "nominal-prefixed",
+            "verb-prefixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "اٍ",
+          "deinflected": "",
+          "conditionsIn": [
+            "word",
+            "nominal-prefixed",
+            "verb-prefixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "اٌ",
+          "deinflected": "",
+          "conditionsIn": [
+            "word",
+            "nominal-prefixed",
+            "verb-prefixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "انِ",
+          "deinflected": "",
+          "conditionsIn": [
+            "word",
+            "nominal-prefixed",
+            "verb-prefixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "ينِ",
+          "deinflected": "",
+          "conditionsIn": [
+            "word",
+            "nominal-prefixed",
+            "verb-prefixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "ونَ",
+          "deinflected": "",
+          "conditionsIn": [
+            "word",
+            "nominal-prefixed",
+            "verb-prefixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "ينَ",
+          "deinflected": "",
+          "conditionsIn": [
+            "word",
+            "nominal-prefixed",
+            "verb-prefixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "واْ",
+          "deinflected": "",
+          "conditionsIn": [
+            "word",
+            "nominal-prefixed",
+            "verb-prefixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        }
+      ]
+    }
+  ]
+}
