@@ -82,6 +82,7 @@ impl LookupService {
                     | DeinflectLanguage::Spanish
                     | DeinflectLanguage::French
                     | DeinflectLanguage::German
+                    | DeinflectLanguage::Portuguese
             ) && len < 2
                 && !substring.eq_ignore_ascii_case("a")
                 && !substring.eq_ignore_ascii_case("i")
@@ -346,7 +347,8 @@ impl LookupService {
             DeinflectLanguage::English
             | DeinflectLanguage::Spanish
             | DeinflectLanguage::French
-            | DeinflectLanguage::German => {
+            | DeinflectLanguage::German
+            | DeinflectLanguage::Portuguese => {
                 let lower = text.to_lowercase();
                 let sources = if lower == text {
                     vec![text.to_string()]
