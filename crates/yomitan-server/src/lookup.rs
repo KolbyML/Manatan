@@ -76,14 +76,8 @@ impl LookupService {
             let substring: String = chars[0..len].iter().collect();
 
             // Skip single character Latin/Symbol lookups unless explicitly desired
-            if matches!(
-                language,
-                DeinflectLanguage::English
-                    | DeinflectLanguage::Spanish
-                    | DeinflectLanguage::French
-                    | DeinflectLanguage::German
-                    | DeinflectLanguage::Portuguese
-            ) && len < 2
+            if should_skip_single_character(language)
+                && len < 2
                 && !substring.eq_ignore_ascii_case("a")
                 && !substring.eq_ignore_ascii_case("i")
             {
@@ -344,11 +338,7 @@ impl LookupService {
                     &mut candidates,
                 );
             }
-            DeinflectLanguage::English
-            | DeinflectLanguage::Spanish
-            | DeinflectLanguage::French
-            | DeinflectLanguage::German
-            | DeinflectLanguage::Portuguese => {
+            language if should_lowercase(language) => {
                 let lower = text.to_lowercase();
                 let sources = if lower == text {
                     vec![text.to_string()]
@@ -382,6 +372,9 @@ impl LookupService {
                     );
                 }
             }
+            _ => {
+                self.add_deinflections(language, text, source_len, &mut candidates);
+            }
         }
 
         candidates
@@ -405,4 +398,43 @@ impl LookupService {
             });
         }
     }
+}
+
+fn should_skip_single_character(language: DeinflectLanguage) -> bool {
+    should_lowercase(language)
+}
+
+fn should_lowercase(language: DeinflectLanguage) -> bool {
+    matches!(
+        language,
+        DeinflectLanguage::English
+            | DeinflectLanguage::Spanish
+            | DeinflectLanguage::French
+            | DeinflectLanguage::German
+            | DeinflectLanguage::Portuguese
+            | DeinflectLanguage::Italian
+            | DeinflectLanguage::Dutch
+            | DeinflectLanguage::Norwegian
+            | DeinflectLanguage::Swedish
+            | DeinflectLanguage::Danish
+            | DeinflectLanguage::Finnish
+            | DeinflectLanguage::Estonian
+            | DeinflectLanguage::Latvian
+            | DeinflectLanguage::Romanian
+            | DeinflectLanguage::Polish
+            | DeinflectLanguage::Czech
+            | DeinflectLanguage::Hungarian
+            | DeinflectLanguage::Turkish
+            | DeinflectLanguage::Indonesian
+            | DeinflectLanguage::Vietnamese
+            | DeinflectLanguage::Tagalog
+            | DeinflectLanguage::Maltese
+            | DeinflectLanguage::Welsh
+            | DeinflectLanguage::Bulgarian
+            | DeinflectLanguage::Russian
+            | DeinflectLanguage::Ukrainian
+            | DeinflectLanguage::Greek
+            | DeinflectLanguage::Latin
+            | DeinflectLanguage::Mongolian
+    )
 }

@@ -1,0 +1,6953 @@
+{
+  "_metadata": {
+    "language": "latin",
+    "generatedBy": "manatan-deinflectors Rust generator",
+    "generatorVersion": "0.1.0",
+    "sourceFormat": "programmatic",
+    "note": "Latin rules for common declension classes, adjective agreement/comparison, regular conjugation endings, participles, infinitives, and core irregular verbs.",
+    "sources": [
+      {
+        "title": "Allen and Greenough's New Latin Grammar",
+        "url": "https://commons.wikimedia.org/wiki/File:Allen_and_Greenough%27s_New_Latin_grammar_for_schools_and_colleges_(IA_allengreenoughsn01alle).pdf",
+        "license": "Public domain",
+        "usage": "Reference for Latin declension and conjugation paradigms."
+      },
+      {
+        "title": "Gildersleeve, A Latin Grammar",
+        "url": "https://www.loc.gov/item/10023586/",
+        "license": "Public domain",
+        "usage": "Secondary public-domain grammar reference."
+      },
+      {
+        "title": "Bennett, New Latin Grammar",
+        "url": "https://www.gutenberg.org/ebooks/15665",
+        "license": "Public domain in the USA",
+        "usage": "Public-domain reference for Latin declension, conjugation, imperatives, and passive forms."
+      },
+      {
+        "title": "Lane, A Latin Grammar",
+        "url": "https://www.gutenberg.org/ebooks/44653",
+        "license": "Public domain in the USA",
+        "usage": "Public-domain reference for Latin inflection tables."
+      }
+    ]
+  },
+  "conditions": {
+    "adj": {
+      "subConditions": [
+        "adj-ior",
+        "adj-is",
+        "adj-us"
+      ]
+    },
+    "adj-ior": {
+      "subConditions": null
+    },
+    "adj-is": {
+      "subConditions": null
+    },
+    "adj-us": {
+      "subConditions": null
+    },
+    "base": {
+      "subConditions": null
+    },
+    "noun": {
+      "subConditions": [
+        "noun-a",
+        "noun-es",
+        "noun-is",
+        "noun-um",
+        "noun-us",
+        "noun-us-4"
+      ]
+    },
+    "noun-a": {
+      "subConditions": null
+    },
+    "noun-es": {
+      "subConditions": null
+    },
+    "noun-is": {
+      "subConditions": null
+    },
+    "noun-um": {
+      "subConditions": null
+    },
+    "noun-us": {
+      "subConditions": null
+    },
+    "noun-us-4": {
+      "subConditions": null
+    },
+    "verb": {
+      "subConditions": [
+        "verb-are",
+        "verb-ere",
+        "verb-ere-long",
+        "verb-ire"
+      ]
+    },
+    "verb-are": {
+      "subConditions": null
+    },
+    "verb-ere": {
+      "subConditions": null
+    },
+    "verb-ere-long": {
+      "subConditions": null
+    },
+    "verb-ire": {
+      "subConditions": null
+    },
+    "word": {
+      "subConditions": [
+        "adj",
+        "noun",
+        "verb"
+      ]
+    }
+  },
+  "transforms": [
+    {
+      "id": "first declension nouns",
+      "rules": [
+        {
+          "type": "suffix",
+          "inflected": "ae",
+          "deinflected": "a",
+          "conditionsIn": [
+            "noun-a"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "am",
+          "deinflected": "a",
+          "conditionsIn": [
+            "noun-a"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "arum",
+          "deinflected": "a",
+          "conditionsIn": [
+            "noun-a"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "is",
+          "deinflected": "a",
+          "conditionsIn": [
+            "noun-a"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "as",
+          "deinflected": "a",
+          "conditionsIn": [
+            "noun-a"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "second declension -us nouns",
+      "rules": [
+        {
+          "type": "suffix",
+          "inflected": "i",
+          "deinflected": "us",
+          "conditionsIn": [
+            "noun-us"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "o",
+          "deinflected": "us",
+          "conditionsIn": [
+            "noun-us"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "um",
+          "deinflected": "us",
+          "conditionsIn": [
+            "noun-us"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "e",
+          "deinflected": "us",
+          "conditionsIn": [
+            "noun-us"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "orum",
+          "deinflected": "us",
+          "conditionsIn": [
+            "noun-us"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "is",
+          "deinflected": "us",
+          "conditionsIn": [
+            "noun-us"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "os",
+          "deinflected": "us",
+          "conditionsIn": [
+            "noun-us"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "second declension neuter nouns",
+      "rules": [
+        {
+          "type": "suffix",
+          "inflected": "a",
+          "deinflected": "um",
+          "conditionsIn": [
+            "noun-um"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "o",
+          "deinflected": "um",
+          "conditionsIn": [
+            "noun-um"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "orum",
+          "deinflected": "um",
+          "conditionsIn": [
+            "noun-um"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "is",
+          "deinflected": "um",
+          "conditionsIn": [
+            "noun-um"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "third declension nouns",
+      "rules": [
+        {
+          "type": "suffix",
+          "inflected": "i",
+          "deinflected": "is",
+          "conditionsIn": [
+            "noun-is"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "em",
+          "deinflected": "is",
+          "conditionsIn": [
+            "noun-is"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "e",
+          "deinflected": "is",
+          "conditionsIn": [
+            "noun-is"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "es",
+          "deinflected": "is",
+          "conditionsIn": [
+            "noun-is"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "um",
+          "deinflected": "is",
+          "conditionsIn": [
+            "noun-is"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "ium",
+          "deinflected": "is",
+          "conditionsIn": [
+            "noun-is"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "ibus",
+          "deinflected": "is",
+          "conditionsIn": [
+            "noun-is"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "fourth declension nouns",
+      "rules": [
+        {
+          "type": "suffix",
+          "inflected": "ui",
+          "deinflected": "us",
+          "conditionsIn": [
+            "noun-us-4"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "um",
+          "deinflected": "us",
+          "conditionsIn": [
+            "noun-us-4"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "u",
+          "deinflected": "us",
+          "conditionsIn": [
+            "noun-us-4"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "uum",
+          "deinflected": "us",
+          "conditionsIn": [
+            "noun-us-4"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "ibus",
+          "deinflected": "us",
+          "conditionsIn": [
+            "noun-us-4"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "fifth declension nouns",
+      "rules": [
+        {
+          "type": "suffix",
+          "inflected": "ei",
+          "deinflected": "es",
+          "conditionsIn": [
+            "noun-es"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "em",
+          "deinflected": "es",
+          "conditionsIn": [
+            "noun-es"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "e",
+          "deinflected": "es",
+          "conditionsIn": [
+            "noun-es"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "erum",
+          "deinflected": "es",
+          "conditionsIn": [
+            "noun-es"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "ebus",
+          "deinflected": "es",
+          "conditionsIn": [
+            "noun-es"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "irregular nouns",
+      "rules": [
+        {
+          "type": "wholeWord",
+          "inflected": "viri",
+          "deinflected": "vir",
+          "conditionsIn": [
+            "noun"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "virum",
+          "deinflected": "vir",
+          "conditionsIn": [
+            "noun"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "viro",
+          "deinflected": "vir",
+          "conditionsIn": [
+            "noun"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "viros",
+          "deinflected": "vir",
+          "conditionsIn": [
+            "noun"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "vim",
+          "deinflected": "vis",
+          "conditionsIn": [
+            "noun"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "vi",
+          "deinflected": "vis",
+          "conditionsIn": [
+            "noun"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "domum",
+          "deinflected": "domus",
+          "conditionsIn": [
+            "noun"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "domui",
+          "deinflected": "domus",
+          "conditionsIn": [
+            "noun"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "domo",
+          "deinflected": "domus",
+          "conditionsIn": [
+            "noun"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "domorum",
+          "deinflected": "domus",
+          "conditionsIn": [
+            "noun"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "domos",
+          "deinflected": "domus",
+          "conditionsIn": [
+            "noun"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "domibus",
+          "deinflected": "domus",
+          "conditionsIn": [
+            "noun"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "Iovis",
+          "deinflected": "Iuppiter",
+          "conditionsIn": [
+            "noun"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "Iovi",
+          "deinflected": "Iuppiter",
+          "conditionsIn": [
+            "noun"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "Iovem",
+          "deinflected": "Iuppiter",
+          "conditionsIn": [
+            "noun"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "Iove",
+          "deinflected": "Iuppiter",
+          "conditionsIn": [
+            "noun"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "first/second declension adjectives",
+      "rules": [
+        {
+          "type": "suffix",
+          "inflected": "a",
+          "deinflected": "us",
+          "conditionsIn": [
+            "adj-us"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "ae",
+          "deinflected": "us",
+          "conditionsIn": [
+            "adj-us"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "am",
+          "deinflected": "us",
+          "conditionsIn": [
+            "adj-us"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "arum",
+          "deinflected": "us",
+          "conditionsIn": [
+            "adj-us"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "as",
+          "deinflected": "us",
+          "conditionsIn": [
+            "adj-us"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "i",
+          "deinflected": "us",
+          "conditionsIn": [
+            "adj-us"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "o",
+          "deinflected": "us",
+          "conditionsIn": [
+            "adj-us"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "um",
+          "deinflected": "us",
+          "conditionsIn": [
+            "adj-us"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "e",
+          "deinflected": "us",
+          "conditionsIn": [
+            "adj-us"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "orum",
+          "deinflected": "us",
+          "conditionsIn": [
+            "adj-us"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "is",
+          "deinflected": "us",
+          "conditionsIn": [
+            "adj-us"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "os",
+          "deinflected": "us",
+          "conditionsIn": [
+            "adj-us"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "third declension adjectives",
+      "rules": [
+        {
+          "type": "suffix",
+          "inflected": "i",
+          "deinflected": "is",
+          "conditionsIn": [
+            "adj-is"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "em",
+          "deinflected": "is",
+          "conditionsIn": [
+            "adj-is"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "e",
+          "deinflected": "is",
+          "conditionsIn": [
+            "adj-is"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "es",
+          "deinflected": "is",
+          "conditionsIn": [
+            "adj-is"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "ia",
+          "deinflected": "is",
+          "conditionsIn": [
+            "adj-is"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "ium",
+          "deinflected": "is",
+          "conditionsIn": [
+            "adj-is"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "ibus",
+          "deinflected": "is",
+          "conditionsIn": [
+            "adj-is"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "comparative adjectives",
+      "rules": [
+        {
+          "type": "suffix",
+          "inflected": "ius",
+          "deinflected": "ior",
+          "conditionsIn": [
+            "adj-ior"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "iorem",
+          "deinflected": "ior",
+          "conditionsIn": [
+            "adj-ior"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "ioris",
+          "deinflected": "ior",
+          "conditionsIn": [
+            "adj-ior"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "iori",
+          "deinflected": "ior",
+          "conditionsIn": [
+            "adj-ior"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "iore",
+          "deinflected": "ior",
+          "conditionsIn": [
+            "adj-ior"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "iores",
+          "deinflected": "ior",
+          "conditionsIn": [
+            "adj-ior"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "iora",
+          "deinflected": "ior",
+          "conditionsIn": [
+            "adj-ior"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "iorum",
+          "deinflected": "ior",
+          "conditionsIn": [
+            "adj-ior"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "ioribus",
+          "deinflected": "ior",
+          "conditionsIn": [
+            "adj-ior"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "superlative adjectives",
+      "rules": [
+        {
+          "type": "suffix",
+          "inflected": "issimus",
+          "deinflected": "us",
+          "conditionsIn": [
+            "adj-us"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "issima",
+          "deinflected": "us",
+          "conditionsIn": [
+            "adj-us"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "issimum",
+          "deinflected": "us",
+          "conditionsIn": [
+            "adj-us"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "issimi",
+          "deinflected": "us",
+          "conditionsIn": [
+            "adj-us"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "issimae",
+          "deinflected": "us",
+          "conditionsIn": [
+            "adj-us"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "issimo",
+          "deinflected": "us",
+          "conditionsIn": [
+            "adj-us"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "issimam",
+          "deinflected": "us",
+          "conditionsIn": [
+            "adj-us"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "issimos",
+          "deinflected": "us",
+          "conditionsIn": [
+            "adj-us"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "issimas",
+          "deinflected": "us",
+          "conditionsIn": [
+            "adj-us"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "issimorum",
+          "deinflected": "us",
+          "conditionsIn": [
+            "adj-us"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "issimarum",
+          "deinflected": "us",
+          "conditionsIn": [
+            "adj-us"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "illimus",
+          "deinflected": "us",
+          "conditionsIn": [
+            "adj-us"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "illima",
+          "deinflected": "us",
+          "conditionsIn": [
+            "adj-us"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "illimum",
+          "deinflected": "us",
+          "conditionsIn": [
+            "adj-us"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "errimus",
+          "deinflected": "er",
+          "conditionsIn": [
+            "adj-us"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "errima",
+          "deinflected": "er",
+          "conditionsIn": [
+            "adj-us"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "errimum",
+          "deinflected": "er",
+          "conditionsIn": [
+            "adj-us"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "irregular adjective comparison",
+      "rules": [
+        {
+          "type": "wholeWord",
+          "inflected": "melior",
+          "deinflected": "bonus",
+          "conditionsIn": [
+            "adj"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "melius",
+          "deinflected": "bonus",
+          "conditionsIn": [
+            "adj"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "meliorem",
+          "deinflected": "bonus",
+          "conditionsIn": [
+            "adj"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "meliores",
+          "deinflected": "bonus",
+          "conditionsIn": [
+            "adj"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "optimum",
+          "deinflected": "bonus",
+          "conditionsIn": [
+            "adj"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "optima",
+          "deinflected": "bonus",
+          "conditionsIn": [
+            "adj"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "optimi",
+          "deinflected": "bonus",
+          "conditionsIn": [
+            "adj"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "peior",
+          "deinflected": "malus",
+          "conditionsIn": [
+            "adj"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "peius",
+          "deinflected": "malus",
+          "conditionsIn": [
+            "adj"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "pessimus",
+          "deinflected": "malus",
+          "conditionsIn": [
+            "adj"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "maior",
+          "deinflected": "magnus",
+          "conditionsIn": [
+            "adj"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "maius",
+          "deinflected": "magnus",
+          "conditionsIn": [
+            "adj"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "maximus",
+          "deinflected": "magnus",
+          "conditionsIn": [
+            "adj"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "minor",
+          "deinflected": "parvus",
+          "conditionsIn": [
+            "adj"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "minus",
+          "deinflected": "parvus",
+          "conditionsIn": [
+            "adj"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "minimus",
+          "deinflected": "parvus",
+          "conditionsIn": [
+            "adj"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "first conjugation finite",
+      "rules": [
+        {
+          "type": "suffix",
+          "inflected": "o",
+          "deinflected": "are",
+          "conditionsIn": [
+            "verb-are"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "as",
+          "deinflected": "are",
+          "conditionsIn": [
+            "verb-are"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "at",
+          "deinflected": "are",
+          "conditionsIn": [
+            "verb-are"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "amus",
+          "deinflected": "are",
+          "conditionsIn": [
+            "verb-are"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "atis",
+          "deinflected": "are",
+          "conditionsIn": [
+            "verb-are"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "ant",
+          "deinflected": "are",
+          "conditionsIn": [
+            "verb-are"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "abam",
+          "deinflected": "are",
+          "conditionsIn": [
+            "verb-are"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "abas",
+          "deinflected": "are",
+          "conditionsIn": [
+            "verb-are"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "abat",
+          "deinflected": "are",
+          "conditionsIn": [
+            "verb-are"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "abamus",
+          "deinflected": "are",
+          "conditionsIn": [
+            "verb-are"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "abatis",
+          "deinflected": "are",
+          "conditionsIn": [
+            "verb-are"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "abant",
+          "deinflected": "are",
+          "conditionsIn": [
+            "verb-are"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "abo",
+          "deinflected": "are",
+          "conditionsIn": [
+            "verb-are"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "abis",
+          "deinflected": "are",
+          "conditionsIn": [
+            "verb-are"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "abit",
+          "deinflected": "are",
+          "conditionsIn": [
+            "verb-are"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "abimus",
+          "deinflected": "are",
+          "conditionsIn": [
+            "verb-are"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "abitis",
+          "deinflected": "are",
+          "conditionsIn": [
+            "verb-are"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "abunt",
+          "deinflected": "are",
+          "conditionsIn": [
+            "verb-are"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "em",
+          "deinflected": "are",
+          "conditionsIn": [
+            "verb-are"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "es",
+          "deinflected": "are",
+          "conditionsIn": [
+            "verb-are"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "et",
+          "deinflected": "are",
+          "conditionsIn": [
+            "verb-are"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "emus",
+          "deinflected": "are",
+          "conditionsIn": [
+            "verb-are"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "etis",
+          "deinflected": "are",
+          "conditionsIn": [
+            "verb-are"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "ent",
+          "deinflected": "are",
+          "conditionsIn": [
+            "verb-are"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "arem",
+          "deinflected": "are",
+          "conditionsIn": [
+            "verb-are"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "ares",
+          "deinflected": "are",
+          "conditionsIn": [
+            "verb-are"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "aret",
+          "deinflected": "are",
+          "conditionsIn": [
+            "verb-are"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "aremus",
+          "deinflected": "are",
+          "conditionsIn": [
+            "verb-are"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "aretis",
+          "deinflected": "are",
+          "conditionsIn": [
+            "verb-are"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "arent",
+          "deinflected": "are",
+          "conditionsIn": [
+            "verb-are"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "avi",
+          "deinflected": "are",
+          "conditionsIn": [
+            "verb-are"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "avisti",
+          "deinflected": "are",
+          "conditionsIn": [
+            "verb-are"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "avit",
+          "deinflected": "are",
+          "conditionsIn": [
+            "verb-are"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "avimus",
+          "deinflected": "are",
+          "conditionsIn": [
+            "verb-are"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "avistis",
+          "deinflected": "are",
+          "conditionsIn": [
+            "verb-are"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "averunt",
+          "deinflected": "are",
+          "conditionsIn": [
+            "verb-are"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "averam",
+          "deinflected": "are",
+          "conditionsIn": [
+            "verb-are"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "averas",
+          "deinflected": "are",
+          "conditionsIn": [
+            "verb-are"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "averat",
+          "deinflected": "are",
+          "conditionsIn": [
+            "verb-are"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "averamus",
+          "deinflected": "are",
+          "conditionsIn": [
+            "verb-are"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "averatis",
+          "deinflected": "are",
+          "conditionsIn": [
+            "verb-are"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "averant",
+          "deinflected": "are",
+          "conditionsIn": [
+            "verb-are"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "avero",
+          "deinflected": "are",
+          "conditionsIn": [
+            "verb-are"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "averis",
+          "deinflected": "are",
+          "conditionsIn": [
+            "verb-are"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "averit",
+          "deinflected": "are",
+          "conditionsIn": [
+            "verb-are"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "averimus",
+          "deinflected": "are",
+          "conditionsIn": [
+            "verb-are"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "averitis",
+          "deinflected": "are",
+          "conditionsIn": [
+            "verb-are"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "averint",
+          "deinflected": "are",
+          "conditionsIn": [
+            "verb-are"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "second conjugation finite",
+      "rules": [
+        {
+          "type": "suffix",
+          "inflected": "eo",
+          "deinflected": "ere",
+          "conditionsIn": [
+            "verb-ere-long"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "es",
+          "deinflected": "ere",
+          "conditionsIn": [
+            "verb-ere-long"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "et",
+          "deinflected": "ere",
+          "conditionsIn": [
+            "verb-ere-long"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "emus",
+          "deinflected": "ere",
+          "conditionsIn": [
+            "verb-ere-long"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "etis",
+          "deinflected": "ere",
+          "conditionsIn": [
+            "verb-ere-long"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "ent",
+          "deinflected": "ere",
+          "conditionsIn": [
+            "verb-ere-long"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "ebam",
+          "deinflected": "ere",
+          "conditionsIn": [
+            "verb-ere-long"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "ebas",
+          "deinflected": "ere",
+          "conditionsIn": [
+            "verb-ere-long"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "ebat",
+          "deinflected": "ere",
+          "conditionsIn": [
+            "verb-ere-long"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "ebamus",
+          "deinflected": "ere",
+          "conditionsIn": [
+            "verb-ere-long"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "ebatis",
+          "deinflected": "ere",
+          "conditionsIn": [
+            "verb-ere-long"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "ebant",
+          "deinflected": "ere",
+          "conditionsIn": [
+            "verb-ere-long"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "ebo",
+          "deinflected": "ere",
+          "conditionsIn": [
+            "verb-ere-long"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "ebis",
+          "deinflected": "ere",
+          "conditionsIn": [
+            "verb-ere-long"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "ebit",
+          "deinflected": "ere",
+          "conditionsIn": [
+            "verb-ere-long"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "ebimus",
+          "deinflected": "ere",
+          "conditionsIn": [
+            "verb-ere-long"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "ebitis",
+          "deinflected": "ere",
+          "conditionsIn": [
+            "verb-ere-long"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "ebunt",
+          "deinflected": "ere",
+          "conditionsIn": [
+            "verb-ere-long"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "eam",
+          "deinflected": "ere",
+          "conditionsIn": [
+            "verb-ere-long"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "eas",
+          "deinflected": "ere",
+          "conditionsIn": [
+            "verb-ere-long"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "eat",
+          "deinflected": "ere",
+          "conditionsIn": [
+            "verb-ere-long"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "eamus",
+          "deinflected": "ere",
+          "conditionsIn": [
+            "verb-ere-long"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "eatis",
+          "deinflected": "ere",
+          "conditionsIn": [
+            "verb-ere-long"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "eant",
+          "deinflected": "ere",
+          "conditionsIn": [
+            "verb-ere-long"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "erem",
+          "deinflected": "ere",
+          "conditionsIn": [
+            "verb-ere-long"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "eres",
+          "deinflected": "ere",
+          "conditionsIn": [
+            "verb-ere-long"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "eret",
+          "deinflected": "ere",
+          "conditionsIn": [
+            "verb-ere-long"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "eremus",
+          "deinflected": "ere",
+          "conditionsIn": [
+            "verb-ere-long"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "eretis",
+          "deinflected": "ere",
+          "conditionsIn": [
+            "verb-ere-long"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "erent",
+          "deinflected": "ere",
+          "conditionsIn": [
+            "verb-ere-long"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "ui",
+          "deinflected": "ere",
+          "conditionsIn": [
+            "verb-ere-long"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "uisti",
+          "deinflected": "ere",
+          "conditionsIn": [
+            "verb-ere-long"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "uit",
+          "deinflected": "ere",
+          "conditionsIn": [
+            "verb-ere-long"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "uimus",
+          "deinflected": "ere",
+          "conditionsIn": [
+            "verb-ere-long"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "uistis",
+          "deinflected": "ere",
+          "conditionsIn": [
+            "verb-ere-long"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "uerunt",
+          "deinflected": "ere",
+          "conditionsIn": [
+            "verb-ere-long"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "ueram",
+          "deinflected": "ere",
+          "conditionsIn": [
+            "verb-ere-long"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "ueras",
+          "deinflected": "ere",
+          "conditionsIn": [
+            "verb-ere-long"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "uerat",
+          "deinflected": "ere",
+          "conditionsIn": [
+            "verb-ere-long"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "ueramus",
+          "deinflected": "ere",
+          "conditionsIn": [
+            "verb-ere-long"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "ueratis",
+          "deinflected": "ere",
+          "conditionsIn": [
+            "verb-ere-long"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "uerant",
+          "deinflected": "ere",
+          "conditionsIn": [
+            "verb-ere-long"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "uero",
+          "deinflected": "ere",
+          "conditionsIn": [
+            "verb-ere-long"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "ueris",
+          "deinflected": "ere",
+          "conditionsIn": [
+            "verb-ere-long"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "uerit",
+          "deinflected": "ere",
+          "conditionsIn": [
+            "verb-ere-long"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "uerimus",
+          "deinflected": "ere",
+          "conditionsIn": [
+            "verb-ere-long"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "ueritis",
+          "deinflected": "ere",
+          "conditionsIn": [
+            "verb-ere-long"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "uerint",
+          "deinflected": "ere",
+          "conditionsIn": [
+            "verb-ere-long"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "third conjugation finite",
+      "rules": [
+        {
+          "type": "suffix",
+          "inflected": "o",
+          "deinflected": "ere",
+          "conditionsIn": [
+            "verb-ere"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "is",
+          "deinflected": "ere",
+          "conditionsIn": [
+            "verb-ere"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "it",
+          "deinflected": "ere",
+          "conditionsIn": [
+            "verb-ere"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "imus",
+          "deinflected": "ere",
+          "conditionsIn": [
+            "verb-ere"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "itis",
+          "deinflected": "ere",
+          "conditionsIn": [
+            "verb-ere"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "unt",
+          "deinflected": "ere",
+          "conditionsIn": [
+            "verb-ere"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "ebam",
+          "deinflected": "ere",
+          "conditionsIn": [
+            "verb-ere"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "ebas",
+          "deinflected": "ere",
+          "conditionsIn": [
+            "verb-ere"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "ebat",
+          "deinflected": "ere",
+          "conditionsIn": [
+            "verb-ere"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "ebamus",
+          "deinflected": "ere",
+          "conditionsIn": [
+            "verb-ere"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "ebatis",
+          "deinflected": "ere",
+          "conditionsIn": [
+            "verb-ere"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "ebant",
+          "deinflected": "ere",
+          "conditionsIn": [
+            "verb-ere"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "am",
+          "deinflected": "ere",
+          "conditionsIn": [
+            "verb-ere"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "es",
+          "deinflected": "ere",
+          "conditionsIn": [
+            "verb-ere"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "et",
+          "deinflected": "ere",
+          "conditionsIn": [
+            "verb-ere"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "emus",
+          "deinflected": "ere",
+          "conditionsIn": [
+            "verb-ere"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "etis",
+          "deinflected": "ere",
+          "conditionsIn": [
+            "verb-ere"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "ent",
+          "deinflected": "ere",
+          "conditionsIn": [
+            "verb-ere"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "as",
+          "deinflected": "ere",
+          "conditionsIn": [
+            "verb-ere"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "at",
+          "deinflected": "ere",
+          "conditionsIn": [
+            "verb-ere"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "amus",
+          "deinflected": "ere",
+          "conditionsIn": [
+            "verb-ere"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "atis",
+          "deinflected": "ere",
+          "conditionsIn": [
+            "verb-ere"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "ant",
+          "deinflected": "ere",
+          "conditionsIn": [
+            "verb-ere"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "erem",
+          "deinflected": "ere",
+          "conditionsIn": [
+            "verb-ere"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "eres",
+          "deinflected": "ere",
+          "conditionsIn": [
+            "verb-ere"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "eret",
+          "deinflected": "ere",
+          "conditionsIn": [
+            "verb-ere"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "eremus",
+          "deinflected": "ere",
+          "conditionsIn": [
+            "verb-ere"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "eretis",
+          "deinflected": "ere",
+          "conditionsIn": [
+            "verb-ere"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "erent",
+          "deinflected": "ere",
+          "conditionsIn": [
+            "verb-ere"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "i",
+          "deinflected": "ere",
+          "conditionsIn": [
+            "verb-ere"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "isti",
+          "deinflected": "ere",
+          "conditionsIn": [
+            "verb-ere"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "istis",
+          "deinflected": "ere",
+          "conditionsIn": [
+            "verb-ere"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "erunt",
+          "deinflected": "ere",
+          "conditionsIn": [
+            "verb-ere"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "eram",
+          "deinflected": "ere",
+          "conditionsIn": [
+            "verb-ere"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "eras",
+          "deinflected": "ere",
+          "conditionsIn": [
+            "verb-ere"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "erat",
+          "deinflected": "ere",
+          "conditionsIn": [
+            "verb-ere"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "eramus",
+          "deinflected": "ere",
+          "conditionsIn": [
+            "verb-ere"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "eratis",
+          "deinflected": "ere",
+          "conditionsIn": [
+            "verb-ere"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "erant",
+          "deinflected": "ere",
+          "conditionsIn": [
+            "verb-ere"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "ero",
+          "deinflected": "ere",
+          "conditionsIn": [
+            "verb-ere"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "eris",
+          "deinflected": "ere",
+          "conditionsIn": [
+            "verb-ere"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "erit",
+          "deinflected": "ere",
+          "conditionsIn": [
+            "verb-ere"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "erimus",
+          "deinflected": "ere",
+          "conditionsIn": [
+            "verb-ere"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "eritis",
+          "deinflected": "ere",
+          "conditionsIn": [
+            "verb-ere"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "erint",
+          "deinflected": "ere",
+          "conditionsIn": [
+            "verb-ere"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "fourth conjugation finite",
+      "rules": [
+        {
+          "type": "suffix",
+          "inflected": "io",
+          "deinflected": "ire",
+          "conditionsIn": [
+            "verb-ire"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "is",
+          "deinflected": "ire",
+          "conditionsIn": [
+            "verb-ire"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "it",
+          "deinflected": "ire",
+          "conditionsIn": [
+            "verb-ire"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "imus",
+          "deinflected": "ire",
+          "conditionsIn": [
+            "verb-ire"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "itis",
+          "deinflected": "ire",
+          "conditionsIn": [
+            "verb-ire"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "iunt",
+          "deinflected": "ire",
+          "conditionsIn": [
+            "verb-ire"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "iebam",
+          "deinflected": "ire",
+          "conditionsIn": [
+            "verb-ire"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "iebas",
+          "deinflected": "ire",
+          "conditionsIn": [
+            "verb-ire"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "iebat",
+          "deinflected": "ire",
+          "conditionsIn": [
+            "verb-ire"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "iebamus",
+          "deinflected": "ire",
+          "conditionsIn": [
+            "verb-ire"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "iebatis",
+          "deinflected": "ire",
+          "conditionsIn": [
+            "verb-ire"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "iebant",
+          "deinflected": "ire",
+          "conditionsIn": [
+            "verb-ire"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "iam",
+          "deinflected": "ire",
+          "conditionsIn": [
+            "verb-ire"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "ies",
+          "deinflected": "ire",
+          "conditionsIn": [
+            "verb-ire"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "iet",
+          "deinflected": "ire",
+          "conditionsIn": [
+            "verb-ire"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "iemus",
+          "deinflected": "ire",
+          "conditionsIn": [
+            "verb-ire"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "ietis",
+          "deinflected": "ire",
+          "conditionsIn": [
+            "verb-ire"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "ient",
+          "deinflected": "ire",
+          "conditionsIn": [
+            "verb-ire"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "ias",
+          "deinflected": "ire",
+          "conditionsIn": [
+            "verb-ire"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "iat",
+          "deinflected": "ire",
+          "conditionsIn": [
+            "verb-ire"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "iamus",
+          "deinflected": "ire",
+          "conditionsIn": [
+            "verb-ire"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "iatis",
+          "deinflected": "ire",
+          "conditionsIn": [
+            "verb-ire"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "iant",
+          "deinflected": "ire",
+          "conditionsIn": [
+            "verb-ire"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "irem",
+          "deinflected": "ire",
+          "conditionsIn": [
+            "verb-ire"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "ires",
+          "deinflected": "ire",
+          "conditionsIn": [
+            "verb-ire"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "iret",
+          "deinflected": "ire",
+          "conditionsIn": [
+            "verb-ire"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "iremus",
+          "deinflected": "ire",
+          "conditionsIn": [
+            "verb-ire"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "iretis",
+          "deinflected": "ire",
+          "conditionsIn": [
+            "verb-ire"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "irent",
+          "deinflected": "ire",
+          "conditionsIn": [
+            "verb-ire"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "ivi",
+          "deinflected": "ire",
+          "conditionsIn": [
+            "verb-ire"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "ivisti",
+          "deinflected": "ire",
+          "conditionsIn": [
+            "verb-ire"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "ivit",
+          "deinflected": "ire",
+          "conditionsIn": [
+            "verb-ire"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "ivimus",
+          "deinflected": "ire",
+          "conditionsIn": [
+            "verb-ire"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "ivistis",
+          "deinflected": "ire",
+          "conditionsIn": [
+            "verb-ire"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "iverunt",
+          "deinflected": "ire",
+          "conditionsIn": [
+            "verb-ire"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "iveram",
+          "deinflected": "ire",
+          "conditionsIn": [
+            "verb-ire"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "iveras",
+          "deinflected": "ire",
+          "conditionsIn": [
+            "verb-ire"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "iverat",
+          "deinflected": "ire",
+          "conditionsIn": [
+            "verb-ire"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "iveramus",
+          "deinflected": "ire",
+          "conditionsIn": [
+            "verb-ire"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "iveratis",
+          "deinflected": "ire",
+          "conditionsIn": [
+            "verb-ire"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "iverant",
+          "deinflected": "ire",
+          "conditionsIn": [
+            "verb-ire"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "ivero",
+          "deinflected": "ire",
+          "conditionsIn": [
+            "verb-ire"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "iveris",
+          "deinflected": "ire",
+          "conditionsIn": [
+            "verb-ire"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "iverit",
+          "deinflected": "ire",
+          "conditionsIn": [
+            "verb-ire"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "iverimus",
+          "deinflected": "ire",
+          "conditionsIn": [
+            "verb-ire"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "iveritis",
+          "deinflected": "ire",
+          "conditionsIn": [
+            "verb-ire"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "iverint",
+          "deinflected": "ire",
+          "conditionsIn": [
+            "verb-ire"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "imperatives",
+      "rules": [
+        {
+          "type": "suffix",
+          "inflected": "a",
+          "deinflected": "are",
+          "conditionsIn": [
+            "verb-are"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "ate",
+          "deinflected": "are",
+          "conditionsIn": [
+            "verb-are"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "e",
+          "deinflected": "ere",
+          "conditionsIn": [
+            "verb-ere-long"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "ete",
+          "deinflected": "ere",
+          "conditionsIn": [
+            "verb-ere-long"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "e",
+          "deinflected": "ere",
+          "conditionsIn": [
+            "verb-ere"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "ite",
+          "deinflected": "ere",
+          "conditionsIn": [
+            "verb-ere"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "i",
+          "deinflected": "ire",
+          "conditionsIn": [
+            "verb-ire"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "ite",
+          "deinflected": "ire",
+          "conditionsIn": [
+            "verb-ire"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "finite passive",
+      "rules": [
+        {
+          "type": "suffix",
+          "inflected": "or",
+          "deinflected": "are",
+          "conditionsIn": [
+            "verb-are"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "aris",
+          "deinflected": "are",
+          "conditionsIn": [
+            "verb-are"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "atur",
+          "deinflected": "are",
+          "conditionsIn": [
+            "verb-are"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "amur",
+          "deinflected": "are",
+          "conditionsIn": [
+            "verb-are"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "amini",
+          "deinflected": "are",
+          "conditionsIn": [
+            "verb-are"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "antur",
+          "deinflected": "are",
+          "conditionsIn": [
+            "verb-are"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "abar",
+          "deinflected": "are",
+          "conditionsIn": [
+            "verb-are"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "abaris",
+          "deinflected": "are",
+          "conditionsIn": [
+            "verb-are"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "abatur",
+          "deinflected": "are",
+          "conditionsIn": [
+            "verb-are"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "abamur",
+          "deinflected": "are",
+          "conditionsIn": [
+            "verb-are"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "abamini",
+          "deinflected": "are",
+          "conditionsIn": [
+            "verb-are"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "abantur",
+          "deinflected": "are",
+          "conditionsIn": [
+            "verb-are"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "abor",
+          "deinflected": "are",
+          "conditionsIn": [
+            "verb-are"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "aberis",
+          "deinflected": "are",
+          "conditionsIn": [
+            "verb-are"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "abitur",
+          "deinflected": "are",
+          "conditionsIn": [
+            "verb-are"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "abimur",
+          "deinflected": "are",
+          "conditionsIn": [
+            "verb-are"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "abimini",
+          "deinflected": "are",
+          "conditionsIn": [
+            "verb-are"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "abuntur",
+          "deinflected": "are",
+          "conditionsIn": [
+            "verb-are"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "er",
+          "deinflected": "are",
+          "conditionsIn": [
+            "verb-are"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "eris",
+          "deinflected": "are",
+          "conditionsIn": [
+            "verb-are"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "etur",
+          "deinflected": "are",
+          "conditionsIn": [
+            "verb-are"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "emur",
+          "deinflected": "are",
+          "conditionsIn": [
+            "verb-are"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "emini",
+          "deinflected": "are",
+          "conditionsIn": [
+            "verb-are"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "entur",
+          "deinflected": "are",
+          "conditionsIn": [
+            "verb-are"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "eor",
+          "deinflected": "ere",
+          "conditionsIn": [
+            "verb-ere-long"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "eris",
+          "deinflected": "ere",
+          "conditionsIn": [
+            "verb-ere-long"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "etur",
+          "deinflected": "ere",
+          "conditionsIn": [
+            "verb-ere-long"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "emur",
+          "deinflected": "ere",
+          "conditionsIn": [
+            "verb-ere-long"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "emini",
+          "deinflected": "ere",
+          "conditionsIn": [
+            "verb-ere-long"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "entur",
+          "deinflected": "ere",
+          "conditionsIn": [
+            "verb-ere-long"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "ebar",
+          "deinflected": "ere",
+          "conditionsIn": [
+            "verb-ere-long"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "ebaris",
+          "deinflected": "ere",
+          "conditionsIn": [
+            "verb-ere-long"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "ebatur",
+          "deinflected": "ere",
+          "conditionsIn": [
+            "verb-ere-long"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "ebamur",
+          "deinflected": "ere",
+          "conditionsIn": [
+            "verb-ere-long"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "ebamini",
+          "deinflected": "ere",
+          "conditionsIn": [
+            "verb-ere-long"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "ebantur",
+          "deinflected": "ere",
+          "conditionsIn": [
+            "verb-ere-long"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "ebor",
+          "deinflected": "ere",
+          "conditionsIn": [
+            "verb-ere-long"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "eberis",
+          "deinflected": "ere",
+          "conditionsIn": [
+            "verb-ere-long"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "ebitur",
+          "deinflected": "ere",
+          "conditionsIn": [
+            "verb-ere-long"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "ebimur",
+          "deinflected": "ere",
+          "conditionsIn": [
+            "verb-ere-long"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "ebimini",
+          "deinflected": "ere",
+          "conditionsIn": [
+            "verb-ere-long"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "ebuntur",
+          "deinflected": "ere",
+          "conditionsIn": [
+            "verb-ere-long"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "ear",
+          "deinflected": "ere",
+          "conditionsIn": [
+            "verb-ere-long"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "earis",
+          "deinflected": "ere",
+          "conditionsIn": [
+            "verb-ere-long"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "eatur",
+          "deinflected": "ere",
+          "conditionsIn": [
+            "verb-ere-long"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "eamur",
+          "deinflected": "ere",
+          "conditionsIn": [
+            "verb-ere-long"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "eamini",
+          "deinflected": "ere",
+          "conditionsIn": [
+            "verb-ere-long"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "eantur",
+          "deinflected": "ere",
+          "conditionsIn": [
+            "verb-ere-long"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "or",
+          "deinflected": "ere",
+          "conditionsIn": [
+            "verb-ere"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "eris",
+          "deinflected": "ere",
+          "conditionsIn": [
+            "verb-ere"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "itur",
+          "deinflected": "ere",
+          "conditionsIn": [
+            "verb-ere"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "imur",
+          "deinflected": "ere",
+          "conditionsIn": [
+            "verb-ere"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "imini",
+          "deinflected": "ere",
+          "conditionsIn": [
+            "verb-ere"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "untur",
+          "deinflected": "ere",
+          "conditionsIn": [
+            "verb-ere"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "ebar",
+          "deinflected": "ere",
+          "conditionsIn": [
+            "verb-ere"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "ebaris",
+          "deinflected": "ere",
+          "conditionsIn": [
+            "verb-ere"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "ebatur",
+          "deinflected": "ere",
+          "conditionsIn": [
+            "verb-ere"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "ebamur",
+          "deinflected": "ere",
+          "conditionsIn": [
+            "verb-ere"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "ebamini",
+          "deinflected": "ere",
+          "conditionsIn": [
+            "verb-ere"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "ebantur",
+          "deinflected": "ere",
+          "conditionsIn": [
+            "verb-ere"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "ar",
+          "deinflected": "ere",
+          "conditionsIn": [
+            "verb-ere"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "aris",
+          "deinflected": "ere",
+          "conditionsIn": [
+            "verb-ere"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "atur",
+          "deinflected": "ere",
+          "conditionsIn": [
+            "verb-ere"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "amur",
+          "deinflected": "ere",
+          "conditionsIn": [
+            "verb-ere"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "amini",
+          "deinflected": "ere",
+          "conditionsIn": [
+            "verb-ere"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "antur",
+          "deinflected": "ere",
+          "conditionsIn": [
+            "verb-ere"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "ior",
+          "deinflected": "ire",
+          "conditionsIn": [
+            "verb-ire"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "iris",
+          "deinflected": "ire",
+          "conditionsIn": [
+            "verb-ire"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "itur",
+          "deinflected": "ire",
+          "conditionsIn": [
+            "verb-ire"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "imur",
+          "deinflected": "ire",
+          "conditionsIn": [
+            "verb-ire"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "imini",
+          "deinflected": "ire",
+          "conditionsIn": [
+            "verb-ire"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "iuntur",
+          "deinflected": "ire",
+          "conditionsIn": [
+            "verb-ire"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "iebar",
+          "deinflected": "ire",
+          "conditionsIn": [
+            "verb-ire"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "iebaris",
+          "deinflected": "ire",
+          "conditionsIn": [
+            "verb-ire"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "iebatur",
+          "deinflected": "ire",
+          "conditionsIn": [
+            "verb-ire"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "iebamur",
+          "deinflected": "ire",
+          "conditionsIn": [
+            "verb-ire"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "iebamini",
+          "deinflected": "ire",
+          "conditionsIn": [
+            "verb-ire"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "iebantur",
+          "deinflected": "ire",
+          "conditionsIn": [
+            "verb-ire"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "iar",
+          "deinflected": "ire",
+          "conditionsIn": [
+            "verb-ire"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "iaris",
+          "deinflected": "ire",
+          "conditionsIn": [
+            "verb-ire"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "iatur",
+          "deinflected": "ire",
+          "conditionsIn": [
+            "verb-ire"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "iamur",
+          "deinflected": "ire",
+          "conditionsIn": [
+            "verb-ire"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "iamini",
+          "deinflected": "ire",
+          "conditionsIn": [
+            "verb-ire"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "iantur",
+          "deinflected": "ire",
+          "conditionsIn": [
+            "verb-ire"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "participles and gerundives",
+      "rules": [
+        {
+          "type": "suffix",
+          "inflected": "atus",
+          "deinflected": "are",
+          "conditionsIn": [
+            "verb",
+            "verb-are",
+            "verb-ere-long",
+            "verb-ere",
+            "verb-ire"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "ata",
+          "deinflected": "are",
+          "conditionsIn": [
+            "verb",
+            "verb-are",
+            "verb-ere-long",
+            "verb-ere",
+            "verb-ire"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "atum",
+          "deinflected": "are",
+          "conditionsIn": [
+            "verb",
+            "verb-are",
+            "verb-ere-long",
+            "verb-ere",
+            "verb-ire"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "ati",
+          "deinflected": "are",
+          "conditionsIn": [
+            "verb",
+            "verb-are",
+            "verb-ere-long",
+            "verb-ere",
+            "verb-ire"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "atae",
+          "deinflected": "are",
+          "conditionsIn": [
+            "verb",
+            "verb-are",
+            "verb-ere-long",
+            "verb-ere",
+            "verb-ire"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "atos",
+          "deinflected": "are",
+          "conditionsIn": [
+            "verb",
+            "verb-are",
+            "verb-ere-long",
+            "verb-ere",
+            "verb-ire"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "atas",
+          "deinflected": "are",
+          "conditionsIn": [
+            "verb",
+            "verb-are",
+            "verb-ere-long",
+            "verb-ere",
+            "verb-ire"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "aturus",
+          "deinflected": "are",
+          "conditionsIn": [
+            "verb",
+            "verb-are",
+            "verb-ere-long",
+            "verb-ere",
+            "verb-ire"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "atura",
+          "deinflected": "are",
+          "conditionsIn": [
+            "verb",
+            "verb-are",
+            "verb-ere-long",
+            "verb-ere",
+            "verb-ire"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "aturum",
+          "deinflected": "are",
+          "conditionsIn": [
+            "verb",
+            "verb-are",
+            "verb-ere-long",
+            "verb-ere",
+            "verb-ire"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "ans",
+          "deinflected": "are",
+          "conditionsIn": [
+            "verb",
+            "verb-are",
+            "verb-ere-long",
+            "verb-ere",
+            "verb-ire"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "antis",
+          "deinflected": "are",
+          "conditionsIn": [
+            "verb",
+            "verb-are",
+            "verb-ere-long",
+            "verb-ere",
+            "verb-ire"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "andus",
+          "deinflected": "are",
+          "conditionsIn": [
+            "verb",
+            "verb-are",
+            "verb-ere-long",
+            "verb-ere",
+            "verb-ire"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "anda",
+          "deinflected": "are",
+          "conditionsIn": [
+            "verb",
+            "verb-are",
+            "verb-ere-long",
+            "verb-ere",
+            "verb-ire"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "andum",
+          "deinflected": "are",
+          "conditionsIn": [
+            "verb",
+            "verb-are",
+            "verb-ere-long",
+            "verb-ere",
+            "verb-ire"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "itus",
+          "deinflected": "ere",
+          "conditionsIn": [
+            "verb",
+            "verb-are",
+            "verb-ere-long",
+            "verb-ere",
+            "verb-ire"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "ita",
+          "deinflected": "ere",
+          "conditionsIn": [
+            "verb",
+            "verb-are",
+            "verb-ere-long",
+            "verb-ere",
+            "verb-ire"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "itum",
+          "deinflected": "ere",
+          "conditionsIn": [
+            "verb",
+            "verb-are",
+            "verb-ere-long",
+            "verb-ere",
+            "verb-ire"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "iti",
+          "deinflected": "ere",
+          "conditionsIn": [
+            "verb",
+            "verb-are",
+            "verb-ere-long",
+            "verb-ere",
+            "verb-ire"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "itae",
+          "deinflected": "ere",
+          "conditionsIn": [
+            "verb",
+            "verb-are",
+            "verb-ere-long",
+            "verb-ere",
+            "verb-ire"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "iturus",
+          "deinflected": "ere",
+          "conditionsIn": [
+            "verb",
+            "verb-are",
+            "verb-ere-long",
+            "verb-ere",
+            "verb-ire"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "ens",
+          "deinflected": "ere",
+          "conditionsIn": [
+            "verb",
+            "verb-are",
+            "verb-ere-long",
+            "verb-ere",
+            "verb-ire"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "entis",
+          "deinflected": "ere",
+          "conditionsIn": [
+            "verb",
+            "verb-are",
+            "verb-ere-long",
+            "verb-ere",
+            "verb-ire"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "endus",
+          "deinflected": "ere",
+          "conditionsIn": [
+            "verb",
+            "verb-are",
+            "verb-ere-long",
+            "verb-ere",
+            "verb-ire"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "enda",
+          "deinflected": "ere",
+          "conditionsIn": [
+            "verb",
+            "verb-are",
+            "verb-ere-long",
+            "verb-ere",
+            "verb-ire"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "endum",
+          "deinflected": "ere",
+          "conditionsIn": [
+            "verb",
+            "verb-are",
+            "verb-ere-long",
+            "verb-ere",
+            "verb-ire"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "tus",
+          "deinflected": "ere",
+          "conditionsIn": [
+            "verb",
+            "verb-are",
+            "verb-ere-long",
+            "verb-ere",
+            "verb-ire"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "ta",
+          "deinflected": "ere",
+          "conditionsIn": [
+            "verb",
+            "verb-are",
+            "verb-ere-long",
+            "verb-ere",
+            "verb-ire"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "tum",
+          "deinflected": "ere",
+          "conditionsIn": [
+            "verb",
+            "verb-are",
+            "verb-ere-long",
+            "verb-ere",
+            "verb-ire"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "sus",
+          "deinflected": "ere",
+          "conditionsIn": [
+            "verb",
+            "verb-are",
+            "verb-ere-long",
+            "verb-ere",
+            "verb-ire"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "sa",
+          "deinflected": "ere",
+          "conditionsIn": [
+            "verb",
+            "verb-are",
+            "verb-ere-long",
+            "verb-ere",
+            "verb-ire"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "sum",
+          "deinflected": "ere",
+          "conditionsIn": [
+            "verb",
+            "verb-are",
+            "verb-ere-long",
+            "verb-ere",
+            "verb-ire"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "urus",
+          "deinflected": "ere",
+          "conditionsIn": [
+            "verb",
+            "verb-are",
+            "verb-ere-long",
+            "verb-ere",
+            "verb-ire"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "ura",
+          "deinflected": "ere",
+          "conditionsIn": [
+            "verb",
+            "verb-are",
+            "verb-ere-long",
+            "verb-ere",
+            "verb-ire"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "urum",
+          "deinflected": "ere",
+          "conditionsIn": [
+            "verb",
+            "verb-are",
+            "verb-ere-long",
+            "verb-ere",
+            "verb-ire"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "iens",
+          "deinflected": "ire",
+          "conditionsIn": [
+            "verb",
+            "verb-are",
+            "verb-ere-long",
+            "verb-ere",
+            "verb-ire"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "ientis",
+          "deinflected": "ire",
+          "conditionsIn": [
+            "verb",
+            "verb-are",
+            "verb-ere-long",
+            "verb-ere",
+            "verb-ire"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "itus",
+          "deinflected": "ire",
+          "conditionsIn": [
+            "verb",
+            "verb-are",
+            "verb-ere-long",
+            "verb-ere",
+            "verb-ire"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "ita",
+          "deinflected": "ire",
+          "conditionsIn": [
+            "verb",
+            "verb-are",
+            "verb-ere-long",
+            "verb-ere",
+            "verb-ire"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "itum",
+          "deinflected": "ire",
+          "conditionsIn": [
+            "verb",
+            "verb-are",
+            "verb-ere-long",
+            "verb-ere",
+            "verb-ire"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "iturus",
+          "deinflected": "ire",
+          "conditionsIn": [
+            "verb",
+            "verb-are",
+            "verb-ere-long",
+            "verb-ere",
+            "verb-ire"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "iendus",
+          "deinflected": "ire",
+          "conditionsIn": [
+            "verb",
+            "verb-are",
+            "verb-ere-long",
+            "verb-ere",
+            "verb-ire"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "ienda",
+          "deinflected": "ire",
+          "conditionsIn": [
+            "verb",
+            "verb-are",
+            "verb-ere-long",
+            "verb-ere",
+            "verb-ire"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "iendum",
+          "deinflected": "ire",
+          "conditionsIn": [
+            "verb",
+            "verb-are",
+            "verb-ere-long",
+            "verb-ere",
+            "verb-ire"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "infinitives and passive forms",
+      "rules": [
+        {
+          "type": "suffix",
+          "inflected": "ari",
+          "deinflected": "are",
+          "conditionsIn": [
+            "verb",
+            "verb-are",
+            "verb-ere-long",
+            "verb-ere",
+            "verb-ire"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "eri",
+          "deinflected": "ere",
+          "conditionsIn": [
+            "verb",
+            "verb-are",
+            "verb-ere-long",
+            "verb-ere",
+            "verb-ire"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "i",
+          "deinflected": "ere",
+          "conditionsIn": [
+            "verb",
+            "verb-are",
+            "verb-ere-long",
+            "verb-ere",
+            "verb-ire"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "iri",
+          "deinflected": "ire",
+          "conditionsIn": [
+            "verb",
+            "verb-are",
+            "verb-ere-long",
+            "verb-ere",
+            "verb-ire"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "isse",
+          "deinflected": "ere",
+          "conditionsIn": [
+            "verb",
+            "verb-are",
+            "verb-ere-long",
+            "verb-ere",
+            "verb-ire"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "avisse",
+          "deinflected": "are",
+          "conditionsIn": [
+            "verb",
+            "verb-are",
+            "verb-ere-long",
+            "verb-ere",
+            "verb-ire"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "uisse",
+          "deinflected": "ere",
+          "conditionsIn": [
+            "verb",
+            "verb-are",
+            "verb-ere-long",
+            "verb-ere",
+            "verb-ire"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "ivisse",
+          "deinflected": "ire",
+          "conditionsIn": [
+            "verb",
+            "verb-are",
+            "verb-ere-long",
+            "verb-ere",
+            "verb-ire"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "atur",
+          "deinflected": "are",
+          "conditionsIn": [
+            "verb",
+            "verb-are",
+            "verb-ere-long",
+            "verb-ere",
+            "verb-ire"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "antur",
+          "deinflected": "are",
+          "conditionsIn": [
+            "verb",
+            "verb-are",
+            "verb-ere-long",
+            "verb-ere",
+            "verb-ire"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "etur",
+          "deinflected": "ere",
+          "conditionsIn": [
+            "verb",
+            "verb-are",
+            "verb-ere-long",
+            "verb-ere",
+            "verb-ire"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "entur",
+          "deinflected": "ere",
+          "conditionsIn": [
+            "verb",
+            "verb-are",
+            "verb-ere-long",
+            "verb-ere",
+            "verb-ire"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "itur",
+          "deinflected": "ere",
+          "conditionsIn": [
+            "verb",
+            "verb-are",
+            "verb-ere-long",
+            "verb-ere",
+            "verb-ire"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "untur",
+          "deinflected": "ere",
+          "conditionsIn": [
+            "verb",
+            "verb-are",
+            "verb-ere-long",
+            "verb-ere",
+            "verb-ire"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "iuntur",
+          "deinflected": "ire",
+          "conditionsIn": [
+            "verb",
+            "verb-are",
+            "verb-ere-long",
+            "verb-ere",
+            "verb-ire"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "irregular verbs",
+      "rules": [
+        {
+          "type": "wholeWord",
+          "inflected": "sum",
+          "deinflected": "esse",
+          "conditionsIn": [
+            "verb",
+            "verb-are",
+            "verb-ere-long",
+            "verb-ere",
+            "verb-ire"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "es",
+          "deinflected": "esse",
+          "conditionsIn": [
+            "verb",
+            "verb-are",
+            "verb-ere-long",
+            "verb-ere",
+            "verb-ire"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "est",
+          "deinflected": "esse",
+          "conditionsIn": [
+            "verb",
+            "verb-are",
+            "verb-ere-long",
+            "verb-ere",
+            "verb-ire"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "sumus",
+          "deinflected": "esse",
+          "conditionsIn": [
+            "verb",
+            "verb-are",
+            "verb-ere-long",
+            "verb-ere",
+            "verb-ire"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "estis",
+          "deinflected": "esse",
+          "conditionsIn": [
+            "verb",
+            "verb-are",
+            "verb-ere-long",
+            "verb-ere",
+            "verb-ire"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "sunt",
+          "deinflected": "esse",
+          "conditionsIn": [
+            "verb",
+            "verb-are",
+            "verb-ere-long",
+            "verb-ere",
+            "verb-ire"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "eram",
+          "deinflected": "esse",
+          "conditionsIn": [
+            "verb",
+            "verb-are",
+            "verb-ere-long",
+            "verb-ere",
+            "verb-ire"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "eras",
+          "deinflected": "esse",
+          "conditionsIn": [
+            "verb",
+            "verb-are",
+            "verb-ere-long",
+            "verb-ere",
+            "verb-ire"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "erat",
+          "deinflected": "esse",
+          "conditionsIn": [
+            "verb",
+            "verb-are",
+            "verb-ere-long",
+            "verb-ere",
+            "verb-ire"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "eramus",
+          "deinflected": "esse",
+          "conditionsIn": [
+            "verb",
+            "verb-are",
+            "verb-ere-long",
+            "verb-ere",
+            "verb-ire"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "eratis",
+          "deinflected": "esse",
+          "conditionsIn": [
+            "verb",
+            "verb-are",
+            "verb-ere-long",
+            "verb-ere",
+            "verb-ire"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "erant",
+          "deinflected": "esse",
+          "conditionsIn": [
+            "verb",
+            "verb-are",
+            "verb-ere-long",
+            "verb-ere",
+            "verb-ire"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "ero",
+          "deinflected": "esse",
+          "conditionsIn": [
+            "verb",
+            "verb-are",
+            "verb-ere-long",
+            "verb-ere",
+            "verb-ire"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "eris",
+          "deinflected": "esse",
+          "conditionsIn": [
+            "verb",
+            "verb-are",
+            "verb-ere-long",
+            "verb-ere",
+            "verb-ire"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "erit",
+          "deinflected": "esse",
+          "conditionsIn": [
+            "verb",
+            "verb-are",
+            "verb-ere-long",
+            "verb-ere",
+            "verb-ire"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "erimus",
+          "deinflected": "esse",
+          "conditionsIn": [
+            "verb",
+            "verb-are",
+            "verb-ere-long",
+            "verb-ere",
+            "verb-ire"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "eritis",
+          "deinflected": "esse",
+          "conditionsIn": [
+            "verb",
+            "verb-are",
+            "verb-ere-long",
+            "verb-ere",
+            "verb-ire"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "erunt",
+          "deinflected": "esse",
+          "conditionsIn": [
+            "verb",
+            "verb-are",
+            "verb-ere-long",
+            "verb-ere",
+            "verb-ire"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "sim",
+          "deinflected": "esse",
+          "conditionsIn": [
+            "verb",
+            "verb-are",
+            "verb-ere-long",
+            "verb-ere",
+            "verb-ire"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "sis",
+          "deinflected": "esse",
+          "conditionsIn": [
+            "verb",
+            "verb-are",
+            "verb-ere-long",
+            "verb-ere",
+            "verb-ire"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "sit",
+          "deinflected": "esse",
+          "conditionsIn": [
+            "verb",
+            "verb-are",
+            "verb-ere-long",
+            "verb-ere",
+            "verb-ire"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "simus",
+          "deinflected": "esse",
+          "conditionsIn": [
+            "verb",
+            "verb-are",
+            "verb-ere-long",
+            "verb-ere",
+            "verb-ire"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "sitis",
+          "deinflected": "esse",
+          "conditionsIn": [
+            "verb",
+            "verb-are",
+            "verb-ere-long",
+            "verb-ere",
+            "verb-ire"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "sint",
+          "deinflected": "esse",
+          "conditionsIn": [
+            "verb",
+            "verb-are",
+            "verb-ere-long",
+            "verb-ere",
+            "verb-ire"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "fui",
+          "deinflected": "esse",
+          "conditionsIn": [
+            "verb",
+            "verb-are",
+            "verb-ere-long",
+            "verb-ere",
+            "verb-ire"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "fuisti",
+          "deinflected": "esse",
+          "conditionsIn": [
+            "verb",
+            "verb-are",
+            "verb-ere-long",
+            "verb-ere",
+            "verb-ire"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "fuit",
+          "deinflected": "esse",
+          "conditionsIn": [
+            "verb",
+            "verb-are",
+            "verb-ere-long",
+            "verb-ere",
+            "verb-ire"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "fuimus",
+          "deinflected": "esse",
+          "conditionsIn": [
+            "verb",
+            "verb-are",
+            "verb-ere-long",
+            "verb-ere",
+            "verb-ire"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "fuistis",
+          "deinflected": "esse",
+          "conditionsIn": [
+            "verb",
+            "verb-are",
+            "verb-ere-long",
+            "verb-ere",
+            "verb-ire"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "fuerunt",
+          "deinflected": "esse",
+          "conditionsIn": [
+            "verb",
+            "verb-are",
+            "verb-ere-long",
+            "verb-ere",
+            "verb-ire"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "fore",
+          "deinflected": "esse",
+          "conditionsIn": [
+            "verb",
+            "verb-are",
+            "verb-ere-long",
+            "verb-ere",
+            "verb-ire"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "possum",
+          "deinflected": "posse",
+          "conditionsIn": [
+            "verb",
+            "verb-are",
+            "verb-ere-long",
+            "verb-ere",
+            "verb-ire"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "potes",
+          "deinflected": "posse",
+          "conditionsIn": [
+            "verb",
+            "verb-are",
+            "verb-ere-long",
+            "verb-ere",
+            "verb-ire"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "potest",
+          "deinflected": "posse",
+          "conditionsIn": [
+            "verb",
+            "verb-are",
+            "verb-ere-long",
+            "verb-ere",
+            "verb-ire"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "possumus",
+          "deinflected": "posse",
+          "conditionsIn": [
+            "verb",
+            "verb-are",
+            "verb-ere-long",
+            "verb-ere",
+            "verb-ire"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "potestis",
+          "deinflected": "posse",
+          "conditionsIn": [
+            "verb",
+            "verb-are",
+            "verb-ere-long",
+            "verb-ere",
+            "verb-ire"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "possunt",
+          "deinflected": "posse",
+          "conditionsIn": [
+            "verb",
+            "verb-are",
+            "verb-ere-long",
+            "verb-ere",
+            "verb-ire"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "poteram",
+          "deinflected": "posse",
+          "conditionsIn": [
+            "verb",
+            "verb-are",
+            "verb-ere-long",
+            "verb-ere",
+            "verb-ire"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "potui",
+          "deinflected": "posse",
+          "conditionsIn": [
+            "verb",
+            "verb-are",
+            "verb-ere-long",
+            "verb-ere",
+            "verb-ire"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "volo",
+          "deinflected": "velle",
+          "conditionsIn": [
+            "verb",
+            "verb-are",
+            "verb-ere-long",
+            "verb-ere",
+            "verb-ire"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "vis",
+          "deinflected": "velle",
+          "conditionsIn": [
+            "verb",
+            "verb-are",
+            "verb-ere-long",
+            "verb-ere",
+            "verb-ire"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "vult",
+          "deinflected": "velle",
+          "conditionsIn": [
+            "verb",
+            "verb-are",
+            "verb-ere-long",
+            "verb-ere",
+            "verb-ire"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "volumus",
+          "deinflected": "velle",
+          "conditionsIn": [
+            "verb",
+            "verb-are",
+            "verb-ere-long",
+            "verb-ere",
+            "verb-ire"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "vultis",
+          "deinflected": "velle",
+          "conditionsIn": [
+            "verb",
+            "verb-are",
+            "verb-ere-long",
+            "verb-ere",
+            "verb-ire"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "volunt",
+          "deinflected": "velle",
+          "conditionsIn": [
+            "verb",
+            "verb-are",
+            "verb-ere-long",
+            "verb-ere",
+            "verb-ire"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "volui",
+          "deinflected": "velle",
+          "conditionsIn": [
+            "verb",
+            "verb-are",
+            "verb-ere-long",
+            "verb-ere",
+            "verb-ire"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "nolo",
+          "deinflected": "nolle",
+          "conditionsIn": [
+            "verb",
+            "verb-are",
+            "verb-ere-long",
+            "verb-ere",
+            "verb-ire"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "nonvis",
+          "deinflected": "nolle",
+          "conditionsIn": [
+            "verb",
+            "verb-are",
+            "verb-ere-long",
+            "verb-ere",
+            "verb-ire"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "nonvult",
+          "deinflected": "nolle",
+          "conditionsIn": [
+            "verb",
+            "verb-are",
+            "verb-ere-long",
+            "verb-ere",
+            "verb-ire"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "nolumus",
+          "deinflected": "nolle",
+          "conditionsIn": [
+            "verb",
+            "verb-are",
+            "verb-ere-long",
+            "verb-ere",
+            "verb-ire"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "nolunt",
+          "deinflected": "nolle",
+          "conditionsIn": [
+            "verb",
+            "verb-are",
+            "verb-ere-long",
+            "verb-ere",
+            "verb-ire"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "nolui",
+          "deinflected": "nolle",
+          "conditionsIn": [
+            "verb",
+            "verb-are",
+            "verb-ere-long",
+            "verb-ere",
+            "verb-ire"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "malo",
+          "deinflected": "malle",
+          "conditionsIn": [
+            "verb",
+            "verb-are",
+            "verb-ere-long",
+            "verb-ere",
+            "verb-ire"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "mavis",
+          "deinflected": "malle",
+          "conditionsIn": [
+            "verb",
+            "verb-are",
+            "verb-ere-long",
+            "verb-ere",
+            "verb-ire"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "mavult",
+          "deinflected": "malle",
+          "conditionsIn": [
+            "verb",
+            "verb-are",
+            "verb-ere-long",
+            "verb-ere",
+            "verb-ire"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "malumus",
+          "deinflected": "malle",
+          "conditionsIn": [
+            "verb",
+            "verb-are",
+            "verb-ere-long",
+            "verb-ere",
+            "verb-ire"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "malunt",
+          "deinflected": "malle",
+          "conditionsIn": [
+            "verb",
+            "verb-are",
+            "verb-ere-long",
+            "verb-ere",
+            "verb-ire"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "malui",
+          "deinflected": "malle",
+          "conditionsIn": [
+            "verb",
+            "verb-are",
+            "verb-ere-long",
+            "verb-ere",
+            "verb-ire"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "eo",
+          "deinflected": "ire",
+          "conditionsIn": [
+            "verb",
+            "verb-are",
+            "verb-ere-long",
+            "verb-ere",
+            "verb-ire"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "is",
+          "deinflected": "ire",
+          "conditionsIn": [
+            "verb",
+            "verb-are",
+            "verb-ere-long",
+            "verb-ere",
+            "verb-ire"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "it",
+          "deinflected": "ire",
+          "conditionsIn": [
+            "verb",
+            "verb-are",
+            "verb-ere-long",
+            "verb-ere",
+            "verb-ire"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "imus",
+          "deinflected": "ire",
+          "conditionsIn": [
+            "verb",
+            "verb-are",
+            "verb-ere-long",
+            "verb-ere",
+            "verb-ire"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "itis",
+          "deinflected": "ire",
+          "conditionsIn": [
+            "verb",
+            "verb-are",
+            "verb-ere-long",
+            "verb-ere",
+            "verb-ire"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "eunt",
+          "deinflected": "ire",
+          "conditionsIn": [
+            "verb",
+            "verb-are",
+            "verb-ere-long",
+            "verb-ere",
+            "verb-ire"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "ii",
+          "deinflected": "ire",
+          "conditionsIn": [
+            "verb",
+            "verb-are",
+            "verb-ere-long",
+            "verb-ere",
+            "verb-ire"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "ivi",
+          "deinflected": "ire",
+          "conditionsIn": [
+            "verb",
+            "verb-are",
+            "verb-ere-long",
+            "verb-ere",
+            "verb-ire"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "iit",
+          "deinflected": "ire",
+          "conditionsIn": [
+            "verb",
+            "verb-are",
+            "verb-ere-long",
+            "verb-ere",
+            "verb-ire"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "ierunt",
+          "deinflected": "ire",
+          "conditionsIn": [
+            "verb",
+            "verb-are",
+            "verb-ere-long",
+            "verb-ere",
+            "verb-ire"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "fero",
+          "deinflected": "ferre",
+          "conditionsIn": [
+            "verb",
+            "verb-are",
+            "verb-ere-long",
+            "verb-ere",
+            "verb-ire"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "fers",
+          "deinflected": "ferre",
+          "conditionsIn": [
+            "verb",
+            "verb-are",
+            "verb-ere-long",
+            "verb-ere",
+            "verb-ire"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "fert",
+          "deinflected": "ferre",
+          "conditionsIn": [
+            "verb",
+            "verb-are",
+            "verb-ere-long",
+            "verb-ere",
+            "verb-ire"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "ferimus",
+          "deinflected": "ferre",
+          "conditionsIn": [
+            "verb",
+            "verb-are",
+            "verb-ere-long",
+            "verb-ere",
+            "verb-ire"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "fertis",
+          "deinflected": "ferre",
+          "conditionsIn": [
+            "verb",
+            "verb-are",
+            "verb-ere-long",
+            "verb-ere",
+            "verb-ire"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "ferunt",
+          "deinflected": "ferre",
+          "conditionsIn": [
+            "verb",
+            "verb-are",
+            "verb-ere-long",
+            "verb-ere",
+            "verb-ire"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "tuli",
+          "deinflected": "ferre",
+          "conditionsIn": [
+            "verb",
+            "verb-are",
+            "verb-ere-long",
+            "verb-ere",
+            "verb-ire"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "latum",
+          "deinflected": "ferre",
+          "conditionsIn": [
+            "verb",
+            "verb-are",
+            "verb-ere-long",
+            "verb-ere",
+            "verb-ire"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "duco",
+          "deinflected": "ducere",
+          "conditionsIn": [
+            "verb",
+            "verb-are",
+            "verb-ere-long",
+            "verb-ere",
+            "verb-ire"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "ducis",
+          "deinflected": "ducere",
+          "conditionsIn": [
+            "verb",
+            "verb-are",
+            "verb-ere-long",
+            "verb-ere",
+            "verb-ire"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "ducit",
+          "deinflected": "ducere",
+          "conditionsIn": [
+            "verb",
+            "verb-are",
+            "verb-ere-long",
+            "verb-ere",
+            "verb-ire"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "ducimus",
+          "deinflected": "ducere",
+          "conditionsIn": [
+            "verb",
+            "verb-are",
+            "verb-ere-long",
+            "verb-ere",
+            "verb-ire"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "ducitis",
+          "deinflected": "ducere",
+          "conditionsIn": [
+            "verb",
+            "verb-are",
+            "verb-ere-long",
+            "verb-ere",
+            "verb-ire"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "ducunt",
+          "deinflected": "ducere",
+          "conditionsIn": [
+            "verb",
+            "verb-are",
+            "verb-ere-long",
+            "verb-ere",
+            "verb-ire"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "duxi",
+          "deinflected": "ducere",
+          "conditionsIn": [
+            "verb",
+            "verb-are",
+            "verb-ere-long",
+            "verb-ere",
+            "verb-ire"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "duxisti",
+          "deinflected": "ducere",
+          "conditionsIn": [
+            "verb",
+            "verb-are",
+            "verb-ere-long",
+            "verb-ere",
+            "verb-ire"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "duxit",
+          "deinflected": "ducere",
+          "conditionsIn": [
+            "verb",
+            "verb-are",
+            "verb-ere-long",
+            "verb-ere",
+            "verb-ire"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "duximus",
+          "deinflected": "ducere",
+          "conditionsIn": [
+            "verb",
+            "verb-are",
+            "verb-ere-long",
+            "verb-ere",
+            "verb-ire"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "duxistis",
+          "deinflected": "ducere",
+          "conditionsIn": [
+            "verb",
+            "verb-are",
+            "verb-ere-long",
+            "verb-ere",
+            "verb-ire"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "duxerunt",
+          "deinflected": "ducere",
+          "conditionsIn": [
+            "verb",
+            "verb-are",
+            "verb-ere-long",
+            "verb-ere",
+            "verb-ire"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "ductus",
+          "deinflected": "ducere",
+          "conditionsIn": [
+            "verb",
+            "verb-are",
+            "verb-ere-long",
+            "verb-ere",
+            "verb-ire"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "dictus",
+          "deinflected": "dicere",
+          "conditionsIn": [
+            "verb",
+            "verb-are",
+            "verb-ere-long",
+            "verb-ere",
+            "verb-ire"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "dixi",
+          "deinflected": "dicere",
+          "conditionsIn": [
+            "verb",
+            "verb-are",
+            "verb-ere-long",
+            "verb-ere",
+            "verb-ire"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "dixit",
+          "deinflected": "dicere",
+          "conditionsIn": [
+            "verb",
+            "verb-are",
+            "verb-ere-long",
+            "verb-ere",
+            "verb-ire"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "dixerunt",
+          "deinflected": "dicere",
+          "conditionsIn": [
+            "verb",
+            "verb-are",
+            "verb-ere-long",
+            "verb-ere",
+            "verb-ire"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "feci",
+          "deinflected": "facere",
+          "conditionsIn": [
+            "verb",
+            "verb-are",
+            "verb-ere-long",
+            "verb-ere",
+            "verb-ire"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "fecit",
+          "deinflected": "facere",
+          "conditionsIn": [
+            "verb",
+            "verb-are",
+            "verb-ere-long",
+            "verb-ere",
+            "verb-ire"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "fecerunt",
+          "deinflected": "facere",
+          "conditionsIn": [
+            "verb",
+            "verb-are",
+            "verb-ere-long",
+            "verb-ere",
+            "verb-ire"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "factus",
+          "deinflected": "facere",
+          "conditionsIn": [
+            "verb",
+            "verb-are",
+            "verb-ere-long",
+            "verb-ere",
+            "verb-ire"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "fio",
+          "deinflected": "fieri",
+          "conditionsIn": [
+            "verb",
+            "verb-are",
+            "verb-ere-long",
+            "verb-ere",
+            "verb-ire"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "fis",
+          "deinflected": "fieri",
+          "conditionsIn": [
+            "verb",
+            "verb-are",
+            "verb-ere-long",
+            "verb-ere",
+            "verb-ire"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "fit",
+          "deinflected": "fieri",
+          "conditionsIn": [
+            "verb",
+            "verb-are",
+            "verb-ere-long",
+            "verb-ere",
+            "verb-ire"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "fimus",
+          "deinflected": "fieri",
+          "conditionsIn": [
+            "verb",
+            "verb-are",
+            "verb-ere-long",
+            "verb-ere",
+            "verb-ire"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "fitis",
+          "deinflected": "fieri",
+          "conditionsIn": [
+            "verb",
+            "verb-are",
+            "verb-ere-long",
+            "verb-ere",
+            "verb-ire"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "fiunt",
+          "deinflected": "fieri",
+          "conditionsIn": [
+            "verb",
+            "verb-are",
+            "verb-ere-long",
+            "verb-ere",
+            "verb-ire"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "factus",
+          "deinflected": "fieri",
+          "conditionsIn": [
+            "verb",
+            "verb-are",
+            "verb-ere-long",
+            "verb-ere",
+            "verb-ire"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        }
+      ]
+    }
+  ]
+}

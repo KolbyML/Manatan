@@ -1,0 +1,5328 @@
+{
+  "_metadata": {
+    "language": "tagalog",
+    "generatedBy": "manatan-deinflectors Rust generator",
+    "generatorVersion": "0.1.0",
+    "sourceFormat": "programmatic",
+    "note": "Tagalog lookup-expansion rules for common affixes, infixes, reduplication, and linker endings. Dictionary metadata filters focus/aspect semantics.",
+    "sources": [
+      {
+        "title": "MacKinlay, A Handbook and Grammar of the Tagalog Language",
+        "url": "https://commons.wikimedia.org/wiki/File:A_handbook_and_grammar_of_the_Tagalog_language_(IA_handbookgrammaro00mack).pdf",
+        "license": "Public domain",
+        "usage": "Reference for Tagalog affixal morphology."
+      },
+      {
+        "title": "FSI Tagalog Language Course",
+        "url": "https://www.fsi-language-courses.org/fsi-courses/",
+        "license": "US government public domain",
+        "usage": "Supplemental public-domain course reference."
+      }
+    ]
+  },
+  "conditions": {
+    "adj": {
+      "subConditions": null
+    },
+    "base": {
+      "subConditions": null
+    },
+    "noun": {
+      "subConditions": null
+    },
+    "verb": {
+      "subConditions": null
+    },
+    "word": {
+      "subConditions": [
+        "adj",
+        "noun",
+        "verb"
+      ]
+    },
+    "word-inflected": {
+      "subConditions": null
+    },
+    "word-prefixed": {
+      "subConditions": null
+    },
+    "word-suffixed": {
+      "subConditions": null
+    }
+  },
+  "transforms": [
+    {
+      "id": "prefixes",
+      "rules": [
+        {
+          "type": "prefix",
+          "inflected": "nakikipag",
+          "deinflected": "",
+          "conditionsIn": [
+            "word",
+            "word-prefixed",
+            "word-suffixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "nakiki-",
+          "deinflected": "",
+          "conditionsIn": [
+            "word",
+            "word-prefixed",
+            "word-suffixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "makikipag",
+          "deinflected": "",
+          "conditionsIn": [
+            "word",
+            "word-prefixed",
+            "word-suffixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "makiki-",
+          "deinflected": "",
+          "conditionsIn": [
+            "word",
+            "word-prefixed",
+            "word-suffixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "pakikipag",
+          "deinflected": "",
+          "conditionsIn": [
+            "word",
+            "word-prefixed",
+            "word-suffixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "pakiki-",
+          "deinflected": "",
+          "conditionsIn": [
+            "word",
+            "word-prefixed",
+            "word-suffixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "pinakipag",
+          "deinflected": "",
+          "conditionsIn": [
+            "word",
+            "word-prefixed",
+            "word-suffixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "pinagpa",
+          "deinflected": "",
+          "conditionsIn": [
+            "word",
+            "word-prefixed",
+            "word-suffixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "pinag",
+          "deinflected": "",
+          "conditionsIn": [
+            "word",
+            "word-prefixed",
+            "word-suffixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "pinag-",
+          "deinflected": "",
+          "conditionsIn": [
+            "word",
+            "word-prefixed",
+            "word-suffixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "pinaka",
+          "deinflected": "",
+          "conditionsIn": [
+            "word",
+            "word-prefixed",
+            "word-suffixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "pinang",
+          "deinflected": "",
+          "conditionsIn": [
+            "word",
+            "word-prefixed",
+            "word-suffixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "pinam",
+          "deinflected": "",
+          "conditionsIn": [
+            "word",
+            "word-prefixed",
+            "word-suffixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "pinan",
+          "deinflected": "",
+          "conditionsIn": [
+            "word",
+            "word-prefixed",
+            "word-suffixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "pinagka",
+          "deinflected": "",
+          "conditionsIn": [
+            "word",
+            "word-prefixed",
+            "word-suffixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "ipinag",
+          "deinflected": "",
+          "conditionsIn": [
+            "word",
+            "word-prefixed",
+            "word-suffixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "ipinag-",
+          "deinflected": "",
+          "conditionsIn": [
+            "word",
+            "word-prefixed",
+            "word-suffixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "ipina",
+          "deinflected": "",
+          "conditionsIn": [
+            "word",
+            "word-prefixed",
+            "word-suffixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "ipag",
+          "deinflected": "",
+          "conditionsIn": [
+            "word",
+            "word-prefixed",
+            "word-suffixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "ipag-",
+          "deinflected": "",
+          "conditionsIn": [
+            "word",
+            "word-prefixed",
+            "word-suffixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "ikinag",
+          "deinflected": "",
+          "conditionsIn": [
+            "word",
+            "word-prefixed",
+            "word-suffixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "ikin",
+          "deinflected": "",
+          "conditionsIn": [
+            "word",
+            "word-prefixed",
+            "word-suffixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "ipin",
+          "deinflected": "",
+          "conditionsIn": [
+            "word",
+            "word-prefixed",
+            "word-suffixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "inaka",
+          "deinflected": "",
+          "conditionsIn": [
+            "word",
+            "word-prefixed",
+            "word-suffixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "inag",
+          "deinflected": "",
+          "conditionsIn": [
+            "word",
+            "word-prefixed",
+            "word-suffixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "inang",
+          "deinflected": "",
+          "conditionsIn": [
+            "word",
+            "word-prefixed",
+            "word-suffixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "nakapag",
+          "deinflected": "",
+          "conditionsIn": [
+            "word",
+            "word-prefixed",
+            "word-suffixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "makapag",
+          "deinflected": "",
+          "conditionsIn": [
+            "word",
+            "word-prefixed",
+            "word-suffixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "nakaka",
+          "deinflected": "",
+          "conditionsIn": [
+            "word",
+            "word-prefixed",
+            "word-suffixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "makaka",
+          "deinflected": "",
+          "conditionsIn": [
+            "word",
+            "word-prefixed",
+            "word-suffixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "nakiki",
+          "deinflected": "",
+          "conditionsIn": [
+            "word",
+            "word-prefixed",
+            "word-suffixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "makiki",
+          "deinflected": "",
+          "conditionsIn": [
+            "word",
+            "word-prefixed",
+            "word-suffixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "nakipag",
+          "deinflected": "",
+          "conditionsIn": [
+            "word",
+            "word-prefixed",
+            "word-suffixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "nakipag-",
+          "deinflected": "",
+          "conditionsIn": [
+            "word",
+            "word-prefixed",
+            "word-suffixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "makipag",
+          "deinflected": "",
+          "conditionsIn": [
+            "word",
+            "word-prefixed",
+            "word-suffixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "makipag-",
+          "deinflected": "",
+          "conditionsIn": [
+            "word",
+            "word-prefixed",
+            "word-suffixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "pakipag",
+          "deinflected": "",
+          "conditionsIn": [
+            "word",
+            "word-prefixed",
+            "word-suffixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "pakipag-",
+          "deinflected": "",
+          "conditionsIn": [
+            "word",
+            "word-prefixed",
+            "word-suffixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "magpapa",
+          "deinflected": "",
+          "conditionsIn": [
+            "word",
+            "word-prefixed",
+            "word-suffixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "nagpapa",
+          "deinflected": "",
+          "conditionsIn": [
+            "word",
+            "word-prefixed",
+            "word-suffixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "pagpapa",
+          "deinflected": "",
+          "conditionsIn": [
+            "word",
+            "word-prefixed",
+            "word-suffixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "pagka",
+          "deinflected": "",
+          "conditionsIn": [
+            "word",
+            "word-prefixed",
+            "word-suffixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "pagpa",
+          "deinflected": "",
+          "conditionsIn": [
+            "word",
+            "word-prefixed",
+            "word-suffixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "pag-",
+          "deinflected": "",
+          "conditionsIn": [
+            "word",
+            "word-prefixed",
+            "word-suffixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "magpa",
+          "deinflected": "",
+          "conditionsIn": [
+            "word",
+            "word-prefixed",
+            "word-suffixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "nagpa",
+          "deinflected": "",
+          "conditionsIn": [
+            "word",
+            "word-prefixed",
+            "word-suffixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "mapa",
+          "deinflected": "",
+          "conditionsIn": [
+            "word",
+            "word-prefixed",
+            "word-suffixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "napa",
+          "deinflected": "",
+          "conditionsIn": [
+            "word",
+            "word-prefixed",
+            "word-suffixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "papa",
+          "deinflected": "",
+          "conditionsIn": [
+            "word",
+            "word-prefixed",
+            "word-suffixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "pa",
+          "deinflected": "",
+          "conditionsIn": [
+            "word",
+            "word-prefixed",
+            "word-suffixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "pina",
+          "deinflected": "",
+          "conditionsIn": [
+            "word",
+            "word-prefixed",
+            "word-suffixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "pang",
+          "deinflected": "",
+          "conditionsIn": [
+            "word",
+            "word-prefixed",
+            "word-suffixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "pang-",
+          "deinflected": "",
+          "conditionsIn": [
+            "word",
+            "word-prefixed",
+            "word-suffixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "pam",
+          "deinflected": "",
+          "conditionsIn": [
+            "word",
+            "word-prefixed",
+            "word-suffixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "pan",
+          "deinflected": "",
+          "conditionsIn": [
+            "word",
+            "word-prefixed",
+            "word-suffixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "mang",
+          "deinflected": "",
+          "conditionsIn": [
+            "word",
+            "word-prefixed",
+            "word-suffixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "nang",
+          "deinflected": "",
+          "conditionsIn": [
+            "word",
+            "word-prefixed",
+            "word-suffixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "maka",
+          "deinflected": "",
+          "conditionsIn": [
+            "word",
+            "word-prefixed",
+            "word-suffixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "naka",
+          "deinflected": "",
+          "conditionsIn": [
+            "word",
+            "word-prefixed",
+            "word-suffixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "maki",
+          "deinflected": "",
+          "conditionsIn": [
+            "word",
+            "word-prefixed",
+            "word-suffixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "naki",
+          "deinflected": "",
+          "conditionsIn": [
+            "word",
+            "word-prefixed",
+            "word-suffixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "magka",
+          "deinflected": "",
+          "conditionsIn": [
+            "word",
+            "word-prefixed",
+            "word-suffixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "nagka",
+          "deinflected": "",
+          "conditionsIn": [
+            "word",
+            "word-prefixed",
+            "word-suffixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "magma",
+          "deinflected": "",
+          "conditionsIn": [
+            "word",
+            "word-prefixed",
+            "word-suffixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "nagma",
+          "deinflected": "",
+          "conditionsIn": [
+            "word",
+            "word-prefixed",
+            "word-suffixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "magsi",
+          "deinflected": "",
+          "conditionsIn": [
+            "word",
+            "word-prefixed",
+            "word-suffixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "nagsi",
+          "deinflected": "",
+          "conditionsIn": [
+            "word",
+            "word-prefixed",
+            "word-suffixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "mag",
+          "deinflected": "",
+          "conditionsIn": [
+            "word",
+            "word-prefixed",
+            "word-suffixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "nag",
+          "deinflected": "",
+          "conditionsIn": [
+            "word",
+            "word-prefixed",
+            "word-suffixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "ma",
+          "deinflected": "",
+          "conditionsIn": [
+            "word",
+            "word-prefixed",
+            "word-suffixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "na",
+          "deinflected": "",
+          "conditionsIn": [
+            "word",
+            "word-prefixed",
+            "word-suffixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "ka",
+          "deinflected": "",
+          "conditionsIn": [
+            "word",
+            "word-prefixed",
+            "word-suffixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "m",
+          "deinflected": "",
+          "conditionsIn": [
+            "word",
+            "word-prefixed",
+            "word-suffixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "n",
+          "deinflected": "",
+          "conditionsIn": [
+            "word",
+            "word-prefixed",
+            "word-suffixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "i",
+          "deinflected": "",
+          "conditionsIn": [
+            "word",
+            "word-prefixed",
+            "word-suffixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "taga",
+          "deinflected": "",
+          "conditionsIn": [
+            "word",
+            "word-prefixed",
+            "word-suffixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "tiga",
+          "deinflected": "",
+          "conditionsIn": [
+            "word",
+            "word-prefixed",
+            "word-suffixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "mala",
+          "deinflected": "",
+          "conditionsIn": [
+            "word",
+            "word-prefixed",
+            "word-suffixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "kasing",
+          "deinflected": "",
+          "conditionsIn": [
+            "word",
+            "word-prefixed",
+            "word-suffixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "sing",
+          "deinflected": "",
+          "conditionsIn": [
+            "word",
+            "word-prefixed",
+            "word-suffixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "napaka",
+          "deinflected": "",
+          "conditionsIn": [
+            "word",
+            "word-prefixed",
+            "word-suffixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "kaka",
+          "deinflected": "",
+          "conditionsIn": [
+            "word",
+            "word-prefixed",
+            "word-suffixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "prefix before suffix/infix",
+      "rules": [
+        {
+          "type": "prefix",
+          "inflected": "nakikipag",
+          "deinflected": "",
+          "conditionsIn": [
+            "word"
+          ],
+          "conditionsOut": [
+            "word-prefixed"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "nakiki-",
+          "deinflected": "",
+          "conditionsIn": [
+            "word"
+          ],
+          "conditionsOut": [
+            "word-prefixed"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "makikipag",
+          "deinflected": "",
+          "conditionsIn": [
+            "word"
+          ],
+          "conditionsOut": [
+            "word-prefixed"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "makiki-",
+          "deinflected": "",
+          "conditionsIn": [
+            "word"
+          ],
+          "conditionsOut": [
+            "word-prefixed"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "pakikipag",
+          "deinflected": "",
+          "conditionsIn": [
+            "word"
+          ],
+          "conditionsOut": [
+            "word-prefixed"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "pakiki-",
+          "deinflected": "",
+          "conditionsIn": [
+            "word"
+          ],
+          "conditionsOut": [
+            "word-prefixed"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "pinakipag",
+          "deinflected": "",
+          "conditionsIn": [
+            "word"
+          ],
+          "conditionsOut": [
+            "word-prefixed"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "pinagpa",
+          "deinflected": "",
+          "conditionsIn": [
+            "word"
+          ],
+          "conditionsOut": [
+            "word-prefixed"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "pinag",
+          "deinflected": "",
+          "conditionsIn": [
+            "word"
+          ],
+          "conditionsOut": [
+            "word-prefixed"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "pinag-",
+          "deinflected": "",
+          "conditionsIn": [
+            "word"
+          ],
+          "conditionsOut": [
+            "word-prefixed"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "pinaka",
+          "deinflected": "",
+          "conditionsIn": [
+            "word"
+          ],
+          "conditionsOut": [
+            "word-prefixed"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "pinang",
+          "deinflected": "",
+          "conditionsIn": [
+            "word"
+          ],
+          "conditionsOut": [
+            "word-prefixed"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "pinam",
+          "deinflected": "",
+          "conditionsIn": [
+            "word"
+          ],
+          "conditionsOut": [
+            "word-prefixed"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "pinan",
+          "deinflected": "",
+          "conditionsIn": [
+            "word"
+          ],
+          "conditionsOut": [
+            "word-prefixed"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "pinagka",
+          "deinflected": "",
+          "conditionsIn": [
+            "word"
+          ],
+          "conditionsOut": [
+            "word-prefixed"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "ipinag",
+          "deinflected": "",
+          "conditionsIn": [
+            "word"
+          ],
+          "conditionsOut": [
+            "word-prefixed"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "ipinag-",
+          "deinflected": "",
+          "conditionsIn": [
+            "word"
+          ],
+          "conditionsOut": [
+            "word-prefixed"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "ipina",
+          "deinflected": "",
+          "conditionsIn": [
+            "word"
+          ],
+          "conditionsOut": [
+            "word-prefixed"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "ipag",
+          "deinflected": "",
+          "conditionsIn": [
+            "word"
+          ],
+          "conditionsOut": [
+            "word-prefixed"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "ipag-",
+          "deinflected": "",
+          "conditionsIn": [
+            "word"
+          ],
+          "conditionsOut": [
+            "word-prefixed"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "ikinag",
+          "deinflected": "",
+          "conditionsIn": [
+            "word"
+          ],
+          "conditionsOut": [
+            "word-prefixed"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "ikin",
+          "deinflected": "",
+          "conditionsIn": [
+            "word"
+          ],
+          "conditionsOut": [
+            "word-prefixed"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "ipin",
+          "deinflected": "",
+          "conditionsIn": [
+            "word"
+          ],
+          "conditionsOut": [
+            "word-prefixed"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "inaka",
+          "deinflected": "",
+          "conditionsIn": [
+            "word"
+          ],
+          "conditionsOut": [
+            "word-prefixed"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "inag",
+          "deinflected": "",
+          "conditionsIn": [
+            "word"
+          ],
+          "conditionsOut": [
+            "word-prefixed"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "inang",
+          "deinflected": "",
+          "conditionsIn": [
+            "word"
+          ],
+          "conditionsOut": [
+            "word-prefixed"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "nakapag",
+          "deinflected": "",
+          "conditionsIn": [
+            "word"
+          ],
+          "conditionsOut": [
+            "word-prefixed"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "makapag",
+          "deinflected": "",
+          "conditionsIn": [
+            "word"
+          ],
+          "conditionsOut": [
+            "word-prefixed"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "nakaka",
+          "deinflected": "",
+          "conditionsIn": [
+            "word"
+          ],
+          "conditionsOut": [
+            "word-prefixed"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "makaka",
+          "deinflected": "",
+          "conditionsIn": [
+            "word"
+          ],
+          "conditionsOut": [
+            "word-prefixed"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "nakiki",
+          "deinflected": "",
+          "conditionsIn": [
+            "word"
+          ],
+          "conditionsOut": [
+            "word-prefixed"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "makiki",
+          "deinflected": "",
+          "conditionsIn": [
+            "word"
+          ],
+          "conditionsOut": [
+            "word-prefixed"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "nakipag",
+          "deinflected": "",
+          "conditionsIn": [
+            "word"
+          ],
+          "conditionsOut": [
+            "word-prefixed"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "nakipag-",
+          "deinflected": "",
+          "conditionsIn": [
+            "word"
+          ],
+          "conditionsOut": [
+            "word-prefixed"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "makipag",
+          "deinflected": "",
+          "conditionsIn": [
+            "word"
+          ],
+          "conditionsOut": [
+            "word-prefixed"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "makipag-",
+          "deinflected": "",
+          "conditionsIn": [
+            "word"
+          ],
+          "conditionsOut": [
+            "word-prefixed"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "pakipag",
+          "deinflected": "",
+          "conditionsIn": [
+            "word"
+          ],
+          "conditionsOut": [
+            "word-prefixed"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "pakipag-",
+          "deinflected": "",
+          "conditionsIn": [
+            "word"
+          ],
+          "conditionsOut": [
+            "word-prefixed"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "magpapa",
+          "deinflected": "",
+          "conditionsIn": [
+            "word"
+          ],
+          "conditionsOut": [
+            "word-prefixed"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "nagpapa",
+          "deinflected": "",
+          "conditionsIn": [
+            "word"
+          ],
+          "conditionsOut": [
+            "word-prefixed"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "pagpapa",
+          "deinflected": "",
+          "conditionsIn": [
+            "word"
+          ],
+          "conditionsOut": [
+            "word-prefixed"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "pagka",
+          "deinflected": "",
+          "conditionsIn": [
+            "word"
+          ],
+          "conditionsOut": [
+            "word-prefixed"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "pagpa",
+          "deinflected": "",
+          "conditionsIn": [
+            "word"
+          ],
+          "conditionsOut": [
+            "word-prefixed"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "pag-",
+          "deinflected": "",
+          "conditionsIn": [
+            "word"
+          ],
+          "conditionsOut": [
+            "word-prefixed"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "magpa",
+          "deinflected": "",
+          "conditionsIn": [
+            "word"
+          ],
+          "conditionsOut": [
+            "word-prefixed"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "nagpa",
+          "deinflected": "",
+          "conditionsIn": [
+            "word"
+          ],
+          "conditionsOut": [
+            "word-prefixed"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "mapa",
+          "deinflected": "",
+          "conditionsIn": [
+            "word"
+          ],
+          "conditionsOut": [
+            "word-prefixed"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "napa",
+          "deinflected": "",
+          "conditionsIn": [
+            "word"
+          ],
+          "conditionsOut": [
+            "word-prefixed"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "papa",
+          "deinflected": "",
+          "conditionsIn": [
+            "word"
+          ],
+          "conditionsOut": [
+            "word-prefixed"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "pa",
+          "deinflected": "",
+          "conditionsIn": [
+            "word"
+          ],
+          "conditionsOut": [
+            "word-prefixed"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "pina",
+          "deinflected": "",
+          "conditionsIn": [
+            "word"
+          ],
+          "conditionsOut": [
+            "word-prefixed"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "pang",
+          "deinflected": "",
+          "conditionsIn": [
+            "word"
+          ],
+          "conditionsOut": [
+            "word-prefixed"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "pang-",
+          "deinflected": "",
+          "conditionsIn": [
+            "word"
+          ],
+          "conditionsOut": [
+            "word-prefixed"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "pam",
+          "deinflected": "",
+          "conditionsIn": [
+            "word"
+          ],
+          "conditionsOut": [
+            "word-prefixed"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "pan",
+          "deinflected": "",
+          "conditionsIn": [
+            "word"
+          ],
+          "conditionsOut": [
+            "word-prefixed"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "mang",
+          "deinflected": "",
+          "conditionsIn": [
+            "word"
+          ],
+          "conditionsOut": [
+            "word-prefixed"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "nang",
+          "deinflected": "",
+          "conditionsIn": [
+            "word"
+          ],
+          "conditionsOut": [
+            "word-prefixed"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "maka",
+          "deinflected": "",
+          "conditionsIn": [
+            "word"
+          ],
+          "conditionsOut": [
+            "word-prefixed"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "naka",
+          "deinflected": "",
+          "conditionsIn": [
+            "word"
+          ],
+          "conditionsOut": [
+            "word-prefixed"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "maki",
+          "deinflected": "",
+          "conditionsIn": [
+            "word"
+          ],
+          "conditionsOut": [
+            "word-prefixed"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "naki",
+          "deinflected": "",
+          "conditionsIn": [
+            "word"
+          ],
+          "conditionsOut": [
+            "word-prefixed"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "magka",
+          "deinflected": "",
+          "conditionsIn": [
+            "word"
+          ],
+          "conditionsOut": [
+            "word-prefixed"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "nagka",
+          "deinflected": "",
+          "conditionsIn": [
+            "word"
+          ],
+          "conditionsOut": [
+            "word-prefixed"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "magma",
+          "deinflected": "",
+          "conditionsIn": [
+            "word"
+          ],
+          "conditionsOut": [
+            "word-prefixed"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "nagma",
+          "deinflected": "",
+          "conditionsIn": [
+            "word"
+          ],
+          "conditionsOut": [
+            "word-prefixed"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "magsi",
+          "deinflected": "",
+          "conditionsIn": [
+            "word"
+          ],
+          "conditionsOut": [
+            "word-prefixed"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "nagsi",
+          "deinflected": "",
+          "conditionsIn": [
+            "word"
+          ],
+          "conditionsOut": [
+            "word-prefixed"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "mag",
+          "deinflected": "",
+          "conditionsIn": [
+            "word"
+          ],
+          "conditionsOut": [
+            "word-prefixed"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "nag",
+          "deinflected": "",
+          "conditionsIn": [
+            "word"
+          ],
+          "conditionsOut": [
+            "word-prefixed"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "ma",
+          "deinflected": "",
+          "conditionsIn": [
+            "word"
+          ],
+          "conditionsOut": [
+            "word-prefixed"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "na",
+          "deinflected": "",
+          "conditionsIn": [
+            "word"
+          ],
+          "conditionsOut": [
+            "word-prefixed"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "ka",
+          "deinflected": "",
+          "conditionsIn": [
+            "word"
+          ],
+          "conditionsOut": [
+            "word-prefixed"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "m",
+          "deinflected": "",
+          "conditionsIn": [
+            "word"
+          ],
+          "conditionsOut": [
+            "word-prefixed"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "n",
+          "deinflected": "",
+          "conditionsIn": [
+            "word"
+          ],
+          "conditionsOut": [
+            "word-prefixed"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "i",
+          "deinflected": "",
+          "conditionsIn": [
+            "word"
+          ],
+          "conditionsOut": [
+            "word-prefixed"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "taga",
+          "deinflected": "",
+          "conditionsIn": [
+            "word"
+          ],
+          "conditionsOut": [
+            "word-prefixed"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "tiga",
+          "deinflected": "",
+          "conditionsIn": [
+            "word"
+          ],
+          "conditionsOut": [
+            "word-prefixed"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "mala",
+          "deinflected": "",
+          "conditionsIn": [
+            "word"
+          ],
+          "conditionsOut": [
+            "word-prefixed"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "kasing",
+          "deinflected": "",
+          "conditionsIn": [
+            "word"
+          ],
+          "conditionsOut": [
+            "word-prefixed"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "sing",
+          "deinflected": "",
+          "conditionsIn": [
+            "word"
+          ],
+          "conditionsOut": [
+            "word-prefixed"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "napaka",
+          "deinflected": "",
+          "conditionsIn": [
+            "word"
+          ],
+          "conditionsOut": [
+            "word-prefixed"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "kaka",
+          "deinflected": "",
+          "conditionsIn": [
+            "word"
+          ],
+          "conditionsOut": [
+            "word-prefixed"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "vowel-initial infixes",
+      "rules": [
+        {
+          "type": "prefix",
+          "inflected": "um",
+          "deinflected": "",
+          "conditionsIn": [
+            "word",
+            "word-suffixed",
+            "word-prefixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "in",
+          "deinflected": "",
+          "conditionsIn": [
+            "word",
+            "word-suffixed",
+            "word-prefixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "vowel-initial infix before suffix",
+      "rules": [
+        {
+          "type": "prefix",
+          "inflected": "um",
+          "deinflected": "",
+          "conditionsIn": [
+            "word"
+          ],
+          "conditionsOut": [
+            "word-inflected"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "in",
+          "deinflected": "",
+          "conditionsIn": [
+            "word"
+          ],
+          "conditionsOut": [
+            "word-inflected"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "consonant-initial infixes",
+      "rules": [
+        {
+          "type": "prefix",
+          "inflected": "bum",
+          "deinflected": "b",
+          "conditionsIn": [
+            "word",
+            "word-suffixed",
+            "word-prefixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "bin",
+          "deinflected": "b",
+          "conditionsIn": [
+            "word",
+            "word-suffixed",
+            "word-prefixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "binum",
+          "deinflected": "b",
+          "conditionsIn": [
+            "word",
+            "word-suffixed",
+            "word-prefixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "bumin",
+          "deinflected": "b",
+          "conditionsIn": [
+            "word",
+            "word-suffixed",
+            "word-prefixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "dum",
+          "deinflected": "d",
+          "conditionsIn": [
+            "word",
+            "word-suffixed",
+            "word-prefixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "din",
+          "deinflected": "d",
+          "conditionsIn": [
+            "word",
+            "word-suffixed",
+            "word-prefixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "dinum",
+          "deinflected": "d",
+          "conditionsIn": [
+            "word",
+            "word-suffixed",
+            "word-prefixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "dumin",
+          "deinflected": "d",
+          "conditionsIn": [
+            "word",
+            "word-suffixed",
+            "word-prefixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "gum",
+          "deinflected": "g",
+          "conditionsIn": [
+            "word",
+            "word-suffixed",
+            "word-prefixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "gin",
+          "deinflected": "g",
+          "conditionsIn": [
+            "word",
+            "word-suffixed",
+            "word-prefixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "ginum",
+          "deinflected": "g",
+          "conditionsIn": [
+            "word",
+            "word-suffixed",
+            "word-prefixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "gumin",
+          "deinflected": "g",
+          "conditionsIn": [
+            "word",
+            "word-suffixed",
+            "word-prefixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "hum",
+          "deinflected": "h",
+          "conditionsIn": [
+            "word",
+            "word-suffixed",
+            "word-prefixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "hin",
+          "deinflected": "h",
+          "conditionsIn": [
+            "word",
+            "word-suffixed",
+            "word-prefixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "hinum",
+          "deinflected": "h",
+          "conditionsIn": [
+            "word",
+            "word-suffixed",
+            "word-prefixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "humin",
+          "deinflected": "h",
+          "conditionsIn": [
+            "word",
+            "word-suffixed",
+            "word-prefixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "kum",
+          "deinflected": "k",
+          "conditionsIn": [
+            "word",
+            "word-suffixed",
+            "word-prefixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "kin",
+          "deinflected": "k",
+          "conditionsIn": [
+            "word",
+            "word-suffixed",
+            "word-prefixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "kinum",
+          "deinflected": "k",
+          "conditionsIn": [
+            "word",
+            "word-suffixed",
+            "word-prefixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "kumin",
+          "deinflected": "k",
+          "conditionsIn": [
+            "word",
+            "word-suffixed",
+            "word-prefixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "lum",
+          "deinflected": "l",
+          "conditionsIn": [
+            "word",
+            "word-suffixed",
+            "word-prefixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "lin",
+          "deinflected": "l",
+          "conditionsIn": [
+            "word",
+            "word-suffixed",
+            "word-prefixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "linum",
+          "deinflected": "l",
+          "conditionsIn": [
+            "word",
+            "word-suffixed",
+            "word-prefixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "lumin",
+          "deinflected": "l",
+          "conditionsIn": [
+            "word",
+            "word-suffixed",
+            "word-prefixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "mum",
+          "deinflected": "m",
+          "conditionsIn": [
+            "word",
+            "word-suffixed",
+            "word-prefixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "min",
+          "deinflected": "m",
+          "conditionsIn": [
+            "word",
+            "word-suffixed",
+            "word-prefixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "minum",
+          "deinflected": "m",
+          "conditionsIn": [
+            "word",
+            "word-suffixed",
+            "word-prefixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "mumin",
+          "deinflected": "m",
+          "conditionsIn": [
+            "word",
+            "word-suffixed",
+            "word-prefixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "num",
+          "deinflected": "n",
+          "conditionsIn": [
+            "word",
+            "word-suffixed",
+            "word-prefixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "nin",
+          "deinflected": "n",
+          "conditionsIn": [
+            "word",
+            "word-suffixed",
+            "word-prefixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "ninum",
+          "deinflected": "n",
+          "conditionsIn": [
+            "word",
+            "word-suffixed",
+            "word-prefixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "numin",
+          "deinflected": "n",
+          "conditionsIn": [
+            "word",
+            "word-suffixed",
+            "word-prefixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "pum",
+          "deinflected": "p",
+          "conditionsIn": [
+            "word",
+            "word-suffixed",
+            "word-prefixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "pin",
+          "deinflected": "p",
+          "conditionsIn": [
+            "word",
+            "word-suffixed",
+            "word-prefixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "pinum",
+          "deinflected": "p",
+          "conditionsIn": [
+            "word",
+            "word-suffixed",
+            "word-prefixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "pumin",
+          "deinflected": "p",
+          "conditionsIn": [
+            "word",
+            "word-suffixed",
+            "word-prefixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "rum",
+          "deinflected": "r",
+          "conditionsIn": [
+            "word",
+            "word-suffixed",
+            "word-prefixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "rin",
+          "deinflected": "r",
+          "conditionsIn": [
+            "word",
+            "word-suffixed",
+            "word-prefixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "rinum",
+          "deinflected": "r",
+          "conditionsIn": [
+            "word",
+            "word-suffixed",
+            "word-prefixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "rumin",
+          "deinflected": "r",
+          "conditionsIn": [
+            "word",
+            "word-suffixed",
+            "word-prefixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "sum",
+          "deinflected": "s",
+          "conditionsIn": [
+            "word",
+            "word-suffixed",
+            "word-prefixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "sin",
+          "deinflected": "s",
+          "conditionsIn": [
+            "word",
+            "word-suffixed",
+            "word-prefixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "sinum",
+          "deinflected": "s",
+          "conditionsIn": [
+            "word",
+            "word-suffixed",
+            "word-prefixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "sumin",
+          "deinflected": "s",
+          "conditionsIn": [
+            "word",
+            "word-suffixed",
+            "word-prefixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "tum",
+          "deinflected": "t",
+          "conditionsIn": [
+            "word",
+            "word-suffixed",
+            "word-prefixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "tin",
+          "deinflected": "t",
+          "conditionsIn": [
+            "word",
+            "word-suffixed",
+            "word-prefixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "tinum",
+          "deinflected": "t",
+          "conditionsIn": [
+            "word",
+            "word-suffixed",
+            "word-prefixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "tumin",
+          "deinflected": "t",
+          "conditionsIn": [
+            "word",
+            "word-suffixed",
+            "word-prefixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "wum",
+          "deinflected": "w",
+          "conditionsIn": [
+            "word",
+            "word-suffixed",
+            "word-prefixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "win",
+          "deinflected": "w",
+          "conditionsIn": [
+            "word",
+            "word-suffixed",
+            "word-prefixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "winum",
+          "deinflected": "w",
+          "conditionsIn": [
+            "word",
+            "word-suffixed",
+            "word-prefixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "wumin",
+          "deinflected": "w",
+          "conditionsIn": [
+            "word",
+            "word-suffixed",
+            "word-prefixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "yum",
+          "deinflected": "y",
+          "conditionsIn": [
+            "word",
+            "word-suffixed",
+            "word-prefixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "yin",
+          "deinflected": "y",
+          "conditionsIn": [
+            "word",
+            "word-suffixed",
+            "word-prefixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "yinum",
+          "deinflected": "y",
+          "conditionsIn": [
+            "word",
+            "word-suffixed",
+            "word-prefixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "yumin",
+          "deinflected": "y",
+          "conditionsIn": [
+            "word",
+            "word-suffixed",
+            "word-prefixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "consonant-initial infix before suffix",
+      "rules": [
+        {
+          "type": "prefix",
+          "inflected": "bum",
+          "deinflected": "b",
+          "conditionsIn": [
+            "word"
+          ],
+          "conditionsOut": [
+            "word-inflected"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "bin",
+          "deinflected": "b",
+          "conditionsIn": [
+            "word"
+          ],
+          "conditionsOut": [
+            "word-inflected"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "binum",
+          "deinflected": "b",
+          "conditionsIn": [
+            "word"
+          ],
+          "conditionsOut": [
+            "word-inflected"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "bumin",
+          "deinflected": "b",
+          "conditionsIn": [
+            "word"
+          ],
+          "conditionsOut": [
+            "word-inflected"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "dum",
+          "deinflected": "d",
+          "conditionsIn": [
+            "word"
+          ],
+          "conditionsOut": [
+            "word-inflected"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "din",
+          "deinflected": "d",
+          "conditionsIn": [
+            "word"
+          ],
+          "conditionsOut": [
+            "word-inflected"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "dinum",
+          "deinflected": "d",
+          "conditionsIn": [
+            "word"
+          ],
+          "conditionsOut": [
+            "word-inflected"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "dumin",
+          "deinflected": "d",
+          "conditionsIn": [
+            "word"
+          ],
+          "conditionsOut": [
+            "word-inflected"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "gum",
+          "deinflected": "g",
+          "conditionsIn": [
+            "word"
+          ],
+          "conditionsOut": [
+            "word-inflected"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "gin",
+          "deinflected": "g",
+          "conditionsIn": [
+            "word"
+          ],
+          "conditionsOut": [
+            "word-inflected"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "ginum",
+          "deinflected": "g",
+          "conditionsIn": [
+            "word"
+          ],
+          "conditionsOut": [
+            "word-inflected"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "gumin",
+          "deinflected": "g",
+          "conditionsIn": [
+            "word"
+          ],
+          "conditionsOut": [
+            "word-inflected"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "hum",
+          "deinflected": "h",
+          "conditionsIn": [
+            "word"
+          ],
+          "conditionsOut": [
+            "word-inflected"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "hin",
+          "deinflected": "h",
+          "conditionsIn": [
+            "word"
+          ],
+          "conditionsOut": [
+            "word-inflected"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "hinum",
+          "deinflected": "h",
+          "conditionsIn": [
+            "word"
+          ],
+          "conditionsOut": [
+            "word-inflected"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "humin",
+          "deinflected": "h",
+          "conditionsIn": [
+            "word"
+          ],
+          "conditionsOut": [
+            "word-inflected"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "kum",
+          "deinflected": "k",
+          "conditionsIn": [
+            "word"
+          ],
+          "conditionsOut": [
+            "word-inflected"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "kin",
+          "deinflected": "k",
+          "conditionsIn": [
+            "word"
+          ],
+          "conditionsOut": [
+            "word-inflected"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "kinum",
+          "deinflected": "k",
+          "conditionsIn": [
+            "word"
+          ],
+          "conditionsOut": [
+            "word-inflected"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "kumin",
+          "deinflected": "k",
+          "conditionsIn": [
+            "word"
+          ],
+          "conditionsOut": [
+            "word-inflected"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "lum",
+          "deinflected": "l",
+          "conditionsIn": [
+            "word"
+          ],
+          "conditionsOut": [
+            "word-inflected"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "lin",
+          "deinflected": "l",
+          "conditionsIn": [
+            "word"
+          ],
+          "conditionsOut": [
+            "word-inflected"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "linum",
+          "deinflected": "l",
+          "conditionsIn": [
+            "word"
+          ],
+          "conditionsOut": [
+            "word-inflected"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "lumin",
+          "deinflected": "l",
+          "conditionsIn": [
+            "word"
+          ],
+          "conditionsOut": [
+            "word-inflected"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "mum",
+          "deinflected": "m",
+          "conditionsIn": [
+            "word"
+          ],
+          "conditionsOut": [
+            "word-inflected"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "min",
+          "deinflected": "m",
+          "conditionsIn": [
+            "word"
+          ],
+          "conditionsOut": [
+            "word-inflected"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "minum",
+          "deinflected": "m",
+          "conditionsIn": [
+            "word"
+          ],
+          "conditionsOut": [
+            "word-inflected"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "mumin",
+          "deinflected": "m",
+          "conditionsIn": [
+            "word"
+          ],
+          "conditionsOut": [
+            "word-inflected"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "num",
+          "deinflected": "n",
+          "conditionsIn": [
+            "word"
+          ],
+          "conditionsOut": [
+            "word-inflected"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "nin",
+          "deinflected": "n",
+          "conditionsIn": [
+            "word"
+          ],
+          "conditionsOut": [
+            "word-inflected"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "ninum",
+          "deinflected": "n",
+          "conditionsIn": [
+            "word"
+          ],
+          "conditionsOut": [
+            "word-inflected"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "numin",
+          "deinflected": "n",
+          "conditionsIn": [
+            "word"
+          ],
+          "conditionsOut": [
+            "word-inflected"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "pum",
+          "deinflected": "p",
+          "conditionsIn": [
+            "word"
+          ],
+          "conditionsOut": [
+            "word-inflected"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "pin",
+          "deinflected": "p",
+          "conditionsIn": [
+            "word"
+          ],
+          "conditionsOut": [
+            "word-inflected"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "pinum",
+          "deinflected": "p",
+          "conditionsIn": [
+            "word"
+          ],
+          "conditionsOut": [
+            "word-inflected"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "pumin",
+          "deinflected": "p",
+          "conditionsIn": [
+            "word"
+          ],
+          "conditionsOut": [
+            "word-inflected"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "rum",
+          "deinflected": "r",
+          "conditionsIn": [
+            "word"
+          ],
+          "conditionsOut": [
+            "word-inflected"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "rin",
+          "deinflected": "r",
+          "conditionsIn": [
+            "word"
+          ],
+          "conditionsOut": [
+            "word-inflected"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "rinum",
+          "deinflected": "r",
+          "conditionsIn": [
+            "word"
+          ],
+          "conditionsOut": [
+            "word-inflected"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "rumin",
+          "deinflected": "r",
+          "conditionsIn": [
+            "word"
+          ],
+          "conditionsOut": [
+            "word-inflected"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "sum",
+          "deinflected": "s",
+          "conditionsIn": [
+            "word"
+          ],
+          "conditionsOut": [
+            "word-inflected"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "sin",
+          "deinflected": "s",
+          "conditionsIn": [
+            "word"
+          ],
+          "conditionsOut": [
+            "word-inflected"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "sinum",
+          "deinflected": "s",
+          "conditionsIn": [
+            "word"
+          ],
+          "conditionsOut": [
+            "word-inflected"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "sumin",
+          "deinflected": "s",
+          "conditionsIn": [
+            "word"
+          ],
+          "conditionsOut": [
+            "word-inflected"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "tum",
+          "deinflected": "t",
+          "conditionsIn": [
+            "word"
+          ],
+          "conditionsOut": [
+            "word-inflected"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "tin",
+          "deinflected": "t",
+          "conditionsIn": [
+            "word"
+          ],
+          "conditionsOut": [
+            "word-inflected"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "tinum",
+          "deinflected": "t",
+          "conditionsIn": [
+            "word"
+          ],
+          "conditionsOut": [
+            "word-inflected"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "tumin",
+          "deinflected": "t",
+          "conditionsIn": [
+            "word"
+          ],
+          "conditionsOut": [
+            "word-inflected"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "wum",
+          "deinflected": "w",
+          "conditionsIn": [
+            "word"
+          ],
+          "conditionsOut": [
+            "word-inflected"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "win",
+          "deinflected": "w",
+          "conditionsIn": [
+            "word"
+          ],
+          "conditionsOut": [
+            "word-inflected"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "winum",
+          "deinflected": "w",
+          "conditionsIn": [
+            "word"
+          ],
+          "conditionsOut": [
+            "word-inflected"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "wumin",
+          "deinflected": "w",
+          "conditionsIn": [
+            "word"
+          ],
+          "conditionsOut": [
+            "word-inflected"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "yum",
+          "deinflected": "y",
+          "conditionsIn": [
+            "word"
+          ],
+          "conditionsOut": [
+            "word-inflected"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "yin",
+          "deinflected": "y",
+          "conditionsIn": [
+            "word"
+          ],
+          "conditionsOut": [
+            "word-inflected"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "yinum",
+          "deinflected": "y",
+          "conditionsIn": [
+            "word"
+          ],
+          "conditionsOut": [
+            "word-inflected"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "yumin",
+          "deinflected": "y",
+          "conditionsIn": [
+            "word"
+          ],
+          "conditionsOut": [
+            "word-inflected"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "suffixes",
+      "rules": [
+        {
+          "type": "suffix",
+          "inflected": "uhan",
+          "deinflected": "o",
+          "conditionsIn": [
+            "word",
+            "word-prefixed",
+            "word-inflected"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "uan",
+          "deinflected": "o",
+          "conditionsIn": [
+            "word",
+            "word-prefixed",
+            "word-inflected"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "han",
+          "deinflected": "",
+          "conditionsIn": [
+            "word",
+            "word-prefixed",
+            "word-inflected"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "an",
+          "deinflected": "",
+          "conditionsIn": [
+            "word",
+            "word-prefixed",
+            "word-inflected"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "hin",
+          "deinflected": "",
+          "conditionsIn": [
+            "word",
+            "word-prefixed",
+            "word-inflected"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "in",
+          "deinflected": "",
+          "conditionsIn": [
+            "word",
+            "word-prefixed",
+            "word-inflected"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "anan",
+          "deinflected": "",
+          "conditionsIn": [
+            "word",
+            "word-prefixed",
+            "word-inflected"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "hanan",
+          "deinflected": "",
+          "conditionsIn": [
+            "word",
+            "word-prefixed",
+            "word-inflected"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "inan",
+          "deinflected": "",
+          "conditionsIn": [
+            "word",
+            "word-prefixed",
+            "word-inflected"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "ng",
+          "deinflected": "",
+          "conditionsIn": [
+            "word",
+            "word-prefixed",
+            "word-inflected"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "g",
+          "deinflected": "",
+          "conditionsIn": [
+            "word",
+            "word-prefixed",
+            "word-inflected"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "na",
+          "deinflected": "",
+          "conditionsIn": [
+            "word",
+            "word-prefixed",
+            "word-inflected"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "pa",
+          "deinflected": "",
+          "conditionsIn": [
+            "word",
+            "word-prefixed",
+            "word-inflected"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "man",
+          "deinflected": "",
+          "conditionsIn": [
+            "word",
+            "word-prefixed",
+            "word-inflected"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "din",
+          "deinflected": "",
+          "conditionsIn": [
+            "word",
+            "word-prefixed",
+            "word-inflected"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "rin",
+          "deinflected": "",
+          "conditionsIn": [
+            "word",
+            "word-prefixed",
+            "word-inflected"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "raw",
+          "deinflected": "",
+          "conditionsIn": [
+            "word",
+            "word-prefixed",
+            "word-inflected"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "daw",
+          "deinflected": "",
+          "conditionsIn": [
+            "word",
+            "word-prefixed",
+            "word-inflected"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "po",
+          "deinflected": "",
+          "conditionsIn": [
+            "word",
+            "word-prefixed",
+            "word-inflected"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "ho",
+          "deinflected": "",
+          "conditionsIn": [
+            "word",
+            "word-prefixed",
+            "word-inflected"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "kita",
+          "deinflected": "",
+          "conditionsIn": [
+            "word",
+            "word-prefixed",
+            "word-inflected"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "ko",
+          "deinflected": "",
+          "conditionsIn": [
+            "word",
+            "word-prefixed",
+            "word-inflected"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "mo",
+          "deinflected": "",
+          "conditionsIn": [
+            "word",
+            "word-prefixed",
+            "word-inflected"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "niya",
+          "deinflected": "",
+          "conditionsIn": [
+            "word",
+            "word-prefixed",
+            "word-inflected"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "natin",
+          "deinflected": "",
+          "conditionsIn": [
+            "word",
+            "word-prefixed",
+            "word-inflected"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "namin",
+          "deinflected": "",
+          "conditionsIn": [
+            "word",
+            "word-prefixed",
+            "word-inflected"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "ninyo",
+          "deinflected": "",
+          "conditionsIn": [
+            "word",
+            "word-prefixed",
+            "word-inflected"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "nila",
+          "deinflected": "",
+          "conditionsIn": [
+            "word",
+            "word-prefixed",
+            "word-inflected"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "suffix before prefix/infix",
+      "rules": [
+        {
+          "type": "suffix",
+          "inflected": "uhan",
+          "deinflected": "o",
+          "conditionsIn": [
+            "word"
+          ],
+          "conditionsOut": [
+            "word-suffixed"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "uan",
+          "deinflected": "o",
+          "conditionsIn": [
+            "word"
+          ],
+          "conditionsOut": [
+            "word-suffixed"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "han",
+          "deinflected": "",
+          "conditionsIn": [
+            "word"
+          ],
+          "conditionsOut": [
+            "word-suffixed"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "an",
+          "deinflected": "",
+          "conditionsIn": [
+            "word"
+          ],
+          "conditionsOut": [
+            "word-suffixed"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "hin",
+          "deinflected": "",
+          "conditionsIn": [
+            "word"
+          ],
+          "conditionsOut": [
+            "word-suffixed"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "in",
+          "deinflected": "",
+          "conditionsIn": [
+            "word"
+          ],
+          "conditionsOut": [
+            "word-suffixed"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "anan",
+          "deinflected": "",
+          "conditionsIn": [
+            "word"
+          ],
+          "conditionsOut": [
+            "word-suffixed"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "hanan",
+          "deinflected": "",
+          "conditionsIn": [
+            "word"
+          ],
+          "conditionsOut": [
+            "word-suffixed"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "inan",
+          "deinflected": "",
+          "conditionsIn": [
+            "word"
+          ],
+          "conditionsOut": [
+            "word-suffixed"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "ng",
+          "deinflected": "",
+          "conditionsIn": [
+            "word"
+          ],
+          "conditionsOut": [
+            "word-suffixed"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "g",
+          "deinflected": "",
+          "conditionsIn": [
+            "word"
+          ],
+          "conditionsOut": [
+            "word-suffixed"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "na",
+          "deinflected": "",
+          "conditionsIn": [
+            "word"
+          ],
+          "conditionsOut": [
+            "word-suffixed"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "pa",
+          "deinflected": "",
+          "conditionsIn": [
+            "word"
+          ],
+          "conditionsOut": [
+            "word-suffixed"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "man",
+          "deinflected": "",
+          "conditionsIn": [
+            "word"
+          ],
+          "conditionsOut": [
+            "word-suffixed"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "din",
+          "deinflected": "",
+          "conditionsIn": [
+            "word"
+          ],
+          "conditionsOut": [
+            "word-suffixed"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "rin",
+          "deinflected": "",
+          "conditionsIn": [
+            "word"
+          ],
+          "conditionsOut": [
+            "word-suffixed"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "raw",
+          "deinflected": "",
+          "conditionsIn": [
+            "word"
+          ],
+          "conditionsOut": [
+            "word-suffixed"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "daw",
+          "deinflected": "",
+          "conditionsIn": [
+            "word"
+          ],
+          "conditionsOut": [
+            "word-suffixed"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "po",
+          "deinflected": "",
+          "conditionsIn": [
+            "word"
+          ],
+          "conditionsOut": [
+            "word-suffixed"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "ho",
+          "deinflected": "",
+          "conditionsIn": [
+            "word"
+          ],
+          "conditionsOut": [
+            "word-suffixed"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "kita",
+          "deinflected": "",
+          "conditionsIn": [
+            "word"
+          ],
+          "conditionsOut": [
+            "word-suffixed"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "ko",
+          "deinflected": "",
+          "conditionsIn": [
+            "word"
+          ],
+          "conditionsOut": [
+            "word-suffixed"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "mo",
+          "deinflected": "",
+          "conditionsIn": [
+            "word"
+          ],
+          "conditionsOut": [
+            "word-suffixed"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "niya",
+          "deinflected": "",
+          "conditionsIn": [
+            "word"
+          ],
+          "conditionsOut": [
+            "word-suffixed"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "natin",
+          "deinflected": "",
+          "conditionsIn": [
+            "word"
+          ],
+          "conditionsOut": [
+            "word-suffixed"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "namin",
+          "deinflected": "",
+          "conditionsIn": [
+            "word"
+          ],
+          "conditionsOut": [
+            "word-suffixed"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "ninyo",
+          "deinflected": "",
+          "conditionsIn": [
+            "word"
+          ],
+          "conditionsOut": [
+            "word-suffixed"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "nila",
+          "deinflected": "",
+          "conditionsIn": [
+            "word"
+          ],
+          "conditionsOut": [
+            "word-suffixed"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "reduplication prefixes",
+      "rules": [
+        {
+          "type": "prefix",
+          "inflected": "ba",
+          "deinflected": "",
+          "conditionsIn": [
+            "word",
+            "word-prefixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "be",
+          "deinflected": "",
+          "conditionsIn": [
+            "word",
+            "word-prefixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "bi",
+          "deinflected": "",
+          "conditionsIn": [
+            "word",
+            "word-prefixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "bo",
+          "deinflected": "",
+          "conditionsIn": [
+            "word",
+            "word-prefixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "bu",
+          "deinflected": "",
+          "conditionsIn": [
+            "word",
+            "word-prefixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "bá",
+          "deinflected": "",
+          "conditionsIn": [
+            "word",
+            "word-prefixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "bí",
+          "deinflected": "",
+          "conditionsIn": [
+            "word",
+            "word-prefixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "ka",
+          "deinflected": "",
+          "conditionsIn": [
+            "word",
+            "word-prefixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "ke",
+          "deinflected": "",
+          "conditionsIn": [
+            "word",
+            "word-prefixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "ki",
+          "deinflected": "",
+          "conditionsIn": [
+            "word",
+            "word-prefixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "ko",
+          "deinflected": "",
+          "conditionsIn": [
+            "word",
+            "word-prefixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "ku",
+          "deinflected": "",
+          "conditionsIn": [
+            "word",
+            "word-prefixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "da",
+          "deinflected": "",
+          "conditionsIn": [
+            "word",
+            "word-prefixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "de",
+          "deinflected": "",
+          "conditionsIn": [
+            "word",
+            "word-prefixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "di",
+          "deinflected": "",
+          "conditionsIn": [
+            "word",
+            "word-prefixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "do",
+          "deinflected": "",
+          "conditionsIn": [
+            "word",
+            "word-prefixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "du",
+          "deinflected": "",
+          "conditionsIn": [
+            "word",
+            "word-prefixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "ga",
+          "deinflected": "",
+          "conditionsIn": [
+            "word",
+            "word-prefixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "ge",
+          "deinflected": "",
+          "conditionsIn": [
+            "word",
+            "word-prefixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "gi",
+          "deinflected": "",
+          "conditionsIn": [
+            "word",
+            "word-prefixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "go",
+          "deinflected": "",
+          "conditionsIn": [
+            "word",
+            "word-prefixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "gu",
+          "deinflected": "",
+          "conditionsIn": [
+            "word",
+            "word-prefixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "ha",
+          "deinflected": "",
+          "conditionsIn": [
+            "word",
+            "word-prefixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "he",
+          "deinflected": "",
+          "conditionsIn": [
+            "word",
+            "word-prefixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "hi",
+          "deinflected": "",
+          "conditionsIn": [
+            "word",
+            "word-prefixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "ho",
+          "deinflected": "",
+          "conditionsIn": [
+            "word",
+            "word-prefixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "hu",
+          "deinflected": "",
+          "conditionsIn": [
+            "word",
+            "word-prefixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "la",
+          "deinflected": "",
+          "conditionsIn": [
+            "word",
+            "word-prefixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "le",
+          "deinflected": "",
+          "conditionsIn": [
+            "word",
+            "word-prefixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "li",
+          "deinflected": "",
+          "conditionsIn": [
+            "word",
+            "word-prefixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "lo",
+          "deinflected": "",
+          "conditionsIn": [
+            "word",
+            "word-prefixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "lu",
+          "deinflected": "",
+          "conditionsIn": [
+            "word",
+            "word-prefixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "ma",
+          "deinflected": "",
+          "conditionsIn": [
+            "word",
+            "word-prefixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "me",
+          "deinflected": "",
+          "conditionsIn": [
+            "word",
+            "word-prefixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "mi",
+          "deinflected": "",
+          "conditionsIn": [
+            "word",
+            "word-prefixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "mo",
+          "deinflected": "",
+          "conditionsIn": [
+            "word",
+            "word-prefixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "mu",
+          "deinflected": "",
+          "conditionsIn": [
+            "word",
+            "word-prefixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "na",
+          "deinflected": "",
+          "conditionsIn": [
+            "word",
+            "word-prefixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "ne",
+          "deinflected": "",
+          "conditionsIn": [
+            "word",
+            "word-prefixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "ni",
+          "deinflected": "",
+          "conditionsIn": [
+            "word",
+            "word-prefixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "no",
+          "deinflected": "",
+          "conditionsIn": [
+            "word",
+            "word-prefixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "nu",
+          "deinflected": "",
+          "conditionsIn": [
+            "word",
+            "word-prefixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "pa",
+          "deinflected": "",
+          "conditionsIn": [
+            "word",
+            "word-prefixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "pe",
+          "deinflected": "",
+          "conditionsIn": [
+            "word",
+            "word-prefixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "pi",
+          "deinflected": "",
+          "conditionsIn": [
+            "word",
+            "word-prefixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "po",
+          "deinflected": "",
+          "conditionsIn": [
+            "word",
+            "word-prefixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "pu",
+          "deinflected": "",
+          "conditionsIn": [
+            "word",
+            "word-prefixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "ra",
+          "deinflected": "",
+          "conditionsIn": [
+            "word",
+            "word-prefixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "re",
+          "deinflected": "",
+          "conditionsIn": [
+            "word",
+            "word-prefixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "ri",
+          "deinflected": "",
+          "conditionsIn": [
+            "word",
+            "word-prefixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "ro",
+          "deinflected": "",
+          "conditionsIn": [
+            "word",
+            "word-prefixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "ru",
+          "deinflected": "",
+          "conditionsIn": [
+            "word",
+            "word-prefixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "sa",
+          "deinflected": "",
+          "conditionsIn": [
+            "word",
+            "word-prefixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "se",
+          "deinflected": "",
+          "conditionsIn": [
+            "word",
+            "word-prefixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "si",
+          "deinflected": "",
+          "conditionsIn": [
+            "word",
+            "word-prefixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "so",
+          "deinflected": "",
+          "conditionsIn": [
+            "word",
+            "word-prefixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "su",
+          "deinflected": "",
+          "conditionsIn": [
+            "word",
+            "word-prefixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "ta",
+          "deinflected": "",
+          "conditionsIn": [
+            "word",
+            "word-prefixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "te",
+          "deinflected": "",
+          "conditionsIn": [
+            "word",
+            "word-prefixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "ti",
+          "deinflected": "",
+          "conditionsIn": [
+            "word",
+            "word-prefixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "to",
+          "deinflected": "",
+          "conditionsIn": [
+            "word",
+            "word-prefixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "tu",
+          "deinflected": "",
+          "conditionsIn": [
+            "word",
+            "word-prefixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "wa",
+          "deinflected": "",
+          "conditionsIn": [
+            "word",
+            "word-prefixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "we",
+          "deinflected": "",
+          "conditionsIn": [
+            "word",
+            "word-prefixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "wi",
+          "deinflected": "",
+          "conditionsIn": [
+            "word",
+            "word-prefixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "wo",
+          "deinflected": "",
+          "conditionsIn": [
+            "word",
+            "word-prefixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "wu",
+          "deinflected": "",
+          "conditionsIn": [
+            "word",
+            "word-prefixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "ya",
+          "deinflected": "",
+          "conditionsIn": [
+            "word",
+            "word-prefixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "ye",
+          "deinflected": "",
+          "conditionsIn": [
+            "word",
+            "word-prefixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "yi",
+          "deinflected": "",
+          "conditionsIn": [
+            "word",
+            "word-prefixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "yo",
+          "deinflected": "",
+          "conditionsIn": [
+            "word",
+            "word-prefixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "yu",
+          "deinflected": "",
+          "conditionsIn": [
+            "word",
+            "word-prefixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "a",
+          "deinflected": "",
+          "conditionsIn": [
+            "word",
+            "word-prefixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "i",
+          "deinflected": "",
+          "conditionsIn": [
+            "word",
+            "word-prefixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "u",
+          "deinflected": "",
+          "conditionsIn": [
+            "word",
+            "word-prefixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "full reduplication",
+      "rules": [
+        {
+          "type": "wholeWord",
+          "inflected": "araw-araw",
+          "deinflected": "araw",
+          "conditionsIn": [
+            "word"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "bata-bata",
+          "deinflected": "bata",
+          "conditionsIn": [
+            "word"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "bahay-bahay",
+          "deinflected": "bahay",
+          "conditionsIn": [
+            "word"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "isa-isa",
+          "deinflected": "isa",
+          "conditionsIn": [
+            "word"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "unti-unti",
+          "deinflected": "unti",
+          "conditionsIn": [
+            "word"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "sari-sari",
+          "deinflected": "sari",
+          "conditionsIn": [
+            "word"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "halo-halo",
+          "deinflected": "halo",
+          "conditionsIn": [
+            "word"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "ano-ano",
+          "deinflected": "ano",
+          "conditionsIn": [
+            "word"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "sino-sino",
+          "deinflected": "sino",
+          "conditionsIn": [
+            "word"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "kanya-kanya",
+          "deinflected": "kanya",
+          "conditionsIn": [
+            "word"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "assimilated nasal prefixes",
+      "rules": [
+        {
+          "type": "prefix",
+          "inflected": "pam",
+          "deinflected": "pang",
+          "conditionsIn": [
+            "word"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "pan",
+          "deinflected": "pang",
+          "conditionsIn": [
+            "word"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "pan",
+          "deinflected": "pag",
+          "conditionsIn": [
+            "word"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "pang",
+          "deinflected": "pag",
+          "conditionsIn": [
+            "word"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "pinam",
+          "deinflected": "pinang",
+          "conditionsIn": [
+            "word"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "pinan",
+          "deinflected": "pinang",
+          "conditionsIn": [
+            "word"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "pinam",
+          "deinflected": "pinag",
+          "conditionsIn": [
+            "word"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "pinan",
+          "deinflected": "pinag",
+          "conditionsIn": [
+            "word"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "nam",
+          "deinflected": "nang",
+          "conditionsIn": [
+            "word"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "nan",
+          "deinflected": "nang",
+          "conditionsIn": [
+            "word"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "mam",
+          "deinflected": "mang",
+          "conditionsIn": [
+            "word"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "man",
+          "deinflected": "mang",
+          "conditionsIn": [
+            "word"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "makapam",
+          "deinflected": "makapang",
+          "conditionsIn": [
+            "word"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "makapan",
+          "deinflected": "makapang",
+          "conditionsIn": [
+            "word"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "nakapam",
+          "deinflected": "nakapang",
+          "conditionsIn": [
+            "word"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "nakapan",
+          "deinflected": "nakapang",
+          "conditionsIn": [
+            "word"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        }
+      ]
+    }
+  ]
+}

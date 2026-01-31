@@ -84,6 +84,39 @@ pub enum DictionaryLanguage {
     French,
     German,
     Portuguese,
+    Bulgarian,
+    Czech,
+    Danish,
+    Greek,
+    Estonian,
+    Persian,
+    Finnish,
+    Hebrew,
+    Hindi,
+    Hungarian,
+    Indonesian,
+    Italian,
+    Latin,
+    Lao,
+    Latvian,
+    Georgian,
+    Kannada,
+    Khmer,
+    Mongolian,
+    Maltese,
+    Dutch,
+    Norwegian,
+    Polish,
+    Romanian,
+    Russian,
+    Swedish,
+    Thai,
+    Tagalog,
+    Turkish,
+    Ukrainian,
+    Vietnamese,
+    Welsh,
+    Cantonese,
 }
 
 impl DictionaryLanguage {
@@ -98,6 +131,39 @@ impl DictionaryLanguage {
             DictionaryLanguage::French => "french",
             DictionaryLanguage::German => "german",
             DictionaryLanguage::Portuguese => "portuguese",
+            DictionaryLanguage::Bulgarian => "bulgarian",
+            DictionaryLanguage::Czech => "czech",
+            DictionaryLanguage::Danish => "danish",
+            DictionaryLanguage::Greek => "greek",
+            DictionaryLanguage::Estonian => "estonian",
+            DictionaryLanguage::Persian => "persian",
+            DictionaryLanguage::Finnish => "finnish",
+            DictionaryLanguage::Hebrew => "hebrew",
+            DictionaryLanguage::Hindi => "hindi",
+            DictionaryLanguage::Hungarian => "hungarian",
+            DictionaryLanguage::Indonesian => "indonesian",
+            DictionaryLanguage::Italian => "italian",
+            DictionaryLanguage::Latin => "latin",
+            DictionaryLanguage::Lao => "lao",
+            DictionaryLanguage::Latvian => "latvian",
+            DictionaryLanguage::Georgian => "georgian",
+            DictionaryLanguage::Kannada => "kannada",
+            DictionaryLanguage::Khmer => "khmer",
+            DictionaryLanguage::Mongolian => "mongolian",
+            DictionaryLanguage::Maltese => "maltese",
+            DictionaryLanguage::Dutch => "dutch",
+            DictionaryLanguage::Norwegian => "norwegian",
+            DictionaryLanguage::Polish => "polish",
+            DictionaryLanguage::Romanian => "romanian",
+            DictionaryLanguage::Russian => "russian",
+            DictionaryLanguage::Swedish => "swedish",
+            DictionaryLanguage::Thai => "thai",
+            DictionaryLanguage::Tagalog => "tagalog",
+            DictionaryLanguage::Turkish => "turkish",
+            DictionaryLanguage::Ukrainian => "ukrainian",
+            DictionaryLanguage::Vietnamese => "vietnamese",
+            DictionaryLanguage::Welsh => "welsh",
+            DictionaryLanguage::Cantonese => "cantonese",
         }
     }
 
@@ -112,6 +178,39 @@ impl DictionaryLanguage {
             DictionaryLanguage::French => crate::deinflector::Language::French,
             DictionaryLanguage::German => crate::deinflector::Language::German,
             DictionaryLanguage::Portuguese => crate::deinflector::Language::Portuguese,
+            DictionaryLanguage::Bulgarian => crate::deinflector::Language::Bulgarian,
+            DictionaryLanguage::Czech => crate::deinflector::Language::Czech,
+            DictionaryLanguage::Danish => crate::deinflector::Language::Danish,
+            DictionaryLanguage::Greek => crate::deinflector::Language::Greek,
+            DictionaryLanguage::Estonian => crate::deinflector::Language::Estonian,
+            DictionaryLanguage::Persian => crate::deinflector::Language::Persian,
+            DictionaryLanguage::Finnish => crate::deinflector::Language::Finnish,
+            DictionaryLanguage::Hebrew => crate::deinflector::Language::Hebrew,
+            DictionaryLanguage::Hindi => crate::deinflector::Language::Hindi,
+            DictionaryLanguage::Hungarian => crate::deinflector::Language::Hungarian,
+            DictionaryLanguage::Indonesian => crate::deinflector::Language::Indonesian,
+            DictionaryLanguage::Italian => crate::deinflector::Language::Italian,
+            DictionaryLanguage::Latin => crate::deinflector::Language::Latin,
+            DictionaryLanguage::Lao => crate::deinflector::Language::Lao,
+            DictionaryLanguage::Latvian => crate::deinflector::Language::Latvian,
+            DictionaryLanguage::Georgian => crate::deinflector::Language::Georgian,
+            DictionaryLanguage::Kannada => crate::deinflector::Language::Kannada,
+            DictionaryLanguage::Khmer => crate::deinflector::Language::Khmer,
+            DictionaryLanguage::Mongolian => crate::deinflector::Language::Mongolian,
+            DictionaryLanguage::Maltese => crate::deinflector::Language::Maltese,
+            DictionaryLanguage::Dutch => crate::deinflector::Language::Dutch,
+            DictionaryLanguage::Norwegian => crate::deinflector::Language::Norwegian,
+            DictionaryLanguage::Polish => crate::deinflector::Language::Polish,
+            DictionaryLanguage::Romanian => crate::deinflector::Language::Romanian,
+            DictionaryLanguage::Russian => crate::deinflector::Language::Russian,
+            DictionaryLanguage::Swedish => crate::deinflector::Language::Swedish,
+            DictionaryLanguage::Thai => crate::deinflector::Language::Thai,
+            DictionaryLanguage::Tagalog => crate::deinflector::Language::Tagalog,
+            DictionaryLanguage::Turkish => crate::deinflector::Language::Turkish,
+            DictionaryLanguage::Ukrainian => crate::deinflector::Language::Ukrainian,
+            DictionaryLanguage::Vietnamese => crate::deinflector::Language::Vietnamese,
+            DictionaryLanguage::Welsh => crate::deinflector::Language::Welsh,
+            DictionaryLanguage::Cantonese => crate::deinflector::Language::Cantonese,
         }
     }
 
@@ -126,6 +225,39 @@ impl DictionaryLanguage {
             "french" => Some(DictionaryLanguage::French),
             "german" => Some(DictionaryLanguage::German),
             "portuguese" => Some(DictionaryLanguage::Portuguese),
+            "bulgarian" => Some(DictionaryLanguage::Bulgarian),
+            "czech" => Some(DictionaryLanguage::Czech),
+            "danish" => Some(DictionaryLanguage::Danish),
+            "greek" => Some(DictionaryLanguage::Greek),
+            "estonian" => Some(DictionaryLanguage::Estonian),
+            "persian" => Some(DictionaryLanguage::Persian),
+            "finnish" => Some(DictionaryLanguage::Finnish),
+            "hebrew" => Some(DictionaryLanguage::Hebrew),
+            "hindi" => Some(DictionaryLanguage::Hindi),
+            "hungarian" => Some(DictionaryLanguage::Hungarian),
+            "indonesian" => Some(DictionaryLanguage::Indonesian),
+            "italian" => Some(DictionaryLanguage::Italian),
+            "latin" => Some(DictionaryLanguage::Latin),
+            "lao" => Some(DictionaryLanguage::Lao),
+            "latvian" => Some(DictionaryLanguage::Latvian),
+            "georgian" => Some(DictionaryLanguage::Georgian),
+            "kannada" => Some(DictionaryLanguage::Kannada),
+            "khmer" => Some(DictionaryLanguage::Khmer),
+            "mongolian" => Some(DictionaryLanguage::Mongolian),
+            "maltese" => Some(DictionaryLanguage::Maltese),
+            "dutch" => Some(DictionaryLanguage::Dutch),
+            "norwegian" => Some(DictionaryLanguage::Norwegian),
+            "polish" => Some(DictionaryLanguage::Polish),
+            "romanian" => Some(DictionaryLanguage::Romanian),
+            "russian" => Some(DictionaryLanguage::Russian),
+            "swedish" => Some(DictionaryLanguage::Swedish),
+            "thai" => Some(DictionaryLanguage::Thai),
+            "tagalog" => Some(DictionaryLanguage::Tagalog),
+            "turkish" => Some(DictionaryLanguage::Turkish),
+            "ukrainian" => Some(DictionaryLanguage::Ukrainian),
+            "vietnamese" => Some(DictionaryLanguage::Vietnamese),
+            "welsh" => Some(DictionaryLanguage::Welsh),
+            "cantonese" => Some(DictionaryLanguage::Cantonese),
             _ => None,
         }
     }
@@ -199,6 +331,105 @@ fn dictionary_url(language: DictionaryLanguage) -> &'static str {
         }
         DictionaryLanguage::Portuguese => {
             "https://pub-c3d38cca4dc2403b88934c56748f5144.r2.dev/releases/latest/kty-pt-en.zip"
+        }
+        DictionaryLanguage::Bulgarian => {
+            "https://pub-c3d38cca4dc2403b88934c56748f5144.r2.dev/releases/latest/kty-bg-en.zip"
+        }
+        DictionaryLanguage::Czech => {
+            "https://pub-c3d38cca4dc2403b88934c56748f5144.r2.dev/releases/latest/kty-cs-en.zip"
+        }
+        DictionaryLanguage::Danish => {
+            "https://pub-c3d38cca4dc2403b88934c56748f5144.r2.dev/releases/latest/kty-da-en.zip"
+        }
+        DictionaryLanguage::Greek => {
+            "https://pub-c3d38cca4dc2403b88934c56748f5144.r2.dev/releases/latest/kty-el-en.zip"
+        }
+        DictionaryLanguage::Estonian => {
+            "https://pub-c3d38cca4dc2403b88934c56748f5144.r2.dev/releases/latest/kty-et-en.zip"
+        }
+        DictionaryLanguage::Persian => {
+            "https://pub-c3d38cca4dc2403b88934c56748f5144.r2.dev/releases/latest/kty-fa-en.zip"
+        }
+        DictionaryLanguage::Finnish => {
+            "https://pub-c3d38cca4dc2403b88934c56748f5144.r2.dev/releases/latest/kty-fi-en.zip"
+        }
+        DictionaryLanguage::Hebrew => {
+            "https://pub-c3d38cca4dc2403b88934c56748f5144.r2.dev/releases/latest/kty-he-en.zip"
+        }
+        DictionaryLanguage::Hindi => {
+            "https://pub-c3d38cca4dc2403b88934c56748f5144.r2.dev/releases/latest/kty-hi-en.zip"
+        }
+        DictionaryLanguage::Hungarian => {
+            "https://pub-c3d38cca4dc2403b88934c56748f5144.r2.dev/releases/latest/kty-hu-en.zip"
+        }
+        DictionaryLanguage::Indonesian => {
+            "https://pub-c3d38cca4dc2403b88934c56748f5144.r2.dev/releases/latest/kty-id-en.zip"
+        }
+        DictionaryLanguage::Italian => {
+            "https://pub-c3d38cca4dc2403b88934c56748f5144.r2.dev/releases/latest/kty-it-en.zip"
+        }
+        DictionaryLanguage::Latin => {
+            "https://pub-c3d38cca4dc2403b88934c56748f5144.r2.dev/releases/latest/kty-la-en.zip"
+        }
+        DictionaryLanguage::Lao => {
+            "https://pub-c3d38cca4dc2403b88934c56748f5144.r2.dev/releases/latest/kty-lo-en.zip"
+        }
+        DictionaryLanguage::Latvian => {
+            "https://pub-c3d38cca4dc2403b88934c56748f5144.r2.dev/releases/latest/kty-lv-en.zip"
+        }
+        DictionaryLanguage::Georgian => {
+            "https://pub-c3d38cca4dc2403b88934c56748f5144.r2.dev/releases/latest/kty-ka-en.zip"
+        }
+        DictionaryLanguage::Kannada => {
+            "https://pub-c3d38cca4dc2403b88934c56748f5144.r2.dev/releases/latest/kty-kn-en.zip"
+        }
+        DictionaryLanguage::Khmer => {
+            "https://pub-c3d38cca4dc2403b88934c56748f5144.r2.dev/releases/latest/kty-km-en.zip"
+        }
+        DictionaryLanguage::Mongolian => {
+            "https://pub-c3d38cca4dc2403b88934c56748f5144.r2.dev/releases/latest/kty-mn-en.zip"
+        }
+        DictionaryLanguage::Maltese => {
+            "https://pub-c3d38cca4dc2403b88934c56748f5144.r2.dev/releases/latest/kty-mt-en.zip"
+        }
+        DictionaryLanguage::Dutch => {
+            "https://pub-c3d38cca4dc2403b88934c56748f5144.r2.dev/releases/latest/kty-nl-en.zip"
+        }
+        DictionaryLanguage::Norwegian => {
+            "https://pub-c3d38cca4dc2403b88934c56748f5144.r2.dev/releases/latest/kty-no-en.zip"
+        }
+        DictionaryLanguage::Polish => {
+            "https://pub-c3d38cca4dc2403b88934c56748f5144.r2.dev/releases/latest/kty-pl-en.zip"
+        }
+        DictionaryLanguage::Romanian => {
+            "https://pub-c3d38cca4dc2403b88934c56748f5144.r2.dev/releases/latest/kty-ro-en.zip"
+        }
+        DictionaryLanguage::Russian => {
+            "https://pub-c3d38cca4dc2403b88934c56748f5144.r2.dev/releases/latest/kty-ru-en.zip"
+        }
+        DictionaryLanguage::Swedish => {
+            "https://pub-c3d38cca4dc2403b88934c56748f5144.r2.dev/releases/latest/kty-sv-en.zip"
+        }
+        DictionaryLanguage::Thai => {
+            "https://pub-c3d38cca4dc2403b88934c56748f5144.r2.dev/releases/latest/kty-th-en.zip"
+        }
+        DictionaryLanguage::Tagalog => {
+            "https://pub-c3d38cca4dc2403b88934c56748f5144.r2.dev/releases/latest/kty-tl-en.zip"
+        }
+        DictionaryLanguage::Turkish => {
+            "https://pub-c3d38cca4dc2403b88934c56748f5144.r2.dev/releases/latest/kty-tr-en.zip"
+        }
+        DictionaryLanguage::Ukrainian => {
+            "https://pub-c3d38cca4dc2403b88934c56748f5144.r2.dev/releases/latest/kty-uk-en.zip"
+        }
+        DictionaryLanguage::Vietnamese => {
+            "https://pub-c3d38cca4dc2403b88934c56748f5144.r2.dev/releases/latest/kty-vi-en.zip"
+        }
+        DictionaryLanguage::Welsh => {
+            "https://pub-c3d38cca4dc2403b88934c56748f5144.r2.dev/releases/latest/kty-cy-en.zip"
+        }
+        DictionaryLanguage::Cantonese => {
+            "https://github.com/MarvNC/wordshk-yomitan/releases/download/2024-09-17/Words.hk.2024-09-16.zip"
         }
     }
 }
