@@ -81,6 +81,7 @@ pub enum DictionaryLanguage {
     Korean,
     Arabic,
     Spanish,
+    French,
 }
 
 impl DictionaryLanguage {
@@ -92,6 +93,7 @@ impl DictionaryLanguage {
             DictionaryLanguage::Korean => "korean",
             DictionaryLanguage::Arabic => "arabic",
             DictionaryLanguage::Spanish => "spanish",
+            DictionaryLanguage::French => "french",
         }
     }
 
@@ -103,6 +105,7 @@ impl DictionaryLanguage {
             DictionaryLanguage::Korean => crate::deinflector::Language::Korean,
             DictionaryLanguage::Arabic => crate::deinflector::Language::Arabic,
             DictionaryLanguage::Spanish => crate::deinflector::Language::Spanish,
+            DictionaryLanguage::French => crate::deinflector::Language::French,
         }
     }
 
@@ -114,6 +117,7 @@ impl DictionaryLanguage {
             "korean" => Some(DictionaryLanguage::Korean),
             "arabic" => Some(DictionaryLanguage::Arabic),
             "spanish" => Some(DictionaryLanguage::Spanish),
+            "french" => Some(DictionaryLanguage::French),
             _ => None,
         }
     }
@@ -178,6 +182,9 @@ fn dictionary_url(language: DictionaryLanguage) -> &'static str {
         }
         DictionaryLanguage::Spanish => {
             "https://pub-c3d38cca4dc2403b88934c56748f5144.r2.dev/releases/latest/kty-es-en.zip"
+        }
+        DictionaryLanguage::French => {
+            "https://pub-c3d38cca4dc2403b88934c56748f5144.r2.dev/releases/latest/kty-fr-en.zip"
         }
     }
 }
