@@ -390,16 +390,18 @@ pub fn auto_merge(lines: Vec<OcrResult>, w: u32, h: u32, config: &MergeConfig) -
         .map(|l| {
             let b = &l.tight_bounding_box;
             let prefers_vertical = config.language.prefers_vertical();
+            let lens_is_vertical = l.forced_orientation.as_deref() == Some("vertical");
             let char_count = l.text.chars().count();
 
             let is_v = if prefers_vertical {
                 if char_count == 1 {
                     b.height > b.width * 0.8
                 } else {
-                    b.height > b.width
+                    let is_physically_vertical = b.height > b.width;
+                    lens_is_vertical || is_physically_vertical
                 }
             } else {
-                false
+                lens_is_vertical && b.height > b.width * 1.1
             };
 
             let (min_main, max_main, min_cross, max_cross) = if is_v {

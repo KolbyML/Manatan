@@ -9,6 +9,7 @@ pub enum OcrLanguage {
     Korean,
     Arabic,
     Spanish,
+    French,
 }
 
 impl OcrLanguage {
@@ -20,6 +21,7 @@ impl OcrLanguage {
             OcrLanguage::Korean => "korean",
             OcrLanguage::Arabic => "arabic",
             OcrLanguage::Spanish => "spanish",
+            OcrLanguage::French => "french",
         }
     }
 
