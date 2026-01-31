@@ -1,0 +1,6025 @@
+{
+  "_metadata": {
+    "language": "german",
+    "generatedBy": "manatan-deinflectors Rust generator",
+    "generatorVersion": "0.1.0",
+    "sourceFormat": "programmatic",
+    "note": "German rules for common noun/adjective inflection, weak verb morphology, participle affixes, separable prefixes, and high-frequency irregular verbs.",
+    "sources": [
+      {
+        "title": "FSI German Basic Course",
+        "url": "https://www.fsi-language-courses.org/",
+        "license": "US government public domain",
+        "usage": "Reference for regular German morphology and common verb patterns."
+      },
+      {
+        "title": "Thomas, A Practical German Grammar",
+        "url": "https://commons.wikimedia.org/wiki/File:A_practical_German_grammar_(IA_cu31924026549273).pdf",
+        "license": "Public domain",
+        "usage": "Public-domain grammar reference for declension/conjugation classes."
+      }
+    ]
+  },
+  "conditions": {
+    "adj": {
+      "subConditions": null
+    },
+    "base": {
+      "subConditions": null
+    },
+    "noun": {
+      "subConditions": null
+    },
+    "verb": {
+      "subConditions": null
+    },
+    "verb-prefixed": {
+      "subConditions": null
+    },
+    "verb-separable": {
+      "subConditions": null
+    },
+    "verb-suffixed": {
+      "subConditions": null
+    },
+    "word": {
+      "subConditions": [
+        "adj",
+        "noun",
+        "verb"
+      ]
+    }
+  },
+  "transforms": [
+    {
+      "id": "noun plural and case endings",
+      "rules": [
+        {
+          "type": "suffix",
+          "inflected": "innen",
+          "deinflected": "in",
+          "conditionsIn": [
+            "noun"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "lein",
+          "deinflected": "",
+          "conditionsIn": [
+            "noun"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "chen",
+          "deinflected": "",
+          "conditionsIn": [
+            "noun"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "eren",
+          "deinflected": "er",
+          "conditionsIn": [
+            "noun"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "ern",
+          "deinflected": "er",
+          "conditionsIn": [
+            "noun"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "en",
+          "deinflected": "",
+          "conditionsIn": [
+            "noun"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "n",
+          "deinflected": "",
+          "conditionsIn": [
+            "noun"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "er",
+          "deinflected": "",
+          "conditionsIn": [
+            "noun"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "e",
+          "deinflected": "",
+          "conditionsIn": [
+            "noun"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "s",
+          "deinflected": "",
+          "conditionsIn": [
+            "noun"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "umlaut and irregular noun plurals",
+      "rules": [
+        {
+          "type": "wholeWord",
+          "inflected": "Männer",
+          "deinflected": "Mann",
+          "conditionsIn": [
+            "noun"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "Männern",
+          "deinflected": "Mann",
+          "conditionsIn": [
+            "noun"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "Frauen",
+          "deinflected": "Frau",
+          "conditionsIn": [
+            "noun"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "Kinder",
+          "deinflected": "Kind",
+          "conditionsIn": [
+            "noun"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "Kindern",
+          "deinflected": "Kind",
+          "conditionsIn": [
+            "noun"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "Bücher",
+          "deinflected": "Buch",
+          "conditionsIn": [
+            "noun"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "Büchern",
+          "deinflected": "Buch",
+          "conditionsIn": [
+            "noun"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "Häuser",
+          "deinflected": "Haus",
+          "conditionsIn": [
+            "noun"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "Häusern",
+          "deinflected": "Haus",
+          "conditionsIn": [
+            "noun"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "Mütter",
+          "deinflected": "Mutter",
+          "conditionsIn": [
+            "noun"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "Müttern",
+          "deinflected": "Mutter",
+          "conditionsIn": [
+            "noun"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "Väter",
+          "deinflected": "Vater",
+          "conditionsIn": [
+            "noun"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "Vätern",
+          "deinflected": "Vater",
+          "conditionsIn": [
+            "noun"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "Töchter",
+          "deinflected": "Tochter",
+          "conditionsIn": [
+            "noun"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "Töchtern",
+          "deinflected": "Tochter",
+          "conditionsIn": [
+            "noun"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "Brüder",
+          "deinflected": "Bruder",
+          "conditionsIn": [
+            "noun"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "Brüdern",
+          "deinflected": "Bruder",
+          "conditionsIn": [
+            "noun"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "Söhne",
+          "deinflected": "Sohn",
+          "conditionsIn": [
+            "noun"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "Söhnen",
+          "deinflected": "Sohn",
+          "conditionsIn": [
+            "noun"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "Städte",
+          "deinflected": "Stadt",
+          "conditionsIn": [
+            "noun"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "Städten",
+          "deinflected": "Stadt",
+          "conditionsIn": [
+            "noun"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "Länder",
+          "deinflected": "Land",
+          "conditionsIn": [
+            "noun"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "Ländern",
+          "deinflected": "Land",
+          "conditionsIn": [
+            "noun"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "Wörter",
+          "deinflected": "Wort",
+          "conditionsIn": [
+            "noun"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "Wörtern",
+          "deinflected": "Wort",
+          "conditionsIn": [
+            "noun"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "Worte",
+          "deinflected": "Wort",
+          "conditionsIn": [
+            "noun"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "Götter",
+          "deinflected": "Gott",
+          "conditionsIn": [
+            "noun"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "Göttern",
+          "deinflected": "Gott",
+          "conditionsIn": [
+            "noun"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "Nächte",
+          "deinflected": "Nacht",
+          "conditionsIn": [
+            "noun"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "Nächten",
+          "deinflected": "Nacht",
+          "conditionsIn": [
+            "noun"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "Kräfte",
+          "deinflected": "Kraft",
+          "conditionsIn": [
+            "noun"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "Kräften",
+          "deinflected": "Kraft",
+          "conditionsIn": [
+            "noun"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "Gäste",
+          "deinflected": "Gast",
+          "conditionsIn": [
+            "noun"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "Gästen",
+          "deinflected": "Gast",
+          "conditionsIn": [
+            "noun"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "Hände",
+          "deinflected": "Hand",
+          "conditionsIn": [
+            "noun"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "Händen",
+          "deinflected": "Hand",
+          "conditionsIn": [
+            "noun"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "Zähne",
+          "deinflected": "Zahn",
+          "conditionsIn": [
+            "noun"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "Zähnen",
+          "deinflected": "Zahn",
+          "conditionsIn": [
+            "noun"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "Ärzte",
+          "deinflected": "Arzt",
+          "conditionsIn": [
+            "noun"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "Ärzten",
+          "deinflected": "Arzt",
+          "conditionsIn": [
+            "noun"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "adjective declension and comparison",
+      "rules": [
+        {
+          "type": "suffix",
+          "inflected": "esten",
+          "deinflected": "",
+          "conditionsIn": [
+            "adj"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "estem",
+          "deinflected": "",
+          "conditionsIn": [
+            "adj"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "ester",
+          "deinflected": "",
+          "conditionsIn": [
+            "adj"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "estes",
+          "deinflected": "",
+          "conditionsIn": [
+            "adj"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "este",
+          "deinflected": "",
+          "conditionsIn": [
+            "adj"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "sten",
+          "deinflected": "",
+          "conditionsIn": [
+            "adj"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "stem",
+          "deinflected": "",
+          "conditionsIn": [
+            "adj"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "ster",
+          "deinflected": "",
+          "conditionsIn": [
+            "adj"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "stes",
+          "deinflected": "",
+          "conditionsIn": [
+            "adj"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "ste",
+          "deinflected": "",
+          "conditionsIn": [
+            "adj"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "eren",
+          "deinflected": "",
+          "conditionsIn": [
+            "adj"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "erem",
+          "deinflected": "",
+          "conditionsIn": [
+            "adj"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "erer",
+          "deinflected": "",
+          "conditionsIn": [
+            "adj"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "eres",
+          "deinflected": "",
+          "conditionsIn": [
+            "adj"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "ere",
+          "deinflected": "",
+          "conditionsIn": [
+            "adj"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "en",
+          "deinflected": "",
+          "conditionsIn": [
+            "adj"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "em",
+          "deinflected": "",
+          "conditionsIn": [
+            "adj"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "er",
+          "deinflected": "",
+          "conditionsIn": [
+            "adj"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "es",
+          "deinflected": "",
+          "conditionsIn": [
+            "adj"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "e",
+          "deinflected": "",
+          "conditionsIn": [
+            "adj"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "irregular adjective comparison",
+      "rules": [
+        {
+          "type": "wholeWord",
+          "inflected": "besser",
+          "deinflected": "gut",
+          "conditionsIn": [
+            "adj"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "bessere",
+          "deinflected": "gut",
+          "conditionsIn": [
+            "adj"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "besseren",
+          "deinflected": "gut",
+          "conditionsIn": [
+            "adj"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "besserem",
+          "deinflected": "gut",
+          "conditionsIn": [
+            "adj"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "besserer",
+          "deinflected": "gut",
+          "conditionsIn": [
+            "adj"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "besseres",
+          "deinflected": "gut",
+          "conditionsIn": [
+            "adj"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "best",
+          "deinflected": "gut",
+          "conditionsIn": [
+            "adj"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "beste",
+          "deinflected": "gut",
+          "conditionsIn": [
+            "adj"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "besten",
+          "deinflected": "gut",
+          "conditionsIn": [
+            "adj"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "bestem",
+          "deinflected": "gut",
+          "conditionsIn": [
+            "adj"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "bester",
+          "deinflected": "gut",
+          "conditionsIn": [
+            "adj"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "bestes",
+          "deinflected": "gut",
+          "conditionsIn": [
+            "adj"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "mehr",
+          "deinflected": "viel",
+          "conditionsIn": [
+            "adj"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "meiste",
+          "deinflected": "viel",
+          "conditionsIn": [
+            "adj"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "meisten",
+          "deinflected": "viel",
+          "conditionsIn": [
+            "adj"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "meistem",
+          "deinflected": "viel",
+          "conditionsIn": [
+            "adj"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "meister",
+          "deinflected": "viel",
+          "conditionsIn": [
+            "adj"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "meistes",
+          "deinflected": "viel",
+          "conditionsIn": [
+            "adj"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "weniger",
+          "deinflected": "wenig",
+          "conditionsIn": [
+            "adj"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "wenigste",
+          "deinflected": "wenig",
+          "conditionsIn": [
+            "adj"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "größer",
+          "deinflected": "groß",
+          "conditionsIn": [
+            "adj"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "größere",
+          "deinflected": "groß",
+          "conditionsIn": [
+            "adj"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "größeren",
+          "deinflected": "groß",
+          "conditionsIn": [
+            "adj"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "größerem",
+          "deinflected": "groß",
+          "conditionsIn": [
+            "adj"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "größerer",
+          "deinflected": "groß",
+          "conditionsIn": [
+            "adj"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "größeres",
+          "deinflected": "groß",
+          "conditionsIn": [
+            "adj"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "größte",
+          "deinflected": "groß",
+          "conditionsIn": [
+            "adj"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "größten",
+          "deinflected": "groß",
+          "conditionsIn": [
+            "adj"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "höher",
+          "deinflected": "hoch",
+          "conditionsIn": [
+            "adj"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "höhere",
+          "deinflected": "hoch",
+          "conditionsIn": [
+            "adj"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "höheren",
+          "deinflected": "hoch",
+          "conditionsIn": [
+            "adj"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "höchste",
+          "deinflected": "hoch",
+          "conditionsIn": [
+            "adj"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "höchsten",
+          "deinflected": "hoch",
+          "conditionsIn": [
+            "adj"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "näher",
+          "deinflected": "nah",
+          "conditionsIn": [
+            "adj"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "nächste",
+          "deinflected": "nah",
+          "conditionsIn": [
+            "adj"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "lieber",
+          "deinflected": "gern",
+          "conditionsIn": [
+            "adj"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "liebste",
+          "deinflected": "gern",
+          "conditionsIn": [
+            "adj"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "weak verb finite endings",
+      "rules": [
+        {
+          "type": "suffix",
+          "inflected": "etest",
+          "deinflected": "en",
+          "conditionsIn": [
+            "verb",
+            "verb-prefixed",
+            "verb-suffixed",
+            "verb-separable"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "etet",
+          "deinflected": "en",
+          "conditionsIn": [
+            "verb",
+            "verb-prefixed",
+            "verb-suffixed",
+            "verb-separable"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "eten",
+          "deinflected": "en",
+          "conditionsIn": [
+            "verb",
+            "verb-prefixed",
+            "verb-suffixed",
+            "verb-separable"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "test",
+          "deinflected": "en",
+          "conditionsIn": [
+            "verb",
+            "verb-prefixed",
+            "verb-suffixed",
+            "verb-separable"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "tet",
+          "deinflected": "en",
+          "conditionsIn": [
+            "verb",
+            "verb-prefixed",
+            "verb-suffixed",
+            "verb-separable"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "ten",
+          "deinflected": "en",
+          "conditionsIn": [
+            "verb",
+            "verb-prefixed",
+            "verb-suffixed",
+            "verb-separable"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "te",
+          "deinflected": "en",
+          "conditionsIn": [
+            "verb",
+            "verb-prefixed",
+            "verb-suffixed",
+            "verb-separable"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "est",
+          "deinflected": "en",
+          "conditionsIn": [
+            "verb",
+            "verb-prefixed",
+            "verb-suffixed",
+            "verb-separable"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "et",
+          "deinflected": "en",
+          "conditionsIn": [
+            "verb",
+            "verb-prefixed",
+            "verb-suffixed",
+            "verb-separable"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "st",
+          "deinflected": "en",
+          "conditionsIn": [
+            "verb",
+            "verb-prefixed",
+            "verb-suffixed",
+            "verb-separable"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "t",
+          "deinflected": "en",
+          "conditionsIn": [
+            "verb",
+            "verb-prefixed",
+            "verb-suffixed",
+            "verb-separable"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "e",
+          "deinflected": "en",
+          "conditionsIn": [
+            "verb",
+            "verb-prefixed",
+            "verb-suffixed",
+            "verb-separable"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "ieren verbs",
+      "rules": [
+        {
+          "type": "suffix",
+          "inflected": "iert",
+          "deinflected": "ieren",
+          "conditionsIn": [
+            "verb",
+            "verb-prefixed",
+            "verb-suffixed",
+            "verb-separable"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "iertest",
+          "deinflected": "ieren",
+          "conditionsIn": [
+            "verb",
+            "verb-prefixed",
+            "verb-suffixed",
+            "verb-separable"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "ierten",
+          "deinflected": "ieren",
+          "conditionsIn": [
+            "verb",
+            "verb-prefixed",
+            "verb-suffixed",
+            "verb-separable"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "iertet",
+          "deinflected": "ieren",
+          "conditionsIn": [
+            "verb",
+            "verb-prefixed",
+            "verb-suffixed",
+            "verb-separable"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "participial adjective endings",
+      "rules": [
+        {
+          "type": "suffix",
+          "inflected": "end",
+          "deinflected": "en",
+          "conditionsIn": [
+            "verb",
+            "verb-prefixed",
+            "verb-suffixed",
+            "verb-separable"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "ende",
+          "deinflected": "en",
+          "conditionsIn": [
+            "verb",
+            "verb-prefixed",
+            "verb-suffixed",
+            "verb-separable"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "enden",
+          "deinflected": "en",
+          "conditionsIn": [
+            "verb",
+            "verb-prefixed",
+            "verb-suffixed",
+            "verb-separable"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "endem",
+          "deinflected": "en",
+          "conditionsIn": [
+            "verb",
+            "verb-prefixed",
+            "verb-suffixed",
+            "verb-separable"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "ender",
+          "deinflected": "en",
+          "conditionsIn": [
+            "verb",
+            "verb-prefixed",
+            "verb-suffixed",
+            "verb-separable"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "endes",
+          "deinflected": "en",
+          "conditionsIn": [
+            "verb",
+            "verb-prefixed",
+            "verb-suffixed",
+            "verb-separable"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "et",
+          "deinflected": "en",
+          "conditionsIn": [
+            "verb",
+            "verb-prefixed",
+            "verb-suffixed",
+            "verb-separable"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "t",
+          "deinflected": "en",
+          "conditionsIn": [
+            "verb",
+            "verb-prefixed",
+            "verb-suffixed",
+            "verb-separable"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "participle ge- prefix",
+      "rules": [
+        {
+          "type": "prefix",
+          "inflected": "ge",
+          "deinflected": "",
+          "conditionsIn": [
+            "verb",
+            "verb-suffixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "Ge",
+          "deinflected": "",
+          "conditionsIn": [
+            "verb",
+            "verb-suffixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "participle ge- before suffix",
+      "rules": [
+        {
+          "type": "prefix",
+          "inflected": "ge",
+          "deinflected": "",
+          "conditionsIn": [
+            "verb",
+            "verb-suffixed"
+          ],
+          "conditionsOut": [
+            "verb-prefixed"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "Ge",
+          "deinflected": "",
+          "conditionsIn": [
+            "verb",
+            "verb-suffixed"
+          ],
+          "conditionsOut": [
+            "verb-prefixed"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "participle suffix after prefix",
+      "rules": [
+        {
+          "type": "suffix",
+          "inflected": "et",
+          "deinflected": "en",
+          "conditionsIn": [
+            "verb",
+            "verb-prefixed",
+            "verb-separable"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "t",
+          "deinflected": "en",
+          "conditionsIn": [
+            "verb",
+            "verb-prefixed",
+            "verb-separable"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "participle suffix before prefix",
+      "rules": [
+        {
+          "type": "suffix",
+          "inflected": "et",
+          "deinflected": "en",
+          "conditionsIn": [
+            "verb"
+          ],
+          "conditionsOut": [
+            "verb-suffixed"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "t",
+          "deinflected": "en",
+          "conditionsIn": [
+            "verb"
+          ],
+          "conditionsOut": [
+            "verb-suffixed"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "separable verb prefixes",
+      "rules": [
+        {
+          "type": "prefix",
+          "inflected": "ab",
+          "deinflected": "",
+          "conditionsIn": [
+            "verb",
+            "verb-prefixed",
+            "verb-suffixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "an",
+          "deinflected": "",
+          "conditionsIn": [
+            "verb",
+            "verb-prefixed",
+            "verb-suffixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "auf",
+          "deinflected": "",
+          "conditionsIn": [
+            "verb",
+            "verb-prefixed",
+            "verb-suffixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "aus",
+          "deinflected": "",
+          "conditionsIn": [
+            "verb",
+            "verb-prefixed",
+            "verb-suffixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "bei",
+          "deinflected": "",
+          "conditionsIn": [
+            "verb",
+            "verb-prefixed",
+            "verb-suffixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "dar",
+          "deinflected": "",
+          "conditionsIn": [
+            "verb",
+            "verb-prefixed",
+            "verb-suffixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "ein",
+          "deinflected": "",
+          "conditionsIn": [
+            "verb",
+            "verb-prefixed",
+            "verb-suffixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "empor",
+          "deinflected": "",
+          "conditionsIn": [
+            "verb",
+            "verb-prefixed",
+            "verb-suffixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "entgegen",
+          "deinflected": "",
+          "conditionsIn": [
+            "verb",
+            "verb-prefixed",
+            "verb-suffixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "fern",
+          "deinflected": "",
+          "conditionsIn": [
+            "verb",
+            "verb-prefixed",
+            "verb-suffixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "fest",
+          "deinflected": "",
+          "conditionsIn": [
+            "verb",
+            "verb-prefixed",
+            "verb-suffixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "fort",
+          "deinflected": "",
+          "conditionsIn": [
+            "verb",
+            "verb-prefixed",
+            "verb-suffixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "her",
+          "deinflected": "",
+          "conditionsIn": [
+            "verb",
+            "verb-prefixed",
+            "verb-suffixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "herein",
+          "deinflected": "",
+          "conditionsIn": [
+            "verb",
+            "verb-prefixed",
+            "verb-suffixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "heraus",
+          "deinflected": "",
+          "conditionsIn": [
+            "verb",
+            "verb-prefixed",
+            "verb-suffixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "herbei",
+          "deinflected": "",
+          "conditionsIn": [
+            "verb",
+            "verb-prefixed",
+            "verb-suffixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "herum",
+          "deinflected": "",
+          "conditionsIn": [
+            "verb",
+            "verb-prefixed",
+            "verb-suffixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "hin",
+          "deinflected": "",
+          "conditionsIn": [
+            "verb",
+            "verb-prefixed",
+            "verb-suffixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "hinein",
+          "deinflected": "",
+          "conditionsIn": [
+            "verb",
+            "verb-prefixed",
+            "verb-suffixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "hinaus",
+          "deinflected": "",
+          "conditionsIn": [
+            "verb",
+            "verb-prefixed",
+            "verb-suffixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "hinzu",
+          "deinflected": "",
+          "conditionsIn": [
+            "verb",
+            "verb-prefixed",
+            "verb-suffixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "los",
+          "deinflected": "",
+          "conditionsIn": [
+            "verb",
+            "verb-prefixed",
+            "verb-suffixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "mit",
+          "deinflected": "",
+          "conditionsIn": [
+            "verb",
+            "verb-prefixed",
+            "verb-suffixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "nach",
+          "deinflected": "",
+          "conditionsIn": [
+            "verb",
+            "verb-prefixed",
+            "verb-suffixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "nieder",
+          "deinflected": "",
+          "conditionsIn": [
+            "verb",
+            "verb-prefixed",
+            "verb-suffixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "statt",
+          "deinflected": "",
+          "conditionsIn": [
+            "verb",
+            "verb-prefixed",
+            "verb-suffixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "teil",
+          "deinflected": "",
+          "conditionsIn": [
+            "verb",
+            "verb-prefixed",
+            "verb-suffixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "um",
+          "deinflected": "",
+          "conditionsIn": [
+            "verb",
+            "verb-prefixed",
+            "verb-suffixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "vor",
+          "deinflected": "",
+          "conditionsIn": [
+            "verb",
+            "verb-prefixed",
+            "verb-suffixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "weg",
+          "deinflected": "",
+          "conditionsIn": [
+            "verb",
+            "verb-prefixed",
+            "verb-suffixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "weiter",
+          "deinflected": "",
+          "conditionsIn": [
+            "verb",
+            "verb-prefixed",
+            "verb-suffixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "wieder",
+          "deinflected": "",
+          "conditionsIn": [
+            "verb",
+            "verb-prefixed",
+            "verb-suffixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "zu",
+          "deinflected": "",
+          "conditionsIn": [
+            "verb",
+            "verb-prefixed",
+            "verb-suffixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "zurück",
+          "deinflected": "",
+          "conditionsIn": [
+            "verb",
+            "verb-prefixed",
+            "verb-suffixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "zusammen",
+          "deinflected": "",
+          "conditionsIn": [
+            "verb",
+            "verb-prefixed",
+            "verb-suffixed"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "separable prefix before participle",
+      "rules": [
+        {
+          "type": "prefix",
+          "inflected": "ab",
+          "deinflected": "",
+          "conditionsIn": [
+            "verb",
+            "verb-suffixed"
+          ],
+          "conditionsOut": [
+            "verb-separable"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "an",
+          "deinflected": "",
+          "conditionsIn": [
+            "verb",
+            "verb-suffixed"
+          ],
+          "conditionsOut": [
+            "verb-separable"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "auf",
+          "deinflected": "",
+          "conditionsIn": [
+            "verb",
+            "verb-suffixed"
+          ],
+          "conditionsOut": [
+            "verb-separable"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "aus",
+          "deinflected": "",
+          "conditionsIn": [
+            "verb",
+            "verb-suffixed"
+          ],
+          "conditionsOut": [
+            "verb-separable"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "bei",
+          "deinflected": "",
+          "conditionsIn": [
+            "verb",
+            "verb-suffixed"
+          ],
+          "conditionsOut": [
+            "verb-separable"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "dar",
+          "deinflected": "",
+          "conditionsIn": [
+            "verb",
+            "verb-suffixed"
+          ],
+          "conditionsOut": [
+            "verb-separable"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "ein",
+          "deinflected": "",
+          "conditionsIn": [
+            "verb",
+            "verb-suffixed"
+          ],
+          "conditionsOut": [
+            "verb-separable"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "empor",
+          "deinflected": "",
+          "conditionsIn": [
+            "verb",
+            "verb-suffixed"
+          ],
+          "conditionsOut": [
+            "verb-separable"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "entgegen",
+          "deinflected": "",
+          "conditionsIn": [
+            "verb",
+            "verb-suffixed"
+          ],
+          "conditionsOut": [
+            "verb-separable"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "fern",
+          "deinflected": "",
+          "conditionsIn": [
+            "verb",
+            "verb-suffixed"
+          ],
+          "conditionsOut": [
+            "verb-separable"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "fest",
+          "deinflected": "",
+          "conditionsIn": [
+            "verb",
+            "verb-suffixed"
+          ],
+          "conditionsOut": [
+            "verb-separable"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "fort",
+          "deinflected": "",
+          "conditionsIn": [
+            "verb",
+            "verb-suffixed"
+          ],
+          "conditionsOut": [
+            "verb-separable"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "her",
+          "deinflected": "",
+          "conditionsIn": [
+            "verb",
+            "verb-suffixed"
+          ],
+          "conditionsOut": [
+            "verb-separable"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "herein",
+          "deinflected": "",
+          "conditionsIn": [
+            "verb",
+            "verb-suffixed"
+          ],
+          "conditionsOut": [
+            "verb-separable"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "heraus",
+          "deinflected": "",
+          "conditionsIn": [
+            "verb",
+            "verb-suffixed"
+          ],
+          "conditionsOut": [
+            "verb-separable"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "herbei",
+          "deinflected": "",
+          "conditionsIn": [
+            "verb",
+            "verb-suffixed"
+          ],
+          "conditionsOut": [
+            "verb-separable"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "herum",
+          "deinflected": "",
+          "conditionsIn": [
+            "verb",
+            "verb-suffixed"
+          ],
+          "conditionsOut": [
+            "verb-separable"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "hin",
+          "deinflected": "",
+          "conditionsIn": [
+            "verb",
+            "verb-suffixed"
+          ],
+          "conditionsOut": [
+            "verb-separable"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "hinein",
+          "deinflected": "",
+          "conditionsIn": [
+            "verb",
+            "verb-suffixed"
+          ],
+          "conditionsOut": [
+            "verb-separable"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "hinaus",
+          "deinflected": "",
+          "conditionsIn": [
+            "verb",
+            "verb-suffixed"
+          ],
+          "conditionsOut": [
+            "verb-separable"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "hinzu",
+          "deinflected": "",
+          "conditionsIn": [
+            "verb",
+            "verb-suffixed"
+          ],
+          "conditionsOut": [
+            "verb-separable"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "los",
+          "deinflected": "",
+          "conditionsIn": [
+            "verb",
+            "verb-suffixed"
+          ],
+          "conditionsOut": [
+            "verb-separable"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "mit",
+          "deinflected": "",
+          "conditionsIn": [
+            "verb",
+            "verb-suffixed"
+          ],
+          "conditionsOut": [
+            "verb-separable"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "nach",
+          "deinflected": "",
+          "conditionsIn": [
+            "verb",
+            "verb-suffixed"
+          ],
+          "conditionsOut": [
+            "verb-separable"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "nieder",
+          "deinflected": "",
+          "conditionsIn": [
+            "verb",
+            "verb-suffixed"
+          ],
+          "conditionsOut": [
+            "verb-separable"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "statt",
+          "deinflected": "",
+          "conditionsIn": [
+            "verb",
+            "verb-suffixed"
+          ],
+          "conditionsOut": [
+            "verb-separable"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "teil",
+          "deinflected": "",
+          "conditionsIn": [
+            "verb",
+            "verb-suffixed"
+          ],
+          "conditionsOut": [
+            "verb-separable"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "um",
+          "deinflected": "",
+          "conditionsIn": [
+            "verb",
+            "verb-suffixed"
+          ],
+          "conditionsOut": [
+            "verb-separable"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "vor",
+          "deinflected": "",
+          "conditionsIn": [
+            "verb",
+            "verb-suffixed"
+          ],
+          "conditionsOut": [
+            "verb-separable"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "weg",
+          "deinflected": "",
+          "conditionsIn": [
+            "verb",
+            "verb-suffixed"
+          ],
+          "conditionsOut": [
+            "verb-separable"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "weiter",
+          "deinflected": "",
+          "conditionsIn": [
+            "verb",
+            "verb-suffixed"
+          ],
+          "conditionsOut": [
+            "verb-separable"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "wieder",
+          "deinflected": "",
+          "conditionsIn": [
+            "verb",
+            "verb-suffixed"
+          ],
+          "conditionsOut": [
+            "verb-separable"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "zu",
+          "deinflected": "",
+          "conditionsIn": [
+            "verb",
+            "verb-suffixed"
+          ],
+          "conditionsOut": [
+            "verb-separable"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "zurück",
+          "deinflected": "",
+          "conditionsIn": [
+            "verb",
+            "verb-suffixed"
+          ],
+          "conditionsOut": [
+            "verb-separable"
+          ]
+        },
+        {
+          "type": "prefix",
+          "inflected": "zusammen",
+          "deinflected": "",
+          "conditionsIn": [
+            "verb",
+            "verb-suffixed"
+          ],
+          "conditionsOut": [
+            "verb-separable"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "irregular verbs",
+      "rules": [
+        {
+          "type": "wholeWord",
+          "inflected": "bin",
+          "deinflected": "sein",
+          "conditionsIn": [
+            "verb",
+            "verb-prefixed",
+            "verb-suffixed",
+            "verb-separable"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "bist",
+          "deinflected": "sein",
+          "conditionsIn": [
+            "verb",
+            "verb-prefixed",
+            "verb-suffixed",
+            "verb-separable"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "ist",
+          "deinflected": "sein",
+          "conditionsIn": [
+            "verb",
+            "verb-prefixed",
+            "verb-suffixed",
+            "verb-separable"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "sind",
+          "deinflected": "sein",
+          "conditionsIn": [
+            "verb",
+            "verb-prefixed",
+            "verb-suffixed",
+            "verb-separable"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "seid",
+          "deinflected": "sein",
+          "conditionsIn": [
+            "verb",
+            "verb-prefixed",
+            "verb-suffixed",
+            "verb-separable"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "war",
+          "deinflected": "sein",
+          "conditionsIn": [
+            "verb",
+            "verb-prefixed",
+            "verb-suffixed",
+            "verb-separable"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "warst",
+          "deinflected": "sein",
+          "conditionsIn": [
+            "verb",
+            "verb-prefixed",
+            "verb-suffixed",
+            "verb-separable"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "waren",
+          "deinflected": "sein",
+          "conditionsIn": [
+            "verb",
+            "verb-prefixed",
+            "verb-suffixed",
+            "verb-separable"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "wart",
+          "deinflected": "sein",
+          "conditionsIn": [
+            "verb",
+            "verb-prefixed",
+            "verb-suffixed",
+            "verb-separable"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "gewesen",
+          "deinflected": "sein",
+          "conditionsIn": [
+            "verb",
+            "verb-prefixed",
+            "verb-suffixed",
+            "verb-separable"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "sei",
+          "deinflected": "sein",
+          "conditionsIn": [
+            "verb",
+            "verb-prefixed",
+            "verb-suffixed",
+            "verb-separable"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "seien",
+          "deinflected": "sein",
+          "conditionsIn": [
+            "verb",
+            "verb-prefixed",
+            "verb-suffixed",
+            "verb-separable"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "habe",
+          "deinflected": "haben",
+          "conditionsIn": [
+            "verb",
+            "verb-prefixed",
+            "verb-suffixed",
+            "verb-separable"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "hast",
+          "deinflected": "haben",
+          "conditionsIn": [
+            "verb",
+            "verb-prefixed",
+            "verb-suffixed",
+            "verb-separable"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "hat",
+          "deinflected": "haben",
+          "conditionsIn": [
+            "verb",
+            "verb-prefixed",
+            "verb-suffixed",
+            "verb-separable"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "habt",
+          "deinflected": "haben",
+          "conditionsIn": [
+            "verb",
+            "verb-prefixed",
+            "verb-suffixed",
+            "verb-separable"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "hatte",
+          "deinflected": "haben",
+          "conditionsIn": [
+            "verb",
+            "verb-prefixed",
+            "verb-suffixed",
+            "verb-separable"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "hattest",
+          "deinflected": "haben",
+          "conditionsIn": [
+            "verb",
+            "verb-prefixed",
+            "verb-suffixed",
+            "verb-separable"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "hatten",
+          "deinflected": "haben",
+          "conditionsIn": [
+            "verb",
+            "verb-prefixed",
+            "verb-suffixed",
+            "verb-separable"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "hattet",
+          "deinflected": "haben",
+          "conditionsIn": [
+            "verb",
+            "verb-prefixed",
+            "verb-suffixed",
+            "verb-separable"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "gehabt",
+          "deinflected": "haben",
+          "conditionsIn": [
+            "verb",
+            "verb-prefixed",
+            "verb-suffixed",
+            "verb-separable"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "werde",
+          "deinflected": "werden",
+          "conditionsIn": [
+            "verb",
+            "verb-prefixed",
+            "verb-suffixed",
+            "verb-separable"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "wirst",
+          "deinflected": "werden",
+          "conditionsIn": [
+            "verb",
+            "verb-prefixed",
+            "verb-suffixed",
+            "verb-separable"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "wird",
+          "deinflected": "werden",
+          "conditionsIn": [
+            "verb",
+            "verb-prefixed",
+            "verb-suffixed",
+            "verb-separable"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "werdet",
+          "deinflected": "werden",
+          "conditionsIn": [
+            "verb",
+            "verb-prefixed",
+            "verb-suffixed",
+            "verb-separable"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "wurde",
+          "deinflected": "werden",
+          "conditionsIn": [
+            "verb",
+            "verb-prefixed",
+            "verb-suffixed",
+            "verb-separable"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "wurdest",
+          "deinflected": "werden",
+          "conditionsIn": [
+            "verb",
+            "verb-prefixed",
+            "verb-suffixed",
+            "verb-separable"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "wurden",
+          "deinflected": "werden",
+          "conditionsIn": [
+            "verb",
+            "verb-prefixed",
+            "verb-suffixed",
+            "verb-separable"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "wurdet",
+          "deinflected": "werden",
+          "conditionsIn": [
+            "verb",
+            "verb-prefixed",
+            "verb-suffixed",
+            "verb-separable"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "geworden",
+          "deinflected": "werden",
+          "conditionsIn": [
+            "verb",
+            "verb-prefixed",
+            "verb-suffixed",
+            "verb-separable"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "kann",
+          "deinflected": "können",
+          "conditionsIn": [
+            "verb",
+            "verb-prefixed",
+            "verb-suffixed",
+            "verb-separable"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "kannst",
+          "deinflected": "können",
+          "conditionsIn": [
+            "verb",
+            "verb-prefixed",
+            "verb-suffixed",
+            "verb-separable"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "könnt",
+          "deinflected": "können",
+          "conditionsIn": [
+            "verb",
+            "verb-prefixed",
+            "verb-suffixed",
+            "verb-separable"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "konnte",
+          "deinflected": "können",
+          "conditionsIn": [
+            "verb",
+            "verb-prefixed",
+            "verb-suffixed",
+            "verb-separable"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "konntest",
+          "deinflected": "können",
+          "conditionsIn": [
+            "verb",
+            "verb-prefixed",
+            "verb-suffixed",
+            "verb-separable"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "konnten",
+          "deinflected": "können",
+          "conditionsIn": [
+            "verb",
+            "verb-prefixed",
+            "verb-suffixed",
+            "verb-separable"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "gekonnt",
+          "deinflected": "können",
+          "conditionsIn": [
+            "verb",
+            "verb-prefixed",
+            "verb-suffixed",
+            "verb-separable"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "muss",
+          "deinflected": "müssen",
+          "conditionsIn": [
+            "verb",
+            "verb-prefixed",
+            "verb-suffixed",
+            "verb-separable"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "musst",
+          "deinflected": "müssen",
+          "conditionsIn": [
+            "verb",
+            "verb-prefixed",
+            "verb-suffixed",
+            "verb-separable"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "müsst",
+          "deinflected": "müssen",
+          "conditionsIn": [
+            "verb",
+            "verb-prefixed",
+            "verb-suffixed",
+            "verb-separable"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "musste",
+          "deinflected": "müssen",
+          "conditionsIn": [
+            "verb",
+            "verb-prefixed",
+            "verb-suffixed",
+            "verb-separable"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "mussten",
+          "deinflected": "müssen",
+          "conditionsIn": [
+            "verb",
+            "verb-prefixed",
+            "verb-suffixed",
+            "verb-separable"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "gemusst",
+          "deinflected": "müssen",
+          "conditionsIn": [
+            "verb",
+            "verb-prefixed",
+            "verb-suffixed",
+            "verb-separable"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "will",
+          "deinflected": "wollen",
+          "conditionsIn": [
+            "verb",
+            "verb-prefixed",
+            "verb-suffixed",
+            "verb-separable"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "willst",
+          "deinflected": "wollen",
+          "conditionsIn": [
+            "verb",
+            "verb-prefixed",
+            "verb-suffixed",
+            "verb-separable"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "wollt",
+          "deinflected": "wollen",
+          "conditionsIn": [
+            "verb",
+            "verb-prefixed",
+            "verb-suffixed",
+            "verb-separable"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "wollte",
+          "deinflected": "wollen",
+          "conditionsIn": [
+            "verb",
+            "verb-prefixed",
+            "verb-suffixed",
+            "verb-separable"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "wollten",
+          "deinflected": "wollen",
+          "conditionsIn": [
+            "verb",
+            "verb-prefixed",
+            "verb-suffixed",
+            "verb-separable"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "gewollt",
+          "deinflected": "wollen",
+          "conditionsIn": [
+            "verb",
+            "verb-prefixed",
+            "verb-suffixed",
+            "verb-separable"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "soll",
+          "deinflected": "sollen",
+          "conditionsIn": [
+            "verb",
+            "verb-prefixed",
+            "verb-suffixed",
+            "verb-separable"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "sollst",
+          "deinflected": "sollen",
+          "conditionsIn": [
+            "verb",
+            "verb-prefixed",
+            "verb-suffixed",
+            "verb-separable"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "sollt",
+          "deinflected": "sollen",
+          "conditionsIn": [
+            "verb",
+            "verb-prefixed",
+            "verb-suffixed",
+            "verb-separable"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "sollte",
+          "deinflected": "sollen",
+          "conditionsIn": [
+            "verb",
+            "verb-prefixed",
+            "verb-suffixed",
+            "verb-separable"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "sollten",
+          "deinflected": "sollen",
+          "conditionsIn": [
+            "verb",
+            "verb-prefixed",
+            "verb-suffixed",
+            "verb-separable"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "gesollt",
+          "deinflected": "sollen",
+          "conditionsIn": [
+            "verb",
+            "verb-prefixed",
+            "verb-suffixed",
+            "verb-separable"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "darf",
+          "deinflected": "dürfen",
+          "conditionsIn": [
+            "verb",
+            "verb-prefixed",
+            "verb-suffixed",
+            "verb-separable"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "darfst",
+          "deinflected": "dürfen",
+          "conditionsIn": [
+            "verb",
+            "verb-prefixed",
+            "verb-suffixed",
+            "verb-separable"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "dürft",
+          "deinflected": "dürfen",
+          "conditionsIn": [
+            "verb",
+            "verb-prefixed",
+            "verb-suffixed",
+            "verb-separable"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "durfte",
+          "deinflected": "dürfen",
+          "conditionsIn": [
+            "verb",
+            "verb-prefixed",
+            "verb-suffixed",
+            "verb-separable"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "durften",
+          "deinflected": "dürfen",
+          "conditionsIn": [
+            "verb",
+            "verb-prefixed",
+            "verb-suffixed",
+            "verb-separable"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "gedurft",
+          "deinflected": "dürfen",
+          "conditionsIn": [
+            "verb",
+            "verb-prefixed",
+            "verb-suffixed",
+            "verb-separable"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "mag",
+          "deinflected": "mögen",
+          "conditionsIn": [
+            "verb",
+            "verb-prefixed",
+            "verb-suffixed",
+            "verb-separable"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "magst",
+          "deinflected": "mögen",
+          "conditionsIn": [
+            "verb",
+            "verb-prefixed",
+            "verb-suffixed",
+            "verb-separable"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "mögt",
+          "deinflected": "mögen",
+          "conditionsIn": [
+            "verb",
+            "verb-prefixed",
+            "verb-suffixed",
+            "verb-separable"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "mochte",
+          "deinflected": "mögen",
+          "conditionsIn": [
+            "verb",
+            "verb-prefixed",
+            "verb-suffixed",
+            "verb-separable"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "mochten",
+          "deinflected": "mögen",
+          "conditionsIn": [
+            "verb",
+            "verb-prefixed",
+            "verb-suffixed",
+            "verb-separable"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "gemocht",
+          "deinflected": "mögen",
+          "conditionsIn": [
+            "verb",
+            "verb-prefixed",
+            "verb-suffixed",
+            "verb-separable"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "weiß",
+          "deinflected": "wissen",
+          "conditionsIn": [
+            "verb",
+            "verb-prefixed",
+            "verb-suffixed",
+            "verb-separable"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "weißt",
+          "deinflected": "wissen",
+          "conditionsIn": [
+            "verb",
+            "verb-prefixed",
+            "verb-suffixed",
+            "verb-separable"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "wisst",
+          "deinflected": "wissen",
+          "conditionsIn": [
+            "verb",
+            "verb-prefixed",
+            "verb-suffixed",
+            "verb-separable"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "wusste",
+          "deinflected": "wissen",
+          "conditionsIn": [
+            "verb",
+            "verb-prefixed",
+            "verb-suffixed",
+            "verb-separable"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "wussten",
+          "deinflected": "wissen",
+          "conditionsIn": [
+            "verb",
+            "verb-prefixed",
+            "verb-suffixed",
+            "verb-separable"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "gewusst",
+          "deinflected": "wissen",
+          "conditionsIn": [
+            "verb",
+            "verb-prefixed",
+            "verb-suffixed",
+            "verb-separable"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "gehe",
+          "deinflected": "gehen",
+          "conditionsIn": [
+            "verb",
+            "verb-prefixed",
+            "verb-suffixed",
+            "verb-separable"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "gehst",
+          "deinflected": "gehen",
+          "conditionsIn": [
+            "verb",
+            "verb-prefixed",
+            "verb-suffixed",
+            "verb-separable"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "geht",
+          "deinflected": "gehen",
+          "conditionsIn": [
+            "verb",
+            "verb-prefixed",
+            "verb-suffixed",
+            "verb-separable"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "ging",
+          "deinflected": "gehen",
+          "conditionsIn": [
+            "verb",
+            "verb-prefixed",
+            "verb-suffixed",
+            "verb-separable"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "gingst",
+          "deinflected": "gehen",
+          "conditionsIn": [
+            "verb",
+            "verb-prefixed",
+            "verb-suffixed",
+            "verb-separable"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "gingen",
+          "deinflected": "gehen",
+          "conditionsIn": [
+            "verb",
+            "verb-prefixed",
+            "verb-suffixed",
+            "verb-separable"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "gingt",
+          "deinflected": "gehen",
+          "conditionsIn": [
+            "verb",
+            "verb-prefixed",
+            "verb-suffixed",
+            "verb-separable"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "gegangen",
+          "deinflected": "gehen",
+          "conditionsIn": [
+            "verb",
+            "verb-prefixed",
+            "verb-suffixed",
+            "verb-separable"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "komme",
+          "deinflected": "kommen",
+          "conditionsIn": [
+            "verb",
+            "verb-prefixed",
+            "verb-suffixed",
+            "verb-separable"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "kommst",
+          "deinflected": "kommen",
+          "conditionsIn": [
+            "verb",
+            "verb-prefixed",
+            "verb-suffixed",
+            "verb-separable"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "kommt",
+          "deinflected": "kommen",
+          "conditionsIn": [
+            "verb",
+            "verb-prefixed",
+            "verb-suffixed",
+            "verb-separable"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "kam",
+          "deinflected": "kommen",
+          "conditionsIn": [
+            "verb",
+            "verb-prefixed",
+            "verb-suffixed",
+            "verb-separable"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "kamst",
+          "deinflected": "kommen",
+          "conditionsIn": [
+            "verb",
+            "verb-prefixed",
+            "verb-suffixed",
+            "verb-separable"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "kamen",
+          "deinflected": "kommen",
+          "conditionsIn": [
+            "verb",
+            "verb-prefixed",
+            "verb-suffixed",
+            "verb-separable"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "kamt",
+          "deinflected": "kommen",
+          "conditionsIn": [
+            "verb",
+            "verb-prefixed",
+            "verb-suffixed",
+            "verb-separable"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "gekommen",
+          "deinflected": "kommen",
+          "conditionsIn": [
+            "verb",
+            "verb-prefixed",
+            "verb-suffixed",
+            "verb-separable"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "mache",
+          "deinflected": "machen",
+          "conditionsIn": [
+            "verb",
+            "verb-prefixed",
+            "verb-suffixed",
+            "verb-separable"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "machst",
+          "deinflected": "machen",
+          "conditionsIn": [
+            "verb",
+            "verb-prefixed",
+            "verb-suffixed",
+            "verb-separable"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "macht",
+          "deinflected": "machen",
+          "conditionsIn": [
+            "verb",
+            "verb-prefixed",
+            "verb-suffixed",
+            "verb-separable"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "machte",
+          "deinflected": "machen",
+          "conditionsIn": [
+            "verb",
+            "verb-prefixed",
+            "verb-suffixed",
+            "verb-separable"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "gemacht",
+          "deinflected": "machen",
+          "conditionsIn": [
+            "verb",
+            "verb-prefixed",
+            "verb-suffixed",
+            "verb-separable"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "sage",
+          "deinflected": "sagen",
+          "conditionsIn": [
+            "verb",
+            "verb-prefixed",
+            "verb-suffixed",
+            "verb-separable"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "sagst",
+          "deinflected": "sagen",
+          "conditionsIn": [
+            "verb",
+            "verb-prefixed",
+            "verb-suffixed",
+            "verb-separable"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "sagt",
+          "deinflected": "sagen",
+          "conditionsIn": [
+            "verb",
+            "verb-prefixed",
+            "verb-suffixed",
+            "verb-separable"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "sagte",
+          "deinflected": "sagen",
+          "conditionsIn": [
+            "verb",
+            "verb-prefixed",
+            "verb-suffixed",
+            "verb-separable"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "gesagt",
+          "deinflected": "sagen",
+          "conditionsIn": [
+            "verb",
+            "verb-prefixed",
+            "verb-suffixed",
+            "verb-separable"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "sehe",
+          "deinflected": "sehen",
+          "conditionsIn": [
+            "verb",
+            "verb-prefixed",
+            "verb-suffixed",
+            "verb-separable"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "siehst",
+          "deinflected": "sehen",
+          "conditionsIn": [
+            "verb",
+            "verb-prefixed",
+            "verb-suffixed",
+            "verb-separable"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "sieht",
+          "deinflected": "sehen",
+          "conditionsIn": [
+            "verb",
+            "verb-prefixed",
+            "verb-suffixed",
+            "verb-separable"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "sah",
+          "deinflected": "sehen",
+          "conditionsIn": [
+            "verb",
+            "verb-prefixed",
+            "verb-suffixed",
+            "verb-separable"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "sahst",
+          "deinflected": "sehen",
+          "conditionsIn": [
+            "verb",
+            "verb-prefixed",
+            "verb-suffixed",
+            "verb-separable"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "sahen",
+          "deinflected": "sehen",
+          "conditionsIn": [
+            "verb",
+            "verb-prefixed",
+            "verb-suffixed",
+            "verb-separable"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "gesehen",
+          "deinflected": "sehen",
+          "conditionsIn": [
+            "verb",
+            "verb-prefixed",
+            "verb-suffixed",
+            "verb-separable"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "gebe",
+          "deinflected": "geben",
+          "conditionsIn": [
+            "verb",
+            "verb-prefixed",
+            "verb-suffixed",
+            "verb-separable"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "gibst",
+          "deinflected": "geben",
+          "conditionsIn": [
+            "verb",
+            "verb-prefixed",
+            "verb-suffixed",
+            "verb-separable"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "gibt",
+          "deinflected": "geben",
+          "conditionsIn": [
+            "verb",
+            "verb-prefixed",
+            "verb-suffixed",
+            "verb-separable"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "gab",
+          "deinflected": "geben",
+          "conditionsIn": [
+            "verb",
+            "verb-prefixed",
+            "verb-suffixed",
+            "verb-separable"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "gabst",
+          "deinflected": "geben",
+          "conditionsIn": [
+            "verb",
+            "verb-prefixed",
+            "verb-suffixed",
+            "verb-separable"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "gaben",
+          "deinflected": "geben",
+          "conditionsIn": [
+            "verb",
+            "verb-prefixed",
+            "verb-suffixed",
+            "verb-separable"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "gegeben",
+          "deinflected": "geben",
+          "conditionsIn": [
+            "verb",
+            "verb-prefixed",
+            "verb-suffixed",
+            "verb-separable"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "nehme",
+          "deinflected": "nehmen",
+          "conditionsIn": [
+            "verb",
+            "verb-prefixed",
+            "verb-suffixed",
+            "verb-separable"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "nimmst",
+          "deinflected": "nehmen",
+          "conditionsIn": [
+            "verb",
+            "verb-prefixed",
+            "verb-suffixed",
+            "verb-separable"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "nimmt",
+          "deinflected": "nehmen",
+          "conditionsIn": [
+            "verb",
+            "verb-prefixed",
+            "verb-suffixed",
+            "verb-separable"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "nahm",
+          "deinflected": "nehmen",
+          "conditionsIn": [
+            "verb",
+            "verb-prefixed",
+            "verb-suffixed",
+            "verb-separable"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "nahmst",
+          "deinflected": "nehmen",
+          "conditionsIn": [
+            "verb",
+            "verb-prefixed",
+            "verb-suffixed",
+            "verb-separable"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "nahmen",
+          "deinflected": "nehmen",
+          "conditionsIn": [
+            "verb",
+            "verb-prefixed",
+            "verb-suffixed",
+            "verb-separable"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "genommen",
+          "deinflected": "nehmen",
+          "conditionsIn": [
+            "verb",
+            "verb-prefixed",
+            "verb-suffixed",
+            "verb-separable"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "finde",
+          "deinflected": "finden",
+          "conditionsIn": [
+            "verb",
+            "verb-prefixed",
+            "verb-suffixed",
+            "verb-separable"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "findest",
+          "deinflected": "finden",
+          "conditionsIn": [
+            "verb",
+            "verb-prefixed",
+            "verb-suffixed",
+            "verb-separable"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "findet",
+          "deinflected": "finden",
+          "conditionsIn": [
+            "verb",
+            "verb-prefixed",
+            "verb-suffixed",
+            "verb-separable"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "fand",
+          "deinflected": "finden",
+          "conditionsIn": [
+            "verb",
+            "verb-prefixed",
+            "verb-suffixed",
+            "verb-separable"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "fandest",
+          "deinflected": "finden",
+          "conditionsIn": [
+            "verb",
+            "verb-prefixed",
+            "verb-suffixed",
+            "verb-separable"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "fanden",
+          "deinflected": "finden",
+          "conditionsIn": [
+            "verb",
+            "verb-prefixed",
+            "verb-suffixed",
+            "verb-separable"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "gefunden",
+          "deinflected": "finden",
+          "conditionsIn": [
+            "verb",
+            "verb-prefixed",
+            "verb-suffixed",
+            "verb-separable"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "bleibe",
+          "deinflected": "bleiben",
+          "conditionsIn": [
+            "verb",
+            "verb-prefixed",
+            "verb-suffixed",
+            "verb-separable"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "bleibst",
+          "deinflected": "bleiben",
+          "conditionsIn": [
+            "verb",
+            "verb-prefixed",
+            "verb-suffixed",
+            "verb-separable"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "bleibt",
+          "deinflected": "bleiben",
+          "conditionsIn": [
+            "verb",
+            "verb-prefixed",
+            "verb-suffixed",
+            "verb-separable"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "blieb",
+          "deinflected": "bleiben",
+          "conditionsIn": [
+            "verb",
+            "verb-prefixed",
+            "verb-suffixed",
+            "verb-separable"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "blieben",
+          "deinflected": "bleiben",
+          "conditionsIn": [
+            "verb",
+            "verb-prefixed",
+            "verb-suffixed",
+            "verb-separable"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "geblieben",
+          "deinflected": "bleiben",
+          "conditionsIn": [
+            "verb",
+            "verb-prefixed",
+            "verb-suffixed",
+            "verb-separable"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "lasse",
+          "deinflected": "lassen",
+          "conditionsIn": [
+            "verb",
+            "verb-prefixed",
+            "verb-suffixed",
+            "verb-separable"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "lässt",
+          "deinflected": "lassen",
+          "conditionsIn": [
+            "verb",
+            "verb-prefixed",
+            "verb-suffixed",
+            "verb-separable"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "lasst",
+          "deinflected": "lassen",
+          "conditionsIn": [
+            "verb",
+            "verb-prefixed",
+            "verb-suffixed",
+            "verb-separable"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "ließ",
+          "deinflected": "lassen",
+          "conditionsIn": [
+            "verb",
+            "verb-prefixed",
+            "verb-suffixed",
+            "verb-separable"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "ließen",
+          "deinflected": "lassen",
+          "conditionsIn": [
+            "verb",
+            "verb-prefixed",
+            "verb-suffixed",
+            "verb-separable"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "gelassen",
+          "deinflected": "lassen",
+          "conditionsIn": [
+            "verb",
+            "verb-prefixed",
+            "verb-suffixed",
+            "verb-separable"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "stehe",
+          "deinflected": "stehen",
+          "conditionsIn": [
+            "verb",
+            "verb-prefixed",
+            "verb-suffixed",
+            "verb-separable"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "stehst",
+          "deinflected": "stehen",
+          "conditionsIn": [
+            "verb",
+            "verb-prefixed",
+            "verb-suffixed",
+            "verb-separable"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "steht",
+          "deinflected": "stehen",
+          "conditionsIn": [
+            "verb",
+            "verb-prefixed",
+            "verb-suffixed",
+            "verb-separable"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "stand",
+          "deinflected": "stehen",
+          "conditionsIn": [
+            "verb",
+            "verb-prefixed",
+            "verb-suffixed",
+            "verb-separable"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "standen",
+          "deinflected": "stehen",
+          "conditionsIn": [
+            "verb",
+            "verb-prefixed",
+            "verb-suffixed",
+            "verb-separable"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "gestanden",
+          "deinflected": "stehen",
+          "conditionsIn": [
+            "verb",
+            "verb-prefixed",
+            "verb-suffixed",
+            "verb-separable"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "liege",
+          "deinflected": "liegen",
+          "conditionsIn": [
+            "verb",
+            "verb-prefixed",
+            "verb-suffixed",
+            "verb-separable"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "liegst",
+          "deinflected": "liegen",
+          "conditionsIn": [
+            "verb",
+            "verb-prefixed",
+            "verb-suffixed",
+            "verb-separable"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "liegt",
+          "deinflected": "liegen",
+          "conditionsIn": [
+            "verb",
+            "verb-prefixed",
+            "verb-suffixed",
+            "verb-separable"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "lag",
+          "deinflected": "liegen",
+          "conditionsIn": [
+            "verb",
+            "verb-prefixed",
+            "verb-suffixed",
+            "verb-separable"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "lagen",
+          "deinflected": "liegen",
+          "conditionsIn": [
+            "verb",
+            "verb-prefixed",
+            "verb-suffixed",
+            "verb-separable"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "gelegen",
+          "deinflected": "liegen",
+          "conditionsIn": [
+            "verb",
+            "verb-prefixed",
+            "verb-suffixed",
+            "verb-separable"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "heiße",
+          "deinflected": "heißen",
+          "conditionsIn": [
+            "verb",
+            "verb-prefixed",
+            "verb-suffixed",
+            "verb-separable"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "heißt",
+          "deinflected": "heißen",
+          "conditionsIn": [
+            "verb",
+            "verb-prefixed",
+            "verb-suffixed",
+            "verb-separable"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "hieß",
+          "deinflected": "heißen",
+          "conditionsIn": [
+            "verb",
+            "verb-prefixed",
+            "verb-suffixed",
+            "verb-separable"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "hießen",
+          "deinflected": "heißen",
+          "conditionsIn": [
+            "verb",
+            "verb-prefixed",
+            "verb-suffixed",
+            "verb-separable"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "geheißen",
+          "deinflected": "heißen",
+          "conditionsIn": [
+            "verb",
+            "verb-prefixed",
+            "verb-suffixed",
+            "verb-separable"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "denke",
+          "deinflected": "denken",
+          "conditionsIn": [
+            "verb",
+            "verb-prefixed",
+            "verb-suffixed",
+            "verb-separable"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "denkst",
+          "deinflected": "denken",
+          "conditionsIn": [
+            "verb",
+            "verb-prefixed",
+            "verb-suffixed",
+            "verb-separable"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "denkt",
+          "deinflected": "denken",
+          "conditionsIn": [
+            "verb",
+            "verb-prefixed",
+            "verb-suffixed",
+            "verb-separable"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "dachte",
+          "deinflected": "denken",
+          "conditionsIn": [
+            "verb",
+            "verb-prefixed",
+            "verb-suffixed",
+            "verb-separable"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "dachten",
+          "deinflected": "denken",
+          "conditionsIn": [
+            "verb",
+            "verb-prefixed",
+            "verb-suffixed",
+            "verb-separable"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "gedacht",
+          "deinflected": "denken",
+          "conditionsIn": [
+            "verb",
+            "verb-prefixed",
+            "verb-suffixed",
+            "verb-separable"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "bringe",
+          "deinflected": "bringen",
+          "conditionsIn": [
+            "verb",
+            "verb-prefixed",
+            "verb-suffixed",
+            "verb-separable"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "bringst",
+          "deinflected": "bringen",
+          "conditionsIn": [
+            "verb",
+            "verb-prefixed",
+            "verb-suffixed",
+            "verb-separable"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "bringt",
+          "deinflected": "bringen",
+          "conditionsIn": [
+            "verb",
+            "verb-prefixed",
+            "verb-suffixed",
+            "verb-separable"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "brachte",
+          "deinflected": "bringen",
+          "conditionsIn": [
+            "verb",
+            "verb-prefixed",
+            "verb-suffixed",
+            "verb-separable"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "brachten",
+          "deinflected": "bringen",
+          "conditionsIn": [
+            "verb",
+            "verb-prefixed",
+            "verb-suffixed",
+            "verb-separable"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "gebracht",
+          "deinflected": "bringen",
+          "conditionsIn": [
+            "verb",
+            "verb-prefixed",
+            "verb-suffixed",
+            "verb-separable"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "spreche",
+          "deinflected": "sprechen",
+          "conditionsIn": [
+            "verb",
+            "verb-prefixed",
+            "verb-suffixed",
+            "verb-separable"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "sprichst",
+          "deinflected": "sprechen",
+          "conditionsIn": [
+            "verb",
+            "verb-prefixed",
+            "verb-suffixed",
+            "verb-separable"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "spricht",
+          "deinflected": "sprechen",
+          "conditionsIn": [
+            "verb",
+            "verb-prefixed",
+            "verb-suffixed",
+            "verb-separable"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "sprach",
+          "deinflected": "sprechen",
+          "conditionsIn": [
+            "verb",
+            "verb-prefixed",
+            "verb-suffixed",
+            "verb-separable"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "sprachen",
+          "deinflected": "sprechen",
+          "conditionsIn": [
+            "verb",
+            "verb-prefixed",
+            "verb-suffixed",
+            "verb-separable"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "gesprochen",
+          "deinflected": "sprechen",
+          "conditionsIn": [
+            "verb",
+            "verb-prefixed",
+            "verb-suffixed",
+            "verb-separable"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "lese",
+          "deinflected": "lesen",
+          "conditionsIn": [
+            "verb",
+            "verb-prefixed",
+            "verb-suffixed",
+            "verb-separable"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "liest",
+          "deinflected": "lesen",
+          "conditionsIn": [
+            "verb",
+            "verb-prefixed",
+            "verb-suffixed",
+            "verb-separable"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "las",
+          "deinflected": "lesen",
+          "conditionsIn": [
+            "verb",
+            "verb-prefixed",
+            "verb-suffixed",
+            "verb-separable"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "lasen",
+          "deinflected": "lesen",
+          "conditionsIn": [
+            "verb",
+            "verb-prefixed",
+            "verb-suffixed",
+            "verb-separable"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "gelesen",
+          "deinflected": "lesen",
+          "conditionsIn": [
+            "verb",
+            "verb-prefixed",
+            "verb-suffixed",
+            "verb-separable"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "schreibe",
+          "deinflected": "schreiben",
+          "conditionsIn": [
+            "verb",
+            "verb-prefixed",
+            "verb-suffixed",
+            "verb-separable"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "schreibst",
+          "deinflected": "schreiben",
+          "conditionsIn": [
+            "verb",
+            "verb-prefixed",
+            "verb-suffixed",
+            "verb-separable"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "schreibt",
+          "deinflected": "schreiben",
+          "conditionsIn": [
+            "verb",
+            "verb-prefixed",
+            "verb-suffixed",
+            "verb-separable"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "schrieb",
+          "deinflected": "schreiben",
+          "conditionsIn": [
+            "verb",
+            "verb-prefixed",
+            "verb-suffixed",
+            "verb-separable"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "schrieben",
+          "deinflected": "schreiben",
+          "conditionsIn": [
+            "verb",
+            "verb-prefixed",
+            "verb-suffixed",
+            "verb-separable"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "geschrieben",
+          "deinflected": "schreiben",
+          "conditionsIn": [
+            "verb",
+            "verb-prefixed",
+            "verb-suffixed",
+            "verb-separable"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "halte",
+          "deinflected": "halten",
+          "conditionsIn": [
+            "verb",
+            "verb-prefixed",
+            "verb-suffixed",
+            "verb-separable"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "hältst",
+          "deinflected": "halten",
+          "conditionsIn": [
+            "verb",
+            "verb-prefixed",
+            "verb-suffixed",
+            "verb-separable"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "hält",
+          "deinflected": "halten",
+          "conditionsIn": [
+            "verb",
+            "verb-prefixed",
+            "verb-suffixed",
+            "verb-separable"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "hielt",
+          "deinflected": "halten",
+          "conditionsIn": [
+            "verb",
+            "verb-prefixed",
+            "verb-suffixed",
+            "verb-separable"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "hielten",
+          "deinflected": "halten",
+          "conditionsIn": [
+            "verb",
+            "verb-prefixed",
+            "verb-suffixed",
+            "verb-separable"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "gehalten",
+          "deinflected": "halten",
+          "conditionsIn": [
+            "verb",
+            "verb-prefixed",
+            "verb-suffixed",
+            "verb-separable"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "fahre",
+          "deinflected": "fahren",
+          "conditionsIn": [
+            "verb",
+            "verb-prefixed",
+            "verb-suffixed",
+            "verb-separable"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "fährst",
+          "deinflected": "fahren",
+          "conditionsIn": [
+            "verb",
+            "verb-prefixed",
+            "verb-suffixed",
+            "verb-separable"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "fährt",
+          "deinflected": "fahren",
+          "conditionsIn": [
+            "verb",
+            "verb-prefixed",
+            "verb-suffixed",
+            "verb-separable"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "fuhr",
+          "deinflected": "fahren",
+          "conditionsIn": [
+            "verb",
+            "verb-prefixed",
+            "verb-suffixed",
+            "verb-separable"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "fuhren",
+          "deinflected": "fahren",
+          "conditionsIn": [
+            "verb",
+            "verb-prefixed",
+            "verb-suffixed",
+            "verb-separable"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "gefahren",
+          "deinflected": "fahren",
+          "conditionsIn": [
+            "verb",
+            "verb-prefixed",
+            "verb-suffixed",
+            "verb-separable"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "trage",
+          "deinflected": "tragen",
+          "conditionsIn": [
+            "verb",
+            "verb-prefixed",
+            "verb-suffixed",
+            "verb-separable"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "trägst",
+          "deinflected": "tragen",
+          "conditionsIn": [
+            "verb",
+            "verb-prefixed",
+            "verb-suffixed",
+            "verb-separable"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "trägt",
+          "deinflected": "tragen",
+          "conditionsIn": [
+            "verb",
+            "verb-prefixed",
+            "verb-suffixed",
+            "verb-separable"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "trug",
+          "deinflected": "tragen",
+          "conditionsIn": [
+            "verb",
+            "verb-prefixed",
+            "verb-suffixed",
+            "verb-separable"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "trugen",
+          "deinflected": "tragen",
+          "conditionsIn": [
+            "verb",
+            "verb-prefixed",
+            "verb-suffixed",
+            "verb-separable"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "getragen",
+          "deinflected": "tragen",
+          "conditionsIn": [
+            "verb",
+            "verb-prefixed",
+            "verb-suffixed",
+            "verb-separable"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "laufe",
+          "deinflected": "laufen",
+          "conditionsIn": [
+            "verb",
+            "verb-prefixed",
+            "verb-suffixed",
+            "verb-separable"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "läufst",
+          "deinflected": "laufen",
+          "conditionsIn": [
+            "verb",
+            "verb-prefixed",
+            "verb-suffixed",
+            "verb-separable"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "läuft",
+          "deinflected": "laufen",
+          "conditionsIn": [
+            "verb",
+            "verb-prefixed",
+            "verb-suffixed",
+            "verb-separable"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "lief",
+          "deinflected": "laufen",
+          "conditionsIn": [
+            "verb",
+            "verb-prefixed",
+            "verb-suffixed",
+            "verb-separable"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "liefen",
+          "deinflected": "laufen",
+          "conditionsIn": [
+            "verb",
+            "verb-prefixed",
+            "verb-suffixed",
+            "verb-separable"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "gelaufen",
+          "deinflected": "laufen",
+          "conditionsIn": [
+            "verb",
+            "verb-prefixed",
+            "verb-suffixed",
+            "verb-separable"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "schlafe",
+          "deinflected": "schlafen",
+          "conditionsIn": [
+            "verb",
+            "verb-prefixed",
+            "verb-suffixed",
+            "verb-separable"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "schläfst",
+          "deinflected": "schlafen",
+          "conditionsIn": [
+            "verb",
+            "verb-prefixed",
+            "verb-suffixed",
+            "verb-separable"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "schläft",
+          "deinflected": "schlafen",
+          "conditionsIn": [
+            "verb",
+            "verb-prefixed",
+            "verb-suffixed",
+            "verb-separable"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "schlief",
+          "deinflected": "schlafen",
+          "conditionsIn": [
+            "verb",
+            "verb-prefixed",
+            "verb-suffixed",
+            "verb-separable"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "schliefen",
+          "deinflected": "schlafen",
+          "conditionsIn": [
+            "verb",
+            "verb-prefixed",
+            "verb-suffixed",
+            "verb-separable"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "geschlafen",
+          "deinflected": "schlafen",
+          "conditionsIn": [
+            "verb",
+            "verb-prefixed",
+            "verb-suffixed",
+            "verb-separable"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "esse",
+          "deinflected": "essen",
+          "conditionsIn": [
+            "verb",
+            "verb-prefixed",
+            "verb-suffixed",
+            "verb-separable"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "isst",
+          "deinflected": "essen",
+          "conditionsIn": [
+            "verb",
+            "verb-prefixed",
+            "verb-suffixed",
+            "verb-separable"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "aß",
+          "deinflected": "essen",
+          "conditionsIn": [
+            "verb",
+            "verb-prefixed",
+            "verb-suffixed",
+            "verb-separable"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "aßen",
+          "deinflected": "essen",
+          "conditionsIn": [
+            "verb",
+            "verb-prefixed",
+            "verb-suffixed",
+            "verb-separable"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "gegessen",
+          "deinflected": "essen",
+          "conditionsIn": [
+            "verb",
+            "verb-prefixed",
+            "verb-suffixed",
+            "verb-separable"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "trinke",
+          "deinflected": "trinken",
+          "conditionsIn": [
+            "verb",
+            "verb-prefixed",
+            "verb-suffixed",
+            "verb-separable"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "trinkst",
+          "deinflected": "trinken",
+          "conditionsIn": [
+            "verb",
+            "verb-prefixed",
+            "verb-suffixed",
+            "verb-separable"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "trinkt",
+          "deinflected": "trinken",
+          "conditionsIn": [
+            "verb",
+            "verb-prefixed",
+            "verb-suffixed",
+            "verb-separable"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "trank",
+          "deinflected": "trinken",
+          "conditionsIn": [
+            "verb",
+            "verb-prefixed",
+            "verb-suffixed",
+            "verb-separable"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "tranken",
+          "deinflected": "trinken",
+          "conditionsIn": [
+            "verb",
+            "verb-prefixed",
+            "verb-suffixed",
+            "verb-separable"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "getrunken",
+          "deinflected": "trinken",
+          "conditionsIn": [
+            "verb",
+            "verb-prefixed",
+            "verb-suffixed",
+            "verb-separable"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "helfe",
+          "deinflected": "helfen",
+          "conditionsIn": [
+            "verb",
+            "verb-prefixed",
+            "verb-suffixed",
+            "verb-separable"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "hilfst",
+          "deinflected": "helfen",
+          "conditionsIn": [
+            "verb",
+            "verb-prefixed",
+            "verb-suffixed",
+            "verb-separable"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "hilft",
+          "deinflected": "helfen",
+          "conditionsIn": [
+            "verb",
+            "verb-prefixed",
+            "verb-suffixed",
+            "verb-separable"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "half",
+          "deinflected": "helfen",
+          "conditionsIn": [
+            "verb",
+            "verb-prefixed",
+            "verb-suffixed",
+            "verb-separable"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "halfen",
+          "deinflected": "helfen",
+          "conditionsIn": [
+            "verb",
+            "verb-prefixed",
+            "verb-suffixed",
+            "verb-separable"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "geholfen",
+          "deinflected": "helfen",
+          "conditionsIn": [
+            "verb",
+            "verb-prefixed",
+            "verb-suffixed",
+            "verb-separable"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "rufe",
+          "deinflected": "rufen",
+          "conditionsIn": [
+            "verb",
+            "verb-prefixed",
+            "verb-suffixed",
+            "verb-separable"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "rufst",
+          "deinflected": "rufen",
+          "conditionsIn": [
+            "verb",
+            "verb-prefixed",
+            "verb-suffixed",
+            "verb-separable"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "ruft",
+          "deinflected": "rufen",
+          "conditionsIn": [
+            "verb",
+            "verb-prefixed",
+            "verb-suffixed",
+            "verb-separable"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "rief",
+          "deinflected": "rufen",
+          "conditionsIn": [
+            "verb",
+            "verb-prefixed",
+            "verb-suffixed",
+            "verb-separable"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "riefen",
+          "deinflected": "rufen",
+          "conditionsIn": [
+            "verb",
+            "verb-prefixed",
+            "verb-suffixed",
+            "verb-separable"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "gerufen",
+          "deinflected": "rufen",
+          "conditionsIn": [
+            "verb",
+            "verb-prefixed",
+            "verb-suffixed",
+            "verb-separable"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "ziehe",
+          "deinflected": "ziehen",
+          "conditionsIn": [
+            "verb",
+            "verb-prefixed",
+            "verb-suffixed",
+            "verb-separable"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "ziehst",
+          "deinflected": "ziehen",
+          "conditionsIn": [
+            "verb",
+            "verb-prefixed",
+            "verb-suffixed",
+            "verb-separable"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "zieht",
+          "deinflected": "ziehen",
+          "conditionsIn": [
+            "verb",
+            "verb-prefixed",
+            "verb-suffixed",
+            "verb-separable"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "zog",
+          "deinflected": "ziehen",
+          "conditionsIn": [
+            "verb",
+            "verb-prefixed",
+            "verb-suffixed",
+            "verb-separable"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "zogen",
+          "deinflected": "ziehen",
+          "conditionsIn": [
+            "verb",
+            "verb-prefixed",
+            "verb-suffixed",
+            "verb-separable"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "gezogen",
+          "deinflected": "ziehen",
+          "conditionsIn": [
+            "verb",
+            "verb-prefixed",
+            "verb-suffixed",
+            "verb-separable"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        }
+      ]
+    }
+  ]
+}
