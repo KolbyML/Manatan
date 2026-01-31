@@ -56,7 +56,7 @@ pub struct ApiGroupedResult {
     pub headword: String,
     pub reading: String,
     pub furigana: Vec<(String, String)>,
-    pub definitions: Vec<ApiDefinition>,
+    pub glossary: Vec<ApiDefinition>,
     pub frequencies: Vec<ApiFrequency>,
     pub forms: Vec<ApiForm>,
     pub term_tags: Vec<GlossaryTag>,
@@ -733,7 +733,7 @@ pub async fn lookup_handler(
         reading: String,
         term_tags: Vec<GlossaryTag>,
         furigana: Vec<(String, String)>,
-        definitions: Vec<ApiDefinition>,
+        glossary: Vec<ApiDefinition>,
         frequencies: Vec<ApiFrequency>,
         forms_set: Vec<(String, String)>,
         match_len: usize, // Added to aggregator
@@ -816,19 +816,19 @@ pub async fn lookup_handler(
                     .iter_mut()
                     .find(|agg| agg.headword == headword && agg.reading == reading)
                 {
-                    let is_dup = existing.definitions.iter().any(|d| {
+                    let is_dup = existing.glossary.iter().any(|d| {
                         d.dictionary_name == def_obj.dictionary_name
                             && d.content.to_string() == def_obj.content.to_string()
                     });
                     if !is_dup {
-                        existing.definitions.push(def_obj);
+                        existing.glossary.push(def_obj);
                     }
                 } else {
                     map.push(Aggregator {
                         headword: headword.clone(),
                         reading: reading.clone(),
                         furigana: calculate_furigana(&headword, &reading),
-                        definitions: vec![def_obj],
+                        glossary: vec![def_obj],
                         frequencies: vec![], // Will be filled in final pass
                         term_tags: entry.1.unwrap_or_default(),
                         forms_set: vec![(headword.clone(), reading.clone())],
@@ -840,7 +840,7 @@ pub async fn lookup_handler(
                     headword: headword.clone(),
                     reading: reading.clone(),
                     furigana: calculate_furigana(&headword, &reading),
-                    definitions: vec![def_obj],
+                    glossary: vec![def_obj],
                     frequencies: vec![], // Will be filled in final pass
                     term_tags: entry.1.unwrap_or_default(),
                     forms: vec![ApiForm {
@@ -866,7 +866,7 @@ pub async fn lookup_handler(
                     headword: agg.headword,
                     reading: agg.reading,
                     furigana: agg.furigana,
-                    definitions: agg.definitions,
+                    glossary: agg.glossary,
                     frequencies: agg.frequencies,
                     term_tags: agg.term_tags,
                     forms: agg
