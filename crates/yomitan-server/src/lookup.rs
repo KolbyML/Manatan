@@ -78,7 +78,10 @@ impl LookupService {
             // Skip single character Latin/Symbol lookups unless explicitly desired
             if matches!(
                 language,
-                DeinflectLanguage::English | DeinflectLanguage::Spanish | DeinflectLanguage::French
+                DeinflectLanguage::English
+                    | DeinflectLanguage::Spanish
+                    | DeinflectLanguage::French
+                    | DeinflectLanguage::German
             ) && len < 2
                 && !substring.eq_ignore_ascii_case("a")
                 && !substring.eq_ignore_ascii_case("i")
@@ -340,7 +343,10 @@ impl LookupService {
                     &mut candidates,
                 );
             }
-            DeinflectLanguage::English | DeinflectLanguage::Spanish | DeinflectLanguage::French => {
+            DeinflectLanguage::English
+            | DeinflectLanguage::Spanish
+            | DeinflectLanguage::French
+            | DeinflectLanguage::German => {
                 let lower = text.to_lowercase();
                 let sources = if lower == text {
                     vec![text.to_string()]
