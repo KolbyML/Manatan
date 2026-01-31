@@ -1,0 +1,6220 @@
+{
+  "_metadata": {
+    "language": "spanish",
+    "generatedBy": "manatan-deinflectors Rust generator",
+    "generatorVersion": "0.1.0",
+    "sourceFormat": "programmatic",
+    "note": "Spanish rules for number/gender morphology, regular verb paradigms, non-finite forms, attached pronouns, spelling alternations, and high-frequency irregular verbs.",
+    "sources": [
+      {
+        "title": "FSI Spanish Basic Course",
+        "url": "https://www.fsi-language-courses.org/?page=Spanish+Basic%2F",
+        "license": "US government public domain",
+        "usage": "Reference for regular Spanish verb paradigms and common morphology."
+      },
+      {
+        "title": "Pitman's Commercial Spanish Grammar",
+        "url": "https://www.gutenberg.org/ebooks/15127",
+        "license": "Public domain in the USA",
+        "usage": "Public-domain reference for Spanish noun, adjective, pronoun, and verb morphology."
+      }
+    ]
+  },
+  "conditions": {
+    "adj": {
+      "subConditions": null
+    },
+    "base": {
+      "subConditions": null
+    },
+    "noun": {
+      "subConditions": null
+    },
+    "verb": {
+      "subConditions": [
+        "verb-ar",
+        "verb-er",
+        "verb-ir"
+      ]
+    },
+    "verb-ar": {
+      "subConditions": null
+    },
+    "verb-er": {
+      "subConditions": null
+    },
+    "verb-ir": {
+      "subConditions": null
+    },
+    "word": {
+      "subConditions": [
+        "adj",
+        "noun",
+        "verb"
+      ]
+    }
+  },
+  "transforms": [
+    {
+      "id": "noun number",
+      "rules": [
+        {
+          "type": "suffix",
+          "inflected": "ces",
+          "deinflected": "z",
+          "conditionsIn": [
+            "noun"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "iones",
+          "deinflected": "ión",
+          "conditionsIn": [
+            "noun"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "anes",
+          "deinflected": "án",
+          "conditionsIn": [
+            "noun"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "enes",
+          "deinflected": "én",
+          "conditionsIn": [
+            "noun"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "ones",
+          "deinflected": "ón",
+          "conditionsIn": [
+            "noun"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "eses",
+          "deinflected": "és",
+          "conditionsIn": [
+            "noun"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "idades",
+          "deinflected": "idad",
+          "conditionsIn": [
+            "noun"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "ciones",
+          "deinflected": "ción",
+          "conditionsIn": [
+            "noun"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "siones",
+          "deinflected": "sión",
+          "conditionsIn": [
+            "noun"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "es",
+          "deinflected": "",
+          "conditionsIn": [
+            "noun"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "s",
+          "deinflected": "",
+          "conditionsIn": [
+            "noun"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "common noun plurals",
+      "rules": [
+        {
+          "type": "wholeWord",
+          "inflected": "hombres",
+          "deinflected": "hombre",
+          "conditionsIn": [
+            "noun"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "mujeres",
+          "deinflected": "mujer",
+          "conditionsIn": [
+            "noun"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "países",
+          "deinflected": "país",
+          "conditionsIn": [
+            "noun"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "lápices",
+          "deinflected": "lápiz",
+          "conditionsIn": [
+            "noun"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "luces",
+          "deinflected": "luz",
+          "conditionsIn": [
+            "noun"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "voces",
+          "deinflected": "voz",
+          "conditionsIn": [
+            "noun"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "veces",
+          "deinflected": "vez",
+          "conditionsIn": [
+            "noun"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "reyes",
+          "deinflected": "rey",
+          "conditionsIn": [
+            "noun"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "leyes",
+          "deinflected": "ley",
+          "conditionsIn": [
+            "noun"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "bueyes",
+          "deinflected": "buey",
+          "conditionsIn": [
+            "noun"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "adjective number/gender",
+      "rules": [
+        {
+          "type": "suffix",
+          "inflected": "ces",
+          "deinflected": "z",
+          "conditionsIn": [
+            "adj"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "ores",
+          "deinflected": "or",
+          "conditionsIn": [
+            "adj"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "oras",
+          "deinflected": "or",
+          "conditionsIn": [
+            "adj"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "ones",
+          "deinflected": "ón",
+          "conditionsIn": [
+            "adj"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "onas",
+          "deinflected": "ón",
+          "conditionsIn": [
+            "adj"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "anes",
+          "deinflected": "án",
+          "conditionsIn": [
+            "adj"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "anas",
+          "deinflected": "án",
+          "conditionsIn": [
+            "adj"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "ines",
+          "deinflected": "ín",
+          "conditionsIn": [
+            "adj"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "inas",
+          "deinflected": "ín",
+          "conditionsIn": [
+            "adj"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "eses",
+          "deinflected": "és",
+          "conditionsIn": [
+            "adj"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "esas",
+          "deinflected": "és",
+          "conditionsIn": [
+            "adj"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "as",
+          "deinflected": "o",
+          "conditionsIn": [
+            "adj"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "os",
+          "deinflected": "o",
+          "conditionsIn": [
+            "adj"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "a",
+          "deinflected": "o",
+          "conditionsIn": [
+            "adj"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "es",
+          "deinflected": "",
+          "conditionsIn": [
+            "adj"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "s",
+          "deinflected": "",
+          "conditionsIn": [
+            "adj"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "irregular adjectives and comparison",
+      "rules": [
+        {
+          "type": "wholeWord",
+          "inflected": "mejor",
+          "deinflected": "bueno",
+          "conditionsIn": [
+            "adj"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "mejores",
+          "deinflected": "bueno",
+          "conditionsIn": [
+            "adj"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "peor",
+          "deinflected": "malo",
+          "conditionsIn": [
+            "adj"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "peores",
+          "deinflected": "malo",
+          "conditionsIn": [
+            "adj"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "mayor",
+          "deinflected": "grande",
+          "conditionsIn": [
+            "adj"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "mayores",
+          "deinflected": "grande",
+          "conditionsIn": [
+            "adj"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "menor",
+          "deinflected": "pequeño",
+          "conditionsIn": [
+            "adj"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "menores",
+          "deinflected": "pequeño",
+          "conditionsIn": [
+            "adj"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "buen",
+          "deinflected": "bueno",
+          "conditionsIn": [
+            "adj"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "buena",
+          "deinflected": "bueno",
+          "conditionsIn": [
+            "adj"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "buenas",
+          "deinflected": "bueno",
+          "conditionsIn": [
+            "adj"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "buenos",
+          "deinflected": "bueno",
+          "conditionsIn": [
+            "adj"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "mal",
+          "deinflected": "malo",
+          "conditionsIn": [
+            "adj"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "mala",
+          "deinflected": "malo",
+          "conditionsIn": [
+            "adj"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "malas",
+          "deinflected": "malo",
+          "conditionsIn": [
+            "adj"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "malos",
+          "deinflected": "malo",
+          "conditionsIn": [
+            "adj"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "gran",
+          "deinflected": "grande",
+          "conditionsIn": [
+            "adj"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "grandes",
+          "deinflected": "grande",
+          "conditionsIn": [
+            "adj"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "present -ar",
+      "rules": [
+        {
+          "type": "suffix",
+          "inflected": "o",
+          "deinflected": "ar",
+          "conditionsIn": [
+            "verb-ar"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "as",
+          "deinflected": "ar",
+          "conditionsIn": [
+            "verb-ar"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "a",
+          "deinflected": "ar",
+          "conditionsIn": [
+            "verb-ar"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "amos",
+          "deinflected": "ar",
+          "conditionsIn": [
+            "verb-ar"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "áis",
+          "deinflected": "ar",
+          "conditionsIn": [
+            "verb-ar"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "an",
+          "deinflected": "ar",
+          "conditionsIn": [
+            "verb-ar"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "present -er",
+      "rules": [
+        {
+          "type": "suffix",
+          "inflected": "o",
+          "deinflected": "er",
+          "conditionsIn": [
+            "verb-er"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "es",
+          "deinflected": "er",
+          "conditionsIn": [
+            "verb-er"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "e",
+          "deinflected": "er",
+          "conditionsIn": [
+            "verb-er"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "emos",
+          "deinflected": "er",
+          "conditionsIn": [
+            "verb-er"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "éis",
+          "deinflected": "er",
+          "conditionsIn": [
+            "verb-er"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "en",
+          "deinflected": "er",
+          "conditionsIn": [
+            "verb-er"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "present -ir",
+      "rules": [
+        {
+          "type": "suffix",
+          "inflected": "o",
+          "deinflected": "ir",
+          "conditionsIn": [
+            "verb-ir"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "es",
+          "deinflected": "ir",
+          "conditionsIn": [
+            "verb-ir"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "e",
+          "deinflected": "ir",
+          "conditionsIn": [
+            "verb-ir"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "imos",
+          "deinflected": "ir",
+          "conditionsIn": [
+            "verb-ir"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "ís",
+          "deinflected": "ir",
+          "conditionsIn": [
+            "verb-ir"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "en",
+          "deinflected": "ir",
+          "conditionsIn": [
+            "verb-ir"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "preterite -ar",
+      "rules": [
+        {
+          "type": "suffix",
+          "inflected": "é",
+          "deinflected": "ar",
+          "conditionsIn": [
+            "verb-ar"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "aste",
+          "deinflected": "ar",
+          "conditionsIn": [
+            "verb-ar"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "ó",
+          "deinflected": "ar",
+          "conditionsIn": [
+            "verb-ar"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "amos",
+          "deinflected": "ar",
+          "conditionsIn": [
+            "verb-ar"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "asteis",
+          "deinflected": "ar",
+          "conditionsIn": [
+            "verb-ar"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "aron",
+          "deinflected": "ar",
+          "conditionsIn": [
+            "verb-ar"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "preterite -er",
+      "rules": [
+        {
+          "type": "suffix",
+          "inflected": "í",
+          "deinflected": "er",
+          "conditionsIn": [
+            "verb-er"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "iste",
+          "deinflected": "er",
+          "conditionsIn": [
+            "verb-er"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "ió",
+          "deinflected": "er",
+          "conditionsIn": [
+            "verb-er"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "imos",
+          "deinflected": "er",
+          "conditionsIn": [
+            "verb-er"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "isteis",
+          "deinflected": "er",
+          "conditionsIn": [
+            "verb-er"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "ieron",
+          "deinflected": "er",
+          "conditionsIn": [
+            "verb-er"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "preterite -ir",
+      "rules": [
+        {
+          "type": "suffix",
+          "inflected": "í",
+          "deinflected": "ir",
+          "conditionsIn": [
+            "verb-ir"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "iste",
+          "deinflected": "ir",
+          "conditionsIn": [
+            "verb-ir"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "ió",
+          "deinflected": "ir",
+          "conditionsIn": [
+            "verb-ir"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "imos",
+          "deinflected": "ir",
+          "conditionsIn": [
+            "verb-ir"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "isteis",
+          "deinflected": "ir",
+          "conditionsIn": [
+            "verb-ir"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "ieron",
+          "deinflected": "ir",
+          "conditionsIn": [
+            "verb-ir"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "imperfect -ar",
+      "rules": [
+        {
+          "type": "suffix",
+          "inflected": "aba",
+          "deinflected": "ar",
+          "conditionsIn": [
+            "verb-ar"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "abas",
+          "deinflected": "ar",
+          "conditionsIn": [
+            "verb-ar"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "ábamos",
+          "deinflected": "ar",
+          "conditionsIn": [
+            "verb-ar"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "abais",
+          "deinflected": "ar",
+          "conditionsIn": [
+            "verb-ar"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "aban",
+          "deinflected": "ar",
+          "conditionsIn": [
+            "verb-ar"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "imperfect -er",
+      "rules": [
+        {
+          "type": "suffix",
+          "inflected": "ía",
+          "deinflected": "er",
+          "conditionsIn": [
+            "verb-er"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "ías",
+          "deinflected": "er",
+          "conditionsIn": [
+            "verb-er"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "íamos",
+          "deinflected": "er",
+          "conditionsIn": [
+            "verb-er"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "íais",
+          "deinflected": "er",
+          "conditionsIn": [
+            "verb-er"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "ían",
+          "deinflected": "er",
+          "conditionsIn": [
+            "verb-er"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "imperfect -ir",
+      "rules": [
+        {
+          "type": "suffix",
+          "inflected": "ía",
+          "deinflected": "ir",
+          "conditionsIn": [
+            "verb-ir"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "ías",
+          "deinflected": "ir",
+          "conditionsIn": [
+            "verb-ir"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "íamos",
+          "deinflected": "ir",
+          "conditionsIn": [
+            "verb-ir"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "íais",
+          "deinflected": "ir",
+          "conditionsIn": [
+            "verb-ir"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "ían",
+          "deinflected": "ir",
+          "conditionsIn": [
+            "verb-ir"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "future -ar",
+      "rules": [
+        {
+          "type": "suffix",
+          "inflected": "aré",
+          "deinflected": "ar",
+          "conditionsIn": [
+            "verb-ar"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "arás",
+          "deinflected": "ar",
+          "conditionsIn": [
+            "verb-ar"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "ará",
+          "deinflected": "ar",
+          "conditionsIn": [
+            "verb-ar"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "aremos",
+          "deinflected": "ar",
+          "conditionsIn": [
+            "verb-ar"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "aréis",
+          "deinflected": "ar",
+          "conditionsIn": [
+            "verb-ar"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "arán",
+          "deinflected": "ar",
+          "conditionsIn": [
+            "verb-ar"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "future -er",
+      "rules": [
+        {
+          "type": "suffix",
+          "inflected": "eré",
+          "deinflected": "er",
+          "conditionsIn": [
+            "verb-er"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "erás",
+          "deinflected": "er",
+          "conditionsIn": [
+            "verb-er"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "erá",
+          "deinflected": "er",
+          "conditionsIn": [
+            "verb-er"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "eremos",
+          "deinflected": "er",
+          "conditionsIn": [
+            "verb-er"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "eréis",
+          "deinflected": "er",
+          "conditionsIn": [
+            "verb-er"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "erán",
+          "deinflected": "er",
+          "conditionsIn": [
+            "verb-er"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "future -ir",
+      "rules": [
+        {
+          "type": "suffix",
+          "inflected": "iré",
+          "deinflected": "ir",
+          "conditionsIn": [
+            "verb-ir"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "irás",
+          "deinflected": "ir",
+          "conditionsIn": [
+            "verb-ir"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "irá",
+          "deinflected": "ir",
+          "conditionsIn": [
+            "verb-ir"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "iremos",
+          "deinflected": "ir",
+          "conditionsIn": [
+            "verb-ir"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "iréis",
+          "deinflected": "ir",
+          "conditionsIn": [
+            "verb-ir"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "irán",
+          "deinflected": "ir",
+          "conditionsIn": [
+            "verb-ir"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "conditional -ar",
+      "rules": [
+        {
+          "type": "suffix",
+          "inflected": "aría",
+          "deinflected": "ar",
+          "conditionsIn": [
+            "verb-ar"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "arías",
+          "deinflected": "ar",
+          "conditionsIn": [
+            "verb-ar"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "aríamos",
+          "deinflected": "ar",
+          "conditionsIn": [
+            "verb-ar"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "aríais",
+          "deinflected": "ar",
+          "conditionsIn": [
+            "verb-ar"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "arían",
+          "deinflected": "ar",
+          "conditionsIn": [
+            "verb-ar"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "conditional -er",
+      "rules": [
+        {
+          "type": "suffix",
+          "inflected": "ería",
+          "deinflected": "er",
+          "conditionsIn": [
+            "verb-er"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "erías",
+          "deinflected": "er",
+          "conditionsIn": [
+            "verb-er"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "eríamos",
+          "deinflected": "er",
+          "conditionsIn": [
+            "verb-er"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "eríais",
+          "deinflected": "er",
+          "conditionsIn": [
+            "verb-er"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "erían",
+          "deinflected": "er",
+          "conditionsIn": [
+            "verb-er"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "conditional -ir",
+      "rules": [
+        {
+          "type": "suffix",
+          "inflected": "iría",
+          "deinflected": "ir",
+          "conditionsIn": [
+            "verb-ir"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "irías",
+          "deinflected": "ir",
+          "conditionsIn": [
+            "verb-ir"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "iríamos",
+          "deinflected": "ir",
+          "conditionsIn": [
+            "verb-ir"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "iríais",
+          "deinflected": "ir",
+          "conditionsIn": [
+            "verb-ir"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "irían",
+          "deinflected": "ir",
+          "conditionsIn": [
+            "verb-ir"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "present subjunctive -ar",
+      "rules": [
+        {
+          "type": "suffix",
+          "inflected": "e",
+          "deinflected": "ar",
+          "conditionsIn": [
+            "verb-ar"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "es",
+          "deinflected": "ar",
+          "conditionsIn": [
+            "verb-ar"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "emos",
+          "deinflected": "ar",
+          "conditionsIn": [
+            "verb-ar"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "éis",
+          "deinflected": "ar",
+          "conditionsIn": [
+            "verb-ar"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "en",
+          "deinflected": "ar",
+          "conditionsIn": [
+            "verb-ar"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "present subjunctive -er/-ir",
+      "rules": [
+        {
+          "type": "suffix",
+          "inflected": "a",
+          "deinflected": "er",
+          "conditionsIn": [
+            "verb-er"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "as",
+          "deinflected": "er",
+          "conditionsIn": [
+            "verb-er"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "amos",
+          "deinflected": "er",
+          "conditionsIn": [
+            "verb-er"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "áis",
+          "deinflected": "er",
+          "conditionsIn": [
+            "verb-er"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "an",
+          "deinflected": "er",
+          "conditionsIn": [
+            "verb-er"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "a",
+          "deinflected": "ir",
+          "conditionsIn": [
+            "verb-ir"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "as",
+          "deinflected": "ir",
+          "conditionsIn": [
+            "verb-ir"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "amos",
+          "deinflected": "ir",
+          "conditionsIn": [
+            "verb-ir"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "áis",
+          "deinflected": "ir",
+          "conditionsIn": [
+            "verb-ir"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "an",
+          "deinflected": "ir",
+          "conditionsIn": [
+            "verb-ir"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "imperfect subjunctive",
+      "rules": [
+        {
+          "type": "suffix",
+          "inflected": "ara",
+          "deinflected": "ar",
+          "conditionsIn": [
+            "verb-ar"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "aras",
+          "deinflected": "ar",
+          "conditionsIn": [
+            "verb-ar"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "áramos",
+          "deinflected": "ar",
+          "conditionsIn": [
+            "verb-ar"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "arais",
+          "deinflected": "ar",
+          "conditionsIn": [
+            "verb-ar"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "aran",
+          "deinflected": "ar",
+          "conditionsIn": [
+            "verb-ar"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "ase",
+          "deinflected": "ar",
+          "conditionsIn": [
+            "verb-ar"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "ases",
+          "deinflected": "ar",
+          "conditionsIn": [
+            "verb-ar"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "ásemos",
+          "deinflected": "ar",
+          "conditionsIn": [
+            "verb-ar"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "aseis",
+          "deinflected": "ar",
+          "conditionsIn": [
+            "verb-ar"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "asen",
+          "deinflected": "ar",
+          "conditionsIn": [
+            "verb-ar"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "ara",
+          "deinflected": "er",
+          "conditionsIn": [
+            "verb-er"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "aras",
+          "deinflected": "er",
+          "conditionsIn": [
+            "verb-er"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "áramos",
+          "deinflected": "er",
+          "conditionsIn": [
+            "verb-er"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "arais",
+          "deinflected": "er",
+          "conditionsIn": [
+            "verb-er"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "aran",
+          "deinflected": "er",
+          "conditionsIn": [
+            "verb-er"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "ase",
+          "deinflected": "er",
+          "conditionsIn": [
+            "verb-er"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "ases",
+          "deinflected": "er",
+          "conditionsIn": [
+            "verb-er"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "ásemos",
+          "deinflected": "er",
+          "conditionsIn": [
+            "verb-er"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "aseis",
+          "deinflected": "er",
+          "conditionsIn": [
+            "verb-er"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "asen",
+          "deinflected": "er",
+          "conditionsIn": [
+            "verb-er"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "ara",
+          "deinflected": "ir",
+          "conditionsIn": [
+            "verb-ir"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "aras",
+          "deinflected": "ir",
+          "conditionsIn": [
+            "verb-ir"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "áramos",
+          "deinflected": "ir",
+          "conditionsIn": [
+            "verb-ir"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "arais",
+          "deinflected": "ir",
+          "conditionsIn": [
+            "verb-ir"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "aran",
+          "deinflected": "ir",
+          "conditionsIn": [
+            "verb-ir"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "ase",
+          "deinflected": "ir",
+          "conditionsIn": [
+            "verb-ir"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "ases",
+          "deinflected": "ir",
+          "conditionsIn": [
+            "verb-ir"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "ásemos",
+          "deinflected": "ir",
+          "conditionsIn": [
+            "verb-ir"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "aseis",
+          "deinflected": "ir",
+          "conditionsIn": [
+            "verb-ir"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "asen",
+          "deinflected": "ir",
+          "conditionsIn": [
+            "verb-ir"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "imperative",
+      "rules": [
+        {
+          "type": "suffix",
+          "inflected": "a",
+          "deinflected": "ar",
+          "conditionsIn": [
+            "verb-ar"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "e",
+          "deinflected": "ar",
+          "conditionsIn": [
+            "verb-ar"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "ad",
+          "deinflected": "ar",
+          "conditionsIn": [
+            "verb-ar"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "ed",
+          "deinflected": "ar",
+          "conditionsIn": [
+            "verb-ar"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "id",
+          "deinflected": "ar",
+          "conditionsIn": [
+            "verb-ar"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "en",
+          "deinflected": "ar",
+          "conditionsIn": [
+            "verb-ar"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "emos",
+          "deinflected": "ar",
+          "conditionsIn": [
+            "verb-ar"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "amos",
+          "deinflected": "ar",
+          "conditionsIn": [
+            "verb-ar"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "a",
+          "deinflected": "er",
+          "conditionsIn": [
+            "verb-er"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "e",
+          "deinflected": "er",
+          "conditionsIn": [
+            "verb-er"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "ad",
+          "deinflected": "er",
+          "conditionsIn": [
+            "verb-er"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "ed",
+          "deinflected": "er",
+          "conditionsIn": [
+            "verb-er"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "id",
+          "deinflected": "er",
+          "conditionsIn": [
+            "verb-er"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "en",
+          "deinflected": "er",
+          "conditionsIn": [
+            "verb-er"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "emos",
+          "deinflected": "er",
+          "conditionsIn": [
+            "verb-er"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "amos",
+          "deinflected": "er",
+          "conditionsIn": [
+            "verb-er"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "a",
+          "deinflected": "ir",
+          "conditionsIn": [
+            "verb-ir"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "e",
+          "deinflected": "ir",
+          "conditionsIn": [
+            "verb-ir"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "ad",
+          "deinflected": "ir",
+          "conditionsIn": [
+            "verb-ir"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "ed",
+          "deinflected": "ir",
+          "conditionsIn": [
+            "verb-ir"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "id",
+          "deinflected": "ir",
+          "conditionsIn": [
+            "verb-ir"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "en",
+          "deinflected": "ir",
+          "conditionsIn": [
+            "verb-ir"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "emos",
+          "deinflected": "ir",
+          "conditionsIn": [
+            "verb-ir"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "amos",
+          "deinflected": "ir",
+          "conditionsIn": [
+            "verb-ir"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "future subjunctive -ar",
+      "rules": [
+        {
+          "type": "suffix",
+          "inflected": "are",
+          "deinflected": "ar",
+          "conditionsIn": [
+            "verb-ar"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "ares",
+          "deinflected": "ar",
+          "conditionsIn": [
+            "verb-ar"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "áremos",
+          "deinflected": "ar",
+          "conditionsIn": [
+            "verb-ar"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "areis",
+          "deinflected": "ar",
+          "conditionsIn": [
+            "verb-ar"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "aren",
+          "deinflected": "ar",
+          "conditionsIn": [
+            "verb-ar"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "future subjunctive -er",
+      "rules": [
+        {
+          "type": "suffix",
+          "inflected": "iere",
+          "deinflected": "er",
+          "conditionsIn": [
+            "verb-er"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "ieres",
+          "deinflected": "er",
+          "conditionsIn": [
+            "verb-er"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "iéremos",
+          "deinflected": "er",
+          "conditionsIn": [
+            "verb-er"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "iereis",
+          "deinflected": "er",
+          "conditionsIn": [
+            "verb-er"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "ieren",
+          "deinflected": "er",
+          "conditionsIn": [
+            "verb-er"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "future subjunctive -ir",
+      "rules": [
+        {
+          "type": "suffix",
+          "inflected": "iere",
+          "deinflected": "ir",
+          "conditionsIn": [
+            "verb-ir"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "ieres",
+          "deinflected": "ir",
+          "conditionsIn": [
+            "verb-ir"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "iéremos",
+          "deinflected": "ir",
+          "conditionsIn": [
+            "verb-ir"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "iereis",
+          "deinflected": "ir",
+          "conditionsIn": [
+            "verb-ir"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "ieren",
+          "deinflected": "ir",
+          "conditionsIn": [
+            "verb-ir"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "nonfinite forms",
+      "rules": [
+        {
+          "type": "suffix",
+          "inflected": "ando",
+          "deinflected": "ar",
+          "conditionsIn": [
+            "verb-ar"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "ado",
+          "deinflected": "ar",
+          "conditionsIn": [
+            "verb-ar"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "ada",
+          "deinflected": "ar",
+          "conditionsIn": [
+            "verb-ar"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "ados",
+          "deinflected": "ar",
+          "conditionsIn": [
+            "verb-ar"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "adas",
+          "deinflected": "ar",
+          "conditionsIn": [
+            "verb-ar"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "iendo",
+          "deinflected": "er",
+          "conditionsIn": [
+            "verb-er"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "ido",
+          "deinflected": "er",
+          "conditionsIn": [
+            "verb-er"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "ida",
+          "deinflected": "er",
+          "conditionsIn": [
+            "verb-er"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "idos",
+          "deinflected": "er",
+          "conditionsIn": [
+            "verb-er"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "idas",
+          "deinflected": "er",
+          "conditionsIn": [
+            "verb-er"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "iendo",
+          "deinflected": "ir",
+          "conditionsIn": [
+            "verb-ir"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "ido",
+          "deinflected": "ir",
+          "conditionsIn": [
+            "verb-ir"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "ida",
+          "deinflected": "ir",
+          "conditionsIn": [
+            "verb-ir"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "idos",
+          "deinflected": "ir",
+          "conditionsIn": [
+            "verb-ir"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "idas",
+          "deinflected": "ir",
+          "conditionsIn": [
+            "verb-ir"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "yendo",
+          "deinflected": "er",
+          "conditionsIn": [
+            "verb-er"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "yendo",
+          "deinflected": "ir",
+          "conditionsIn": [
+            "verb-ir"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "attached pronouns",
+      "rules": [
+        {
+          "type": "suffix",
+          "inflected": "me",
+          "deinflected": "",
+          "conditionsIn": [
+            "verb"
+          ],
+          "conditionsOut": [
+            "verb"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "te",
+          "deinflected": "",
+          "conditionsIn": [
+            "verb"
+          ],
+          "conditionsOut": [
+            "verb"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "se",
+          "deinflected": "",
+          "conditionsIn": [
+            "verb"
+          ],
+          "conditionsOut": [
+            "verb"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "lo",
+          "deinflected": "",
+          "conditionsIn": [
+            "verb"
+          ],
+          "conditionsOut": [
+            "verb"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "la",
+          "deinflected": "",
+          "conditionsIn": [
+            "verb"
+          ],
+          "conditionsOut": [
+            "verb"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "los",
+          "deinflected": "",
+          "conditionsIn": [
+            "verb"
+          ],
+          "conditionsOut": [
+            "verb"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "las",
+          "deinflected": "",
+          "conditionsIn": [
+            "verb"
+          ],
+          "conditionsOut": [
+            "verb"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "le",
+          "deinflected": "",
+          "conditionsIn": [
+            "verb"
+          ],
+          "conditionsOut": [
+            "verb"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "les",
+          "deinflected": "",
+          "conditionsIn": [
+            "verb"
+          ],
+          "conditionsOut": [
+            "verb"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "nos",
+          "deinflected": "",
+          "conditionsIn": [
+            "verb"
+          ],
+          "conditionsOut": [
+            "verb"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "os",
+          "deinflected": "",
+          "conditionsIn": [
+            "verb"
+          ],
+          "conditionsOut": [
+            "verb"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "melo",
+          "deinflected": "",
+          "conditionsIn": [
+            "verb"
+          ],
+          "conditionsOut": [
+            "verb"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "mela",
+          "deinflected": "",
+          "conditionsIn": [
+            "verb"
+          ],
+          "conditionsOut": [
+            "verb"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "melos",
+          "deinflected": "",
+          "conditionsIn": [
+            "verb"
+          ],
+          "conditionsOut": [
+            "verb"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "melas",
+          "deinflected": "",
+          "conditionsIn": [
+            "verb"
+          ],
+          "conditionsOut": [
+            "verb"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "telo",
+          "deinflected": "",
+          "conditionsIn": [
+            "verb"
+          ],
+          "conditionsOut": [
+            "verb"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "tela",
+          "deinflected": "",
+          "conditionsIn": [
+            "verb"
+          ],
+          "conditionsOut": [
+            "verb"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "telos",
+          "deinflected": "",
+          "conditionsIn": [
+            "verb"
+          ],
+          "conditionsOut": [
+            "verb"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "telas",
+          "deinflected": "",
+          "conditionsIn": [
+            "verb"
+          ],
+          "conditionsOut": [
+            "verb"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "selo",
+          "deinflected": "",
+          "conditionsIn": [
+            "verb"
+          ],
+          "conditionsOut": [
+            "verb"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "sela",
+          "deinflected": "",
+          "conditionsIn": [
+            "verb"
+          ],
+          "conditionsOut": [
+            "verb"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "selos",
+          "deinflected": "",
+          "conditionsIn": [
+            "verb"
+          ],
+          "conditionsOut": [
+            "verb"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "selas",
+          "deinflected": "",
+          "conditionsIn": [
+            "verb"
+          ],
+          "conditionsOut": [
+            "verb"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "noslo",
+          "deinflected": "",
+          "conditionsIn": [
+            "verb"
+          ],
+          "conditionsOut": [
+            "verb"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "nosla",
+          "deinflected": "",
+          "conditionsIn": [
+            "verb"
+          ],
+          "conditionsOut": [
+            "verb"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "noslos",
+          "deinflected": "",
+          "conditionsIn": [
+            "verb"
+          ],
+          "conditionsOut": [
+            "verb"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "noslas",
+          "deinflected": "",
+          "conditionsIn": [
+            "verb"
+          ],
+          "conditionsOut": [
+            "verb"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "oslo",
+          "deinflected": "",
+          "conditionsIn": [
+            "verb"
+          ],
+          "conditionsOut": [
+            "verb"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "osla",
+          "deinflected": "",
+          "conditionsIn": [
+            "verb"
+          ],
+          "conditionsOut": [
+            "verb"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "oslos",
+          "deinflected": "",
+          "conditionsIn": [
+            "verb"
+          ],
+          "conditionsOut": [
+            "verb"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "oslas",
+          "deinflected": "",
+          "conditionsIn": [
+            "verb"
+          ],
+          "conditionsOut": [
+            "verb"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "accented nonfinite + pronoun",
+      "rules": [
+        {
+          "type": "suffix",
+          "inflected": "ándome",
+          "deinflected": "ar",
+          "conditionsIn": [
+            "verb-ar"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "ándote",
+          "deinflected": "ar",
+          "conditionsIn": [
+            "verb-ar"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "ándose",
+          "deinflected": "ar",
+          "conditionsIn": [
+            "verb-ar"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "ándolo",
+          "deinflected": "ar",
+          "conditionsIn": [
+            "verb-ar"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "ándola",
+          "deinflected": "ar",
+          "conditionsIn": [
+            "verb-ar"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "ándolos",
+          "deinflected": "ar",
+          "conditionsIn": [
+            "verb-ar"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "ándolas",
+          "deinflected": "ar",
+          "conditionsIn": [
+            "verb-ar"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "ándonos",
+          "deinflected": "ar",
+          "conditionsIn": [
+            "verb-ar"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "ándoos",
+          "deinflected": "ar",
+          "conditionsIn": [
+            "verb-ar"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "iéndome",
+          "deinflected": "er",
+          "conditionsIn": [
+            "verb-er"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "iéndote",
+          "deinflected": "er",
+          "conditionsIn": [
+            "verb-er"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "iéndose",
+          "deinflected": "er",
+          "conditionsIn": [
+            "verb-er"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "iéndolo",
+          "deinflected": "er",
+          "conditionsIn": [
+            "verb-er"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "iéndola",
+          "deinflected": "er",
+          "conditionsIn": [
+            "verb-er"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "iéndolos",
+          "deinflected": "er",
+          "conditionsIn": [
+            "verb-er"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "iéndolas",
+          "deinflected": "er",
+          "conditionsIn": [
+            "verb-er"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "iéndonos",
+          "deinflected": "er",
+          "conditionsIn": [
+            "verb-er"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "iéndoos",
+          "deinflected": "er",
+          "conditionsIn": [
+            "verb-er"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "iéndome",
+          "deinflected": "ir",
+          "conditionsIn": [
+            "verb-ir"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "iéndote",
+          "deinflected": "ir",
+          "conditionsIn": [
+            "verb-ir"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "iéndose",
+          "deinflected": "ir",
+          "conditionsIn": [
+            "verb-ir"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "iéndolo",
+          "deinflected": "ir",
+          "conditionsIn": [
+            "verb-ir"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "iéndola",
+          "deinflected": "ir",
+          "conditionsIn": [
+            "verb-ir"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "iéndolos",
+          "deinflected": "ir",
+          "conditionsIn": [
+            "verb-ir"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "iéndolas",
+          "deinflected": "ir",
+          "conditionsIn": [
+            "verb-ir"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "iéndonos",
+          "deinflected": "ir",
+          "conditionsIn": [
+            "verb-ir"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "iéndoos",
+          "deinflected": "ir",
+          "conditionsIn": [
+            "verb-ir"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "spelling-change verbs",
+      "rules": [
+        {
+          "type": "suffix",
+          "inflected": "qué",
+          "deinflected": "car",
+          "conditionsIn": [
+            "verb"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "quéis",
+          "deinflected": "car",
+          "conditionsIn": [
+            "verb"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "que",
+          "deinflected": "car",
+          "conditionsIn": [
+            "verb"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "quen",
+          "deinflected": "car",
+          "conditionsIn": [
+            "verb"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "gué",
+          "deinflected": "gar",
+          "conditionsIn": [
+            "verb"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "guéis",
+          "deinflected": "gar",
+          "conditionsIn": [
+            "verb"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "gue",
+          "deinflected": "gar",
+          "conditionsIn": [
+            "verb"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "guen",
+          "deinflected": "gar",
+          "conditionsIn": [
+            "verb"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "cé",
+          "deinflected": "zar",
+          "conditionsIn": [
+            "verb"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "céis",
+          "deinflected": "zar",
+          "conditionsIn": [
+            "verb"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "ce",
+          "deinflected": "zar",
+          "conditionsIn": [
+            "verb"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "cen",
+          "deinflected": "zar",
+          "conditionsIn": [
+            "verb"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "gí",
+          "deinflected": "ger",
+          "conditionsIn": [
+            "verb"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "gió",
+          "deinflected": "ger",
+          "conditionsIn": [
+            "verb"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "gieron",
+          "deinflected": "ger",
+          "conditionsIn": [
+            "verb"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "jí",
+          "deinflected": "ger",
+          "conditionsIn": [
+            "verb"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "jió",
+          "deinflected": "ger",
+          "conditionsIn": [
+            "verb"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "jieron",
+          "deinflected": "ger",
+          "conditionsIn": [
+            "verb"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "cí",
+          "deinflected": "cer",
+          "conditionsIn": [
+            "verb"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "ció",
+          "deinflected": "cer",
+          "conditionsIn": [
+            "verb"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "cieron",
+          "deinflected": "cer",
+          "conditionsIn": [
+            "verb"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "zcamos",
+          "deinflected": "cer",
+          "conditionsIn": [
+            "verb"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "zco",
+          "deinflected": "cer",
+          "conditionsIn": [
+            "verb"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "zcamos",
+          "deinflected": "cir",
+          "conditionsIn": [
+            "verb"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "zco",
+          "deinflected": "cir",
+          "conditionsIn": [
+            "verb"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "jimos",
+          "deinflected": "cir",
+          "conditionsIn": [
+            "verb"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "suffix",
+          "inflected": "jeron",
+          "deinflected": "cir",
+          "conditionsIn": [
+            "verb"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "irregular verbs",
+      "rules": [
+        {
+          "type": "wholeWord",
+          "inflected": "soy",
+          "deinflected": "ser",
+          "conditionsIn": [
+            "verb"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "eres",
+          "deinflected": "ser",
+          "conditionsIn": [
+            "verb"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "es",
+          "deinflected": "ser",
+          "conditionsIn": [
+            "verb"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "somos",
+          "deinflected": "ser",
+          "conditionsIn": [
+            "verb"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "sois",
+          "deinflected": "ser",
+          "conditionsIn": [
+            "verb"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "son",
+          "deinflected": "ser",
+          "conditionsIn": [
+            "verb"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "era",
+          "deinflected": "ser",
+          "conditionsIn": [
+            "verb"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "eras",
+          "deinflected": "ser",
+          "conditionsIn": [
+            "verb"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "éramos",
+          "deinflected": "ser",
+          "conditionsIn": [
+            "verb"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "eran",
+          "deinflected": "ser",
+          "conditionsIn": [
+            "verb"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "fui",
+          "deinflected": "ser",
+          "conditionsIn": [
+            "verb"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "fuiste",
+          "deinflected": "ser",
+          "conditionsIn": [
+            "verb"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "fue",
+          "deinflected": "ser",
+          "conditionsIn": [
+            "verb"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "fuimos",
+          "deinflected": "ser",
+          "conditionsIn": [
+            "verb"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "fueron",
+          "deinflected": "ser",
+          "conditionsIn": [
+            "verb"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "sea",
+          "deinflected": "ser",
+          "conditionsIn": [
+            "verb"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "seas",
+          "deinflected": "ser",
+          "conditionsIn": [
+            "verb"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "seamos",
+          "deinflected": "ser",
+          "conditionsIn": [
+            "verb"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "sean",
+          "deinflected": "ser",
+          "conditionsIn": [
+            "verb"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "seré",
+          "deinflected": "ser",
+          "conditionsIn": [
+            "verb"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "sería",
+          "deinflected": "ser",
+          "conditionsIn": [
+            "verb"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "estoy",
+          "deinflected": "estar",
+          "conditionsIn": [
+            "verb"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "estás",
+          "deinflected": "estar",
+          "conditionsIn": [
+            "verb"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "está",
+          "deinflected": "estar",
+          "conditionsIn": [
+            "verb"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "estamos",
+          "deinflected": "estar",
+          "conditionsIn": [
+            "verb"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "estáis",
+          "deinflected": "estar",
+          "conditionsIn": [
+            "verb"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "están",
+          "deinflected": "estar",
+          "conditionsIn": [
+            "verb"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "estuve",
+          "deinflected": "estar",
+          "conditionsIn": [
+            "verb"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "estuviste",
+          "deinflected": "estar",
+          "conditionsIn": [
+            "verb"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "estuvo",
+          "deinflected": "estar",
+          "conditionsIn": [
+            "verb"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "estuvimos",
+          "deinflected": "estar",
+          "conditionsIn": [
+            "verb"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "estuvieron",
+          "deinflected": "estar",
+          "conditionsIn": [
+            "verb"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "esté",
+          "deinflected": "estar",
+          "conditionsIn": [
+            "verb"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "estés",
+          "deinflected": "estar",
+          "conditionsIn": [
+            "verb"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "estén",
+          "deinflected": "estar",
+          "conditionsIn": [
+            "verb"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "he",
+          "deinflected": "haber",
+          "conditionsIn": [
+            "verb"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "has",
+          "deinflected": "haber",
+          "conditionsIn": [
+            "verb"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "ha",
+          "deinflected": "haber",
+          "conditionsIn": [
+            "verb"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "hemos",
+          "deinflected": "haber",
+          "conditionsIn": [
+            "verb"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "habéis",
+          "deinflected": "haber",
+          "conditionsIn": [
+            "verb"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "han",
+          "deinflected": "haber",
+          "conditionsIn": [
+            "verb"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "hube",
+          "deinflected": "haber",
+          "conditionsIn": [
+            "verb"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "hubo",
+          "deinflected": "haber",
+          "conditionsIn": [
+            "verb"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "habré",
+          "deinflected": "haber",
+          "conditionsIn": [
+            "verb"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "habría",
+          "deinflected": "haber",
+          "conditionsIn": [
+            "verb"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "hay",
+          "deinflected": "haber",
+          "conditionsIn": [
+            "verb"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "voy",
+          "deinflected": "ir",
+          "conditionsIn": [
+            "verb"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "vas",
+          "deinflected": "ir",
+          "conditionsIn": [
+            "verb"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "va",
+          "deinflected": "ir",
+          "conditionsIn": [
+            "verb"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "vamos",
+          "deinflected": "ir",
+          "conditionsIn": [
+            "verb"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "vais",
+          "deinflected": "ir",
+          "conditionsIn": [
+            "verb"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "van",
+          "deinflected": "ir",
+          "conditionsIn": [
+            "verb"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "iba",
+          "deinflected": "ir",
+          "conditionsIn": [
+            "verb"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "ibas",
+          "deinflected": "ir",
+          "conditionsIn": [
+            "verb"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "íbamos",
+          "deinflected": "ir",
+          "conditionsIn": [
+            "verb"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "iban",
+          "deinflected": "ir",
+          "conditionsIn": [
+            "verb"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "fui",
+          "deinflected": "ir",
+          "conditionsIn": [
+            "verb"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "fuiste",
+          "deinflected": "ir",
+          "conditionsIn": [
+            "verb"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "fue",
+          "deinflected": "ir",
+          "conditionsIn": [
+            "verb"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "fuimos",
+          "deinflected": "ir",
+          "conditionsIn": [
+            "verb"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "fueron",
+          "deinflected": "ir",
+          "conditionsIn": [
+            "verb"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "vaya",
+          "deinflected": "ir",
+          "conditionsIn": [
+            "verb"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "vayas",
+          "deinflected": "ir",
+          "conditionsIn": [
+            "verb"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "vayan",
+          "deinflected": "ir",
+          "conditionsIn": [
+            "verb"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "tengo",
+          "deinflected": "tener",
+          "conditionsIn": [
+            "verb"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "tienes",
+          "deinflected": "tener",
+          "conditionsIn": [
+            "verb"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "tiene",
+          "deinflected": "tener",
+          "conditionsIn": [
+            "verb"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "tienen",
+          "deinflected": "tener",
+          "conditionsIn": [
+            "verb"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "tuve",
+          "deinflected": "tener",
+          "conditionsIn": [
+            "verb"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "tuviste",
+          "deinflected": "tener",
+          "conditionsIn": [
+            "verb"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "tuvo",
+          "deinflected": "tener",
+          "conditionsIn": [
+            "verb"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "tuvieron",
+          "deinflected": "tener",
+          "conditionsIn": [
+            "verb"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "tendré",
+          "deinflected": "tener",
+          "conditionsIn": [
+            "verb"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "tendría",
+          "deinflected": "tener",
+          "conditionsIn": [
+            "verb"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "tenga",
+          "deinflected": "tener",
+          "conditionsIn": [
+            "verb"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "tengan",
+          "deinflected": "tener",
+          "conditionsIn": [
+            "verb"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "vengo",
+          "deinflected": "venir",
+          "conditionsIn": [
+            "verb"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "vienes",
+          "deinflected": "venir",
+          "conditionsIn": [
+            "verb"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "viene",
+          "deinflected": "venir",
+          "conditionsIn": [
+            "verb"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "vienen",
+          "deinflected": "venir",
+          "conditionsIn": [
+            "verb"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "vine",
+          "deinflected": "venir",
+          "conditionsIn": [
+            "verb"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "vino",
+          "deinflected": "venir",
+          "conditionsIn": [
+            "verb"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "vinieron",
+          "deinflected": "venir",
+          "conditionsIn": [
+            "verb"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "vendré",
+          "deinflected": "venir",
+          "conditionsIn": [
+            "verb"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "vendría",
+          "deinflected": "venir",
+          "conditionsIn": [
+            "verb"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "venga",
+          "deinflected": "venir",
+          "conditionsIn": [
+            "verb"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "hago",
+          "deinflected": "hacer",
+          "conditionsIn": [
+            "verb"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "haces",
+          "deinflected": "hacer",
+          "conditionsIn": [
+            "verb"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "hace",
+          "deinflected": "hacer",
+          "conditionsIn": [
+            "verb"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "hacen",
+          "deinflected": "hacer",
+          "conditionsIn": [
+            "verb"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "hice",
+          "deinflected": "hacer",
+          "conditionsIn": [
+            "verb"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "hiciste",
+          "deinflected": "hacer",
+          "conditionsIn": [
+            "verb"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "hizo",
+          "deinflected": "hacer",
+          "conditionsIn": [
+            "verb"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "hicieron",
+          "deinflected": "hacer",
+          "conditionsIn": [
+            "verb"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "haré",
+          "deinflected": "hacer",
+          "conditionsIn": [
+            "verb"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "haría",
+          "deinflected": "hacer",
+          "conditionsIn": [
+            "verb"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "hecho",
+          "deinflected": "hacer",
+          "conditionsIn": [
+            "verb"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "digo",
+          "deinflected": "decir",
+          "conditionsIn": [
+            "verb"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "dices",
+          "deinflected": "decir",
+          "conditionsIn": [
+            "verb"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "dice",
+          "deinflected": "decir",
+          "conditionsIn": [
+            "verb"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "dicen",
+          "deinflected": "decir",
+          "conditionsIn": [
+            "verb"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "dije",
+          "deinflected": "decir",
+          "conditionsIn": [
+            "verb"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "dijiste",
+          "deinflected": "decir",
+          "conditionsIn": [
+            "verb"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "dijo",
+          "deinflected": "decir",
+          "conditionsIn": [
+            "verb"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "dijeron",
+          "deinflected": "decir",
+          "conditionsIn": [
+            "verb"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "diré",
+          "deinflected": "decir",
+          "conditionsIn": [
+            "verb"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "diría",
+          "deinflected": "decir",
+          "conditionsIn": [
+            "verb"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "dicho",
+          "deinflected": "decir",
+          "conditionsIn": [
+            "verb"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "puedo",
+          "deinflected": "poder",
+          "conditionsIn": [
+            "verb"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "puedes",
+          "deinflected": "poder",
+          "conditionsIn": [
+            "verb"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "puede",
+          "deinflected": "poder",
+          "conditionsIn": [
+            "verb"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "pueden",
+          "deinflected": "poder",
+          "conditionsIn": [
+            "verb"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "pude",
+          "deinflected": "poder",
+          "conditionsIn": [
+            "verb"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "pudo",
+          "deinflected": "poder",
+          "conditionsIn": [
+            "verb"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "pudieron",
+          "deinflected": "poder",
+          "conditionsIn": [
+            "verb"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "podré",
+          "deinflected": "poder",
+          "conditionsIn": [
+            "verb"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "podría",
+          "deinflected": "poder",
+          "conditionsIn": [
+            "verb"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "pongo",
+          "deinflected": "poner",
+          "conditionsIn": [
+            "verb"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "pones",
+          "deinflected": "poner",
+          "conditionsIn": [
+            "verb"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "pone",
+          "deinflected": "poner",
+          "conditionsIn": [
+            "verb"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "ponen",
+          "deinflected": "poner",
+          "conditionsIn": [
+            "verb"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "puse",
+          "deinflected": "poner",
+          "conditionsIn": [
+            "verb"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "puso",
+          "deinflected": "poner",
+          "conditionsIn": [
+            "verb"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "pusieron",
+          "deinflected": "poner",
+          "conditionsIn": [
+            "verb"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "pondré",
+          "deinflected": "poner",
+          "conditionsIn": [
+            "verb"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "pondría",
+          "deinflected": "poner",
+          "conditionsIn": [
+            "verb"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "puesto",
+          "deinflected": "poner",
+          "conditionsIn": [
+            "verb"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "quiero",
+          "deinflected": "querer",
+          "conditionsIn": [
+            "verb"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "quieres",
+          "deinflected": "querer",
+          "conditionsIn": [
+            "verb"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "quiere",
+          "deinflected": "querer",
+          "conditionsIn": [
+            "verb"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "quieren",
+          "deinflected": "querer",
+          "conditionsIn": [
+            "verb"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "quise",
+          "deinflected": "querer",
+          "conditionsIn": [
+            "verb"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "quiso",
+          "deinflected": "querer",
+          "conditionsIn": [
+            "verb"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "quisieron",
+          "deinflected": "querer",
+          "conditionsIn": [
+            "verb"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "querré",
+          "deinflected": "querer",
+          "conditionsIn": [
+            "verb"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "querría",
+          "deinflected": "querer",
+          "conditionsIn": [
+            "verb"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "sé",
+          "deinflected": "saber",
+          "conditionsIn": [
+            "verb"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "sabes",
+          "deinflected": "saber",
+          "conditionsIn": [
+            "verb"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "sabe",
+          "deinflected": "saber",
+          "conditionsIn": [
+            "verb"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "saben",
+          "deinflected": "saber",
+          "conditionsIn": [
+            "verb"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "supe",
+          "deinflected": "saber",
+          "conditionsIn": [
+            "verb"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "supo",
+          "deinflected": "saber",
+          "conditionsIn": [
+            "verb"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "supieron",
+          "deinflected": "saber",
+          "conditionsIn": [
+            "verb"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "sabré",
+          "deinflected": "saber",
+          "conditionsIn": [
+            "verb"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "sabría",
+          "deinflected": "saber",
+          "conditionsIn": [
+            "verb"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "veo",
+          "deinflected": "ver",
+          "conditionsIn": [
+            "verb"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "ves",
+          "deinflected": "ver",
+          "conditionsIn": [
+            "verb"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "ve",
+          "deinflected": "ver",
+          "conditionsIn": [
+            "verb"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "ven",
+          "deinflected": "ver",
+          "conditionsIn": [
+            "verb"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "vi",
+          "deinflected": "ver",
+          "conditionsIn": [
+            "verb"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "vio",
+          "deinflected": "ver",
+          "conditionsIn": [
+            "verb"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "vieron",
+          "deinflected": "ver",
+          "conditionsIn": [
+            "verb"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "visto",
+          "deinflected": "ver",
+          "conditionsIn": [
+            "verb"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "doy",
+          "deinflected": "dar",
+          "conditionsIn": [
+            "verb"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "das",
+          "deinflected": "dar",
+          "conditionsIn": [
+            "verb"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "da",
+          "deinflected": "dar",
+          "conditionsIn": [
+            "verb"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "dan",
+          "deinflected": "dar",
+          "conditionsIn": [
+            "verb"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "di",
+          "deinflected": "dar",
+          "conditionsIn": [
+            "verb"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "dio",
+          "deinflected": "dar",
+          "conditionsIn": [
+            "verb"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "dieron",
+          "deinflected": "dar",
+          "conditionsIn": [
+            "verb"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "dé",
+          "deinflected": "dar",
+          "conditionsIn": [
+            "verb"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "salgo",
+          "deinflected": "salir",
+          "conditionsIn": [
+            "verb"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "sales",
+          "deinflected": "salir",
+          "conditionsIn": [
+            "verb"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "sale",
+          "deinflected": "salir",
+          "conditionsIn": [
+            "verb"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "salen",
+          "deinflected": "salir",
+          "conditionsIn": [
+            "verb"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "saldré",
+          "deinflected": "salir",
+          "conditionsIn": [
+            "verb"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "saldría",
+          "deinflected": "salir",
+          "conditionsIn": [
+            "verb"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "traigo",
+          "deinflected": "traer",
+          "conditionsIn": [
+            "verb"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "traes",
+          "deinflected": "traer",
+          "conditionsIn": [
+            "verb"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "trae",
+          "deinflected": "traer",
+          "conditionsIn": [
+            "verb"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "traen",
+          "deinflected": "traer",
+          "conditionsIn": [
+            "verb"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "traje",
+          "deinflected": "traer",
+          "conditionsIn": [
+            "verb"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "trajo",
+          "deinflected": "traer",
+          "conditionsIn": [
+            "verb"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "trajeron",
+          "deinflected": "traer",
+          "conditionsIn": [
+            "verb"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "traído",
+          "deinflected": "traer",
+          "conditionsIn": [
+            "verb"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "caigo",
+          "deinflected": "caer",
+          "conditionsIn": [
+            "verb"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "caes",
+          "deinflected": "caer",
+          "conditionsIn": [
+            "verb"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "cae",
+          "deinflected": "caer",
+          "conditionsIn": [
+            "verb"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "caen",
+          "deinflected": "caer",
+          "conditionsIn": [
+            "verb"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "cayó",
+          "deinflected": "caer",
+          "conditionsIn": [
+            "verb"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "cayeron",
+          "deinflected": "caer",
+          "conditionsIn": [
+            "verb"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "caído",
+          "deinflected": "caer",
+          "conditionsIn": [
+            "verb"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "oigo",
+          "deinflected": "oír",
+          "conditionsIn": [
+            "verb"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "oyes",
+          "deinflected": "oír",
+          "conditionsIn": [
+            "verb"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "oye",
+          "deinflected": "oír",
+          "conditionsIn": [
+            "verb"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "oyen",
+          "deinflected": "oír",
+          "conditionsIn": [
+            "verb"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "oyó",
+          "deinflected": "oír",
+          "conditionsIn": [
+            "verb"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "oyeron",
+          "deinflected": "oír",
+          "conditionsIn": [
+            "verb"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "oído",
+          "deinflected": "oír",
+          "conditionsIn": [
+            "verb"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "leo",
+          "deinflected": "leer",
+          "conditionsIn": [
+            "verb"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "lees",
+          "deinflected": "leer",
+          "conditionsIn": [
+            "verb"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "lee",
+          "deinflected": "leer",
+          "conditionsIn": [
+            "verb"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "leen",
+          "deinflected": "leer",
+          "conditionsIn": [
+            "verb"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "leyó",
+          "deinflected": "leer",
+          "conditionsIn": [
+            "verb"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "leyeron",
+          "deinflected": "leer",
+          "conditionsIn": [
+            "verb"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "leído",
+          "deinflected": "leer",
+          "conditionsIn": [
+            "verb"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "duermo",
+          "deinflected": "dormir",
+          "conditionsIn": [
+            "verb"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "duermes",
+          "deinflected": "dormir",
+          "conditionsIn": [
+            "verb"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "duerme",
+          "deinflected": "dormir",
+          "conditionsIn": [
+            "verb"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "duermen",
+          "deinflected": "dormir",
+          "conditionsIn": [
+            "verb"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "durmió",
+          "deinflected": "dormir",
+          "conditionsIn": [
+            "verb"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "durmieron",
+          "deinflected": "dormir",
+          "conditionsIn": [
+            "verb"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "durmiendo",
+          "deinflected": "dormir",
+          "conditionsIn": [
+            "verb"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "pido",
+          "deinflected": "pedir",
+          "conditionsIn": [
+            "verb"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "pides",
+          "deinflected": "pedir",
+          "conditionsIn": [
+            "verb"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "pide",
+          "deinflected": "pedir",
+          "conditionsIn": [
+            "verb"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "piden",
+          "deinflected": "pedir",
+          "conditionsIn": [
+            "verb"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "pidió",
+          "deinflected": "pedir",
+          "conditionsIn": [
+            "verb"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "pidieron",
+          "deinflected": "pedir",
+          "conditionsIn": [
+            "verb"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "pidiendo",
+          "deinflected": "pedir",
+          "conditionsIn": [
+            "verb"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "juego",
+          "deinflected": "jugar",
+          "conditionsIn": [
+            "verb"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "juegas",
+          "deinflected": "jugar",
+          "conditionsIn": [
+            "verb"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "juega",
+          "deinflected": "jugar",
+          "conditionsIn": [
+            "verb"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "juegan",
+          "deinflected": "jugar",
+          "conditionsIn": [
+            "verb"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "jugué",
+          "deinflected": "jugar",
+          "conditionsIn": [
+            "verb"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "busqué",
+          "deinflected": "buscar",
+          "conditionsIn": [
+            "verb"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "llegué",
+          "deinflected": "llegar",
+          "conditionsIn": [
+            "verb"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "empecé",
+          "deinflected": "empezar",
+          "conditionsIn": [
+            "verb"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "dímelo",
+          "deinflected": "decir",
+          "conditionsIn": [
+            "verb"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "hazlo",
+          "deinflected": "hacer",
+          "conditionsIn": [
+            "verb"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        },
+        {
+          "type": "wholeWord",
+          "inflected": "vámonos",
+          "deinflected": "ir",
+          "conditionsIn": [
+            "verb"
+          ],
+          "conditionsOut": [
+            "base"
+          ]
+        }
+      ]
+    }
+  ]
+}

@@ -2,6 +2,7 @@ use std::collections::{HashMap, HashSet};
 use std::sync::OnceLock;
 
 use anyhow::{Context, Result};
+use regex::Regex;
 use serde::Deserialize;
 
 #[derive(Debug, Clone)]
@@ -48,6 +49,11 @@ pub enum RuleKind {
         final_disallow: Option<char>,
         require_arabic_letters: bool,
     },
+    RegexReplace {
+        regex: Regex,
+        replacement: String,
+    },
+    SpanishPronominal,
     EnglishPhrasalInterposedObject,
     EnglishPhrasalSuffix {
         inflected: String,
@@ -142,6 +148,8 @@ struct JsonRule {
     final_disallow: Option<String>,
     #[serde(rename = "requireArabicLetters")]
     require_arabic_letters: Option<bool>,
+    pattern: Option<String>,
+    replacement: Option<String>,
     #[serde(rename = "conditionsIn")]
     conditions_in: Vec<String>,
     #[serde(rename = "conditionsOut")]
@@ -231,6 +239,8 @@ impl LanguageTransformer {
                     initial_disallow,
                     final_disallow,
                     require_arabic_letters,
+                    pattern,
+                    replacement,
                     conditions_in,
                     conditions_out,
                 } = rule;
@@ -260,6 +270,16 @@ impl LanguageTransformer {
                         final_disallow: parse_json_char(final_disallow.as_deref())?,
                         require_arabic_letters: require_arabic_letters.unwrap_or(false),
                     },
+                    "regexReplace" => {
+                        let pattern = pattern.ok_or_else(|| {
+                            anyhow::anyhow!("Missing pattern for regexReplace rule")
+                        })?;
+                        let replacement = replacement.unwrap_or_default();
+                        let regex = Regex::new(&pattern)
+                            .with_context(|| format!("Invalid regex pattern: {}", pattern))?;
+                        RuleKind::RegexReplace { regex, replacement }
+                    }
+                    "spanishPronominal" => RuleKind::SpanishPronominal,
                     other => {
                         return Err(anyhow::anyhow!("Unsupported rule type: {}", other));
                     }
@@ -421,6 +441,8 @@ impl RuleKind {
                 *final_disallow,
                 *require_arabic_letters,
             ),
+            RuleKind::RegexReplace { regex, .. } => regex.is_match(text),
+            RuleKind::SpanishPronominal => spanish_pronominal(text).is_some(),
             RuleKind::EnglishPhrasalInterposedObject => {
                 english_phrasal_interposed_object(text).is_some()
             }
@@ -469,6 +491,14 @@ impl RuleKind {
                 inflected_suffix,
                 deinflected_suffix,
             ),
+            RuleKind::RegexReplace { regex, replacement } => {
+                if regex.is_match(text) {
+                    Some(regex.replace(text, replacement.as_str()).to_string())
+                } else {
+                    None
+                }
+            }
+            RuleKind::SpanishPronominal => spanish_pronominal(text),
             RuleKind::EnglishPhrasalInterposedObject => english_phrasal_interposed_object(text),
             RuleKind::EnglishPhrasalSuffix {
                 inflected,
@@ -634,6 +664,45 @@ fn english_phrasal_interposed_object(text: &str) -> Option<String> {
         return None;
     }
     Some(format!("{} {}", words[0], particle))
+}
+
+fn spanish_pronominal(text: &str) -> Option<String> {
+    let tokens: Vec<&str> = text.split_whitespace().collect();
+    if tokens.len() < 2 {
+        return None;
+    }
+
+    let mut output: Vec<String> = Vec::with_capacity(tokens.len());
+    let mut changed = false;
+    let mut i = 0;
+    while i < tokens.len() {
+        let token = tokens[i];
+        if is_spanish_pronoun(token) && i + 1 < tokens.len() {
+            let next = tokens[i + 1];
+            if is_spanish_infinitive(next) {
+                output.push(format!("{}se", next));
+                changed = true;
+                i += 2;
+                continue;
+            }
+        }
+        output.push(token.to_string());
+        i += 1;
+    }
+
+    if changed {
+        Some(output.join(" "))
+    } else {
+        None
+    }
+}
+
+fn is_spanish_pronoun(token: &str) -> bool {
+    matches!(token, "me" | "te" | "se" | "nos" | "os")
+}
+
+fn is_spanish_infinitive(token: &str) -> bool {
+    token.ends_with("ar") || token.ends_with("er") || token.ends_with("ir")
 }
 
 fn english_phrasal_word_set() -> &'static HashSet<&'static str> {

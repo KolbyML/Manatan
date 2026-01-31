@@ -25,6 +25,7 @@ pub struct LookupParams {
     pub index: Option<usize>,
     // Optional toggle for grouping results (defaults to true in handler)
     pub group: Option<bool>,
+    pub language: Option<DictionaryLanguage>,
 }
 
 #[derive(Serialize)]
@@ -79,6 +80,7 @@ pub enum DictionaryLanguage {
     Chinese,
     Korean,
     Arabic,
+    Spanish,
 }
 
 impl DictionaryLanguage {
@@ -89,6 +91,18 @@ impl DictionaryLanguage {
             DictionaryLanguage::Chinese => "chinese",
             DictionaryLanguage::Korean => "korean",
             DictionaryLanguage::Arabic => "arabic",
+            DictionaryLanguage::Spanish => "spanish",
+        }
+    }
+
+    fn to_deinflect_language(&self) -> crate::deinflector::Language {
+        match self {
+            DictionaryLanguage::Japanese => crate::deinflector::Language::Japanese,
+            DictionaryLanguage::English => crate::deinflector::Language::English,
+            DictionaryLanguage::Chinese => crate::deinflector::Language::Chinese,
+            DictionaryLanguage::Korean => crate::deinflector::Language::Korean,
+            DictionaryLanguage::Arabic => crate::deinflector::Language::Arabic,
+            DictionaryLanguage::Spanish => crate::deinflector::Language::Spanish,
         }
     }
 
@@ -99,6 +113,7 @@ impl DictionaryLanguage {
             "chinese" => Some(DictionaryLanguage::Chinese),
             "korean" => Some(DictionaryLanguage::Korean),
             "arabic" => Some(DictionaryLanguage::Arabic),
+            "spanish" => Some(DictionaryLanguage::Spanish),
             _ => None,
         }
     }
@@ -160,6 +175,9 @@ fn dictionary_url(language: DictionaryLanguage) -> &'static str {
         }
         DictionaryLanguage::Arabic => {
             "https://pub-c3d38cca4dc2403b88934c56748f5144.r2.dev/releases/latest/kty-ar-en.zip"
+        }
+        DictionaryLanguage::Spanish => {
+            "https://pub-c3d38cca4dc2403b88934c56748f5144.r2.dev/releases/latest/kty-es-en.zip"
         }
     }
 }
@@ -435,6 +453,10 @@ pub async fn lookup_handler(
     Query(params): Query<LookupParams>,
 ) -> Result<Json<Vec<ApiGroupedResult>>, (StatusCode, Json<Value>)> {
     let cursor_idx = params.index.unwrap_or(0);
+    let language = params
+        .language
+        .or_else(|| load_preferred_language(&state.app))
+        .unwrap_or(DictionaryLanguage::Japanese);
     // determine if we should group results or return raw dictionary entries
     let should_group = params.group.unwrap_or(true);
 
@@ -445,7 +467,9 @@ pub async fn lookup_handler(
         ));
     }
 
-    let raw_results = state.lookup.search(&state.app, &params.text, cursor_idx);
+    let raw_results = state
+        .lookup
+        .search(&state.app, &params.text, cursor_idx, language.to_deinflect_language());
 
     let dict_meta: std::collections::HashMap<DictionaryId, String> = {
         let dicts = state.app.dictionaries.read().expect("lock");

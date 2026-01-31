@@ -20,16 +20,6 @@ struct Candidate {
     pub _reason: String,
 }
 
-#[derive(Debug, PartialEq)]
-enum Script {
-    Japanese,
-    Korean,
-    Latin,
-    Chinese,
-    Arabic,
-    Other,
-}
-
 impl LookupService {
     pub fn new() -> Self {
         Self {
@@ -44,6 +34,7 @@ impl LookupService {
         state: &AppState,
         text: &str,
         cursor_offset: usize,
+        language: DeinflectLanguage,
     ) -> Vec<(RecordEntry, Option<Vec<GlossaryTag>>)> {
         let mut results = Vec::new();
         let mut processed_candidates = HashSet::new();
@@ -79,25 +70,26 @@ impl LookupService {
 
         let search_text = &text[start_index..];
         let chars: Vec<char> = search_text.chars().take(24).collect();
-        let script = self.detect_script(&chars);
         let mut decoder = snap::raw::Decoder::new();
 
         for len in (1..=chars.len()).rev() {
             let substring: String = chars[0..len].iter().collect();
 
             // Skip single character Latin/Symbol lookups unless explicitly desired
-            if script == Script::Latin
-                && len < 2
+            if matches!(
+                language,
+                DeinflectLanguage::English | DeinflectLanguage::Spanish
+            ) && len < 2
                 && !substring.eq_ignore_ascii_case("a")
                 && !substring.eq_ignore_ascii_case("i")
             {
                 continue;
             }
 
-            let candidates = self.generate_candidates(&substring, &script);
+            let candidates = self.generate_candidates(&substring, language);
 
             for candidate in candidates {
-                if !self.is_valid_candidate(&substring, &candidate.word, &script) {
+                if !self.is_valid_candidate(&substring, &candidate.word, language) {
                     continue;
                 }
 
@@ -218,35 +210,17 @@ impl LookupService {
         i
     }
 
-    fn detect_script(&self, chars: &[char]) -> Script {
-        for &c in chars {
-            if (c >= '\u{AC00}' && c <= '\u{D7AF}') || (c >= '\u{1100}' && c <= '\u{11FF}') {
-                return Script::Korean;
-            }
-            if c >= '\u{3040}' && c <= '\u{30FF}' {
-                return Script::Japanese;
-            }
-        }
-        for &c in chars {
-            if c.is_ascii_alphabetic() || (c >= '\u{00C0}' && c <= '\u{00FF}') {
-                return Script::Latin;
-            }
-            if self.is_arabic_char(c) {
-                return Script::Arabic;
-            }
-            if c >= '\u{4E00}' && c <= '\u{9FFF}' {
-                return Script::Chinese;
-            }
-        }
-        Script::Other
-    }
-
-    fn is_valid_candidate(&self, source: &str, candidate: &str, script: &Script) -> bool {
+    fn is_valid_candidate(
+        &self,
+        source: &str,
+        candidate: &str,
+        language: DeinflectLanguage,
+    ) -> bool {
         if source == candidate {
             return true;
         }
-        match script {
-            Script::Japanese | Script::Chinese => {
+        match language {
+            DeinflectLanguage::Japanese | DeinflectLanguage::Chinese => {
                 let source_kanji: Vec<char> =
                     source.chars().filter(|c| self.is_ideograph(*c)).collect();
                 let cand_kanji: Vec<char> = candidate
@@ -269,13 +243,6 @@ impl LookupService {
 
     fn is_ideograph(&self, c: char) -> bool {
         c >= '\u{4E00}' && c <= '\u{9FFF}'
-    }
-
-    fn is_arabic_char(&self, c: char) -> bool {
-        let u = c as u32;
-        (0x0600..=0x06FF).contains(&u)
-            || (0x0750..=0x077F).contains(&u)
-            || (0x08A0..=0x08FF).contains(&u)
     }
 
     fn katakana_to_hiragana(&self, text: &str) -> String {
@@ -335,7 +302,7 @@ impl LookupService {
         }
     }
 
-    fn generate_candidates(&self, text: &str, script: &Script) -> Vec<Candidate> {
+    fn generate_candidates(&self, text: &str, language: DeinflectLanguage) -> Vec<Candidate> {
         let mut candidates = Vec::new();
         let source_len = text.chars().count();
 
@@ -345,8 +312,8 @@ impl LookupService {
             _reason: "Original".to_string(),
         });
 
-        match script {
-            Script::Japanese => {
+        match language {
+            DeinflectLanguage::Japanese => {
                 let mut variants = HashSet::new();
                 variants.insert(text.to_string());
 
@@ -365,7 +332,7 @@ impl LookupService {
                     );
                 }
             }
-            Script::Korean => {
+            DeinflectLanguage::Korean => {
                 self.add_deinflections(
                     DeinflectLanguage::Korean,
                     text,
@@ -373,7 +340,7 @@ impl LookupService {
                     &mut candidates,
                 );
             }
-            Script::Latin => {
+            DeinflectLanguage::English | DeinflectLanguage::Spanish => {
                 let lower = text.to_lowercase();
                 let sources = if lower == text {
                     vec![text.to_string()]
@@ -382,15 +349,10 @@ impl LookupService {
                 };
 
                 for source in sources {
-                    self.add_deinflections(
-                        DeinflectLanguage::English,
-                        &source,
-                        source_len,
-                        &mut candidates,
-                    );
+                    self.add_deinflections(language, &source, source_len, &mut candidates);
                 }
             }
-            Script::Chinese => {
+            DeinflectLanguage::Chinese => {
                 self.add_deinflections(
                     DeinflectLanguage::Chinese,
                     text,
@@ -398,7 +360,7 @@ impl LookupService {
                     &mut candidates,
                 );
             }
-            Script::Arabic => {
+            DeinflectLanguage::Arabic => {
                 let mut variants = HashSet::new();
                 variants.insert(text.to_string());
                 let normalized = crate::deinflector::arabic::strip_diacritics(text);
@@ -412,7 +374,6 @@ impl LookupService {
                     );
                 }
             }
-            Script::Other => {}
         }
 
         candidates
