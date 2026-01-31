@@ -5,7 +5,10 @@ use std::sync::{
 
 use futures::StreamExt;
 
-use crate::state::{AppState, JobProgress};
+use crate::{
+    language::OcrLanguage,
+    state::{AppState, JobProgress},
+};
 
 pub async fn run_chapter_job(
     state: AppState,
@@ -15,16 +18,17 @@ pub async fn run_chapter_job(
     pass: Option<String>,
     context: String,
     add_space_on_merge: Option<bool>,
+    language: OcrLanguage,
 ) {
     let total = pages.len();
-    let job_id = base_url.clone();
+    let job_id = crate::logic::get_cache_key(&base_url, Some(language));
 
     {
         state
             .active_chapter_jobs
             .write()
             .expect("lock poisoned")
-            .insert(base_url.clone(), JobProgress { current: 0, total });
+            .insert(job_id.clone(), JobProgress { current: 0, total });
     }
 
     state.active_jobs.fetch_add(1, Ordering::Relaxed);
@@ -39,7 +43,7 @@ pub async fn run_chapter_job(
     stream
         .for_each_concurrent(concurrency_limit, |url| {
             let state = state.clone();
-            let base_url = base_url.clone();
+            let job_id = job_id.clone();
             let user = user.clone();
             let pass = pass.clone();
             let context = context.clone();
@@ -48,7 +52,7 @@ pub async fn run_chapter_job(
             let page_id = url.split('/').next_back().unwrap_or("unknown").to_string();
 
             async move {
-                let cache_key = crate::logic::get_cache_key(&url);
+                let cache_key = crate::logic::get_cache_key(&url, Some(language));
                 let exists = state.has_cache_entry(&cache_key);
                 if exists {
                     tracing::info!("[Page {page_id}] Skip (Cached)");
@@ -56,7 +60,13 @@ pub async fn run_chapter_job(
                     tracing::info!("[Page {page_id}] Starting fetch_and_process (Async)...");
 
                     // None defaults to Smart Detection for space merging
-                    match crate::logic::fetch_and_process(&url, user, pass, add_space_on_merge)
+                    match crate::logic::fetch_and_process(
+                        &url,
+                        user,
+                        pass,
+                        add_space_on_merge,
+                        language,
+                    )
                         .await
                     {
                         Ok(res) => state.insert_cache_entry(
@@ -79,7 +89,7 @@ pub async fn run_chapter_job(
                         .active_chapter_jobs
                         .write()
                         .expect("lock")
-                        .get_mut(&base_url)
+                        .get_mut(&job_id)
                     {
                         prog.current = current;
                     }
@@ -98,7 +108,7 @@ pub async fn run_chapter_job(
             .active_chapter_jobs
             .write()
             .expect("lock poisoned")
-            .remove(&base_url);
+            .remove(&job_id);
     }
 
     tracing::info!("[Job {job_id}] Finished for {}", context);

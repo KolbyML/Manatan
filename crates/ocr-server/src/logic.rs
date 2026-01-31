@@ -3,11 +3,10 @@ use std::{io::Cursor, time::Duration};
 use anyhow::anyhow;
 use chrome_lens_ocr::LensClient;
 use image::{DynamicImage, GenericImageView, ImageBuffer, ImageFormat, ImageReader};
-use lazy_static::lazy_static;
-use regex::Regex;
 use reqwest::header::{ACCEPT, CONTENT_TYPE};
 use serde::{Deserialize, Serialize};
 
+use crate::language::OcrLanguage;
 use crate::merge::{self, MergeConfig};
 
 // --- GraphQL Query Definitions ---
@@ -191,7 +190,7 @@ pub async fn resolve_total_pages_from_graphql(
     user: Option<String>,
     pass: Option<String>,
 ) -> anyhow::Result<usize> {
-    let path = get_cache_key(chapter_base_url);
+    let path = get_cache_key(chapter_base_url, None);
 
     let parts: Vec<&str> = path.split('/').collect();
 
@@ -282,19 +281,27 @@ pub struct BoundingBox {
 }
 
 /// Helper to strip the scheme/host/query from the URL for caching purposes.
-pub fn get_cache_key(url: &str) -> String {
-    if let Ok(parsed) = reqwest::Url::parse(url) {
-        return parsed.path().to_string();
+pub fn get_cache_key(url: &str, language: Option<OcrLanguage>) -> String {
+    let raw = if let Ok(parsed) = reqwest::Url::parse(url) {
+        parsed.path().to_string()
+    } else {
+        url.split('?').next().unwrap_or(url).to_string()
+    };
+
+    if let Some(language) = language {
+        let trimmed = raw.trim_start_matches('/');
+        if trimmed.is_empty() {
+            format!("lang/{}/", language.as_str())
+        } else {
+            format!("lang/{}/{}", language.as_str(), trimmed)
+        }
+    } else {
+        raw
     }
-    url.split('?').next().unwrap_or(url).to_string()
 }
 
-lazy_static! {
-    static ref CJK_REGEX: Regex = Regex::new(r"[\p{Han}\p{Hiragana}\p{Katakana}]").unwrap();
-}
-
-fn post_process_text(text: String) -> String {
-    if CJK_REGEX.is_match(&text) {
+fn post_process_text(text: String, language: OcrLanguage) -> String {
+    if language.prefers_no_space() {
         text.replace(char::is_whitespace, "")
     } else {
         text
@@ -364,11 +371,19 @@ pub async fn fetch_and_process(
     user: Option<String>,
     pass: Option<String>,
     add_space_on_merge: Option<bool>,
+    language: OcrLanguage,
 ) -> anyhow::Result<Vec<OcrResult>> {
     let mut last_error = anyhow!("Unknown error");
 
     for attempt_number in 1..=3 {
-        match fetch_and_process_internal(url, user.clone(), pass.clone(), add_space_on_merge).await
+        match fetch_and_process_internal(
+            url,
+            user.clone(),
+            pass.clone(),
+            add_space_on_merge,
+            language,
+        )
+        .await
         {
             Ok(result) => return Ok(result),
             Err(error) => {
@@ -403,6 +418,7 @@ pub async fn get_raw_ocr_data(
     image_bytes: &[u8],
     user: Option<String>,
     pass: Option<String>,
+    language: OcrLanguage,
 ) -> anyhow::Result<Vec<RawChunk>> {
     let reader = ImageReader::new(Cursor::new(image_bytes))
         .with_guessed_format()
@@ -504,7 +520,7 @@ pub async fn get_raw_ocr_data(
         for paragraph in lens_response.paragraphs {
             for line in paragraph.lines {
                 if let Some(geometry) = line.geometry {
-                    let clean_text = post_process_text(line.text);
+                    let clean_text = post_process_text(line.text, language);
                     if clean_text.trim().is_empty() {
                         continue;
                     }
@@ -539,10 +555,14 @@ pub async fn get_raw_ocr_data(
                     let aabb_w = max_x - min_x;
                     let aabb_h = max_y - min_y;
 
-                    let is_vertical = if rotation.abs() > 0.1 {
-                        (rotation.abs() - std::f32::consts::FRAC_PI_2 as f64).abs() < 0.5
+                    let is_vertical = if language.prefers_vertical() {
+                        if rotation.abs() > 0.1 {
+                            (rotation.abs() - std::f32::consts::FRAC_PI_2 as f64).abs() < 0.5
+                        } else {
+                            aabb_w <= aabb_h
+                        }
                     } else {
-                        aabb_w <= aabb_h
+                        false
                     };
 
                     flat_ocr_lines.push(OcrResult {
@@ -585,6 +605,7 @@ async fn fetch_and_process_internal(
     user: Option<String>,
     pass: Option<String>,
     add_space_on_merge: Option<bool>,
+    language: OcrLanguage,
 ) -> anyhow::Result<Vec<OcrResult>> {
     // 0. Force URL to Localhost
     let target_url = match reqwest::Url::parse(url) {
@@ -611,12 +632,13 @@ async fn fetch_and_process_internal(
     let image_bytes = response.bytes().await?.to_vec();
 
     // 2. Decode & OCR (Wrapped) - now passes user/pass for proxy settings
-    let raw_chunks = get_raw_ocr_data(&image_bytes, user, pass).await?;
+    let raw_chunks = get_raw_ocr_data(&image_bytes, user, pass, language).await?;
 
     // 3. Merge & Normalize
     let mut final_results = Vec::new();
     let mut merge_config = MergeConfig::default();
     merge_config.add_space_on_merge = add_space_on_merge;
+    merge_config.language = language;
 
     for chunk in raw_chunks {
         let merged_lines = merge::auto_merge(chunk.lines, chunk.width, chunk.height, &merge_config);

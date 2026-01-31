@@ -10,6 +10,7 @@ use tracing::{info, warn};
 
 use crate::{
     jobs, logic,
+    language::OcrLanguage,
     state::{AppState, CacheEntry},
 };
 
@@ -21,6 +22,7 @@ pub struct OcrRequest {
     #[serde(default = "default_context")]
     pub context: String,
     pub add_space_on_merge: Option<bool>,
+    pub language: Option<OcrLanguage>,
 }
 
 fn default_context() -> String {
@@ -44,7 +46,8 @@ pub async fn ocr_handler(
     State(state): State<AppState>,
     Query(params): Query<OcrRequest>,
 ) -> Result<Json<Vec<crate::logic::OcrResult>>, (StatusCode, String)> {
-    let cache_key = logic::get_cache_key(&params.url);
+    let language = params.language.unwrap_or_default();
+    let cache_key = logic::get_cache_key(&params.url, Some(language));
     info!("OCR Handler: Incoming request for cache_key={}", cache_key);
 
     info!("OCR Handler: Checking cache...");
@@ -63,6 +66,7 @@ pub async fn ocr_handler(
         params.user.clone(),
         params.pass.clone(),
         params.add_space_on_merge,
+        language,
     )
     .await;
 
@@ -104,18 +108,21 @@ pub struct JobRequest {
     pub context: String,
     pub pages: Option<Vec<String>>,
     pub add_space_on_merge: Option<bool>,
+    pub language: Option<OcrLanguage>,
 }
 
 pub async fn is_chapter_preprocessed_handler(
     State(state): State<AppState>,
     Json(req): Json<JobRequest>,
 ) -> Json<serde_json::Value> {
+    let language = req.language.unwrap_or_default();
+    let job_key = logic::get_cache_key(&req.base_url, Some(language));
     let progress = {
         state
             .active_chapter_jobs
             .read()
             .expect("lock poisoned")
-            .get(&req.base_url)
+            .get(&job_key)
             .cloned()
     };
 
@@ -127,7 +134,7 @@ pub async fn is_chapter_preprocessed_handler(
         }));
     }
 
-    let chapter_base_path = logic::get_cache_key(&req.base_url);
+    let chapter_base_path = job_key;
 
     let total = state.get_chapter_pages(&chapter_base_path);
 
@@ -165,6 +172,7 @@ pub async fn preprocess_handler(
     State(state): State<AppState>,
     Json(req): Json<JobRequest>,
 ) -> Json<serde_json::Value> {
+    let language = req.language.unwrap_or_default();
     let pages = match req.pages {
         Some(p) => p,
         None => return Json(serde_json::json!({ "error": "No pages provided" })),
@@ -175,7 +183,7 @@ pub async fn preprocess_handler(
             .active_chapter_jobs
             .read()
             .expect("lock poisoned")
-            .contains_key(&req.base_url)
+            .contains_key(&logic::get_cache_key(&req.base_url, Some(language)))
     };
 
     if is_processing {
@@ -192,6 +200,7 @@ pub async fn preprocess_handler(
             req.pass,
             req.context,
             req.add_space_on_merge,
+            language,
         )
         .await;
     });
