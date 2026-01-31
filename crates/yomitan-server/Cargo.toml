@@ -19,6 +19,9 @@ reqwest.workspace = true
 serde.workspace = true 
 serde_json .workspace = true 
 regex = "1"
+sha2 = "0.10"
+urlencoding = "2.1"
+scraper = "0.20"
 tokio.workspace = true 
 tower-http = { version = "0.5.2", features = ["cors", "fs", "limit"] }
 tracing.workspace = true 

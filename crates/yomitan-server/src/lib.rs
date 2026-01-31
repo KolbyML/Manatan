@@ -14,7 +14,7 @@ pub mod lookup;
 pub mod state;
 
 use handlers::{
-    import_handler, install_defaults_handler, install_language_handler, list_dictionaries_handler,
+    audio_handler, import_handler, install_defaults_handler, install_language_handler, list_dictionaries_handler,
     lookup_handler, manage_dictionaries_handler, reset_db_handler, unload_handler,
 };
 use lookup::LookupService;
@@ -36,6 +36,7 @@ pub fn create_router(data_dir: PathBuf) -> Router {
 
     Router::new()
         .route("/lookup", get(lookup_handler))
+        .route("/audio", get(audio_handler))
         .route("/dictionaries", get(list_dictionaries_handler))
         .route("/import", post(import_handler))
         .route("/reset", post(reset_db_handler))

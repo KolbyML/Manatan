@@ -5,6 +5,9 @@ use axum::{
     http::StatusCode,
 };
 use reqwest::Client;
+use regex::Regex;
+use scraper::{Html, Selector};
+use sha2::{Digest, Sha256};
 use serde::{Deserialize, Serialize};
 use serde_json::{Value, Value as JsonValue, json};
 use std::collections::HashMap;
@@ -26,6 +29,30 @@ pub struct LookupParams {
     // Optional toggle for grouping results (defaults to true in handler)
     pub group: Option<bool>,
     pub language: Option<DictionaryLanguage>,
+}
+
+#[derive(Deserialize)]
+#[serde(rename_all = "kebab-case")]
+pub enum AudioSource {
+    Jpod101,
+    #[serde(rename = "language-pod-101")]
+    LanguagePod101,
+    Jisho,
+    LinguaLibre,
+    Wiktionary,
+}
+
+#[derive(Deserialize)]
+pub struct AudioParams {
+    pub term: String,
+    pub reading: Option<String>,
+    pub source: AudioSource,
+    pub language: Option<DictionaryLanguage>,
+}
+
+#[derive(Serialize)]
+pub struct AudioResponse {
+    pub url: Option<String>,
 }
 
 #[derive(Serialize)]
@@ -259,6 +286,416 @@ impl DictionaryLanguage {
             "welsh" => Some(DictionaryLanguage::Welsh),
             "cantonese" => Some(DictionaryLanguage::Cantonese),
             _ => None,
+        }
+    }
+}
+
+struct AudioLanguageSummary {
+    iso: &'static str,
+    iso639_3: &'static str,
+    pod101_name: Option<&'static str>,
+}
+
+fn get_audio_language_summary(language: DictionaryLanguage) -> AudioLanguageSummary {
+    match language {
+        DictionaryLanguage::Japanese => AudioLanguageSummary { iso: "ja", iso639_3: "jpn", pod101_name: Some("Japanese") },
+        DictionaryLanguage::English => AudioLanguageSummary { iso: "en", iso639_3: "eng", pod101_name: Some("English") },
+        DictionaryLanguage::Chinese => AudioLanguageSummary { iso: "zh", iso639_3: "zho", pod101_name: Some("Chinese") },
+        DictionaryLanguage::Korean => AudioLanguageSummary { iso: "ko", iso639_3: "kor", pod101_name: Some("Korean") },
+        DictionaryLanguage::Arabic => AudioLanguageSummary { iso: "ar", iso639_3: "ara", pod101_name: Some("Arabic") },
+        DictionaryLanguage::Spanish => AudioLanguageSummary { iso: "es", iso639_3: "spa", pod101_name: Some("Spanish") },
+        DictionaryLanguage::French => AudioLanguageSummary { iso: "fr", iso639_3: "fra", pod101_name: Some("French") },
+        DictionaryLanguage::German => AudioLanguageSummary { iso: "de", iso639_3: "deu", pod101_name: Some("German") },
+        DictionaryLanguage::Portuguese => AudioLanguageSummary { iso: "pt", iso639_3: "por", pod101_name: Some("Portuguese") },
+        DictionaryLanguage::Bulgarian => AudioLanguageSummary { iso: "bg", iso639_3: "bul", pod101_name: Some("Bulgarian") },
+        DictionaryLanguage::Czech => AudioLanguageSummary { iso: "cs", iso639_3: "ces", pod101_name: Some("Czech") },
+        DictionaryLanguage::Danish => AudioLanguageSummary { iso: "da", iso639_3: "dan", pod101_name: Some("Danish") },
+        DictionaryLanguage::Greek => AudioLanguageSummary { iso: "el", iso639_3: "ell", pod101_name: Some("Greek") },
+        DictionaryLanguage::Estonian => AudioLanguageSummary { iso: "et", iso639_3: "est", pod101_name: None },
+        DictionaryLanguage::Persian => AudioLanguageSummary { iso: "fa", iso639_3: "fas", pod101_name: Some("Persian") },
+        DictionaryLanguage::Finnish => AudioLanguageSummary { iso: "fi", iso639_3: "fin", pod101_name: Some("Finnish") },
+        DictionaryLanguage::Hebrew => AudioLanguageSummary { iso: "he", iso639_3: "heb", pod101_name: Some("Hebrew") },
+        DictionaryLanguage::Hindi => AudioLanguageSummary { iso: "hi", iso639_3: "hin", pod101_name: Some("Hindi") },
+        DictionaryLanguage::Hungarian => AudioLanguageSummary { iso: "hu", iso639_3: "hun", pod101_name: Some("Hungarian") },
+        DictionaryLanguage::Indonesian => AudioLanguageSummary { iso: "id", iso639_3: "ind", pod101_name: Some("Indonesian") },
+        DictionaryLanguage::Italian => AudioLanguageSummary { iso: "it", iso639_3: "ita", pod101_name: Some("Italian") },
+        DictionaryLanguage::Latin => AudioLanguageSummary { iso: "la", iso639_3: "lat", pod101_name: None },
+        DictionaryLanguage::Lao => AudioLanguageSummary { iso: "lo", iso639_3: "lao", pod101_name: None },
+        DictionaryLanguage::Latvian => AudioLanguageSummary { iso: "lv", iso639_3: "lav", pod101_name: None },
+        DictionaryLanguage::Georgian => AudioLanguageSummary { iso: "ka", iso639_3: "kat", pod101_name: None },
+        DictionaryLanguage::Kannada => AudioLanguageSummary { iso: "kn", iso639_3: "kan", pod101_name: None },
+        DictionaryLanguage::Khmer => AudioLanguageSummary { iso: "km", iso639_3: "khm", pod101_name: None },
+        DictionaryLanguage::Mongolian => AudioLanguageSummary { iso: "mn", iso639_3: "mon", pod101_name: None },
+        DictionaryLanguage::Maltese => AudioLanguageSummary { iso: "mt", iso639_3: "mlt", pod101_name: None },
+        DictionaryLanguage::Dutch => AudioLanguageSummary { iso: "nl", iso639_3: "nld", pod101_name: Some("Dutch") },
+        DictionaryLanguage::Norwegian => AudioLanguageSummary { iso: "no", iso639_3: "nor", pod101_name: Some("Norwegian") },
+        DictionaryLanguage::Polish => AudioLanguageSummary { iso: "pl", iso639_3: "pol", pod101_name: Some("Polish") },
+        DictionaryLanguage::Romanian => AudioLanguageSummary { iso: "ro", iso639_3: "ron", pod101_name: Some("Romanian") },
+        DictionaryLanguage::Russian => AudioLanguageSummary { iso: "ru", iso639_3: "rus", pod101_name: Some("Russian") },
+        DictionaryLanguage::Swedish => AudioLanguageSummary { iso: "sv", iso639_3: "swe", pod101_name: Some("Swedish") },
+        DictionaryLanguage::Thai => AudioLanguageSummary { iso: "th", iso639_3: "tha", pod101_name: Some("Thai") },
+        DictionaryLanguage::Tagalog => AudioLanguageSummary { iso: "tl", iso639_3: "tgl", pod101_name: Some("Filipino") },
+        DictionaryLanguage::Turkish => AudioLanguageSummary { iso: "tr", iso639_3: "tur", pod101_name: Some("Turkish") },
+        DictionaryLanguage::Ukrainian => AudioLanguageSummary { iso: "uk", iso639_3: "ukr", pod101_name: None },
+        DictionaryLanguage::Vietnamese => AudioLanguageSummary { iso: "vi", iso639_3: "vie", pod101_name: Some("Vietnamese") },
+        DictionaryLanguage::Welsh => AudioLanguageSummary { iso: "cy", iso639_3: "cym", pod101_name: None },
+        DictionaryLanguage::Cantonese => AudioLanguageSummary { iso: "yue", iso639_3: "yue", pod101_name: Some("Cantonese") },
+    }
+}
+
+fn get_language_pod101_fetch_url(language: &str) -> Result<String, anyhow::Error> {
+    let pod_or_class = match language {
+        "Afrikaans" | "Arabic" | "Bulgarian" | "Dutch" | "Filipino" | "Finnish" | "French" | "German" | "Greek"
+        | "Hebrew" | "Hindi" | "Hungarian" | "Indonesian" | "Italian" | "Japanese" | "Persian" | "Polish"
+        | "Portuguese" | "Romanian" | "Russian" | "Spanish" | "Swahili" | "Swedish" | "Thai" | "Urdu"
+        | "Vietnamese" => "pod",
+        "Cantonese" | "Chinese" | "Czech" | "Danish" | "English" | "Korean" | "Norwegian" | "Turkish" => "class",
+        _ => return Err(anyhow::anyhow!("Invalid language for LanguagePod101")),
+    };
+    let lower = language.to_lowercase();
+    Ok(format!(
+        "https://www.{}{}101.com/learningcenter/reference/dictionary_post",
+        lower, pod_or_class
+    ))
+}
+
+fn is_string_entirely_kana(text: &str) -> bool {
+    if text.is_empty() {
+        return false;
+    }
+    text.chars().all(|char| {
+        let code = char as u32;
+        (0x3040..=0x30ff).contains(&code) || (0x31f0..=0x31ff).contains(&code) || code == 0x30fc
+    })
+}
+
+fn normalize_url(url: &str, base: &str) -> String {
+    if url.starts_with("//") {
+        format!("https:{}", url)
+    } else if url.starts_with("/") {
+        format!("{}{}", base.trim_end_matches('/'), url)
+    } else {
+        url.to_string()
+    }
+}
+
+async fn fetch_language_pod101_urls(
+    client: &Client,
+    term: &str,
+    reading: &str,
+    summary: &AudioLanguageSummary,
+) -> Result<Vec<String>, anyhow::Error> {
+    let mut reading = reading.to_string();
+    if reading.is_empty() && is_string_entirely_kana(term) {
+        reading = term.to_string();
+    }
+    let language = match summary.pod101_name {
+        Some(name) => name,
+        None => return Ok(Vec::new()),
+    };
+    let fetch_url = get_language_pod101_fetch_url(language)?;
+    let data = [
+        ("post", "dictionary_reference"),
+        ("match_type", "exact"),
+        ("search_query", term),
+        ("vulgar", "true"),
+    ];
+    let response = client
+        .post(&fetch_url)
+        .header("User-Agent", "Mozilla/5.0")
+        .header("Content-Type", "application/x-www-form-urlencoded")
+        .form(&data)
+        .send()
+        .await?;
+    if !response.status().is_success() {
+        return Ok(Vec::new());
+    }
+
+    let response_url = response.url().clone();
+    let response_text = response.text().await?;
+    let document = Html::parse_document(&response_text);
+    let row_selector = match Selector::parse(".dc-result-row") {
+        Ok(selector) => selector,
+        Err(_) => return Ok(Vec::new()),
+    };
+    let audio_selector = match Selector::parse("audio source") {
+        Ok(selector) => selector,
+        Err(_) => return Ok(Vec::new()),
+    };
+    let reading_selector = match Selector::parse(".dc-vocab_kana") {
+        Ok(selector) => selector,
+        Err(_) => return Ok(Vec::new()),
+    };
+    let vocab_selector = match Selector::parse(".dc-vocab") {
+        Ok(selector) => selector,
+        Err(_) => return Ok(Vec::new()),
+    };
+
+    let mut urls = Vec::new();
+    for row in document.select(&row_selector) {
+        let src = row
+            .select(&audio_selector)
+            .next()
+            .and_then(|node| node.value().attr("src"));
+        let src = match src {
+            Some(value) => value,
+            None => continue,
+        };
+
+        if language == "Japanese" {
+            let html_reading = row
+                .select(&reading_selector)
+                .next()
+                .map(|node| node.text().collect::<String>().trim().to_string())
+                .unwrap_or_default();
+            if !reading.is_empty() && reading != term && reading != html_reading {
+                continue;
+            }
+        } else {
+            let html_term = row
+                .select(&vocab_selector)
+                .next()
+                .map(|node| node.text().collect::<String>().trim().to_string())
+                .unwrap_or_default();
+            if !html_term.is_empty() && html_term != term {
+                continue;
+            }
+        }
+
+        urls.push(normalize_url(src, response_url.as_str()));
+    }
+
+    Ok(urls)
+}
+
+async fn fetch_wikimedia_audio_urls<F>(
+    client: &Client,
+    search_url: &str,
+    validate: F,
+) -> Result<Vec<String>, anyhow::Error>
+where
+    F: Fn(&str, &str) -> bool,
+{
+    let response = client.get(search_url).header("User-Agent", "Mozilla/5.0").send().await?;
+    if !response.status().is_success() {
+        return Ok(Vec::new());
+    }
+    let lookup_response: Value = response.json().await?;
+    let lookup_results = lookup_response
+        .get("query")
+        .and_then(|q| q.get("search"))
+        .and_then(|s| s.as_array())
+        .cloned()
+        .unwrap_or_default();
+
+    let mut urls = Vec::new();
+    for entry in lookup_results {
+        let title = match entry.get("title").and_then(|t| t.as_str()) {
+            Some(value) => value,
+            None => continue,
+        };
+        let file_info_url = format!(
+            "https://commons.wikimedia.org/w/api.php?action=query&format=json&titles={}&prop=imageinfo&iiprop=user|url&origin=*",
+            urlencoding::encode(title)
+        );
+        let response2 = client.get(&file_info_url).header("User-Agent", "Mozilla/5.0").send().await?;
+        if !response2.status().is_success() {
+            continue;
+        }
+        let file_response: Value = response2.json().await?;
+        let pages = match file_response.get("query").and_then(|q| q.get("pages")).and_then(|p| p.as_object()) {
+            Some(value) => value,
+            None => continue,
+        };
+        for page in pages.values() {
+            let image_info = match page.get("imageinfo").and_then(|info| info.as_array()).and_then(|arr| arr.get(0)) {
+                Some(value) => value,
+                None => continue,
+            };
+            let file_url = match image_info.get("url").and_then(|u| u.as_str()) {
+                Some(value) => value,
+                None => continue,
+            };
+            let file_user = match image_info.get("user").and_then(|u| u.as_str()) {
+                Some(value) => value,
+                None => continue,
+            };
+            if validate(title, file_user) {
+                urls.push(file_url.to_string());
+            }
+        }
+    }
+    Ok(urls)
+}
+
+async fn fetch_lingua_libre_audio_url(
+    client: &Client,
+    term: &str,
+    summary: &AudioLanguageSummary,
+) -> Result<Option<String>, anyhow::Error> {
+    let search_category = format!("incategory:\"Lingua_Libre_pronunciation-{}\"", summary.iso639_3);
+    let search_string = format!("-{}.wav", term);
+    let search_url = format!(
+        "https://commons.wikimedia.org/w/api.php?action=query&format=json&list=search&srsearch=intitle:/{}/i+{}&srnamespace=6&origin=*",
+        search_string,
+        search_category
+    );
+    let urls = fetch_wikimedia_audio_urls(client, &search_url, |filename, file_user| {
+        let pattern = format!(
+            r"^File:LL-Q\d+\s+\({}\)-{}-{}\.wav$",
+            summary.iso639_3,
+            regex::escape(file_user),
+            regex::escape(term)
+        );
+        Regex::new(&pattern).map(|re| re.is_match(filename)).unwrap_or(false)
+    })
+    .await?;
+    Ok(urls.into_iter().next())
+}
+
+async fn fetch_wiktionary_audio_url(
+    client: &Client,
+    term: &str,
+    summary: &AudioLanguageSummary,
+) -> Result<Option<String>, anyhow::Error> {
+    let search_string = format!("{}(-[a-zA-Z]{{2}})?-{}[0123456789]*.ogg", summary.iso, term);
+    let search_url = format!(
+        "https://commons.wikimedia.org/w/api.php?action=query&format=json&list=search&srsearch=intitle:/{}/i&srnamespace=6&origin=*",
+        search_string
+    );
+    let urls = fetch_wikimedia_audio_urls(client, &search_url, |filename, _file_user| {
+        let pattern = format!(r"^File:{}(-\w\w)?-{}\d*\.ogg$", summary.iso, regex::escape(term));
+        Regex::new(&pattern).map(|re| re.is_match(filename)).unwrap_or(false)
+    })
+    .await?;
+    Ok(urls.into_iter().next())
+}
+
+async fn fetch_jpod101_audio_url(client: &Client, term: &str, reading: &str) -> Result<Option<String>, anyhow::Error> {
+    let mut final_term = term.to_string();
+    let mut final_reading = reading.to_string();
+    if final_reading.is_empty() && is_string_entirely_kana(term) {
+        final_reading = term.to_string();
+        final_term.clear();
+    }
+    if final_reading == final_term && is_string_entirely_kana(term) {
+        final_reading = term.to_string();
+        final_term.clear();
+    }
+
+    let mut parts: Vec<String> = Vec::new();
+    if !final_term.is_empty() {
+        parts.push(format!("kanji={}", urlencoding::encode(&final_term)));
+    }
+    if !final_reading.is_empty() {
+        parts.push(format!("kana={}", urlencoding::encode(&final_reading)));
+    }
+    let url = format!(
+        "https://assets.languagepod101.com/dictionary/japanese/audiomp3.php?{}",
+        parts.join("&")
+    );
+
+    let response = client
+        .get(&url)
+        .header("User-Agent", "Mozilla/5.0")
+        .send()
+        .await?;
+    if !response.status().is_success() {
+        return Ok(None);
+    }
+    let bytes = response.bytes().await?;
+    let mut hasher = Sha256::new();
+    hasher.update(&bytes);
+    let digest = format!("{:x}", hasher.finalize());
+    if digest == "ae6398b5a27bc8c0a771df6c907ade794be15518174773c58c7c7ddd17098906" {
+        return Ok(None);
+    }
+    Ok(Some(url))
+}
+
+async fn fetch_jisho_audio_url(client: &Client, term: &str, reading: &str) -> Result<Option<String>, anyhow::Error> {
+    let fetch_url = format!("https://jisho.org/search/{}", urlencoding::encode(term));
+    let response = client
+        .get(&fetch_url)
+        .header("User-Agent", "Mozilla/5.0")
+        .send()
+        .await?;
+    if !response.status().is_success() {
+        return Ok(None);
+    }
+    let response_text = response.text().await?;
+    let audio_re = Regex::new(r#"(?s)<audio[^>]*id=\"([^\"]+)\"[^>]*>.*?<source[^>]*src=\"([^\"]+)\""#)?;
+    let mut candidates: Vec<(String, String)> = Vec::new();
+    for cap in audio_re.captures_iter(&response_text) {
+        let id = cap.get(1).map(|m| m.as_str()).unwrap_or("").to_string();
+        let src = cap.get(2).map(|m| m.as_str()).unwrap_or("").to_string();
+        if !id.is_empty() && !src.is_empty() {
+            candidates.push((id, src));
+        }
+    }
+
+    if candidates.is_empty() {
+        return Ok(None);
+    }
+
+    let term_key = term.trim();
+    let reading_key = reading.trim();
+    let mut resolved: Option<(String, String)> = None;
+    if !reading_key.is_empty() {
+        let suffix = format!(":{}", reading_key);
+        resolved = candidates.iter().find(|(id, _)| id.ends_with(&suffix)).cloned();
+    }
+    if resolved.is_none() && !term_key.is_empty() && term_key != reading_key {
+        let suffix = format!(":{}", term_key);
+        resolved = candidates.iter().find(|(id, _)| id.ends_with(&suffix)).cloned();
+    }
+    if resolved.is_none() && !term_key.is_empty() {
+        let prefix = format!("audio_{}:", term_key);
+        resolved = candidates.iter().find(|(id, _)| id.starts_with(&prefix)).cloned();
+    }
+    if resolved.is_none() && candidates.len() == 1 {
+        resolved = candidates.first().cloned();
+    }
+
+    if let Some((_id, src)) = resolved {
+        let normalized = normalize_url(&src, "https://jisho.org");
+        return Ok(Some(normalized));
+    }
+    Ok(None)
+}
+
+pub async fn audio_handler(
+    Query(params): Query<AudioParams>,
+) -> Result<Json<AudioResponse>, (StatusCode, Json<Value>)> {
+    let client = Client::new();
+    let term = params.term.trim();
+    let reading = params.reading.as_deref().unwrap_or("").trim();
+
+    if term.is_empty() {
+        return Ok(Json(AudioResponse { url: None }));
+    }
+
+    let language = params.language.unwrap_or(DictionaryLanguage::Japanese);
+    let summary = get_audio_language_summary(language);
+
+    let result = match params.source {
+        AudioSource::Jpod101 => fetch_jpod101_audio_url(&client, term, reading).await,
+        AudioSource::LanguagePod101 => fetch_language_pod101_urls(&client, term, reading, &summary)
+            .await
+            .map(|urls| urls.into_iter().next()),
+        AudioSource::Jisho => fetch_jisho_audio_url(&client, term, reading).await,
+        AudioSource::LinguaLibre => fetch_lingua_libre_audio_url(&client, term, &summary).await,
+        AudioSource::Wiktionary => fetch_wiktionary_audio_url(&client, term, &summary).await,
+    };
+
+    match result {
+        Ok(url) => Ok(Json(AudioResponse { url })),
+        Err(err) => {
+            error!("Audio lookup failed: {}", err);
+            Err((
+                StatusCode::BAD_GATEWAY,
+                Json(json!({ "status": "error", "message": err.to_string() })),
+            ))
         }
     }
 }
