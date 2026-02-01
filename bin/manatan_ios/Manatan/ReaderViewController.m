@@ -14,6 +14,9 @@
 
     WKWebViewConfiguration *config = [[WKWebViewConfiguration alloc] init];
     config.websiteDataStore = [WKWebsiteDataStore defaultDataStore];
+    config.allowsInlineMediaPlayback = YES;
+    config.mediaTypesRequiringUserActionForPlayback = WKAudiovisualMediaTypeNone;
+    config.allowsPictureInPictureMediaPlayback = NO;
     
     self.webView = [[WKWebView alloc] initWithFrame:CGRectZero configuration:config];
     self.webView.translatesAutoresizingMaskIntoConstraints = NO;

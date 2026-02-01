@@ -45,7 +45,11 @@
     // ------------------------------------------
 
     // Setup WebView
-    self.webView = [[WKWebView alloc] initWithFrame:self.view.bounds];
+    WKWebViewConfiguration *config = [[WKWebViewConfiguration alloc] init];
+    config.allowsInlineMediaPlayback = YES;
+    config.mediaTypesRequiringUserActionForPlayback = WKAudiovisualMediaTypeNone;
+    config.allowsPictureInPictureMediaPlayback = NO;
+    self.webView = [[WKWebView alloc] initWithFrame:self.view.bounds configuration:config];
     self.webView.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
     self.webView.scrollView.contentInsetAdjustmentBehavior = UIScrollViewContentInsetAdjustmentNever;
     self.webView.navigationDelegate = self;

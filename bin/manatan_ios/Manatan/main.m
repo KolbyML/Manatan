@@ -20,6 +20,7 @@ NSString* getDocumentsDirectory() {
     return [paths firstObject];
 }
 
+
 void* run_java_thread(void* arg) {
     fprintf(stderr, "--- [Background] Attaching to JVM ---\n");
     
@@ -91,6 +92,7 @@ int main(int argc, char * argv[]) {
     
     NSString *libPath = [bundlePath stringByAppendingPathComponent:@"lib"];
     NSString *jarPath = [bundlePath stringByAppendingPathComponent:@"jar/suwayomi-server.jar"];
+    NSString *jvmErrorLog = [docDir stringByAppendingPathComponent:@"hs_err_pid%p.log"];
 
     // Clean old temp directory on boot
     if ([[NSFileManager defaultManager] fileExistsAtPath:tmpDir]) {
@@ -114,9 +116,9 @@ int main(int argc, char * argv[]) {
     
     // Temp dir is the ROOT FOLDER (as requested)
     options[optCount++].optionString = strdup([[NSString stringWithFormat:@"-Djava.io.tmpdir=%@", tmpDir] UTF8String]);
+    options[optCount++].optionString = strdup([[NSString stringWithFormat:@"-XX:ErrorFile=%@", jvmErrorLog] UTF8String]);
     
     options[optCount++].optionString = "-Djava.awt.headless=true";
-    options[optCount++].optionString = "-Xverify:none";
     options[optCount++].optionString = "-Xmx256m";
     options[optCount++].optionString = "-XX:+UseSerialGC";
     options[optCount++].optionString = "-XX:MaxHeapFreeRatio=40"; 
@@ -125,9 +127,6 @@ int main(int argc, char * argv[]) {
     options[optCount++].optionString = "-XX:CompressedClassSpaceSize=32m";
     options[optCount++].optionString = "-Xss512k";
     options[optCount++].optionString = "-XX:-TieredCompilation"; 
-    options[optCount++].optionString = "-Dos.name=Linux";
-    options[optCount++].optionString = "-Dos.version=5.15.0";
-    options[optCount++].optionString = "-Dos.arch=aarch64";
     
     // Local Source is the ROOT FOLDER (as requested)
     options[optCount++].optionString = strdup([[NSString stringWithFormat:@"-Dsuwayomi.tachidesk.config.server.localSourcePath=%@", localSourcePath] UTF8String]);
