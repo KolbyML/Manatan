@@ -38,6 +38,8 @@ import java.util.concurrent.Executors;
 import java.util.regex.Pattern;
 import java.util.regex.Matcher;
 import android.content.Intent;
+import java.net.URL;
+import java.net.HttpURLConnection;
 
 public class AnkiBridge {
     private static final String TAG = "AnkiBridge";
@@ -645,97 +647,185 @@ public class AnkiBridge {
     }
 }
 
-    private static String storeMediaFile(Context ctx, JSONObject params) throws Exception {
-        return saveMedia(ctx, params.getString("filename"), params.getString("data"));
+   private static String storeMediaFile(Context ctx, JSONObject params) throws Exception {
+        String filename = params.getString("filename");
+        
+        // Check for data, url, or path
+        if (params.has("data")) {
+            // Base64 encoded data
+            return saveMedia(ctx, filename, params.getString("data"));
+        } else if (params.has("url")) {
+            // Download from URL 
+            return saveMediaFromUrl(ctx, filename, params.getString("url"));
+        } else if (params.has("path")) {
+            // Local file path
+            return saveMediaFromPath(ctx, filename, params.getString("path"));
+        } else {
+            throw new Exception("storeMediaFile requires 'data', 'url', or 'path' parameter");
+        }
     }
 
     private static String saveMedia(Context ctx, String name, String b64) throws Exception {
-    byte[] data = Base64.decode(b64, Base64.NO_WRAP);
-    
-    // Detect file type from extension
-    String lowerName = name.toLowerCase();
-    boolean isAudio = lowerName.endsWith(".mp3") || lowerName.endsWith(".aac") || 
-                      lowerName.endsWith(".m4a") || lowerName.endsWith(".wav") ||
-                      lowerName.endsWith(".webm") || lowerName.endsWith(".ogg") ||
-                      lowerName.endsWith(".flac");
-    
-    ContentValues values = new ContentValues();
-    values.put(MediaStore.MediaColumns.DISPLAY_NAME, name);
-    
-    Uri collection;
-    if (isAudio) {
-        // Set correct MIME type for audio
-        if (lowerName.endsWith(".mp3")) {
-            values.put(MediaStore.MediaColumns.MIME_TYPE, "audio/mpeg");
-        } else if (lowerName.endsWith(".m4a") || lowerName.endsWith(".aac")) {
-            values.put(MediaStore.MediaColumns.MIME_TYPE, "audio/mp4");
-        } else if (lowerName.endsWith(".wav")) {
-            values.put(MediaStore.MediaColumns.MIME_TYPE, "audio/wav");
-        } else if (lowerName.endsWith(".webm")) {
-            values.put(MediaStore.MediaColumns.MIME_TYPE, "audio/webm");
-        } else if (lowerName.endsWith(".ogg")) {
-            values.put(MediaStore.MediaColumns.MIME_TYPE, "audio/ogg");
-        } else if (lowerName.endsWith(".flac")) {
-            values.put(MediaStore.MediaColumns.MIME_TYPE, "audio/flac");
-        } else {
-            values.put(MediaStore.MediaColumns.MIME_TYPE, "audio/mpeg"); // default
+        byte[] data = Base64.decode(b64, Base64.NO_WRAP);
+        return saveMediaBytes(ctx, name, data);
+    }
+
+    private static String saveMediaFromUrl(Context ctx, String name, String urlString) throws Exception {
+        Log.i(TAG, "Downloading media from URL: " + urlString);
+        
+        URL url = new URL(urlString);
+        HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+        
+        try {
+            conn.setRequestMethod("GET");
+            conn.setConnectTimeout(15000); // 15 seconds
+            conn.setReadTimeout(15000);    // 15 seconds
+            conn.setInstanceFollowRedirects(true);
+            
+            // Set a user agent to avoid being blocked
+            conn.setRequestProperty("User-Agent", "Manatan/1.0");
+            
+            int responseCode = conn.getResponseCode();
+            if (responseCode != HttpURLConnection.HTTP_OK) {
+                throw new Exception("HTTP error downloading media: " + responseCode);
+            }
+            
+            // Read the entire file into memory
+            ByteArrayOutputStream buffer = new ByteArrayOutputStream();
+            InputStream input = conn.getInputStream();
+            
+            byte[] data = new byte[8192];
+            int bytesRead;
+            while ((bytesRead = input.read(data)) != -1) {
+                buffer.write(data, 0, bytesRead);
+            }
+            
+            input.close();
+            byte[] fileData = buffer.toByteArray();
+            
+            Log.i(TAG, "Downloaded " + fileData.length + " bytes");
+            
+           
+            return saveMediaBytes(ctx, name, fileData);
+            
+        } finally {
+            conn.disconnect();
+        }
+    }
+
+    private static String saveMediaFromPath(Context ctx, String name, String filePath) throws Exception {
+        Log.i(TAG, "Reading media from path: " + filePath);
+        
+        File file = new File(filePath);
+        if (!file.exists()) {
+            throw new Exception("File not found: " + filePath);
         }
         
-        // Save to Music folder
-        values.put(MediaStore.MediaColumns.RELATIVE_PATH, Environment.DIRECTORY_MUSIC + "/Manatan");
-        collection = MediaStore.Audio.Media.EXTERNAL_CONTENT_URI;
-    } else {
-        // Image handling - support multiple formats
-        if (lowerName.endsWith(".webp")) {
-            values.put(MediaStore.MediaColumns.MIME_TYPE, "image/webp");
-        } else if (lowerName.endsWith(".jpg") || lowerName.endsWith(".jpeg")) {
-            values.put(MediaStore.MediaColumns.MIME_TYPE, "image/jpeg");
-        } else if (lowerName.endsWith(".png")) {
-            values.put(MediaStore.MediaColumns.MIME_TYPE, "image/png");
-        } else if (lowerName.endsWith(".gif")) {
-            values.put(MediaStore.MediaColumns.MIME_TYPE, "image/gif");
-        } else if (lowerName.endsWith(".bmp")) {
-            values.put(MediaStore.MediaColumns.MIME_TYPE, "image/bmp");
+        InputStream input = new java.io.FileInputStream(file);
+        ByteArrayOutputStream buffer = new ByteArrayOutputStream();
+        
+        try {
+            byte[] data = new byte[8192];
+            int bytesRead;
+            while ((bytesRead = input.read(data)) != -1) {
+                buffer.write(data, 0, bytesRead);
+            }
+            
+            byte[] fileData = buffer.toByteArray();
+            Log.i(TAG, "Read " + fileData.length + " bytes from file");
+            
+            return saveMediaBytes(ctx, name, fileData);
+            
+        } finally {
+            input.close();
+        }
+    }
+
+    private static String saveMediaBytes(Context ctx, String name, byte[] data) throws Exception {
+        // Detect file type from extension
+        String lowerName = name.toLowerCase();
+        boolean isAudio = lowerName.endsWith(".mp3") || lowerName.endsWith(".aac") || 
+                          lowerName.endsWith(".m4a") || lowerName.endsWith(".wav") ||
+                          lowerName.endsWith(".webm") || lowerName.endsWith(".ogg") ||
+                          lowerName.endsWith(".flac");
+        
+        ContentValues values = new ContentValues();
+        values.put(MediaStore.MediaColumns.DISPLAY_NAME, name);
+        
+        Uri collection;
+        if (isAudio) {
+            // Set correct MIME type for audio
+            if (lowerName.endsWith(".mp3")) {
+                values.put(MediaStore.MediaColumns.MIME_TYPE, "audio/mpeg");
+            } else if (lowerName.endsWith(".m4a") || lowerName.endsWith(".aac")) {
+                values.put(MediaStore.MediaColumns.MIME_TYPE, "audio/mp4");
+            } else if (lowerName.endsWith(".wav")) {
+                values.put(MediaStore.MediaColumns.MIME_TYPE, "audio/wav");
+            } else if (lowerName.endsWith(".webm")) {
+                values.put(MediaStore.MediaColumns.MIME_TYPE, "audio/webm");
+            } else if (lowerName.endsWith(".ogg")) {
+                values.put(MediaStore.MediaColumns.MIME_TYPE, "audio/ogg");
+            } else if (lowerName.endsWith(".flac")) {
+                values.put(MediaStore.MediaColumns.MIME_TYPE, "audio/flac");
+            } else {
+                values.put(MediaStore.MediaColumns.MIME_TYPE, "audio/mpeg"); // default
+            }
+            
+            // Save to Music folder
+            values.put(MediaStore.MediaColumns.RELATIVE_PATH, Environment.DIRECTORY_MUSIC + "/Manatan");
+            collection = MediaStore.Audio.Media.EXTERNAL_CONTENT_URI;
         } else {
-            values.put(MediaStore.MediaColumns.MIME_TYPE, "image/png"); // default
+            // Image handling - support multiple formats
+            if (lowerName.endsWith(".webp")) {
+                values.put(MediaStore.MediaColumns.MIME_TYPE, "image/webp");
+            } else if (lowerName.endsWith(".jpg") || lowerName.endsWith(".jpeg")) {
+                values.put(MediaStore.MediaColumns.MIME_TYPE, "image/jpeg");
+            } else if (lowerName.endsWith(".png")) {
+                values.put(MediaStore.MediaColumns.MIME_TYPE, "image/png");
+            } else if (lowerName.endsWith(".gif")) {
+                values.put(MediaStore.MediaColumns.MIME_TYPE, "image/gif");
+            } else if (lowerName.endsWith(".bmp")) {
+                values.put(MediaStore.MediaColumns.MIME_TYPE, "image/bmp");
+            } else {
+                values.put(MediaStore.MediaColumns.MIME_TYPE, "image/png"); // default
+            }
+            
+            String legacyPath = Environment.DIRECTORY_PICTURES + "/Mangatan";
+            String newPath = Environment.DIRECTORY_PICTURES + "/Manatan";
+            File legacyDir = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES), "Mangatan");
+            String relativePath = legacyDir.exists() ? legacyPath : newPath;
+            values.put(MediaStore.MediaColumns.RELATIVE_PATH, relativePath);
+            collection = MediaStore.Images.Media.EXTERNAL_CONTENT_URI;
+        }
+
+        Uri externalUri = ctx.getContentResolver().insert(collection, values);
+        if (externalUri == null) throw new Exception("Failed to create MediaStore entry");
+
+        try (OutputStream out = ctx.getContentResolver().openOutputStream(externalUri)) {
+            out.write(data);
+        }
+
+        ctx.grantUriPermission(
+            "com.ichi2.anki", 
+            externalUri, 
+            Intent.FLAG_GRANT_READ_URI_PERMISSION
+        );
+      
+        ContentValues cv = new ContentValues();
+        cv.put("file_uri", externalUri.toString()); 
+        cv.put("preferred_name", name.replaceAll("\\..*$", ""));
+
+        Log.i("AnkiBridge", "Asking AnkiDroid to copy: " + externalUri.toString());
+        Uri res = ctx.getContentResolver().insert(MEDIA_URI, cv);
+        
+        ctx.getContentResolver().delete(externalUri, null, null);
+
+        if (res != null) {
+            return new File(res.getPath()).getName();
         }
         
-        String legacyPath = Environment.DIRECTORY_PICTURES + "/Mangatan";
-        String newPath = Environment.DIRECTORY_PICTURES + "/Manatan";
-        File legacyDir = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES), "Mangatan");
-        String relativePath = legacyDir.exists() ? legacyPath : newPath;
-        values.put(MediaStore.MediaColumns.RELATIVE_PATH, relativePath);
-        collection = MediaStore.Images.Media.EXTERNAL_CONTENT_URI;
+        throw new Exception("AnkiDroid failed to copy the media");
     }
-
-    Uri externalUri = ctx.getContentResolver().insert(collection, values);
-    if (externalUri == null) throw new Exception("Failed to create MediaStore entry");
-
-    try (OutputStream out = ctx.getContentResolver().openOutputStream(externalUri)) {
-        out.write(data);
-    }
-
-    ctx.grantUriPermission(
-        "com.ichi2.anki", 
-        externalUri, 
-        Intent.FLAG_GRANT_READ_URI_PERMISSION
-    );
-  
-    ContentValues cv = new ContentValues();
-    cv.put("file_uri", externalUri.toString()); 
-    cv.put("preferred_name", name.replaceAll("\\..*$", ""));
-
-    Log.i("AnkiBridge", "Asking AnkiDroid to copy: " + externalUri.toString());
-    Uri res = ctx.getContentResolver().insert(MEDIA_URI, cv);
-    
-    ctx.getContentResolver().delete(externalUri, null, null);
-
-    if (res != null) {
-        return new File(res.getPath()).getName();
-    }
-    
-    throw new Exception("AnkiDroid failed to copy the media");
-}
 
     private static String handleMulti(Context ctx, JSONObject req) throws Exception {
         JSONArray acts = req.getJSONObject("params").getJSONArray("actions");
@@ -881,4 +971,4 @@ public class AnkiBridge {
         String safeMsg = (msg == null) ? "Unknown error" : msg.replace("\"", "\\\"");
         return "{\"result\":null,\"error\":\"" + safeMsg + "\"}";
     }
-} 
+}
