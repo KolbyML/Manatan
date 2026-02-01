@@ -1,0 +1,45 @@
+name: Discord Release Announcement (Latest)
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  announce:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Resolve Latest Tag
+        id: tags
+        run: |
+          git fetch --tags
+          LATEST_TAG=$(git tag -l "v*" | grep -E '^v[0-9]+\.[0-9]+\.[0-9]+$' | sort -V | tail -n1)
+          if [ -z "$LATEST_TAG" ]; then
+            echo "No version tags found" >&2
+            exit 1
+          fi
+          echo "latest_tag=$LATEST_TAG" >> $GITHUB_OUTPUT
+
+      - name: Generate Release Notes
+        run: |
+          CURRENT_TAG="${{ steps.tags.outputs.latest_tag }}"
+          git fetch --tags
+          PREV_TAG=$(git describe --tags --abbrev=0 "${CURRENT_TAG}^" 2>/dev/null || git describe --tags --abbrev=0 2>/dev/null || true)
+          echo "## Release $CURRENT_TAG" > RELEASE_NOTES.md
+          echo "" >> RELEASE_NOTES.md
+          if [ -z "$PREV_TAG" ]; then
+            git log "$CURRENT_TAG" --no-merges --pretty=format:"- %s (%h)" >> RELEASE_NOTES.md
+          else
+            git log "$PREV_TAG..$CURRENT_TAG" --no-merges --pretty=format:"- %s (%h)" >> RELEASE_NOTES.md
+          fi
+
+      - name: Notify Discord
+        env:
+          DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK }}
+          VERSION_TAG: ${{ steps.tags.outputs.latest_tag }}
+        run: python .github/scripts/discord_announce.py

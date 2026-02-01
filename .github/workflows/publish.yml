@@ -706,13 +706,7 @@ jobs:
           files: final_release/*
 
       - name: Notify Discord
-        uses: Ilshidur/action-discord@master
         env:
           DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK }}
-        with:
-          args: |
-            🚀 **New Release Published!**
-            **Version:** ${{ needs.prepare_version.outputs.version_tag }}
-            **Download:** https://github.com/${{ github.repository }}/releases/tag/${{ needs.prepare_version.outputs.version_tag }}
-            **Changelog:**
-            ${{ env.RELEASE_BODY }}
+          VERSION_TAG: ${{ needs.prepare_version.outputs.version_tag }}
+        run: python .github/scripts/discord_announce.py
