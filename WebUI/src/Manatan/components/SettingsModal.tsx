@@ -1074,6 +1074,32 @@ export const SettingsModal: React.FC<{ onClose: () => void }> = ({ onClose }) =>
                             <div style={{ gridColumn: '1 / -1', fontSize: '0.85em', color: '#aaa' }}>
                                 Higher values make subtitles bolder and easier to read.
                             </div>
+                            <label htmlFor="animePopupWidthPercent">Anime Dictionary Width (%)</label>
+                            <input
+                                id="animePopupWidthPercent"
+                                type="number"
+                                step="1"
+                                min="30"
+                                max="100"
+                                value={localSettings.animePopupWidthPercent}
+                                onChange={(e) => handleChange('animePopupWidthPercent', parseInt(e.target.value, 10))}
+                            />
+                            <div style={{ gridColumn: '1 / -1', fontSize: '0.85em', color: '#aaa' }}>
+                                Controls how wide the anime popup dictionary is.
+                            </div>
+                            <label htmlFor="animePopupHeightPercent">Anime Dictionary Height (%)</label>
+                            <input
+                                id="animePopupHeightPercent"
+                                type="number"
+                                step="1"
+                                min="20"
+                                max="90"
+                                value={localSettings.animePopupHeightPercent}
+                                onChange={(e) => handleChange('animePopupHeightPercent', parseInt(e.target.value, 10))}
+                            />
+                            <div style={{ gridColumn: '1 / -1', fontSize: '0.85em', color: '#aaa' }}>
+                                Controls how tall the anime popup dictionary is.
+                            </div>
                             <label htmlFor="tapZonePercent">Video Tap Zone (%)</label>
                             <input
                                 id="tapZonePercent"
