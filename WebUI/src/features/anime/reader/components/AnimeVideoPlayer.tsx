@@ -3330,11 +3330,50 @@ export const AnimeVideoPlayer = ({
     const isTapZoneActive = isMobile && !dictionaryVisible && !isOverlayVisible;
     const tapZonePercentRaw = Number.isFinite(settings.tapZonePercent) ? settings.tapZonePercent : 30;
     const tapZonePercent = Math.min(Math.max(tapZonePercentRaw, 10), 60);
+    const popupWidthUnit = settings.animePopupWidthUnit === 'px' ? 'px' : 'percent';
+    const popupHeightUnit = settings.animePopupHeightUnit === 'px' ? 'px' : 'percent';
+    const popupTopUnit = settings.animePopupTopOffsetUnit === 'px' ? 'px' : 'percent';
+    const popupLeftUnit = settings.animePopupLeftOffsetUnit === 'px' ? 'px' : 'percent';
     const popupWidthRaw = Number.isFinite(settings.animePopupWidthPercent) ? settings.animePopupWidthPercent : 100;
     const popupHeightRaw = Number.isFinite(settings.animePopupHeightPercent) ? settings.animePopupHeightPercent : 50;
     const popupWidthPercent = Math.min(Math.max(popupWidthRaw, 30), 100);
     const popupHeightPercent = Math.min(Math.max(popupHeightRaw, 20), 90);
-    const popupHorizontalInset = (100 - popupWidthPercent) / 2;
+    const popupTopRaw = Number.isFinite(settings.animePopupTopOffsetPercent)
+        ? settings.animePopupTopOffsetPercent
+        : 0;
+    const popupLeftRaw = Number.isFinite(settings.animePopupLeftOffsetPercent)
+        ? settings.animePopupLeftOffsetPercent
+        : 0;
+    const popupTopMax = popupHeightUnit === 'percent' ? Math.max(0, 100 - popupHeightPercent) : 100;
+    const popupTopOffsetPercent = Math.min(Math.max(popupTopRaw, 0), popupTopMax);
+    const popupWidthInset = (100 - popupWidthPercent) / 2;
+    const popupLeftMax = popupWidthUnit === 'percent' ? popupWidthInset : 50;
+    const popupLeftOffsetPercent = Math.min(Math.max(popupLeftRaw, -popupLeftMax), popupLeftMax);
+    const popupWidthPxRaw = Number.isFinite(settings.animePopupWidthPx) ? settings.animePopupWidthPx : 960;
+    const popupHeightPxRaw = Number.isFinite(settings.animePopupHeightPx) ? settings.animePopupHeightPx : 420;
+    const popupTopPxRaw = Number.isFinite(settings.animePopupTopOffsetPx) ? settings.animePopupTopOffsetPx : 0;
+    const popupLeftPxRaw = Number.isFinite(settings.animePopupLeftOffsetPx) ? settings.animePopupLeftOffsetPx : 0;
+    const popupWidthPx = Math.min(Math.max(popupWidthPxRaw, 280), 1920);
+    const popupHeightPx = Math.min(Math.max(popupHeightPxRaw, 200), 1080);
+    const popupTopOffsetPx = Math.min(Math.max(popupTopPxRaw, 0), 1600);
+    const popupLeftOffsetPx = Math.min(Math.max(popupLeftPxRaw, -1600), 1600);
+    const popupHeightClamp = popupHeightUnit === 'px' ? `${popupHeightPx}px` : `${popupHeightPercent}%`;
+    const popupLeftBase = popupWidthUnit === 'px' ? '50%' : `${popupWidthInset}%`;
+    const popupLeftOffset = popupLeftUnit === 'px'
+        ? `calc(${popupLeftBase} + ${popupLeftOffsetPx}px)`
+        : `calc(${popupLeftBase} + ${popupLeftOffsetPercent}%)`;
+    const popupTopOffset = popupTopUnit === 'px'
+        ? `min(${popupTopOffsetPx}px, calc(100% - ${popupHeightClamp}))`
+        : popupHeightUnit === 'px'
+            ? `min(${popupTopOffsetPercent}%, calc(100% - ${popupHeightPx}px))`
+            : `${popupTopOffsetPercent}%`;
+    const popupWidthStyle = popupWidthUnit === 'px'
+        ? `min(${popupWidthPx}px, 100%)`
+        : `${popupWidthPercent}%`;
+    const popupHeightStyle = popupHeightUnit === 'px'
+        ? `min(${popupHeightPx}px, 100%)`
+        : `${popupHeightPercent}%`;
+    const popupTransform = popupWidthUnit === 'px' ? 'translateX(-50%)' : 'none';
     const subtitleBottomOffset = isMobile
         ? isLandscape
             ? 'calc(env(safe-area-inset-bottom) + 28px)'
@@ -4105,10 +4144,11 @@ export const AnimeVideoPlayer = ({
                     <Box
                         sx={{
                             position: 'absolute',
-                            top: 0,
-                            left: `${popupHorizontalInset}%`,
-                            width: `${popupWidthPercent}%`,
-                            height: `${popupHeightPercent}%`,
+                            top: popupTopOffset,
+                            left: popupLeftOffset,
+                            transform: popupTransform,
+                            width: popupWidthStyle,
+                            height: popupHeightStyle,
                             backgroundColor: 'rgba(26,29,33,0.96)',
                             color: '#eee',
                             p: 2,

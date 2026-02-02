@@ -80,8 +80,18 @@ export interface Settings {
     boundingBoxAdjustment: number;
     subtitleFontSize: number;
     subtitleFontWeight: number;
+    animePopupWidthUnit: 'percent' | 'px';
+    animePopupHeightUnit: 'percent' | 'px';
+    animePopupTopOffsetUnit: 'percent' | 'px';
+    animePopupLeftOffsetUnit: 'percent' | 'px';
     animePopupWidthPercent: number;
     animePopupHeightPercent: number;
+    animePopupTopOffsetPercent: number;
+    animePopupLeftOffsetPercent: number;
+    animePopupWidthPx: number;
+    animePopupHeightPx: number;
+    animePopupTopOffsetPx: number;
+    animePopupLeftOffsetPx: number;
     animeSubtitleHoverLookup: boolean;
     animeSubtitleHoverAutoResume: boolean;
     animeHotkeys: Record<AnimeHotkey, string[]>;
@@ -226,8 +236,18 @@ export const DEFAULT_SETTINGS: Settings = {
     boundingBoxAdjustment: 5,
     subtitleFontSize: 22,
     subtitleFontWeight: 600,
+    animePopupWidthUnit: 'percent',
+    animePopupHeightUnit: 'percent',
+    animePopupTopOffsetUnit: 'percent',
+    animePopupLeftOffsetUnit: 'percent',
     animePopupWidthPercent: 100,
     animePopupHeightPercent: 50,
+    animePopupTopOffsetPercent: 0,
+    animePopupLeftOffsetPercent: 0,
+    animePopupWidthPx: 960,
+    animePopupHeightPx: 420,
+    animePopupTopOffsetPx: 0,
+    animePopupLeftOffsetPx: 0,
     animeSubtitleHoverLookup: true,
     animeSubtitleHoverAutoResume: false,
     animeHotkeys: DEFAULT_ANIME_HOTKEYS,
