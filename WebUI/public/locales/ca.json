@@ -1,0 +1,102 @@
+{
+    "category": {
+        "dialog": {
+            "title": {
+                "edit_category_one": "Editar Categoria",
+                "edit_category_many": "Editar Categories",
+                "edit_category_other": "Editar Categories",
+                "new_category": "Nova categoria"
+            }
+        },
+        "error": {
+            "label": {
+                "create_failure": "No s'ha pogut crear la categoria",
+                "empty": "La categoria està buida",
+                "request_failure": "No s'han pogut carregar les categories"
+            },
+            "no_categories_found": {
+                "label": {
+                    "info": "Encara no teniu cap categoria."
+                }
+            }
+        },
+        "label": {
+            "category_name": "Nom de la categoria",
+            "use_as_default_category": "Categoria predeterminada en afegir nous manga a la biblioteca"
+        },
+        "settings": {
+            "inclusion": {
+                "label": {
+                    "exclude": "Exclou: {{excludedCategoriesText}}",
+                    "include": "Inclou: {{includedCategoriesText}}"
+                }
+            }
+        },
+        "title": {
+            "category_one": "Categoria",
+            "category_many": "Categories",
+            "category_other": "Categories"
+        },
+        "value": "{{count}} $t(category.title.category, lowercase)"
+    },
+    "chapter": {
+        "action": {
+            "download": {
+                "delete": {
+                    "button": {
+                        "selected": "Elimina els seleccionats"
+                    },
+                    "label": {
+                        "action": "Elimina",
+                        "confirmation_one": "Esteu a punt d'eliminar una descàrrega",
+                        "confirmation_many": "Esteu a punt d'eliminar {{count}} descàrregues",
+                        "confirmation_other": "Esteu a punt d'eliminar {{count}} descàrregues",
+                        "success_one": "Capítol eliminat",
+                        "success_many": "{{count}} capítols eliminats",
+                        "success_other": "{{count}} capítols eliminats"
+                    }
+                }
+            },
+            "filter_and_sort": {
+                "label": "Filtra i ordena"
+            },
+            "label": {
+                "select": "Selecciona"
+            },
+            "mark_as_read": {
+                "add": {
+                    "button": {
+                        "selected": "Marca els seleccionats com a llegits"
+                    },
+                    "label": {
+                        "action": {
+                            "all": "Marca'ls tots com a llegits",
+                            "current": "Marca com a llegit",
+                            "previous": "Marca els anteriors com a llegits"
+                        },
+                        "confirmation_one": "Esteu a punt de marcar un capítol com a llegit",
+                        "confirmation_many": "Esteu a punt de marcar {{count}} capítols com a llegits",
+                        "confirmation_other": "Esteu a punt de marcar {{count}} capítols com a llegits",
+                        "error_one": "No s'ha pogut marcar el capítol com a llegit",
+                        "error_many": "No s'han pogut marcar els capítols com a llegits",
+                        "error_other": "No s'han pogut marcar els capítols com a llegits",
+                        "success_one": "Capítol marcat com a llegit",
+                        "success_many": "{{count}} capítols marcats com a llegits",
+                        "success_other": "{{count}} capítols marcats com a llegits"
+                    }
+                },
+                "remove": {
+                    "button": {
+                        "selected": "Marca els seleccionats com a no llegits"
+                    },
+                    "label": {
+                        "action": "Marca com a no llegit",
+                        "confirmation_one": "Esteu a punt de marcar un capítol com a no llegits",
+                        "confirmation_many": "Esteu a punt de marcar {{count}} capítols com a no llegits",
+                        "confirmation_other": "Esteu a punt de marcar {{count}} capítols com a no llegits"
+                    }
+                }
+            }
+        }
+    }
+}

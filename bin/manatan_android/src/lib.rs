@@ -1181,7 +1181,10 @@ fn start_background_services(app: AndroidApp, files_dir: PathBuf) {
                     let local_anime_path = format!("{base_dir}/local-anime");
                     info!("Ensuring local source directory exists: {}", target_path);
                     let _ = std::fs::create_dir_all(&target_path);
-                    info!("Ensuring local anime directory exists: {}", local_anime_path);
+                    info!(
+                        "Ensuring local anime directory exists: {}",
+                        local_anime_path
+                    );
                     let _ = std::fs::create_dir_all(&local_anime_path);
 
                     let nomedia_path = format!("{target_path}/.nomedia");
@@ -1393,14 +1396,14 @@ fn start_background_services(app: AndroidApp, files_dir: PathBuf) {
 }
 
 fn install_webui(app: &AndroidApp, target_dir: &Path) -> std::io::Result<()> {
-    let filename = CString::new("manatan-webui.tar").unwrap();
+    let filename = CString::new("webui.tar").unwrap();
 
     let asset = app
         .asset_manager()
         .open(&filename)
         .ok_or(std::io::Error::new(
             std::io::ErrorKind::NotFound,
-            "manatan-webui.tar missing in assets",
+            "webui.tar missing in assets",
         ))?;
 
     let mut archive = Archive::new(BufReader::new(asset));

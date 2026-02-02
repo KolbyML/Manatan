@@ -47,8 +47,8 @@ jobs:
       run: |
         make download_jar
         make download_natives
-        mkdir -p bin/manatan/resources/manatan-webui
-        touch bin/manatan/resources/manatan-webui/index.html
+        mkdir -p bin/manatan/resources/webui
+        touch bin/manatan/resources/webui/index.html
   
     - name: Run Clippy
       run: |
@@ -89,8 +89,8 @@ jobs:
       run: |
         make download_jar
         make download_natives
-        mkdir -p bin/manatan/resources/manatan-webui
-        touch bin/manatan/resources/manatan-webui/index.html
+        mkdir -p bin/manatan/resources/webui
+        touch bin/manatan/resources/webui/index.html
 
     - name: Test
       run: cargo test --release --workspace -- --nocapture

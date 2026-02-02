@@ -1,0 +1,1319 @@
+{
+    "chapter": {
+        "action": {
+            "bookmark": {
+                "add": {
+                    "label": {
+                        "success_one": "Глава добавлена в закладки",
+                        "success_few": "{{count}} главы добавлено в закладки",
+                        "success_many": "{{count}} глав добавлено в закладки",
+                        "error_one": "Не удалось добавить главу в закладки",
+                        "error_few": "Не удалось добавить главы в закладки",
+                        "error_many": "Не удалось добавить глав в закладки",
+                        "action": "Добавить закладку"
+                    },
+                    "button": {
+                        "selected": "Закладка выбрана"
+                    }
+                },
+                "remove": {
+                    "label": {
+                        "action": "Удалить закладку",
+                        "success_one": "глава из закладок удалена",
+                        "success_few": "{{count}} главы из закладок удалены",
+                        "success_many": "{{count}} глав из закладок удалено",
+                        "error_one": "Не удалось удалить закладку",
+                        "error_few": "Не удалось удалить закладки",
+                        "error_many": "Не удалось удалить закладок"
+                    },
+                    "button": {
+                        "selected": "Удалить закладки из выбранных"
+                    }
+                }
+            },
+            "download": {
+                "delete": {
+                    "label": {
+                        "success_one": "Глава удалена",
+                        "success_few": "{{count}} главы удалены",
+                        "success_many": "{{count}} глав удалено",
+                        "action": "Удалить",
+                        "error_one": "Не удалось удалить главу",
+                        "error_few": "Не удалось удалить главы",
+                        "error_many": "Не удалось удалить глав"
+                    },
+                    "button": {
+                        "selected": "Удалить выбранное"
+                    }
+                },
+                "add": {
+                    "button": {
+                        "selected": "Загрузить выбранное"
+                    },
+                    "label": {
+                        "action": "Загрузить",
+                        "error_one": "Не удалось добавить загрузку",
+                        "error_few": "Не удалось добавить загрузки",
+                        "error_many": "Не удалось добавить загрузок",
+                        "success_one": "Загрузка добавлена",
+                        "success_few": "{{count}} загрузки добавлено",
+                        "success_many": "{{count}} загрузок добавлено",
+                        "ahead": "$t(download.settings.download_ahead.title) ({{count}})",
+                        "all": "$t(extension.language.all)",
+                        "next_one": "$t(reader.button.next_chapter)",
+                        "next_few": "",
+                        "next_many": "",
+                        "unread": "$t(global.filter.label.unread)"
+                    }
+                }
+            },
+            "label": {
+                "select": "Выберите"
+            },
+            "mark_as_read": {
+                "add": {
+                    "button": {
+                        "selected": "Пометить выбранное как прочитанное"
+                    },
+                    "label": {
+                        "action": {
+                            "previous": "Пометить все предыдущее как прочитанное",
+                            "current": "Пометить все как прочитанное"
+                        },
+                        "success_one": "Глава помечена как прочитанная",
+                        "success_few": "{{count}} главы помечены как прочитанные",
+                        "success_many": "{{count}} глав помечено как прочитанные",
+                        "error_one": "Не удалось пометить главу как прочитанную",
+                        "error_few": "Не удалось пометить главы как прочитанные",
+                        "error_many": "Не удалось пометить главы как прочитанные"
+                    }
+                },
+                "remove": {
+                    "button": {
+                        "selected": "Пометить выбранное как непрочитанное"
+                    },
+                    "label": {
+                        "action": "Пометить как непрочитанное",
+                        "success_one": "Глава помечена как непрочитанная",
+                        "success_few": "{{count}} главы помечены как непрочитанные",
+                        "success_many": "{{count}} глав помечены как непрочитанные",
+                        "error_one": "Не удалось пометить главу как непрочитанное",
+                        "error_few": "Не удалось пометить главы как непрочитанные",
+                        "error_many": "Не удалось пометить главы как непрочитанные"
+                    }
+                }
+            }
+        },
+        "error": {
+            "label": {
+                "no_chapter_found": "Не найдено ни одной главы",
+                "no_matches": "Нет разделов, соответствующих фильтру"
+            }
+        },
+        "option": {
+            "display": {
+                "label": {
+                    "chapter_number": "Номер главы",
+                    "source_title": "Название источника"
+                }
+            }
+        },
+        "status": {
+            "label": {
+                "downloaded": "Загрузили"
+            }
+        },
+        "title_one": "Глава",
+        "title_few": "Главы",
+        "title_many": "Глав"
+    },
+    "category": {
+        "error": {
+            "no_categories_found": {
+                "label": {
+                    "info": "У вас пока нет никаких категорий."
+                }
+            },
+            "label": {
+                "empty": "Категория не заполнена",
+                "request_failure": "Не удалось загрузить категории",
+                "create_failure": "Не удалось создать категорию"
+            }
+        },
+        "label": {
+            "use_as_default_category": "Категория по умолчанию при добавлении новой манги в библиотеку",
+            "category_name": "Название категории"
+        },
+        "dialog": {
+            "title": {
+                "new_category": "Новая категория",
+                "edit_category_one": "Отредактировать категорию",
+                "edit_category_few": "Отредактировать категории",
+                "edit_category_many": "Отредактировать категорий"
+            }
+        },
+        "settings": {
+            "inclusion": {
+                "label": {
+                    "exclude": "Исключить: {{excludedCategoriesText}}",
+                    "include": "Включить: {{includedCategoriesText}}"
+                }
+            }
+        },
+        "title": {
+            "category_one": "Категория",
+            "category_few": "Категории",
+            "category_many": "Категорий",
+            "set_categories": "Набор категорий"
+        }
+    },
+    "download": {
+        "queue": {
+            "error": {
+                "label": {
+                    "failed_delete_all": "Не удалось удалить все загрузки из очереди",
+                    "failed_to_remove": "Не удалось удалить загрузку из очереди.",
+                    "failed_to_retry": "Не удалось повторить неудачную загрузку."
+                }
+            },
+            "label": {
+                "delete_all": "Удалить все",
+                "no_downloads": "Загрузок нет"
+            }
+        },
+        "settings": {
+            "auto_download": {
+                "download_limit": {
+                    "label": {
+                        "title": "Ограничение на загрузку глав",
+                        "description": "Ограничьте количество загружаемых новых глав."
+                    }
+                },
+                "label": {
+                    "ignore_re_uploads": "Игнорировать перезагруженные главы",
+                    "new_chapters": "Загрузка новых глав",
+                    "ignore_with_unread_chapters": "Игнорировать автоматические загрузки глав для записей с непрочитанными главами"
+                },
+                "categories": {
+                    "label": {
+                        "include_in_download": "Записи из исключенных категорий не будут загружены, даже если они также находятся во включенных категориях"
+                    }
+                },
+                "title": "Автозагрузка"
+            },
+            "delete_chapters": {
+                "title": "Удалять главы",
+                "label": {
+                    "allow_deletion_of_bookmarked": "Разрешить удаление глав, добавленных в закладки",
+                    "manually_marked_as_read": "Удаление главы после ручной пометки ее как прочитанной"
+                },
+                "while_reading": {
+                    "option": {
+                        "label": {
+                            "fifth": "Пятая от прочитанной главы",
+                            "third": "Третья от прочитанной главы",
+                            "first": "Последняя прочитанная глава",
+                            "fourth": "Четвёртая от прочитанной главы",
+                            "second": "Предпоследняя прочитанная глава"
+                        }
+                    },
+                    "label": {
+                        "title": "Удаление законченных глав во время чтения"
+                    }
+                }
+            },
+            "download_ahead": {
+                "label": {
+                    "disclaimer": "Работает только в том случае, если текущая глава и следующая за ней уже загружены.",
+                    "description": "Сколько глав должно быть загружено во время чтения.",
+                    "unread_chapters_to_download": "Количество непрочитанных глав для загрузки",
+                    "value": "{{chapters}} $t(chapter.title)",
+                    "while_reading": "Автоматически загружать во время чтения"
+                },
+                "title": "Скачать заранее"
+            },
+            "download_path": {
+                "label": {
+                    "description": "Путь к каталогу на сервере, в котором должны быть сохранены загруженные файлы",
+                    "title": "Куда скачивать"
+                }
+            },
+            "file_type": {
+                "label": {
+                    "cbz": "Сохранить как архив CBZ"
+                }
+            }
+        },
+        "state": {
+            "label": {
+                "downloading": "Загрузка",
+                "error": "Ошибка",
+                "finished": "Завершено",
+                "queued": "В очереди"
+            }
+        }
+    },
+    "library": {
+        "settings": {
+            "global_update": {
+                "label": {
+                    "last_update": "Последнее обновление: {{date}}",
+                    "last_update_tooltip": "$t(library.settings.global_update.title) ($t(library.settings.global_update.label.last_update, lowercase)"
+                },
+                "categories": {
+                    "label": {
+                        "info": "Записи в исключенных категориях не будут обновляться, даже если они также находятся во включенных категориях"
+                    }
+                },
+                "entries": {
+                    "label": {
+                        "not_started": "Не начатое",
+                        "unread_chapters": "С непрочитанными главами",
+                        "completed": "Со статусом \"Завершено\""
+                    },
+                    "title": "Пропустить обновление записей"
+                },
+                "metadata": {
+                    "label": {
+                        "description": "Проверяйте наличие новой обложки и других сведений при обновлении библиотеки",
+                        "title": "Автоматическое обновление метаданных"
+                    }
+                },
+                "title": "Глобальное обновление",
+                "auto_update": {
+                    "interval": {
+                        "label": {
+                            "title": "Интервал автоматического обновления",
+                            "value": "{{hours}}$t(global.time.hour_short)"
+                        }
+                    },
+                    "label": {
+                        "title": "Автоматические обновления"
+                    }
+                }
+            },
+            "general": {
+                "add_to_library": {
+                    "category_selection": {
+                        "label": {
+                            "description": "Отображение диалогового окна выбора категории при добавлении манги в библиотеку",
+                            "title": "Диалоговое окно выбора категории"
+                        }
+                    }
+                },
+                "search": {
+                    "ignore_filters": {
+                        "label": {
+                            "description": "Результаты поиска будут включать мангу, которая не соответствует текущим фильтрам",
+                            "title": "Игнорировать филтры во время поиска"
+                        }
+                    }
+                },
+                "remove_from_library": {
+                    "remove_from_categories": {
+                        "label": {
+                            "description": "Удалять мангу из категорий при удалении ее из библиотеки",
+                            "title": "Забыть категорию манги"
+                        }
+                    }
+                }
+            },
+            "advanced": {
+                "database": {
+                    "cleanup": {
+                        "label": {
+                            "error": "Не получилось удалить мангу, не относящуюся к библиотеке, из категорий",
+                            "success": "Удалена манга, не относящаяся к библиотеке, из категорий",
+                            "description": "Удалить мангу, не относящуюся к библиотеке, из категорий",
+                            "title": "Очистить базу данных"
+                        }
+                    }
+                },
+                "duplicates": {
+                    "settings": {
+                        "label": {
+                            "check_description": "Описание"
+                        }
+                    },
+                    "label": {
+                        "description": "Показать все дублирующиеся записи в вашей библиотеке",
+                        "title": "Повторяющиеся записи"
+                    }
+                }
+            }
+        },
+        "error": {
+            "label": {
+                "empty": "Ваша библиотека пуста",
+                "no_matches": "Ни одна манга не соответствует этому фильтру",
+                "add_to_library": "Не получилось добавить мангу в библиотеку!",
+                "remove_from_library": "Не получилось удалить мангу из библиотеки!",
+                "stop_global_update": "Не удалось остановить глобальное обновление"
+            }
+        },
+        "option": {
+            "sort": {
+                "label": {
+                    "by_latest_fetched_chapter": "Последняя выбранная глава",
+                    "by_unread_chapters": "Непрочитанные главы",
+                    "by_last_read": "Недавно прочитанные",
+                    "alphabetically": "А-Я",
+                    "by_date_added": "Недавно добавленные",
+                    "by_latest_uploaded_chapter": "Последняя загруженная глава",
+                    "by_total_chapters": "Всего глав"
+                }
+            },
+            "display": {
+                "tab": {
+                    "label": {
+                        "show_number_of_items": "Показывать количество серий"
+                    },
+                    "title": "Вкладки"
+                },
+                "badge": {
+                    "title": "Обложки",
+                    "label": {
+                        "download_badges": "Скачать обложки",
+                        "unread_badges": "Непрочитанные обложки"
+                    }
+                },
+                "other": {
+                    "label": {
+                        "show_continue_reading_button": "Кнопка продолжить чтение"
+                    }
+                }
+            }
+        },
+        "info": {
+            "label": {
+                "added_to_library": "Манга добавлена в библиотеку!",
+                "removed_from_library": "Манга убрана из библиотеки!"
+            }
+        },
+        "title": "Библиотека",
+        "action": {
+            "label": {
+                "stop_update": "Остановить глобальное обновление",
+                "update_category": "Обновить категорию",
+                "update_library": "Обновить библиотеку"
+            }
+        }
+    },
+    "global": {
+        "button": {
+            "browse": "Источники",
+            "changelog": "Журнал изменений",
+            "copy": "Скопировать",
+            "create": "Создать",
+            "deselect": "Отменить выбор",
+            "dont_show_dialog_again": "Не показывать это диалоговое окно снова",
+            "log_in": "Залогиниться",
+            "log_out": "Разлогиниться",
+            "migrate": "Перенос",
+            "ok": "Ок",
+            "popular": "Популярное",
+            "refresh": "Обновить",
+            "remind_later": "Напомнить позже",
+            "remove": "Убрать",
+            "add": "Добавить",
+            "cancel": "Отменить",
+            "options": "Параметры",
+            "select": "Выбрать",
+            "select_all": "Выбрать все",
+            "show_more": "Показать больше",
+            "start": "Начать",
+            "edit": "Редактировать",
+            "filter": "Фильтр",
+            "ignore": "Игнорировать",
+            "latest": "Последнее",
+            "reset": "Сброс",
+            "reset_to_default": "Сбросить к заводским настройкам",
+            "restore": "Восстановить",
+            "resume": "Возобновить",
+            "retry": "Повторить попытку",
+            "set": "Установить",
+            "show_less": "Показывать меньше",
+            "stop": "Остановить",
+            "submit": "Подтвердить",
+            "delete": "Удалить",
+            "save": "Сохранить"
+        },
+        "label": {
+            "browse": "Поисковик",
+            "open_in_browser": "Открыть в браузере",
+            "placeholder": "Заполнитель",
+            "sort": "Сортировать",
+            "advanced": "Продвинутое",
+            "client": "Клиент",
+            "username": "Имя пользователя",
+            "disabled": "Выключено",
+            "discord": "Discord",
+            "display": "Экран",
+            "filter": "Фильтр",
+            "general": "Общие",
+            "github": "GitHub",
+            "other": "Другое",
+            "are_you_sure": "Вы уверены?",
+            "close": "Закрыть",
+            "links": "Ссылки",
+            "load_in_progress": "Все еще загружаю необходимые данные…",
+            "loading": "Загрузка…",
+            "logged_in": "В системе",
+            "never": "Никогда",
+            "none": "Ничего",
+            "password": "Пароль",
+            "started": "Начато",
+            "type": "Тип",
+            "unknown": "Неизвестно",
+            "default": "По умолчанию"
+        },
+        "time": {
+            "hour_short": "ч",
+            "minutes": {
+                "minute_one": "Минута",
+                "minute_few": "Минуты",
+                "minute_many": "Минут",
+                "value": "{{count}} $t(global.time.minutes.minute, lowercase)"
+            },
+            "seconds": {
+                "second_one": "Секунда",
+                "second_few": "Секунды",
+                "second_many": "Секунд",
+                "value": "{{count}} $t(global.time.seconds.second, lowercase)"
+            }
+        },
+        "update": {
+            "label": {
+                "updating": "{{progress}}% | Обновление…",
+                "available": "Доступно обновление",
+                "check_failure": "Не получилось проверить обновления",
+                "checking": "Проверка обновлений",
+                "info": "Версия сервера {{version}} ({{channel}}) доступна для обновления",
+                "up_to_date": "Это самая последняя версия",
+                "update_failure": "Обновление не удалось",
+                "update_success": "{{name}} был обновлен до версии {{version}} ({{channel}})"
+            },
+            "settings": {
+                "inform": {
+                    "label": {
+                        "description": "Показывает предупреждение, если доступна новая версия",
+                        "title": "Информировать о доступном обновлении"
+                    }
+                }
+            }
+        },
+        "date": {
+            "label": {
+                "today_at": "Сегодня в {{timeString}}",
+                "yesterday": "Вчера",
+                "day_one": "День",
+                "day_few": "Дни",
+                "day_many": "Дни",
+                "today": "Сегодня",
+                "yesterday_at": "Вчера в {{timeString}}"
+            },
+            "value": {
+                "label": {
+                    "day": "{{days}} $t(global.date.label.day, lowercase)"
+                }
+            }
+        },
+        "error": {
+            "label": {
+                "invalid_action": "Недопустимое действие",
+                "failed_to_load_data": "Не получилось получить данные",
+                "failed_to_save_changes": "Не получилось сохранить изменения",
+                "invalid_file_type": "Недопустимый тип файла",
+                "invalid_input": "Некорректный ввод",
+                "update_failed": "Не получилось проверить наличие обновлений"
+            }
+        },
+        "grid_layout": {
+            "label": {
+                "comfortable_grid": "Удобная сетка",
+                "list": "Список",
+                "compact_grid": "Компактная сетка"
+            },
+            "title": "Режим отображения"
+        },
+        "language": {
+            "label": {
+                "language": "Язык",
+                "language_with_code": "Код языка: {{code}}"
+            },
+            "title": {
+                "enabled_languages": "Разрешенные языки",
+                "weblate": "Weblate"
+            }
+        },
+        "filter": {
+            "label": {
+                "bookmarked": "В закладках",
+                "downloaded": "Скачанное",
+                "tracked": "Отслеживаемое",
+                "unread": "Непрочитанное",
+                "duplicate_chapters": "Повторяющиеся главы"
+            }
+        },
+        "sort": {
+            "label": {
+                "by_fetch_date": "По выбранной дате",
+                "by_source": "По источнику",
+                "by_chapter_number": "По номеру главы",
+                "by_upload_date": "По дате публикации",
+                "asc": "Восходящий",
+                "desc": "Нисходящий"
+            }
+        }
+    },
+    "settings": {
+        "backup": {
+            "title": "Резервная копия",
+            "action": {
+                "create": {
+                    "label": {
+                        "description": "Резервное копирование библиотеки в виде резервной копии Tachiyomi",
+                        "title": "Создать резервную копию"
+                    }
+                },
+                "restore": {
+                    "button": "Восстановить из резервной копии",
+                    "error": {
+                        "label": {
+                            "legacy_backup_unsupported": "Старые резервные копии не поддерживаются!",
+                            "failure": "Не получилось восстановить из резервной копии"
+                        }
+                    },
+                    "label": {
+                        "title": "Восстановление резервной копии",
+                        "description": "Вы также можете перетащить сюда файл резервной копии, чтобы восстановить его",
+                        "in_progress": "Восстановление из резервной копии…",
+                        "success": "Восстановлен из резервной копии."
+                    }
+                },
+                "validate": {
+                    "dialog": {
+                        "content": {
+                            "label": {
+                                "missing_sources": "Следующие расширения не установлены:",
+                                "missing_trackers": "Вход не осуществлён в следующих трекерах:"
+                            }
+                        },
+                        "title": "Проверка резервной копии"
+                    },
+                    "error": {
+                        "label": {
+                            "failure": "Не получилось проверить резервную копию"
+                        }
+                    }
+                }
+            },
+            "automated": {
+                "cleanup": {
+                    "label": {
+                        "value": "Удалять резервные копии старше $t(global.date.value.label.day)",
+                        "title": "Очистка резервной копии"
+                    }
+                },
+                "location": {
+                    "label": {
+                        "description": "Путь к директории на сервере, в которой должны сохраняться автоматические резервные копии",
+                        "title": "Расположение резервной копии"
+                    }
+                },
+                "label": {
+                    "interval": "Частота автоматических резервных копий",
+                    "time": "Время резервного копирования"
+                }
+            }
+        },
+        "label": {
+            "manga_item_width": "Ширина обложки манги",
+            "show_nsfw_description": "Скрыть NSFW-расширения (18+) и источники",
+            "hide_library_entries": "Скрывать имеющиеся в библиотеки записи",
+            "show_nsfw": "Источник NSFW (18+)",
+            "language_description": "Не стесняйтесь переводить проект на",
+            "theme": "Тема"
+        },
+        "about": {
+            "webui": {
+                "label": {
+                    "info": "$t(settings.webui.title.webui) версия {{version}} ({{channel}}) доступна для загрузки",
+                    "version": "$t(settings.webui.title.webui) версия",
+                    "github": "$t(global.label.github) $t(settings.webui.title.webui)",
+                    "update_failure": "Не получилось обновить $t(settings.webui.title.webui)",
+                    "channel": "$t(settings.webui.title.webui) канал",
+                    "updated": "Обновленная версия"
+                }
+            },
+            "server": {
+                "label": {
+                    "github": "$t(global.label.github) $t(settings.server.title.server)",
+                    "address": "Адрес сервера",
+                    "build_time": "Время сборки",
+                    "version": "Версия сервера"
+                }
+            },
+            "title": "Информация"
+        },
+        "device": {
+            "devices": {
+                "label": {
+                    "description": "Управляйте существующими устройствами.\nНастройки пользовательского интерфейса, хранящиеся на сервере, относятся к каждому устройству.\nЭто позволяет иметь разные настройки, например, на настольном компьютере и смартфоне",
+                    "title": "Устройства"
+                }
+            },
+            "active_device": {
+                "label": {
+                    "description": "Выберите устройство, чтобы использовать сохраненные на сервере настройки пользовательского интерфейса",
+                    "title": "Активные устройства"
+                }
+            },
+            "title": {
+                "device": "Устройство"
+            },
+            "label": {
+                "placeholder": "Название_телефона-1 | длина: 16, разрешенные символы: буквы, цифры, -, _"
+            }
+        },
+        "server": {
+            "address": {
+                "server": {
+                    "label": {
+                        "ip": "IP",
+                        "port": "Порт"
+                    },
+                    "title": "Связывание с сервером"
+                },
+                "client": {
+                    "dialog": {
+                        "label": {
+                            "enter_address": "Введите адрес сервера"
+                        }
+                    },
+                    "label": {
+                        "description": "Адрес, который клиент будет использовать для подключения к серверу"
+                    }
+                }
+            },
+            "local_source": {
+                "path": {
+                    "label": {
+                        "title": "Расположение локального источника",
+                        "description": "Путь к директории на сервере, в которой хранятся локальные исходные файлы"
+                    }
+                }
+            },
+            "misc": {
+                "tray_icon": {
+                    "label": {
+                        "description": "Этот значок будет отображаться на системе, на которой запущен сервер",
+                        "title": "Показывать иконку в трее"
+                    }
+                },
+                "log_level": {
+                    "label": {
+                        "server": "Включить журналы отладки"
+                    },
+                    "graphql": {
+                        "label": {
+                            "description": "Сюда входят журналы с информацией, не обеспечивающей конфиденциальность",
+                            "title": "Включите журналы отладки graphql"
+                        }
+                    }
+                },
+                "title": "Разное",
+                "log_files": {
+                    "file_size": {
+                        "title": "Максимальный размер файла журнала",
+                        "description": "Пример возможных значений: 1 (байты), 1 КБ (килобайты), 1 МБ (мегабайты), 1 ГБ (гигабайты)"
+                    },
+                    "total_size": {
+                        "title": "Максимальный размер всех файлов журнала",
+                        "description": "$t(settings.server.misc.log_files.file_size.description)"
+                    },
+                    "file_cleanup": {
+                        "title": "Очистка файла журнала",
+                        "value": "Удаление резервных копий, возраст которых превышает $t(global.date.value.label.day)"
+                    }
+                }
+            },
+            "requests": {
+                "sources": {
+                    "parallel": {
+                        "label": {
+                            "value": "{{value}} $t(source.title)",
+                            "title": "Параллельные запросы к источникам"
+                        }
+                    }
+                },
+                "title": "Запросы"
+            },
+            "socks_proxy": {
+                "label": {
+                    "enable": "Используйте прокси-сервер SOCKS",
+                    "host": "Хост SOCKS",
+                    "username": "Имя пользователя SOCKS",
+                    "version": "Версия SOCKS",
+                    "port": "Порт SOCKS",
+                    "password": "Пароль SOCKS"
+                },
+                "title": "Прокси SOCKS"
+            },
+            "title": {
+                "server": "Сервер"
+            },
+            "auth": {
+                "title": "Аутентификация"
+            },
+            "cloudflare": {
+                "flaresolverr": {
+                    "enabled": {
+                        "label": {
+                            "title": "FlareSolverr включен",
+                            "description": "Посмотрите <2>FlareSolverr</2> для подробной информации по его настройке"
+                        }
+                    },
+                    "session": {
+                        "ttl": {
+                            "label": {
+                                "description": "FlareSolverr будет автоматически ротировать истекшие сессии на основе TTL, указанного в минутах",
+                                "title": "TTL сессия FlareSolverr"
+                            }
+                        },
+                        "name": {
+                            "label": {
+                                "title": "FlareSolverr имя сессии"
+                            }
+                        }
+                    },
+                    "timeout": {
+                        "label": {
+                            "description": "Сколько времени у FlareSolverr есть на обработку запроса",
+                            "title": "Таймаут запроса FlareSolverr"
+                        }
+                    },
+                    "url": {
+                        "label": {
+                            "description": "Адрес сервера FlareSolverr",
+                            "title": "url сервера FlareSolverr"
+                        }
+                    },
+                    "response_fallback": {
+                        "label": {
+                            "title": "Запасной ответ",
+                            "description": "Использовать ответ FlareSolverr в случае, если сервер встречает проверку Cloudflare, а Flaresolverr не встречает и, соответственно, не может её обойти (не работает для изображений)"
+                        }
+                    }
+                },
+                "title": "Обход Cloudflare"
+            }
+        },
+        "webui": {
+            "channel": {
+                "option": {
+                    "preview": {
+                        "label": {
+                            "disclaimer": "Возможно, функции и изменения в этой версии еще не полностью готовы и могут привести к ошибкам.\nУбедитесь, что у вас включено автоматическое резервное копирование, чтобы предотвратить потерю вашей библиотеки!\n\n$t(settings.webui.flavor.label.info)",
+                            "title": "Предпросмотр",
+                            "description": "Используйте новейшие функции и помогите нам подготовить их к стабильному релизу."
+                        }
+                    },
+                    "bundled": {
+                        "label": {
+                            "description": "Используйте версию, поставляемую вместе с выпуском сервера",
+                            "title": "Комплект"
+                        }
+                    },
+                    "stable": {
+                        "label": {
+                            "description": "Используйте последнюю выпущенную версию.",
+                            "title": "Стабильная"
+                        }
+                    }
+                },
+                "label": {
+                    "title": "Канал"
+                }
+            },
+            "interface": {
+                "label": {
+                    "description": "Где запускать $t(settings.webui.title.webui) при запуске сервера",
+                    "title": "Интерфейс"
+                },
+                "option": {
+                    "label": {
+                        "browser": "Браузер",
+                        "electron": "Electron"
+                    }
+                }
+            },
+            "label": {
+                "initial_open_browser": "Открывайте $t(settings.webui.title.webui) при запуске сервера"
+            },
+            "flavor": {
+                "option": {
+                    "custom": {
+                        "label": {
+                            "description": "Используйте кастомную $t(settings.webui.title.webui).\nДля использования кастомной $t(settings.webui.title.webui) замените содержимое каталога «webUI» в корневом каталоге на сервере на файлы пользовательского каталога $t(settings.webui.title.webui)",
+                            "title": "Собственный"
+                        }
+                    },
+                    "vui": {
+                        "label": {
+                            "description": "Веб-фронтенд, ориентированный на предварительный просмотр, созданный с помощью svelte",
+                            "title": "VUI"
+                        }
+                    },
+                    "webui": {
+                        "label": {
+                            "description": "Использовать стандартные $t(settings.webui.title.webui)"
+                        }
+                    }
+                },
+                "label": {
+                    "title": "Flavor",
+                    "info": "После изменения этого параметра перейдите на страницу «Информация», проверьте наличие обновления webUI и установите его"
+                }
+            },
+            "auto_update": {
+                "label": {
+                    "title": "Автоматически загружать новейшую версию",
+                    "interval": "Интервал между обновлениями"
+                }
+            },
+            "title": {
+                "webui": "WebUI"
+            },
+            "electron_path": {
+                "label": {
+                    "description": "Путь к установке electron на сервере",
+                    "title": "Путь electron"
+                }
+            }
+        },
+        "clear_cache": {
+            "label": {
+                "title": "Очистить кэш сервера",
+                "description": "Кэш клиента (браузера, электрона) должен быть очищен вместе с ним, иначе кэш клиента будет продолжать использоваться",
+                "failure": "Не получилось очистить кэш сервера",
+                "success": "Кэш сервера очищен"
+            }
+        },
+        "title": "Настройки",
+        "appearance": {
+            "theme": {
+                "create": {
+                    "dialog": {
+                        "error": {
+                            "invalid_json": "Недопустимый json",
+                            "invalid_name": "Название темы должно быть уникальным и не должно превышать 16 символов"
+                        },
+                        "theme_name": "Название"
+                    },
+                    "action": "Создание темы…",
+                    "success": "Тема создана",
+                    "failure": "Не удалось создать тему",
+                    "title": "Создать тему"
+                },
+                "edit": {
+                    "action": "Сохранение изменений темы…",
+                    "failure": "Не удалось сохранить изменения темы",
+                    "success": "Изменение темы сохранено",
+                    "title": "Редактировать тему"
+                },
+                "pure_black_mode": "Чистый черный темный режим",
+                "themes": {
+                    "orange_juice": "Апельсиновый Сок",
+                    "dune": "Дюна",
+                    "tree_frog_green": "Древесная Зеленая Лягушка",
+                    "bright_pink": "Ярко Розовый",
+                    "crimson": "Малиновый",
+                    "forest_dew": "Лесная Роса",
+                    "lavender": "Лавандовый",
+                    "minty_miracles": "Мятные Чудеса",
+                    "mountain_sunset": "Горный Закат",
+                    "rosegold": "Розовое золото",
+                    "veronica": "Вероника"
+                },
+                "select": {
+                    "success": "Выбранная тема",
+                    "fonts": {
+                        "error": "Не удалось загрузить тематические шрифты",
+                        "loading": "Загрузка тематических шрифтов…"
+                    }
+                },
+                "delete": {
+                    "failure": "Не удалось удалить тему \"{{theme}}\"",
+                    "action": "Удаление темы \"{{theme}}\"…",
+                    "success": "Удаленная тема \"{{theme}}\""
+                },
+                "title": "Тема"
+            },
+            "manga_thumbnail_backdrop": {
+                "description": "Устанавливает миниатюру манги в качестве фонового изображения на странице манги",
+                "title": "Миниатюра манги в качестве фона"
+            },
+            "title": "Внешний вид"
+        }
+    },
+    "extension": {
+        "label": {
+            "installation_failed_one": "Не получилось установить расширение",
+            "installation_failed_few": "Не получилось установить расширения",
+            "installation_failed_many": "Не получилось установить расширения",
+            "add_repository_info": "Вы должны добавить репозиторий расширений, чтобы иметь возможность устанавливать расширения",
+            "installed_successfully_one": "Расширение установлено",
+            "installed_successfully_few": "Расширения установлены",
+            "installed_successfully_many": "Расширения установлены",
+            "installing_file": "Установка расширения из файла…",
+            "uninstallation_failed_one": "Не получилось установить расширение",
+            "uninstallation_failed_few": "Не получилось установить расширения",
+            "uninstallation_failed_many": "Не получилось установить расширения",
+            "update_failed_one": "Не получилось обновить расширение",
+            "update_failed_few": "Не получилось обновить расширения",
+            "update_failed_many": "Не получилось обновить расширения"
+        },
+        "settings": {
+            "repositories": {
+                "custom": {
+                    "label": {
+                        "disclaimer": "<strong>Suwayomi никак не связано со сторонними репозиториями или расширениями!</strong><br/>Используйте с осторожностью, так как эти хранилища могут быть созданы злоумышленниками.<br/> Вам, как пользователю, необходимо убедиться в безопасности и в том, что вы доверяете любому хранилищу или расширению.",
+                        "description": "Добавьте репозитории, из которых можно устанавливать расширения",
+                        "title": "Репозитории расширений"
+                    },
+                    "dialog": {
+                        "action": {
+                            "button": {
+                                "add": "Добавить репозиторий"
+                            }
+                        }
+                    },
+                    "error": {
+                        "label": {
+                            "invalid_url": "Неверная ссылка на репозиторий"
+                        }
+                    }
+                }
+            }
+        },
+        "title_one": "Расширения",
+        "title_few": "Расширения",
+        "title_many": "Расширения",
+        "action": {
+            "label": {
+                "install": "Установить",
+                "install_external": "Установить стороннее расширение",
+                "uninstall": "Удалить",
+                "update": "Обновить",
+                "update_all": "Обновить все"
+            }
+        },
+        "language": {
+            "all": "Многоязыковое",
+            "other": "Другие"
+        },
+        "state": {
+            "label": {
+                "installed": "Установлено",
+                "installing": "Устанавливается",
+                "obsolete": "Устаревшее",
+                "uninstalling": "Удаление",
+                "update_pending": "Ожидающее обновления",
+                "updating": "Обновление"
+            }
+        }
+    },
+    "manga": {
+        "label": {
+            "status": "Статус",
+            "artist": "Художник",
+            "author": "Автор",
+            "edit_categories": "Изменить категории манги",
+            "reload_from_source": "Перезагрузить данные из источника"
+        },
+        "title_one": "Манга",
+        "title_few": "Манги",
+        "title_many": "Манги",
+        "action": {
+            "category": {
+                "button": {
+                    "selected": "Изменить категории выбранных"
+                },
+                "label": {
+                    "action": "Изменить категории",
+                    "success_one": "Изменена {{count}} категория манги",
+                    "success_few": "Изменено {{count}} категории манги",
+                    "success_many": "Изменено {{count}} категорий манги",
+                    "error_one": "Не удалось изменить категорию манги",
+                    "error_few": "Не удалось изменить категории манги",
+                    "error_many": "Не удалось изменить категорий манги"
+                }
+            },
+            "library": {
+                "remove": {
+                    "dialog": {
+                        "label": {
+                            "message": "Вы собираетесь удалить \"{{title}}\" из своей библиотеки"
+                        }
+                    },
+                    "label": {
+                        "action": "Убрать из библиотеки",
+                        "error_one": "Не удалось убрать {{count}} мангу из библиотеки",
+                        "error_few": "Не удалось убрать {{count}} манги из библиотеки",
+                        "error_many": "Не удалось убрать {{count}} манг из библиотеки",
+                        "success_one": "Убрана {{count}} манга из библиотеки",
+                        "success_few": "Убрано {{count}} манги из библиотеки",
+                        "success_many": "Убрано {{count}} манг из библиотеки"
+                    },
+                    "button": {
+                        "selected": "Убрать выделенное из библиотеки"
+                    }
+                },
+                "add": {
+                    "dialog": {
+                        "duplicate": {
+                            "label": {
+                                "info": "В вашей библиотеке есть одноименная запись.",
+                                "failure": "Не удалось выполнить проверку на повторяющиеся главы в Вашей библиотеке.\n\nОшибка: {{error}}"
+                            }
+                        }
+                    }
+                }
+            },
+            "migrate": {
+                "label": {
+                    "error": "Не получилось мигрировать мангу",
+                    "success": "Манга успешно мигрирована"
+                }
+            },
+            "track": {
+                "remove": {
+                    "dialog": {
+                        "label": {
+                            "description": "Это приведет к удалению локального отслеживания.",
+                            "delete_remote_track": "Также удалено из {{tracker}}",
+                            "title": "Удалить отслеживание из {{tracker}}?"
+                        }
+                    },
+                    "label": {
+                        "error": "Не удалось убрать из отслеживания мангу",
+                        "success": "Неотслеживаемая манга"
+                    }
+                },
+                "add": {
+                    "label": {
+                        "action": "Отслеживание",
+                        "error": "Не удалось отследить мангу",
+                        "success": "Отслеживаемая манга"
+                    }
+                }
+            }
+        },
+        "button": {
+            "add_to_library": "Добавить в библиотеку",
+            "in_library": "В библиотеке",
+            "track": {
+                "active_one": "{{count}} отслеживатель",
+                "active_few": "{{count}} отслеживателя",
+                "active_many": "{{count}} отслеживателей",
+                "start": "Отслеживание"
+            }
+        },
+        "error": {
+            "label": {
+                "no_matches": "Ни одна манга не соответствует этому фильтру",
+                "no_mangas_found": "Манга не найдена",
+                "request_failure": "Не удалось загрузить мангу"
+            }
+        },
+        "status": {
+            "completed": "Завершено",
+            "hiatus": "Прервано",
+            "licensed": "Лицензированный",
+            "ongoing": "Продолжается",
+            "publishing_finished": "Публикация завершена",
+            "unknown": "$t(global.label.unknown)",
+            "cancelled": "Отменено"
+        }
+    },
+    "reader": {
+        "button": {
+            "next_chapter": "Следующая глава",
+            "open_menu": "Открыть меню",
+            "close_menu": "Закрыть меню",
+            "exit": "Выйти из читалки",
+            "previous_chapter": "Предыдущая глава"
+        },
+        "error": {
+            "label": {
+                "next_chapter_does_not_exist": "Следующей главы нет",
+                "prev_chapter_does_not_exist": "Предыдущей главы нет",
+                "no_pages_found": "Страницы не найдены"
+            }
+        },
+        "settings": {
+            "label": {
+                "load_next_chapter": "Загрузите следующую главу в конце",
+                "reader_width": "Ширина читалки",
+                "fit_page_to_window": "Подогнать страницу по размеру экрана",
+                "show_page_number": "Показывать номера страниц",
+                "skip_dup_chapters": "Пропускать дубликаты глав",
+                "reader_type": "Тип читалки",
+                "static_navigation": "Статическая перемещение"
+            },
+            "reader_type": {
+                "label": {
+                    "continuous_vertical": "Продолжать вертикально",
+                    "webtoon": "Веб-комикс"
+                }
+            },
+            "error": {
+                "label": {
+                    "failed_to_save_settings": "Не удалось сохранить настройки читалки на сервере"
+                }
+            }
+        },
+        "page_info": {
+            "label": {
+                "of_max_pages": "из {{maxPages}}",
+                "currently_on_page": "Сейчас на странице"
+            }
+        },
+        "title": "Читалка — Манга {{mangaId}} Глава {{chapterIndex}}"
+    },
+    "search": {
+        "title": {
+            "global_search": "Глобальный поиск",
+            "search": "Поиск"
+        },
+        "error": {
+            "label": {
+                "failed_to_save_settings": "Не удалось сохранить настройки поиска по умолчанию на сервере",
+                "source_search_failed": "Не удалось найти источник"
+            }
+        }
+    },
+    "migrate": {
+        "dialog": {
+            "label": {
+                "delete_downloaded": "Удалить загруженное"
+            },
+            "title": "Выберите данные для включения",
+            "action": {
+                "button": {
+                    "show_entry": "Показать записи"
+                }
+            }
+        },
+        "label": {
+            "info": "Миграция манги…"
+        },
+        "search": {
+            "title": "$t(migrate.title) \"{{title}}\""
+        },
+        "title": "Мигрировать",
+        "sort": {
+            "by_manga_count": "По количеству манги",
+            "by_source_name": "По названию источника"
+        }
+    },
+    "source": {
+        "configuration": {
+            "title": "Настройки источника"
+        },
+        "title_one": "Источник",
+        "title_few": "Источника",
+        "title_many": "Источники",
+        "filter": {
+            "save_search": {
+                "dialog": {
+                    "label": {
+                        "title": "Сохранить текущий поиск",
+                        "delete": "Это удалит сохранённый поиск \"{{name}}\""
+                    }
+                },
+                "label": {
+                    "delete": "Удалить поиск",
+                    "save": "Сохранить поиск"
+                }
+            }
+        },
+        "local_source": {
+            "label": {
+                "checkout": "Проверить",
+                "guide": "Руководство по локальным источникам"
+            },
+            "title": "Локальный источник"
+        },
+        "error": {
+            "label": {
+                "no_sources_found": "Источники не найдены. Сначала установите расширения.",
+                "source_not_found": "Не удалось найти источник. Проверьте установленные расширения."
+            }
+        }
+    },
+    "tracking": {
+        "title": "Отслеживание",
+        "track_record": {
+            "label": {
+                "start_date": "Дата начала",
+                "finish_date": "Дата окончания",
+                "score": "Оценка"
+            }
+        },
+        "settings": {
+            "label": {
+                "update_progress_reading": "Обновить прогресс после чтения",
+                "update_progress_manual": "Обновить прогресс после ручной маркировки как прочитано",
+                "update_progress_reading_description": "Не работает при пометке нескольких манг как прочитанных одновременно"
+            },
+            "title": {
+                "trackers": "Отслеживания"
+            },
+            "dialog": {
+                "title": {
+                    "log_in": "Войти в систему как {{name}}",
+                    "log_out": "Выход из {{name}}"
+                }
+            }
+        },
+        "error": {
+            "label": {
+                "could_not_fetch_track_info": "Не удалось загрузить актуальную информацию из трекера",
+                "could_not_load_track_info": "Не удалось загрузить информацию отслеживания"
+            }
+        },
+        "action": {
+            "button": {
+                "add_tracking": "Добавить отслеживание"
+            },
+            "login": {
+                "label": {
+                    "failure": "Не удалось войти в {{name}}",
+                    "progress": "Вход в {{name}}…"
+                }
+            },
+            "logout": {
+                "label": {
+                    "failure": "Не удалось выйти из {{name}}"
+                }
+            }
+        },
+        "my_anime_list": {
+            "search": {
+                "label": {
+                    "hint": "Ищите идентификатор с помощью \"id:<ID>\" (например, \"id: 13\")\nОграничьте поиск своими списками с помощью \"my:<Title>\" (например, \"my: One Piece\")"
+                }
+            }
+        }
+    },
+    "updates": {
+        "title": "Обновления",
+        "error": {
+            "label": {
+                "no_updates_available": "У вас пока нет никаких обновлений."
+            }
+        }
+    }
+}

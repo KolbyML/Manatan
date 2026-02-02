@@ -1,0 +1,749 @@
+/* =====================================================
+   SHARED READER STYLES
+   Used by both PagedReader and ContinuousReader
+   ===================================================== */
+
+/* =====================================================
+   CSS RESET FOR READER CONTENT
+   ===================================================== */
+.page *,
+.chapter-block * {
+    box-sizing: border-box;
+}
+
+/* =====================================================
+   TYPOGRAPHY - SHARED
+   ===================================================== */
+
+/* Paragraphs */
+.page p,
+.chapter-block p {
+    margin: 0 0 1em 0;
+    text-indent: 1em;
+}
+
+.page p:first-of-type,
+.chapter-block p:first-of-type {
+    text-indent: 0;
+}
+
+/* Headings */
+.page h1,
+.page h2,
+.page h3,
+.page h4,
+.page h5,
+.page h6,
+.chapter-block h1,
+.chapter-block h2,
+.chapter-block h3,
+.chapter-block h4,
+.chapter-block h5,
+.chapter-block h6 {
+    font-weight: bold;
+    margin: 1.5em 0 0.5em 0;
+    text-indent: 0;
+    line-height: 1.3;
+}
+
+.page h1,
+.chapter-block h1 {
+    font-size: 1.6em;
+}
+
+.page h2,
+.chapter-block h2 {
+    font-size: 1.4em;
+}
+
+.page h3,
+.chapter-block h3 {
+    font-size: 1.2em;
+}
+
+.page h4,
+.chapter-block h4 {
+    font-size: 1.1em;
+}
+
+.page h5,
+.chapter-block h5 {
+    font-size: 1em;
+}
+
+.page h6,
+.chapter-block h6 {
+    font-size: 0.9em;
+}
+
+/* Blockquotes */
+.page blockquote,
+.chapter-block blockquote {
+    margin: 1em 0;
+    padding-left: 1em;
+    border-left: 3px solid currentColor;
+    opacity: 0.9;
+    font-style: italic;
+}
+
+/* Lists */
+.page ul,
+.page ol,
+.chapter-block ul,
+.chapter-block ol {
+    margin: 1em 0;
+    padding-left: 2em;
+}
+
+.page li,
+.chapter-block li {
+    margin: 0.25em 0;
+}
+
+/* Preformatted / Code */
+.page pre,
+.chapter-block pre {
+    margin: 1em 0;
+    padding: 1em;
+    background: rgba(128, 128, 128, 0.1);
+    border-radius: 4px;
+    overflow-x: auto;
+    font-family: 'Consolas', 'Monaco', monospace;
+    font-size: 0.9em;
+    white-space: pre-wrap;
+    word-wrap: break-word;
+}
+
+.page code,
+.chapter-block code {
+    font-family: 'Consolas', 'Monaco', monospace;
+    font-size: 0.9em;
+    background: rgba(128, 128, 128, 0.1);
+    padding: 0.1em 0.3em;
+    border-radius: 3px;
+}
+
+.page pre code,
+.chapter-block pre code {
+    background: none;
+    padding: 0;
+}
+
+/* Horizontal rules */
+.page hr,
+.chapter-block hr {
+    margin: 2em 0;
+    border: none;
+    border-top: 1px solid rgba(128, 128, 128, 0.3);
+}
+
+/* Tables */
+.page table,
+.chapter-block table {
+    margin: 1em 0;
+    border-collapse: collapse;
+    width: 100%;
+    font-size: 0.95em;
+}
+
+.page th,
+.page td,
+.chapter-block th,
+.chapter-block td {
+    padding: 0.5em;
+    border: 1px solid rgba(128, 128, 128, 0.3);
+    text-align: left;
+}
+
+.page th,
+.chapter-block th {
+    background: rgba(128, 128, 128, 0.1);
+    font-weight: bold;
+}
+
+/* =====================================================
+   IMAGES - SHARED
+   ===================================================== */
+
+/* Image page container */
+.image-page {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    height: 100%;
+    min-height: 200px;
+}
+
+.image-page img {
+    max-width: 95%;
+    max-height: 95%;
+    object-fit: contain;
+    margin: 0 auto;
+    display: block;
+}
+
+/* Inline images in text */
+.page img,
+.chapter-block img {
+    max-width: 100%;
+    height: auto;
+    display: block;
+    margin: 1em auto;
+    border-radius: 4px;
+}
+
+/* SVG images */
+.page svg,
+.chapter-block svg {
+    max-width: 100%;
+    height: auto;
+    display: block;
+    margin: 1em auto;
+}
+
+/* Figure elements */
+.page figure,
+.chapter-block figure {
+    margin: 1.5em 0;
+    text-align: center;
+}
+
+.page figcaption,
+.chapter-block figcaption {
+    margin-top: 0.5em;
+    font-size: 0.9em;
+    opacity: 0.8;
+    font-style: italic;
+}
+
+/* =====================================================
+   RUBY / FURIGANA - SHARED
+   ===================================================== */
+
+.page ruby,
+.chapter-block ruby {
+    ruby-align: center;
+    ruby-position: over;
+}
+
+.page rt,
+.chapter-block rt {
+    font-size: 0.5em;
+    font-weight: normal;
+    color: inherit;
+    opacity: 0.9;
+}
+
+.page rp,
+.chapter-block rp {
+    display: none;
+}
+
+/* Vertical text ruby adjustments */
+.vertical ruby,
+.content-vertical ruby {
+    ruby-position: over;
+}
+
+/* =====================================================
+   LINKS - SHARED
+   ===================================================== */
+
+.page a,
+.chapter-block a {
+    color: inherit;
+    text-decoration: underline;
+    text-decoration-color: rgba(128, 128, 128, 0.5);
+    text-decoration-thickness: 1px;
+    text-underline-offset: 2px;
+    transition: text-decoration-color 0.2s;
+}
+
+.page a:hover,
+.chapter-block a:hover {
+    text-decoration-color: currentColor;
+}
+
+/* =====================================================
+   EMPHASIS / FORMATTING - SHARED
+   ===================================================== */
+
+.page em,
+.chapter-block em {
+    font-style: italic;
+}
+
+.page strong,
+.chapter-block strong {
+    font-weight: bold;
+}
+
+.page u,
+.chapter-block u {
+    text-decoration: underline;
+}
+
+.page s,
+.page strike,
+.page del,
+.chapter-block s,
+.chapter-block strike,
+.chapter-block del {
+    text-decoration: line-through;
+    opacity: 0.7;
+}
+
+.page sup,
+.chapter-block sup {
+    font-size: 0.75em;
+    vertical-align: super;
+}
+
+.page sub,
+.chapter-block sub {
+    font-size: 0.75em;
+    vertical-align: sub;
+}
+
+.page small,
+.chapter-block small {
+    font-size: 0.85em;
+}
+
+/* =====================================================
+   JAPANESE SPECIFIC - SHARED
+   ===================================================== */
+
+/* Emphasis dots (圏点) */
+.page em.emphasis-dots,
+.chapter-block em.emphasis-dots {
+    font-style: normal;
+    text-emphasis: filled dot;
+    -webkit-text-emphasis: filled dot;
+}
+
+/* Vertical specific */
+.vertical .page,
+.vertical .chapter-block,
+.content-vertical .page,
+.content-vertical .chapter-block {
+    text-orientation: mixed;
+}
+
+/* Keep some elements horizontal in vertical text */
+.vertical .page img,
+.vertical .chapter-block img,
+.content-vertical .page img,
+.content-vertical .chapter-block img {
+    writing-mode: horizontal-tb;
+}
+
+/* =====================================================
+   SELECTION - SHARED
+   ===================================================== */
+
+.page ::selection,
+.chapter-block ::selection {
+    background: rgba(100, 150, 255, 0.3);
+    color: inherit;
+}
+
+.page ::-moz-selection,
+.chapter-block ::-moz-selection {
+    background: rgba(100, 150, 255, 0.3);
+    color: inherit;
+}
+
+/* =====================================================
+   DARK MODE ADJUSTMENTS
+   ===================================================== */
+
+/* Images in dark mode - slight brightness reduction */
+@media (prefers-color-scheme: dark) {
+
+    .page img,
+    .chapter-block img {
+        filter: brightness(0.95);
+    }
+}
+
+/* =====================================================
+   PRINT STYLES
+   ===================================================== */
+
+@media print {
+
+    .page,
+    .chapter-block {
+        break-inside: avoid;
+        page-break-inside: avoid;
+    }
+
+    .page h1,
+    .page h2,
+    .page h3,
+    .chapter-block h1,
+    .chapter-block h2,
+    .chapter-block h3 {
+        break-after: avoid;
+        page-break-after: avoid;
+    }
+
+    .page img,
+    .chapter-block img {
+        break-inside: avoid;
+        page-break-inside: avoid;
+    }
+}
+
+/* =====================================================
+   ACCESSIBILITY
+   ===================================================== */
+
+/* Focus visible for keyboard navigation */
+.page a:focus-visible,
+.chapter-block a:focus-visible {
+    outline: 2px solid currentColor;
+    outline-offset: 2px;
+}
+
+/* Reduced motion */
+@media (prefers-reduced-motion: reduce) {
+
+    .page *,
+    .chapter-block * {
+        transition: none !important;
+        animation: none !important;
+    }
+}
+
+/* High contrast mode */
+@media (prefers-contrast: high) {
+
+    .page a,
+    .chapter-block a {
+        text-decoration-thickness: 2px;
+    }
+
+    .page blockquote,
+    .chapter-block blockquote {
+        border-left-width: 4px;
+    }
+}
+
+/* =====================================================
+   UTILITY CLASSES
+   ===================================================== */
+
+/* Center content */
+.page .center,
+.chapter-block .center {
+    text-align: center;
+}
+
+/* Right align */
+.page .right,
+.chapter-block .right {
+    text-align: right;
+}
+
+/* No indent */
+.page .no-indent,
+.chapter-block .no-indent {
+    text-indent: 0 !important;
+}
+
+/* Drop cap */
+.page .dropcap::first-letter,
+.chapter-block .dropcap::first-letter {
+    font-size: 3em;
+    float: left;
+    line-height: 0.8;
+    padding-right: 0.1em;
+    font-weight: bold;
+}
+
+/* Scene break */
+.page .scene-break,
+.chapter-block .scene-break {
+    text-align: center;
+    margin: 2em 0;
+    opacity: 0.6;
+}
+
+.page .scene-break::before,
+.chapter-block .scene-break::before {
+    content: "* * *";
+    letter-spacing: 0.5em;
+}
+
+/* =====================================================
+   EPUB SPECIFIC OVERRIDES
+   ===================================================== */
+
+/* Reset EPUB inline styles that might break layout */
+.page [style*="font-size"],
+.chapter-block [style*="font-size"] {
+}
+
+.page [style*="font-family"],
+.chapter-block [style*="font-family"] {
+    /* Inherit from reader settings */
+    font-family: inherit !important;
+}
+
+/* Reset absolute positioning from EPUB */
+.page [style*="position: absolute"],
+.chapter-block [style*="position: absolute"] {
+    position: relative !important;
+}
+
+/* Reset fixed widths that might break responsive */
+.page [style*="width"][style*="px"],
+.chapter-block [style*="width"][style*="px"] {
+    max-width: 100%;
+}
+
+/* =====================================================
+   LOADING STATES
+   ===================================================== */
+
+/* Skeleton loading effect */
+@keyframes shimmer {
+    0% {
+        background-position: -200% 0;
+    }
+
+    100% {
+        background-position: 200% 0;
+    }
+}
+
+.loading-skeleton {
+    background: linear-gradient(90deg,
+            rgba(128, 128, 128, 0.1) 25%,
+            rgba(128, 128, 128, 0.2) 50%,
+            rgba(128, 128, 128, 0.1) 75%);
+    background-size: 200% 100%;
+    animation: shimmer 1.5s infinite;
+    border-radius: 4px;
+}
+
+.loading-skeleton.text {
+    height: 1em;
+    margin: 0.5em 0;
+}
+
+.loading-skeleton.heading {
+    height: 1.5em;
+    width: 60%;
+    margin: 1em 0;
+}
+
+.loading-skeleton.paragraph {
+    height: 4em;
+    margin: 1em 0;
+}
+
+/* =====================================================
+   TRANSITIONS
+   ===================================================== */
+
+/* Page transition */
+.page-enter {
+    opacity: 0;
+    transform: translateX(20px);
+}
+
+.page-enter-active {
+    opacity: 1;
+    transform: translateX(0);
+    transition: opacity 0.3s ease, transform 0.3s ease;
+}
+
+.page-exit {
+    opacity: 1;
+    transform: translateX(0);
+}
+
+.page-exit-active {
+    opacity: 0;
+    transform: translateX(-20px);
+    transition: opacity 0.3s ease, transform 0.3s ease;
+}
+
+/* Vertical mode transitions */
+.vertical .page-enter {
+    transform: translateY(-20px);
+}
+
+.vertical .page-enter-active {
+    transform: translateY(0);
+}
+
+.vertical .page-exit-active {
+    transform: translateY(20px);
+}
+
+/* =====================================================
+   Z-INDEX LAYERS
+   ===================================================== */
+
+/*
+   Layer hierarchy:
+   1. Content: 1
+   2. Navigation zones: 10
+   3. Navigation buttons: 20
+   4. Progress indicator: 30
+   5. Page slider: 30
+   6. UI overlay (header): 100
+   7. Settings drawer: 2000
+   8. Modals: 3000
+*/
+
+/* =====================================================
+   MOBILE SPECIFIC
+   ===================================================== */
+
+@media (max-width: 768px) {
+
+    .page p,
+    .chapter-block p {
+        text-indent: 0.5em;
+    }
+
+    .page blockquote,
+    .chapter-block blockquote {
+        padding-left: 0.75em;
+        margin-left: 0;
+        margin-right: 0;
+    }
+
+    .page pre,
+    .chapter-block pre {
+        padding: 0.75em;
+        font-size: 0.85em;
+    }
+
+    .page table,
+    .chapter-block table {
+        font-size: 0.85em;
+    }
+
+    .page th,
+    .page td,
+    .chapter-block th,
+    .chapter-block td {
+        padding: 0.35em;
+    }
+}
+
+/* =====================================================
+   TOUCH DEVICE SPECIFIC
+   ===================================================== */
+
+@media (hover: none) and (pointer: coarse) {
+
+    /* Larger tap targets for links */
+    .page a,
+    .chapter-block a {
+        padding: 0.1em 0;
+    }
+
+    /* Disable hover effects */
+    .page a:hover,
+    .chapter-block a:hover {
+        text-decoration-color: rgba(128, 128, 128, 0.5);
+    }
+}
+
+/* =====================================================
+   LANDSCAPE ORIENTATION
+   ===================================================== */
+
+@media (orientation: landscape) and (max-height: 500px) {
+
+    /* Reduce margins in landscape on small screens */
+    .page,
+    .chapter-block {
+        padding: 12px !important;
+    }
+
+    .page h1,
+    .chapter-block h1 {
+        font-size: 1.4em;
+    }
+
+    .page h2,
+    .chapter-block h2 {
+        font-size: 1.25em;
+    }
+
+    .page h3,
+    .chapter-block h3 {
+        font-size: 1.1em;
+    }
+}
+
+/* =====================================================
+   FULL-PAGE IMAGES 
+   ===================================================== */
+
+.paged-content img:only-child,
+.paged-content figure:only-child,
+.paged-content p:only-child img,
+.paged-content div:only-child img {
+    display: block;
+    margin: 0 auto;
+    max-width: 90%;
+    max-height: 90vh;
+    width: auto;
+    height: auto;
+    object-fit: contain;
+
+    /* Center vertically in the page */
+    position: relative;
+    top: 50%;
+    transform: translateY(-50%);
+}
+
+/* Prevent page breaks inside image containers */
+.paged-content p:has(img:only-child),
+.paged-content div:has(img:only-child),
+.paged-content figure {
+    break-inside: avoid;
+    page-break-inside: avoid;
+    display: block;
+    text-align: center;
+}
+
+/* Remove paragraph margins around standalone images */
+.paged-content p:has(img:only-child) {
+    margin: 0;
+    padding: 0;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* =====================================================
+   CENTERED IMAGES - SHARED
+   ===================================================== */
+
+/* Prevent orphan images */
+.chapter-block img,
+.paged-content img {
+    break-inside: avoid;
+    page-break-inside: avoid;
+}
+
+/* Image containers should not break */
+.image-page-container,
+figure,
+.chapter-block>p:has(img:only-child),
+.paged-content>p:has(img:only-child) {
+    break-inside: avoid;
+    page-break-inside: avoid;
+}

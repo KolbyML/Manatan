@@ -1,0 +1,910 @@
+{
+    "category": {
+        "dialog": {
+            "title": {
+                "new_category": "Kategori baru",
+                "edit_category_other": "Ubah kategori"
+            }
+        },
+        "error": {
+            "label": {
+                "empty": "Kategori ini kosong",
+                "request_failure": "Tidak dapat memuat kategori",
+                "create_failure": "Tidak dapat membuat kategori"
+            },
+            "no_categories_found": {
+                "label": {
+                    "info": "Kategori tak ditemukan."
+                }
+            }
+        },
+        "label": {
+            "category_name": "Nama kategori",
+            "use_as_default_category": "Kategori saat menambahkan manga ke perpustakaan"
+        },
+        "title": {
+            "set_categories": "Atur kategori",
+            "category_other": "Kategori"
+        },
+        "settings": {
+            "inclusion": {
+                "label": {
+                    "exclude": "Pengecualian: {{excludedCategoriesText}}",
+                    "include": "Disertakan: {{includedCategoriesText}}"
+                }
+            }
+        },
+        "value": "{{count}} $t(category.title.category, lowercase)"
+    },
+    "chapter": {
+        "action": {
+            "bookmark": {
+                "remove": {
+                    "button": {
+                        "selected": "Hapus yang terpilih dari favorit"
+                    },
+                    "label": {
+                        "action": "Hapus favorit",
+                        "success_other": "Telah menghapus {{count}} dari favorit",
+                        "error_other": "Tidak dapat menghapus favorit",
+                        "confirmation_other": "Kamu akan menghapus {{count}} bookmark"
+                    }
+                },
+                "add": {
+                    "label": {
+                        "action": "Tambahkan ke favorit",
+                        "error_other": "Tidak dapat mengatur favorit pada bab",
+                        "success_other": "{{count}} bab telah difavorit"
+                    },
+                    "button": {
+                        "selected": "Telah difavorit"
+                    }
+                }
+            },
+            "download": {
+                "delete": {
+                    "label": {
+                        "success_other": "{{count}} bab dihapus",
+                        "action": "Hapus",
+                        "error_other": "Tidak dapat menghapus bab",
+                        "confirmation_other": "Kamu akan menghapus {{count}} unduhan"
+                    },
+                    "button": {
+                        "selected": "Hapus Pilihan"
+                    }
+                },
+                "add": {
+                    "label": {
+                        "success_other": "{{count}} unduhan ditambahkan",
+                        "error_other": "Tidak dapat menambah unduhan",
+                        "action": "Unduh",
+                        "unread": "$t(global.filter.label.unread)",
+                        "ahead": "$t(download.settings.download_ahead.title) ({{count}})",
+                        "all": "$t(extension.language.all)",
+                        "next_other": "{{count}} bab selanjutnya",
+                        "confirmation_other": "Kamu akan mengunduh {{count}} chapter.\nSuwayomi bukanlah pengunduh massal, dan terlalu banyak unduhan dapat menyebabkan Anda diblokir dari sumber dan/atau menyebabkan masalah kinerja."
+                    },
+                    "button": {
+                        "selected": "Memilih Unduhan"
+                    }
+                }
+            },
+            "label": {
+                "select": "Pilih"
+            },
+            "mark_as_read": {
+                "add": {
+                    "label": {
+                        "action": {
+                            "current": "Tandai telah dibaca",
+                            "previous": "Tandai sebelumnya telah dibaca",
+                            "all": "Tandai semua telah dibaca"
+                        },
+                        "error_other": "Tidak dapat menandai bab telah dibaca",
+                        "success_other": "{{count}} chapter ditandai telah dibaca",
+                        "confirmation_other": "Kamu akan menandai {{count}} bab sebagai telah dibaca"
+                    },
+                    "button": {
+                        "selected": "Tandai terpilih telah dibaca"
+                    }
+                },
+                "remove": {
+                    "button": {
+                        "selected": "Tandai pilihan belum dibaca"
+                    },
+                    "label": {
+                        "action": "Tandai belum dibaca",
+                        "error_other": "Tidak dapat menandai bab belum dibaca",
+                        "success_other": "{{count}} bab ditandai belum dibaca",
+                        "confirmation_other": "Kamu akan menandai {{count}} bab sebagai belum dibaca"
+                    }
+                }
+            },
+            "filter_and_sort": {
+                "label": "Saring dan Urutkan"
+            },
+            "read": {
+                "resume": "Lanjutkan membaca\n#{{chapterNumber}} — {{title}}\n{{scanlator}}",
+                "start": "Mulai membaca\n#{{chapterNumber}} — {{title}}\n{{scanlator}}"
+            }
+        },
+        "error": {
+            "label": {
+                "no_matches": "Tidak menemukan bab berdasarkan filter",
+                "no_chapter_found": "Bab tidak ditemukan"
+            }
+        },
+        "status": {
+            "label": {
+                "downloaded": "Telah diunduh"
+            }
+        },
+        "title_other": "Bab",
+        "option": {
+            "display": {
+                "label": {
+                    "chapter_number": "Nomor Bab",
+                    "source_title": "Judul sumber"
+                }
+            },
+            "exclude_scanlators": "Kecualikan penerjemah"
+        },
+        "missing_other": "Kehilangan {{count}} bab",
+        "value_other": "{{count}} bab"
+    },
+    "download": {
+        "queue": {
+            "label": {
+                "no_downloads": "Tidak ada unduhan",
+                "delete_all": "Hapus semua"
+            },
+            "error": {
+                "label": {
+                    "failed_delete_all": "Tidak dapat menghapus seluruh unduhan dari barisan",
+                    "failed_to_remove": "Tidak dapat menghapus unduhan dari antrian.",
+                    "failed_to_retry": "Tidak dapat mengulang unduhan yang gagal."
+                }
+            },
+            "info": {
+                "paused": "Dijeda — $t(download.queue.info.remaining)",
+                "remaining": "Tersisa {{count}}"
+            }
+        },
+        "settings": {
+            "auto_download": {
+                "download_limit": {
+                    "label": {
+                        "description": "Batasi jumlah bab baru yang akan diunduh.",
+                        "title": "Batas pengunduhan bab"
+                    }
+                },
+                "label": {
+                    "new_chapters": "Unduh bab baru",
+                    "ignore_re_uploads": "Abaikan bab yang diunggah ulang",
+                    "ignore_with_unread_chapters": "Abaikan pengunduhan bab otomatis untuk entri dengan bab yang belum dibaca"
+                },
+                "title": "Unduh otomatis",
+                "categories": {
+                    "label": {
+                        "include_in_download": "Entri dalam kategori yang dikecualikan tidak akan diunduh meskipun entri tersebut juga termasuk dalam kategori yang disertakan"
+                    }
+                }
+            },
+            "download_path": {
+                "label": {
+                    "title": "Lokasi pengunduhan",
+                    "description": "Jalur ke direktori di server tempat file yang diunduh harus disimpan"
+                }
+            },
+            "download_ahead": {
+                "title": "Unduh terlebih dahulu",
+                "label": {
+                    "value": "{{chapters}} $t(chapter.title)",
+                    "unread_chapters_to_download": "Jumlah bab yang belum dibaca untuk diunduh",
+                    "while_reading": "Unduh otomatis saat membaca",
+                    "description": "Seberapa banyak bab yang dapat diunduh sembari membaca.",
+                    "disclaimer": "Hanya berjalan apabila bab sekarang dan bab berikutnya telah diunduh."
+                }
+            },
+            "file_type": {
+                "label": {
+                    "cbz": "Simpan sebagai arsip CBZ"
+                }
+            },
+            "delete_chapters": {
+                "title": "Hapus bab",
+                "label": {
+                    "allow_deletion_of_bookmarked": "Izinkan penghapusan bab yang ditandai",
+                    "manually_marked_as_read": "Hapus bab setelah menandainya secara manual sebagai telah dibaca"
+                },
+                "while_reading": {
+                    "label": {
+                        "title": "Hapus bab yang sudah selesai saat membaca"
+                    },
+                    "option": {
+                        "label": {
+                            "fifth": "Lima bab terakhir yang sudah dibaca",
+                            "first": "Bab terakhir yang sudah dibaca",
+                            "fourth": "Empat bab terakhir yang sudah dibaca",
+                            "third": "Tiga bab terakhir yang sudah dibaca",
+                            "second": "Dua bab terakhir yang sudah dibaca"
+                        }
+                    }
+                }
+            },
+            "conversion": {
+                "compression_level": "Tingkat kompresi"
+            }
+        },
+        "state": {
+            "label": {
+                "finished": "$t(global.label.finished)",
+                "queued": "Diantrikan",
+                "downloading": "Mengunduh",
+                "error": "Terjadi kesalahan"
+            }
+        },
+        "title": {
+            "queue": "Unduh antrian",
+            "download": "Unduh"
+        }
+    },
+    "global": {
+        "button": {
+            "create": "Buat",
+            "deselect": "Batalkan Pilihan",
+            "reset": "Reset",
+            "retry": "Ulangi",
+            "select": "Pilih",
+            "options": "Opsi",
+            "reset_to_default": "Kembalikan ke Setelan Awal",
+            "ok": "Ok",
+            "save": "Simpan",
+            "add": "Tambah",
+            "start": "Mulai",
+            "submit": "Kirim",
+            "copy": "Salin",
+            "select_all": "Pilih Semua",
+            "show_more": "Tampilkan lebih banyak",
+            "stop": "Stop",
+            "cancel": "Batal",
+            "log_in": "Masuk",
+            "refresh": "Muat Ulang",
+            "remind_later": "Ingatkan Nanti",
+            "restore": "Pulihkan",
+            "resume": "Lanjutkan",
+            "delete": "Hapus",
+            "latest": "Terakhir",
+            "log_out": "Keluar",
+            "popular": "Populer",
+            "dont_show_dialog_again": "Jangan tampilkan dialog ini lagi",
+            "remove": "Copot",
+            "show_less": "Tampilkan lebih sedikit",
+            "edit": "Sunting",
+            "filter": "Saring",
+            "ignore": "Abaikan",
+            "browse": "Browser",
+            "migrate": "Bermigasi",
+            "changelog": "Catatan Perubahan",
+            "set": "Atur",
+            "open": "Buka",
+            "open_browser": "Buka di peramban"
+        },
+        "date": {
+            "label": {
+                "day_other": "Hari",
+                "today": "Hari ini",
+                "today_at": "Hari ini pada waktu {{timeString}}",
+                "yesterday": "Kemarin",
+                "yesterday_at": "Kemarin pada waktu {{timeString}}"
+            },
+            "value": {
+                "label": {
+                    "day": "{{days}} $t(global.date.label.day, lowercase)"
+                }
+            }
+        },
+        "label": {
+            "close": "Tutup",
+            "are_you_sure": "Anda yakin?",
+            "auto": "Otomatis",
+            "copied_clipboard": "Disalin ke papan klip",
+            "desktop": "Desktop",
+            "both": "Keduanya",
+            "bottom": "Bawah",
+            "default": "Bawaan",
+            "dark": "Gelap",
+            "advanced": "Lanjutan",
+            "client": "Klien",
+            "browse": "Jelajahi",
+            "asterisk": "*",
+            "left": "Kiri",
+            "small": "Kecil",
+            "sort": "Pendek",
+            "success": "Berhasil",
+            "right": "Kanan",
+            "share": "Bagikan",
+            "last_used": "Terakhir digunakan",
+            "loading": "Memuat…",
+            "system": "Sistem",
+            "warning": "Peringatan",
+            "discord": "Discord",
+            "display": "Tampilan",
+            "other": "Lain",
+            "finished": "Selesai",
+            "general": "Umum",
+            "never": "Tidak pernah",
+            "next": "Selanjutnya",
+            "open_in_browser": "Buka di browser",
+            "disabled": "Dinonaktifkan",
+            "error": "Kesalahan",
+            "filter": "Saring",
+            "footnote": "{{value}}<0>$t(global.label.asterisk)</0>",
+            "github": "GitHub",
+            "horizontal": "Mendatar",
+            "light": "Terang",
+            "links": "Tautan",
+            "logged_in": "Masuk",
+            "medium": "Sedang",
+            "menu": "Menu",
+            "mobile": "Seluler",
+            "none": "Tidak ada",
+            "pinned": "Disematkan",
+            "placeholder": "Tempat sementara",
+            "scanlator": "Penerjemah",
+            "stopped": "Berhenti",
+            "tiny": "Kecil",
+            "unknown": "Tidak diketahui",
+            "username": "Nama pengguna",
+            "version": "Versi",
+            "vertical": "Vertikal",
+            "hidden": "Tersembunyi",
+            "info": "Informasi",
+            "large": "Besar",
+            "load_in_progress": "Masih memuat data yang diperlukan…",
+            "more": "Lebih",
+            "password": "Sandi",
+            "previous": "Sebelumnya",
+            "standard": "Standar",
+            "started": "Dimulai",
+            "type": "Tipe"
+        },
+        "filter": {
+            "label": {
+                "unread": "Belum dibaca",
+                "started": "Dimulai",
+                "duplicate_chapters": "Bab duplikat",
+                "bookmarked": "Ditandai",
+                "downloaded": "Telah diunduh",
+                "tracked": "Dilacak"
+            }
+        },
+        "error": {
+            "label": {
+                "failed_to_load_data": "Tidak dapat memuat data",
+                "invalid_action": "Ini bukan aksi yang valid",
+                "failed_to_save_changes": "Tidak dapat menyimpan perubahan",
+                "unrecoverable_error": "Terjadi kesalahan\nTerjadi kesalahan yang tidak dapat kami pulihkan",
+                "invalid_input": "Masukan tidak valid",
+                "update_failed": "Tidak dapat memeriksa pembaruan",
+                "invalid_file_type": "Tipe berkas tidak valid"
+            }
+        },
+        "grid_layout": {
+            "label": {
+                "comfortable_grid": "Grid nyaman",
+                "list": "Daftar",
+                "compact_grid": "Grid padat"
+            },
+            "title": "Mode tampilan"
+        },
+        "colors": {
+            "gray": "Abu - abu",
+            "white": "Putih",
+            "black": "Hitam"
+        },
+        "language": {
+            "label": {
+                "language": "Bahasa",
+                "language_with_code": "Bahasa dengan kode: {{code}}"
+            },
+            "error": {
+                "load": "Tidak dapat memuat bahasa"
+            },
+            "title": {
+                "weblate": "Weblate",
+                "enabled_languages": "Bahasa yang diijinkan"
+            }
+        },
+        "time": {
+            "minutes": {
+                "minute_other": "Menit",
+                "value": "{{count}} $t(global.time.minutes.minute, lowercase)"
+            },
+            "seconds": {
+                "second_other": "Detik",
+                "value": "{{count}} $t(global.time.seconds.second, lowercase)"
+            },
+            "hour_short": "h"
+        },
+        "sort": {
+            "label": {
+                "by_chapter_number": "Berdasarkan nomor bab",
+                "asc": "Urut naik",
+                "by_fetch_date": "Berdasarkan tanggal diperoleh",
+                "by_source": "Berdasarkan sumber",
+                "by_upload_date": "Berdasarkan tanggal diunggah",
+                "desc": "Urut turun"
+            }
+        },
+        "update": {
+            "label": {
+                "info": "Versi server {{version}} ({{channel}}) tersedia untuk diunduh",
+                "check_failure": "Tidak dapat memeriksa pembaruan",
+                "checking": "Memeriksa pembaruan",
+                "update_failure": "Pembaruan gagal",
+                "update_success": "{{name}} telah diperbarui ke versi {{version}}{{channel}}",
+                "updating": "{{progress}}% | Memperbarui…",
+                "available": "Pembaharuan tersedia",
+                "up_to_date": "Ini adalah versi terbaru"
+            },
+            "settings": {
+                "inform": {
+                    "label": {
+                        "description": "Menampilkan dialog jika versi baru tersedia",
+                        "title": "Memberi tahu tentang pembaruan yang tersedia"
+                    }
+                }
+            }
+        },
+        "unit": {
+            "px": "px"
+        },
+        "value": "{{value}}{{unit}}"
+    },
+    "extension": {
+        "label": {
+            "update_failed_other": "Tidak dapat memperbaharui file ekstensi",
+            "uninstallation_failed_other": "Tidak dapat memasang file ekstensi",
+            "installation_failed_other": "Tidak dapat memasang file ekstensi",
+            "installing_file": "Memasang file ekstensi…",
+            "installed_successfully_other": "File ekstensi terpasang",
+            "add_repository_info": "Anda harus menambahkan repositori ekstensi untuk dapat menginstal ekstensi",
+            "age_rating": "Peringkat usia"
+        },
+        "language": {
+            "other": "Lainnya",
+            "all": "Semua"
+        },
+        "action": {
+            "label": {
+                "install": "Pasang",
+                "update": "Perbaharui",
+                "uninstall": "Hapus pemasangan",
+                "install_external": "Pasang ekstensi eksternal",
+                "update_all": "Perbaharui semua"
+            }
+        },
+        "settings": {
+            "repositories": {
+                "custom": {
+                    "error": {
+                        "label": {
+                            "invalid_url": "Alamat url repositori salah"
+                        }
+                    },
+                    "dialog": {
+                        "action": {
+                            "button": {
+                                "add": "Tambahkan repositori"
+                            }
+                        }
+                    },
+                    "label": {
+                        "disclaimer": "<strong>Suwayomi tidak mendukung repositori atau file tambahan pihak ketiga!</strong><br/>Gunakan dengan hati-hati karena ada kemungkinan adanya aktor jahat yang membuat repositori tersebut .<br/>Anda sebagai pengguna harus memverifikasi keamanan dan mempercayai repositori dan ekstensi apapun.",
+                        "title": "Repositori ekstensi",
+                        "description": "Tambahkan repositori tempat ekstensi dapat diinstal"
+                    }
+                }
+            },
+            "dialog": {
+                "title": "Pengaturan ekstensi per bahasa"
+            }
+        },
+        "state": {
+            "label": {
+                "uninstalling": "Menghapus pemasangan",
+                "installing": "Memasang",
+                "installed": "Terpasang",
+                "obsolete": "Usang",
+                "update_pending": "Pembaruan tertunda",
+                "updating": "Memperbarui"
+            }
+        },
+        "title_other": "Ekstensi"
+    },
+    "history": {
+        "error": {
+            "label": {
+                "no_history_available": "Kamu belum membaca seri apa pun sampai sekarang."
+            }
+        },
+        "settings": {
+            "hide": "Sembunyikan riwayat"
+        },
+        "title": "Riwayat"
+    },
+    "hotkeys": {
+        "create": {
+            "dialog": {
+                "label": "Kunci yang tercatat: <Keys/>",
+                "placeholder": "Tekan tombol",
+                "title": "Rekam tombol pintas"
+            },
+            "error": {
+                "exists": "Tombol pintas sudah ada"
+            }
+        },
+        "info": {
+            "delete": "Klik tombol untuk menghapus pengikatan"
+        },
+        "title_other": "Tombol pintas"
+    },
+    "library": {
+        "action": {
+            "label": {
+                "search_globally": "Cari \"{{query}}\" secara global",
+                "stop_update": "Hentikan pembaruan global",
+                "update_category": "Perbarui kategori",
+                "update_library": "Perbarui pustaka"
+            }
+        },
+        "error": {
+            "label": {
+                "add_to_library": "Gagal menambahkan manga ke pustaka!",
+                "empty": "Pustaka anda kosong",
+                "no_matches": "Tidak ada manga yang sesuai dengan filter ini",
+                "remove_from_library": "Tidak dapat menghapus manga dari pustaka!",
+                "stop_global_update": "Gagal menghentikan pembaruan global"
+            }
+        },
+        "info": {
+            "label": {
+                "added_to_library": "Manga berhasil ditambahkan ke pustaka!",
+                "removed_from_library": "Manga berhasil di hapus dari pustaka!"
+            }
+        },
+        "option": {
+            "display": {
+                "badge": {
+                    "label": {
+                        "download_badges": "Lencana unduhan",
+                        "unread_badges": "Lencana belum dibaca"
+                    },
+                    "title": "Lencana"
+                },
+                "other": {
+                    "label": {
+                        "show_continue_reading_button": "Tampilkan tombol lanjutkan membaca"
+                    }
+                },
+                "tab": {
+                    "label": {
+                        "show_number_of_items": "Tampilkan jumlah item"
+                    },
+                    "title": "Tab"
+                }
+            },
+            "sort": {
+                "label": {
+                    "alphabetically": "A-Z",
+                    "by_date_added": "Baru ditambahkan",
+                    "by_last_read": "Baru dibaca",
+                    "by_latest_fetched_chapter": "Bab terbaru yang diambil",
+                    "by_latest_uploaded_chapter": "Bab terbaru yang diunggah",
+                    "by_total_chapters": "Total bab",
+                    "by_unread_chapters": "Bab yang belum dibaca"
+                }
+            }
+        },
+        "settings": {
+            "advanced": {
+                "database": {
+                    "cleanup": {
+                        "label": {
+                            "description": "Hapus manga yang tidak ada di pustaka dari kategori",
+                            "error": "Gagal menghapus manga yang tidak ada di pustaka dari kategori",
+                            "success": "Manga yang tidak ada di pustaka berhasil dihapus dari kategori",
+                            "title": "Bersihkan basis data"
+                        }
+                    }
+                },
+                "duplicates": {
+                    "label": {
+                        "description": "Tampilkan semua entri duplikat di pustaka Anda",
+                        "title": "Entri duplikat"
+                    },
+                    "settings": {
+                        "label": {
+                            "check_description": "Cek deskripsi"
+                        }
+                    }
+                }
+            },
+            "general": {
+                "add_to_library": {
+                    "category_selection": {
+                        "label": {
+                            "description": "Tampilkan dialog pemilihan kategori saat menambahkan manga ke pustaka",
+                            "title": "Dialog pemilihan kategori"
+                        }
+                    }
+                },
+                "remove_from_library": {
+                    "remove_from_categories": {
+                        "label": {
+                            "description": "Hapus manga dari kategori saat menghapusnya dari pustaka",
+                            "title": "Lupakan kategori manga"
+                        }
+                    }
+                },
+                "search": {
+                    "ignore_filters": {
+                        "label": {
+                            "description": "Hasil pencarian akan mencakup manga yang tidak cocok dengan filter saat ini",
+                            "title": "Abaikan filter saat mencari"
+                        }
+                    }
+                }
+            },
+            "global_update": {
+                "auto_update": {
+                    "interval": {
+                        "label": {
+                            "title": "Interval pembaruan otomatis",
+                            "value": "{{hours}}$t(global.time.hour_short)"
+                        }
+                    },
+                    "label": {
+                        "title": "Pembaruan otomatis"
+                    }
+                },
+                "categories": {
+                    "label": {
+                        "info": "Entri dalam kategori yang dikecualikan tidak akan diperbarui meskipun entri tersebut juga ada dalam kategori yang disertakan"
+                    }
+                },
+                "entries": {
+                    "label": {
+                        "completed": "Dengan status \"Selesai\"",
+                        "not_started": "Yang belum dimulai",
+                        "unread_chapters": "Dengan bab yang belum dibaca"
+                    },
+                    "title": "Lewati pembaruan entri"
+                },
+                "label": {
+                    "last_update": "Pembaruan terakhir: {{date}}",
+                    "last_update_tooltip": "$t(library.settings.global_update.title) ($t(library.settings.global_update.label.last_update, lowercase))"
+                },
+                "metadata": {
+                    "label": {
+                        "description": "Periksa sampul dan detail baru saat memperbarui pustaka",
+                        "title": "Otomatis segarkan metadata"
+                    }
+                },
+                "title": "Pembaruan global"
+            }
+        },
+        "title": "Pustaka"
+    },
+    "manga": {
+        "action": {
+            "category": {
+                "button": {
+                    "selected": "Ubah kategori yang dipilih"
+                },
+                "label": {
+                    "action": "Ubah kategori",
+                    "confirmation_other": "Anda akan mengubah kategori {{count}} entri",
+                    "error_other": "Tidak dapat mengubah kategori manga",
+                    "success_other": "Mengubah kategori {{count}} manga"
+                }
+            },
+            "library": {
+                "add": {
+                    "dialog": {
+                        "duplicate": {
+                            "label": {
+                                "failure": "Tidak dapat memeriksa manga duplikat di pustaka Anda.\n\nKesalahan: {{error}}",
+                                "info": "Anda memiliki entri di pustaka Anda dengan nama yang sama."
+                            }
+                        }
+                    }
+                },
+                "remove": {
+                    "button": {
+                        "selected": "Hapus yang terpilih dari pustaka"
+                    },
+                    "dialog": {
+                        "label": {
+                            "message": "Anda akan menghapus \"**{{title}}**\" dari pustaka Anda"
+                        }
+                    },
+                    "label": {
+                        "action": "Hapus dari pustaka",
+                        "confirmation_other": "Anda akan menghapus **{{count}}** entri dari pustaka Anda",
+                        "error_other": "Tidak dapat menghapus manga dari pustaka",
+                        "success_other": "Menghapus **{{count}}** manga dari pustaka"
+                    }
+                }
+            },
+            "migrate": {
+                "label": {
+                    "error": "Tidak dapat memindahkan manga",
+                    "success": "Berhasil memindahkan manga"
+                }
+            },
+            "track": {
+                "add": {
+                    "label": {
+                        "action": "Lacak",
+                        "error": "Tidak dapat melacak manga",
+                        "success": "Manga terlacak"
+                    }
+                },
+                "remove": {
+                    "dialog": {
+                        "label": {
+                            "delete_remote_track": "Juga hapus dari {{tracker}}",
+                            "description": "Ini akan menghapus pelacakan secara lokal.",
+                            "title": "Hapus pelacakan {{tracker}}?"
+                        }
+                    },
+                    "label": {
+                        "error": "Tidak dapat berhenti melacak manga",
+                        "success": "Manga tidak terlacak"
+                    }
+                }
+            }
+        },
+        "button": {
+            "add_to_library": "Tambahkan Ke Pustaka",
+            "in_library": "Di Pustaka",
+            "track": {
+                "active_other": "{{count}} Pelacak",
+                "start": "Pelacakan"
+            }
+        },
+        "error": {
+            "label": {
+                "no_mangas_found": "Tidak ada manga ditemukan",
+                "no_matches": "Tidak ada manga yang cocok dengan filter ini",
+                "request_failure": "Tidak dapat memuat manga"
+            }
+        },
+        "label": {
+            "artist": "Artis",
+            "author": "Penulis",
+            "edit_categories": "Edit kategori manga",
+            "reload_from_source": "Muat ulang data dari sumber",
+            "status": "Status"
+        },
+        "status": {
+            "cancelled": "Dibatalkan",
+            "completed": "Selesai",
+            "hiatus": "Hiatus",
+            "licensed": "Berlisensi",
+            "ongoing": "Sedang Berlangsung",
+            "publishing_finished": "Penerbitan selesai",
+            "unknown": "$t(global.label.unknown)"
+        },
+        "title_other": "Manga",
+        "type": {
+            "comic": "Komik",
+            "long_strip": "Strip panjang",
+            "manga": "$t(manga.title_one)",
+            "manhua": "Manhua",
+            "manhwa": "Manhwa",
+            "webtoon": "$t(reader.settings.reader_type.label.webtoon)"
+        }
+    },
+    "migrate": {
+        "dialog": {
+            "action": {
+                "button": {
+                    "show_entry": "Tampilkan entri"
+                }
+            },
+            "label": {
+                "delete_downloaded": "Hapus yang diunduh"
+            },
+            "title": "Pilih data untuk disertakan"
+        },
+        "label": {
+            "info": "Memindahkan manga…"
+        },
+        "search": {
+            "title": "$t(migrate.title) \"{{title}}\""
+        },
+        "sort": {
+            "by_manga_count": "Berdasarkan jumlah manga",
+            "by_source_name": "Berdasarkan nama sumber"
+        },
+        "title": "Migrasi"
+    },
+    "reader": {
+        "button": {
+            "chapter_list": "Daftar bab",
+            "next_chapter": "Bab selanjutnya",
+            "next_page": "Halaman selanjutnya",
+            "open_menu": "Buka menu",
+            "previous_chapter": "Bab sebelumnya",
+            "previous_page": "Halaman sebelumnya",
+            "retry_load_pages": "Mengulang halaman yang galat"
+        },
+        "chapter_transition": {
+            "warning": {
+                "next": {
+                    "chapter_number_other": "Terdapat {{count}} bab yang hilang.\nSaat ini: {{currentChapter}}\nSelanjutnya: {{nextChapter}}",
+                    "scanlator": "Bab selanjutnya berasal dari scanlator yang berbeda dari saat ini.\nSaat ini: {{currentScanlator}}\nSelanjutnya: {{nextScanlator}}"
+                },
+                "previous": {
+                    "chapter_number_other": "Terdapat {{count}} bab yang hilang.\nSebelumnya: {{nextChapter}}\nSaat ini: {{currentChapter}}",
+                    "scanlator": "Bab sebelumnya berasal dari scanlator yang berbeda dari saat ini.\nSebelumnya: {{nextScanlator}}\nSaat ini: {{currentScanlator}}"
+                },
+                "title": "Peringatan transisi bab"
+            }
+        },
+        "error": {
+            "label": {
+                "chapter_not_found": "Bab tidak ditemukan",
+                "next_chapter_does_not_exist": "Tidak ada bab selanjutnya",
+                "no_pages_found": "Halaman tidak ditemukan",
+                "prev_chapter_does_not_exist": "Tidak ada bab sebelumnya"
+            }
+        },
+        "page_info": {
+            "label": {
+                "currently_on_page": "Di halaman saat ini",
+                "of_max_pages": "dari {{maxPages}}",
+                "page": "Halaman"
+            }
+        },
+        "settings": {
+            "active_setting": "Pengaturan aktif",
+            "auto_scroll": {
+                "smooth": "Gulir halus otomatis",
+                "speed": "Kecepatan gulir otomatis",
+                "title": "Gulir otomatis"
+            },
+            "auto_webtoon_mode": {
+                "title": "Mode webtoon otomatis"
+            },
+            "background_color": "Warna latar",
+            "chapter_transition": {
+                "warning": {
+                    "missing_chapter": "Beri tahu tentang bab yang hilang saat berganti bab",
+                    "scanlator_change": "Beri tahu tentang pergantian scanlator saat berganti bab"
+                }
+            },
+            "custom_filter": {
+                "brightness": "Kecerahan kustom",
+                "contrast": "Kontras kustom",
+                "grayscale": "Skala abu-abu",
+                "hue": "Rona kustom",
+                "invert": "Balikkan warna",
+                "rgba": {
+                    "alpha": "Alpha",
+                    "blend_mode": {
+                        "darken": "Gelapkan",
+                        "default": "$t(global.label.default)",
+                        "lighten": "Cerahkan",
+                        "multiply": "Multiply",
+                        "overlay": "Overlay",
+                        "screen": "Screen"
+                    }
+                }
+            }
+        }
+    }
+}

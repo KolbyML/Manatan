@@ -74,7 +74,7 @@ static JAR_BYTES: &[u8] = include_bytes!("../resources/Suwayomi-Server.jar");
 static NATIVES_BYTES: &[u8] = include_bytes!("../resources/natives.zip");
 
 #[derive(RustEmbed)]
-#[folder = "resources/manatan-webui"]
+#[folder = "resources/webui"]
 struct FrontendAssets;
 
 #[derive(Serialize)]
@@ -622,7 +622,10 @@ async fn run_server(
     let local_anime_dir = data_dir.join("local-anime");
     if !local_anime_dir.exists() {
         if let Err(err) = fs::create_dir_all(&local_anime_dir) {
-            warn!("Failed to create local anime dir {}: {err}", local_anime_dir.display());
+            warn!(
+                "Failed to create local anime dir {}: {err}",
+                local_anime_dir.display()
+            );
         }
     }
     let bin_dir = data_dir.join("bin");

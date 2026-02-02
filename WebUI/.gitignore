@@ -1,0 +1,12 @@
+node_modules/
+.eslintcache
+.vscode
+.env
+.idea
+
+build/*
+dev-dist/*
+
+src/lib/graphql/schema.json
+
+**.DS_Store

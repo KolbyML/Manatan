@@ -52,12 +52,12 @@ lint: fmt clippy sort
 
 .PHONY: clean
 clean:
-	rm -rf bin/manatan/resources/manatan-webui
+	rm -rf bin/manatan/resources/webui
 	rm -rf bin/manatan/resources/jre_bundle.zip
 	rm -rf bin/manatan/resources/Suwayomi-Server.jar
 	rm -rf bin/manatan/resources/natives.zip
 	rm -rf bin/manatan_android/assets/*
-	rm -f bin/manatan_android/manatan-webui.tar
+	rm -f bin/manatan_android/webui.tar
 	# rm -rf bin/manatan_ios/Manatan/webui/*
 	rm -rf bin/manatan_ios/Manatan/lib/*
 	rm -rf bin/manatan_ios/Manatan/jar/suwayomi-server.jar
@@ -66,7 +66,7 @@ clean:
 	rm -rf temp_natives 
 	rm -f manatan-linux-*.tar.gz
 	rm -rf jre_bundle
-	rm -rf Manatan-WebUI/build
+	rm -rf WebUI/build
 
 .PHONY: clean_rust
 clean_rust:
@@ -86,10 +86,10 @@ clean-deps:
 # --- WebUI Targets ---
 
 # Define all files that should trigger a rebuild (src, public, package.json, yarn.lock)
-WEBUI_SOURCES := $(shell find Manatan-WebUI/src Manatan-WebUI/public -type f 2>/dev/null) Manatan-WebUI/package.json Manatan-WebUI/yarn.lock
+WEBUI_SOURCES := $(shell find WebUI/src WebUI/public -type f 2>/dev/null) WebUI/package.json WebUI/yarn.lock
 
 # The Real Target: Only runs if sources are newer than build/index.html
-Manatan-WebUI/build/index.html: $(WEBUI_SOURCES)
+WebUI/build/index.html: $(WEBUI_SOURCES)
 	@echo "Building WebUI (Enforcing Node 22.12.0)..."
 	@export NVM_DIR="$$HOME/.nvm"; \
 	if [ -s "$$NVM_DIR/nvm.sh" ]; then \
@@ -100,27 +100,27 @@ Manatan-WebUI/build/index.html: $(WEBUI_SOURCES)
 	    echo "Warning: NVM not found. Using system node version:"; \
 	    node -v; \
 	fi; \
-	cd Manatan-WebUI && yarn install && yarn build
+	cd WebUI && yarn install && yarn build
 	@# "Touch" the output to update its timestamp, ensuring Make knows it's fresh
-	touch Manatan-WebUI/build/index.html
+	touch WebUI/build/index.html
 
 # Phony alias so your other targets (android_webui, etc.) still work
 .PHONY: build_webui
-build_webui: Manatan-WebUI/build/index.html
+build_webui: WebUI/build/index.html
 
 .PHONY: desktop_webui
 desktop_webui: build_webui
 	@echo "Installing WebUI for Desktop..."
-	rm -rf bin/manatan/resources/manatan-webui
-	mkdir -p bin/manatan/resources/manatan-webui
-	cp -r Manatan-WebUI/build/* bin/manatan/resources/manatan-webui/
+	rm -rf bin/manatan/resources/webui
+	mkdir -p bin/manatan/resources/webui
+	cp -r WebUI/build/* bin/manatan/resources/webui/
 
 .PHONY: android_webui
 android_webui: build_webui
 	@echo "Packaging WebUI for Android..."
-	rm -rf bin/manatan_android/assets/manatan-webui.tar
+	rm -rf bin/manatan_android/assets/webui.tar
 	mkdir -p bin/manatan_android/assets
-	tar -cf bin/manatan_android/assets/manatan-webui.tar -C Manatan-WebUI/build .
+	tar -cf bin/manatan_android/assets/webui.tar -C WebUI/build .
 
 # --- Android Icon Setup ---
 .PHONY: android_icon
@@ -137,7 +137,7 @@ android_icon:
 	cp bin/manatan_ios/Manatan/Assets.xcassets/AppIcon.appiconset/manatanlogo11.png bin/manatan_android/res/mipmap-hdpi/ic_launcher.png
 	cp bin/manatan_ios/Manatan/Assets.xcassets/AppIcon.appiconset/manatanlogo11.png bin/manatan_android/res/mipmap-mdpi/ic_launcher.png
 
-bin/manatan_ios/Manatan/webui/index.html: Manatan-WebUI/build/index.html
+bin/manatan_ios/Manatan/webui/index.html: WebUI/build/index.html
 	@echo "Packaging WebUI for iOS..."
 	@# Ensure directory exists
 	mkdir -p bin/manatan_ios/Manatan/webui
@@ -148,7 +148,7 @@ bin/manatan_ios/Manatan/webui/index.html: Manatan-WebUI/build/index.html
 	
 	@# Copy build artifacts
 	@echo "Copying new files..."
-	cp -r Manatan-WebUI/build/* bin/manatan_ios/Manatan/webui/
+	cp -r WebUI/build/* bin/manatan_ios/Manatan/webui/
 	@echo "✅ iOS WebUI updated."
 
 .PHONY: ios_webui
@@ -249,7 +249,7 @@ dev-embedded-local-jar: download_natives desktop_webui local_suwayomi_jar bundle
 .PHONY: dev-embedded-jar
 dev-embedded-jar: download_natives bundle_jre local_suwayomi_jar
 	@echo "Starting WebUI dev server (skipping release build)..."
-	@mkdir -p bin/manatan/resources/manatan-webui
+	@mkdir -p bin/manatan/resources/webui
 	@printf '%s\n' \
 		'<!doctype html>' \
 		'<html>' \
@@ -262,7 +262,7 @@ dev-embedded-jar: download_natives bundle_jre local_suwayomi_jar
 		'    <p>Redirecting to WebUI dev server at <a href="http://localhost:5173/">http://localhost:5173/</a></p>' \
 		'  </body>' \
 		'</html>' \
-		> bin/manatan/resources/manatan-webui/index.html
+		> bin/manatan/resources/webui/index.html
 	@export NVM_DIR="$$HOME/.nvm"; \
 	if [ -s "$$NVM_DIR/nvm.sh" ]; then \
 	    . "$$NVM_DIR/nvm.sh"; \
@@ -272,7 +272,7 @@ dev-embedded-jar: download_natives bundle_jre local_suwayomi_jar
 	    echo "Warning: NVM not found. Using system node version:"; \
 	    node -v; \
 	fi; \
-	(cd Manatan-WebUI && yarn dev --host 0.0.0.0) & \
+	(cd WebUI && yarn dev --host 0.0.0.0) & \
 	cargo run --release -p manatan --features embed-jre
 
 .PHONY: dev-android

@@ -140,7 +140,7 @@ vite.config.ts.timestamp-*
 
 */uploads
 bin/manatan_android/assets/*
-bin/manatan/resources/manatan-webui*
+bin/manatan/resources/webui*
 bin/manatan/resources/natives.zip
 bin/manatan/resources/Suwayomi-Server.jar
 bin/manatan/resources/jre_bundle.zip

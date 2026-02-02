@@ -1,0 +1,1643 @@
+{
+    "chapter": {
+        "action": {
+            "bookmark": {
+                "remove": {
+                    "label": {
+                        "action": "북마크 제거",
+                        "error_other": "북마크를 제거할 수 없습니다",
+                        "success_other": "{{count}} 개 챕터 북마크 제거됨",
+                        "confirmation_other": "{{count}}개의 북마크를 제거하려고 합니다"
+                    },
+                    "button": {
+                        "selected": "선택한 항목 북마크 제거"
+                    }
+                },
+                "add": {
+                    "label": {
+                        "success_other": "{{count}} 개의 챕터가 북마크 됨",
+                        "error_other": "챕터를 북마크에 추가할 수 없습니다",
+                        "action": "북마크 추가"
+                    },
+                    "button": {
+                        "selected": "북마크 선택됨"
+                    }
+                }
+            },
+            "download": {
+                "add": {
+                    "button": {
+                        "selected": "선택 다운로드"
+                    },
+                    "label": {
+                        "action": "다운로드",
+                        "error_other": "다운로드 할 수 없습니다",
+                        "success_other": "{{count}} 개 다운로드 추가됨",
+                        "confirmation_other": "{{count}}개의 챕터를 다운로드 하려고 합니다\nSuwayomi는 대량 다운로더가 아니며,과도한 다운로드는 소스에서 차단되거나 성능 문제가 발생할 수 있습니다.",
+                        "next_other": "다음 {{count}} 챕터",
+                        "ahead": "$t(download.settings.download_ahead.title) ({{count}})",
+                        "all": "$t(extension.language.all)",
+                        "unread": "$t(global.filter.label.unread)"
+                    }
+                },
+                "delete": {
+                    "button": {
+                        "selected": "선택 다운로드 삭제"
+                    },
+                    "label": {
+                        "action": "다운로드 삭제",
+                        "error_other": "챕터를 삭제할 수 없음니다",
+                        "success_other": "{{count}} 개 챕터 삭제됨",
+                        "confirmation_other": "다운로드 {{count}} 개의 항목을 삭제하려고 합니다"
+                    }
+                }
+            },
+            "label": {
+                "select": "선택"
+            },
+            "mark_as_read": {
+                "add": {
+                    "button": {
+                        "selected": "선택항목 읽음으로 표시"
+                    },
+                    "label": {
+                        "action": {
+                            "current": "읽음으로 표시",
+                            "previous": "이전 장을 읽음으로 표시"
+                        },
+                        "error_other": "챕터를 읽음으로 표시할 수 없음니다",
+                        "success_other": "{{count}} 개의 챕터를 읽음으로 표시",
+                        "confirmation_other": "챕터 {{count}}개를 읽은 것으로 표시하려고 합니다"
+                    }
+                },
+                "remove": {
+                    "button": {
+                        "selected": "선택 항목을 읽지 않음으로 표시"
+                    },
+                    "label": {
+                        "action": "읽지 않음으로 표시",
+                        "error_other": "챕터를 읽지 않음으로 표시할 수 없습니다",
+                        "success_other": "{{count}} 개의 챕터 읽지 않음으로 표시",
+                        "confirmation_other": "챕터 {{count}}개를 읽지 않음으로 표시하려고 합니다"
+                    }
+                }
+            }
+        },
+        "error": {
+            "label": {
+                "no_chapter_found": "챕터를 찾을 수 없습니다",
+                "no_matches": "필터와 일치하는 챕터가 없습니다"
+            }
+        },
+        "option": {
+            "display": {
+                "label": {
+                    "chapter_number": "장",
+                    "source_title": "원 제목"
+                }
+            },
+            "exclude_scanlators": "스캔 그룹 제외"
+        },
+        "status": {
+            "label": {
+                "downloaded": "다운로드됨"
+            }
+        },
+        "title_other": "챕터",
+        "missing_other": "{{count}}개의 챕터가 누락됨",
+        "value_other": "{{count}} 개의 챕터"
+    },
+    "download": {
+        "queue": {
+            "label": {
+                "no_downloads": "다운로드 없음",
+                "delete_all": "모두 삭제"
+            },
+            "error": {
+                "label": {
+                    "failed_to_remove": "대기열에서 다운로드를 제거할 수 없습니다.",
+                    "failed_delete_all": "다운로드 대기열에서 모든 항목을 제거할 수 없습니다",
+                    "failed_to_retry": "다운로드 재시도에 실패했습니다."
+                }
+            },
+            "info": {
+                "paused": "일시 중지됨 — $t(download.queue.info.remaining)",
+                "remaining": "{{count}}개 남음"
+            }
+        },
+        "state": {
+            "label": {
+                "downloading": "다운로드 중",
+                "error": "오류",
+                "finished": "$t(global.label.finished)",
+                "queued": "대기 중"
+            }
+        },
+        "title": {
+            "queue": "다운로드 대기열",
+            "download": "다운로드"
+        },
+        "settings": {
+            "auto_download": {
+                "categories": {
+                    "label": {
+                        "include_in_download": "제외된 카테고리에 속한 항목은 포함된 카테고리에 함께 있더라도 다운로드되지 않습니다"
+                    }
+                },
+                "download_limit": {
+                    "label": {
+                        "description": "다운로드할 새 챕터 수를 제한합니다.",
+                        "title": "챕터 다운로드 제한"
+                    }
+                },
+                "label": {
+                    "ignore_re_uploads": "재업로드된 챕터 무시",
+                    "ignore_with_unread_chapters": "읽지 않은 챕터가 있는 항목은 자동으로 다운로드하지 않음",
+                    "new_chapters": "새 챕터 다운로드"
+                },
+                "title": "자동 다운로드"
+            },
+            "conversion": {
+                "compression_level": "압축 수준",
+                "description": "MIME-Type이 지정되지 않은 경우, 변환에는 \"기본값\"이 사용됩니다.\n변환을 비활성화하려면 대상 형식을 \"none\"으로 설정하세요",
+                "mime_type": "MIME-Type",
+                "target": "MIME-Type 대상",
+                "title": "다운로드 변환"
+            },
+            "delete_chapters": {
+                "label": {
+                    "allow_deletion_of_bookmarked": "북마크된 챕터 삭제 허용",
+                    "manually_marked_as_read": "읽음으로 표시하면 챕터 삭제"
+                },
+                "title": "챕터 삭제",
+                "while_reading": {
+                    "label": {
+                        "title": "읽는 중 완료된 챕터 삭제"
+                    },
+                    "option": {
+                        "label": {
+                            "fifth": "마지막으로 읽은 챕터에서 다섯 번째 전",
+                            "first": "마지막으로 읽은 챕터",
+                            "fourth": "마지막으로 읽은 챕터에서 네 번째 전",
+                            "second": "마지막으로 읽은 챕터에서 두 번째 전",
+                            "third": "마지막으로 읽은 챕터에서 세 번째 전"
+                        }
+                    }
+                }
+            },
+            "download_ahead": {
+                "label": {
+                    "description": "읽는 중 다운로드할 챕터 수.",
+                    "disclaimer": "현재 챕터와 다음 챕터가 이미 다운로드된 경우에만 작동합니다.",
+                    "unread_chapters_to_download": "다운로드할 안 읽은 챕터 수",
+                    "while_reading": "읽는 중 자동 다운로드",
+                    "value": "{{chapters}} $t(chapter.title)"
+                },
+                "title": "앞부분 미리 다운로드"
+            },
+            "download_path": {
+                "label": {
+                    "description": "다운로드한 파일을 저장할 서버 내 디렉터리 경로",
+                    "title": "다운로드 경로"
+                }
+            },
+            "file_type": {
+                "label": {
+                    "cbz": "CBZ 압축 파일로 저장"
+                }
+            }
+        }
+    },
+    "extension": {
+        "action": {
+            "label": {
+                "install": "설치",
+                "uninstall": "삭제",
+                "update": "업데이트",
+                "install_external": "외부 확장 기능 설치",
+                "update_all": "전체 업데이트"
+            }
+        },
+        "label": {
+            "installing_file": "확장 기능 설치 중…",
+            "installation_failed_other": "확장 기능을 설치할 수 없습니다",
+            "installed_successfully_other": "확장 기능 설치됨",
+            "add_repository_info": "확장 기능을 설치하려면 확장 저장소를 추가해야 합니다",
+            "age_rating": "연령 등급",
+            "uninstallation_failed_other": "확장 기능을 제거할 수 없습니다",
+            "update_failed_other": "확장 기능을 업데이트할 수 없습니다"
+        },
+        "language": {
+            "all": "모든 언어",
+            "other": "기타"
+        },
+        "state": {
+            "label": {
+                "installed": "설치됨",
+                "uninstalling": "삭제 중",
+                "update_pending": "업데이트 대기 중",
+                "updating": "업데이트 중",
+                "installing": "설치 중",
+                "obsolete": "더 이상 사용되지 않음"
+            }
+        },
+        "title_other": "확장 기능",
+        "settings": {
+            "dialog": {
+                "title": "언어별 확장 기능 설정"
+            },
+            "repositories": {
+                "custom": {
+                    "dialog": {
+                        "action": {
+                            "button": {
+                                "add": "저장소 추가"
+                            }
+                        }
+                    },
+                    "error": {
+                        "label": {
+                            "invalid_url": "잘못된 저장소 URL"
+                        }
+                    },
+                    "label": {
+                        "description": "확장 기능을 설치할 저장소를 추가합니다",
+                        "disclaimer": "<strong>Suwayomi는 서드파티 저장소나 확장 기능에 대해 어떠한 지원도 제공하지 않습니다!</strong><br/>해당 저장소는 악의적인 제작자가 만들었을 수도 있으므로 주의해서 사용하세요.<br/>사용자인 여러분이 해당 저장소나 확장 기능의 보안과 신뢰성을 직접 확인해야 합니다.",
+                        "title": "확장 저장소"
+                    }
+                }
+            }
+        }
+    },
+    "global": {
+        "button": {
+            "browse": "찾기",
+            "cancel": "취소",
+            "filter": "필터",
+            "ok": "확인",
+            "popular": "인기 있는",
+            "reset": "초기화",
+            "reset_to_default": "기본값으로 재설정",
+            "select_all": "모두 선택",
+            "start": "시작",
+            "add": "추가",
+            "changelog": "변경사항",
+            "copy": "복사",
+            "create": "생성",
+            "delete": "제거",
+            "deselect": "선택 해제",
+            "dont_show_dialog_again": "이 대화상자를 다시 표시하지 않음",
+            "edit": "수정",
+            "ignore": "무시",
+            "latest": "최신",
+            "log_in": "로그인",
+            "log_out": "로그아웃",
+            "migrate": "마이그레이션",
+            "open": "열기",
+            "open_browser": "브라우저에서 열기",
+            "open_webview": "WebView에서 열기",
+            "options": "옵션",
+            "refresh": "새로고침",
+            "remind_later": "나중에 다시 알림",
+            "remove": "제거",
+            "restore": "복원",
+            "resume": "재개",
+            "retry": "재시도",
+            "save": "저장",
+            "select": "선택",
+            "set": "설정",
+            "show_less": "간략히 보기",
+            "show_more": "자세히 보기",
+            "stop": "중지",
+            "submit": "제출"
+        },
+        "date": {
+            "label": {
+                "today": "오늘",
+                "yesterday": "어제",
+                "today_at": "오늘 {{timeString}}",
+                "yesterday_at": "어제 {{timeString}}",
+                "day_other": "일"
+            },
+            "value": {
+                "label": {
+                    "day": "{{days}} $t(global.date.label.day, lowercase)"
+                }
+            }
+        },
+        "error": {
+            "label": {
+                "failed_to_load_data": "데이터를 가져올 수 없습니다",
+                "failed_to_save_changes": "변경사항을 저장하지 못했습니다",
+                "invalid_file_type": "유효한 파일 형식이 아닙니다",
+                "update_failed": "업데이트를 확인할 수 없습니다",
+                "invalid_action": "유효한 작업이 아닙니다",
+                "invalid_input": "잘못된 입력",
+                "unrecoverable_error": "문제가 발생했습니다\n복구할 수 없는 오류가 발생했습니다"
+            }
+        },
+        "filter": {
+            "label": {
+                "bookmarked": "북마크 됨",
+                "downloaded": "다운로드 됨",
+                "unread": "읽지 않음",
+                "duplicate_chapters": "중복된 챕터",
+                "started": "시작됨",
+                "tracked": "추적됨"
+            }
+        },
+        "grid_layout": {
+            "label": {
+                "comfortable_grid": "편안한 그리드",
+                "compact_grid": "작은 그리드",
+                "list": "리스트"
+            },
+            "title": "표시 모드"
+        },
+        "label": {
+            "browse": "찾기",
+            "display": "화면",
+            "filter": "필터",
+            "loading": "로딩중…",
+            "sort": "분류",
+            "advanced": "고급",
+            "are_you_sure": "확실합니까?",
+            "asterisk": "*",
+            "auto": "자동",
+            "both": "둘 다",
+            "bottom": "하단",
+            "client": "클라이언트",
+            "close": "닫기",
+            "copied_clipboard": "클립보드에 복사됨",
+            "dark": "다크",
+            "default": "기본값",
+            "desktop": "데스크톱",
+            "disabled": "비활성화됨",
+            "discord": "디스코드",
+            "error": "오류",
+            "finished": "완료됨",
+            "footnote": "{{value}}<0>$t(global.label.asterisk)</0>",
+            "general": "일반",
+            "github": "깃허브",
+            "hidden": "숨김",
+            "horizontal": "가로",
+            "info": "정보",
+            "large": "크게",
+            "last_used": "마지막 사용",
+            "left": "왼쪽",
+            "light": "라이트",
+            "links": "링크",
+            "load_in_progress": "필요한 데이터를 로드하는 중…",
+            "logged_in": "로그인됨",
+            "medium": "보통",
+            "menu": "메뉴",
+            "mobile": "모바일",
+            "more": "더보기",
+            "never": "안 함",
+            "next": "다음",
+            "none": "없음",
+            "open_in_browser": "브라우저에서 열기",
+            "other": "기타",
+            "password": "비밀번호",
+            "pinned": "고정됨",
+            "placeholder": "자리 표시자",
+            "previous": "이전",
+            "right": "오른쪽",
+            "scanlator": "스캔 번역자",
+            "share": "공유",
+            "small": "작게",
+            "standard": "표준",
+            "started": "시작됨",
+            "stopped": "중지됨",
+            "success": "성공",
+            "system": "시스템",
+            "tiny": "아주 작게",
+            "type": "유형",
+            "unknown": "알 수 없음",
+            "username": "사용자 이름",
+            "version": "버전",
+            "vertical": "세로",
+            "warning": "경고"
+        },
+        "language": {
+            "label": {
+                "language": "언어",
+                "language_with_code": "언어 코드: {{code}}"
+            },
+            "title": {
+                "enabled_languages": "허용된 언어",
+                "weblate": "Weblate"
+            },
+            "error": {
+                "load": "언어를 불러올 수 없습니다"
+            }
+        },
+        "sort": {
+            "label": {
+                "by_fetch_date": "가져온 날짜 기준",
+                "asc": "오름차순",
+                "by_chapter_number": "챕터 번호순",
+                "by_source": "출처순",
+                "by_upload_date": "업로드 날짜순",
+                "desc": "내림차순"
+            }
+        },
+        "colors": {
+            "black": "검정",
+            "gray": "회색",
+            "white": "하양"
+        },
+        "time": {
+            "hour_short": "시간",
+            "minutes": {
+                "value": "{{count}} $t(global.time.minutes.minute, lowercase)",
+                "minute_other": "분"
+            },
+            "seconds": {
+                "value": "{{count}} $t(global.time.seconds.second, lowercase)",
+                "second_other": "초"
+            }
+        },
+        "unit": {
+            "px": "픽셀"
+        },
+        "update": {
+            "label": {
+                "available": "업데이트 사용 가능",
+                "check_failure": "업데이트를 확인할 수 없습니다",
+                "checking": "업데이트 확인 중",
+                "info": "서버 버전 {{version}} ({{channel}}) 다운로드 가능",
+                "up_to_date": "최신 버전입니다",
+                "update_failure": "업데이트 실패",
+                "update_success": "{{name}}이(가) 버전 {{version}} ({{channel}})로 업데이트되었습니다",
+                "updating": "{{progress}}% | 업데이트중…"
+            },
+            "settings": {
+                "inform": {
+                    "label": {
+                        "description": "새 버전이 있을 경우 대화 상자를 표시합니다",
+                        "title": "사용 가능한 업데이트에 대해 알림"
+                    }
+                }
+            }
+        },
+        "value": "{{value}}{{unit}}"
+    },
+    "category": {
+        "dialog": {
+            "title": {
+                "new_category": "새 카테고리",
+                "edit_category_other": "카테고리 수정"
+            }
+        },
+        "error": {
+            "label": {
+                "empty": "카테고리가 없습니다",
+                "request_failure": "카테고리를 가져올 수 없습니다",
+                "create_failure": "카테고리를 생성할 수 없습니다"
+            },
+            "no_categories_found": {
+                "label": {
+                    "info": "카테고리를 찾을 수 없습니다."
+                }
+            }
+        },
+        "label": {
+            "category_name": "카테고리 이름",
+            "use_as_default_category": "새 만화를 추가할 때 기본 카테고리 설정"
+        },
+        "title": {
+            "set_categories": "카테고리 설정",
+            "category_other": "카테고리"
+        },
+        "settings": {
+            "inclusion": {
+                "label": {
+                    "exclude": "제외: {{excludedCategoriesText}}",
+                    "include": "포함: {{includedCategoriesText}}"
+                }
+            }
+        },
+        "value": "{{count}} $t(category.title.category, lowercase)"
+    },
+    "history": {
+        "error": {
+            "label": {
+                "no_history_available": "아직 읽은 시리즈가 없습니다."
+            }
+        },
+        "settings": {
+            "hide": "기록 숨기기"
+        },
+        "title": "기록"
+    },
+    "hotkeys": {
+        "create": {
+            "dialog": {
+                "label": "기록된 키: <Keys/>",
+                "placeholder": "키를 누르세요",
+                "title": "키 바인드 기록"
+            },
+            "error": {
+                "exists": "단축키가 이미 존재합니다"
+            }
+        },
+        "info": {
+            "delete": "바인딩 제거를 위해 키를 클릭하세요"
+        },
+        "title_other": "키 할당"
+    },
+    "library": {
+        "action": {
+            "label": {
+                "search_globally": "전역에서 \"{{query}}\" 검색",
+                "stop_update": "전역 업데이트 중지",
+                "update_category": "카테고리 업데이트",
+                "update_library": "라이브러리 업데이트"
+            }
+        },
+        "error": {
+            "label": {
+                "add_to_library": "만화를 라이브러리에 추가할 수 없습니다!",
+                "empty": "라이브러리가 비어 있습니다",
+                "no_matches": "이 필터와 일치하는 만화가 없습니다",
+                "remove_from_library": "만화를 라이브러리에서 제거할 수 없습니다!",
+                "stop_global_update": "전역 업데이트를 중지할 수 없습니다"
+            }
+        },
+        "info": {
+            "label": {
+                "added_to_library": "만화가 라이브러리에 추가되었습니다!",
+                "removed_from_library": "만화가 라이브러리에서 제거되었습니다!"
+            }
+        },
+        "option": {
+            "display": {
+                "badge": {
+                    "label": {
+                        "download_badges": "다운로드 배지",
+                        "unread_badges": "읽지 않음 배지"
+                    },
+                    "title": "배지"
+                },
+                "other": {
+                    "label": {
+                        "show_continue_reading_button": "계속 읽기 버튼 표시"
+                    }
+                },
+                "tab": {
+                    "label": {
+                        "show_number_of_items": "항목 수 표시"
+                    },
+                    "title": "탭"
+                }
+            },
+            "sort": {
+                "label": {
+                    "alphabetically": "A-Z",
+                    "by_date_added": "최근 추가됨",
+                    "by_last_read": "최근 읽음",
+                    "by_latest_fetched_chapter": "최신 가져온 챕터",
+                    "by_latest_uploaded_chapter": "최신 업로드된 챕터",
+                    "by_total_chapters": "총 챕터",
+                    "by_unread_chapters": "읽지 않은 챕터"
+                }
+            }
+        },
+        "settings": {
+            "advanced": {
+                "database": {
+                    "cleanup": {
+                        "label": {
+                            "description": "라이브러리에 없는 만화를 카테고리에서 제거",
+                            "error": "라이브러리에 없는 만화를 카테고리에서 제거할 수 없습니다",
+                            "success": "라이브러리에 없는 만화가 카테고리에서 제거되었습니다",
+                            "title": "데이터베이스 정리"
+                        }
+                    }
+                },
+                "duplicates": {
+                    "label": {
+                        "description": "라이브러리의 모든 중복 항목 표시",
+                        "title": "중복된 항목"
+                    },
+                    "settings": {
+                        "label": {
+                            "check_description": "설명 확인"
+                        }
+                    }
+                }
+            },
+            "general": {
+                "add_to_library": {
+                    "category_selection": {
+                        "label": {
+                            "description": "만화를 라이브러리에 추가할 때 카테고리 선택 대화 상자 표시",
+                            "title": "카테고리 선택 대화 상자"
+                        }
+                    }
+                },
+                "remove_from_library": {
+                    "remove_from_categories": {
+                        "label": {
+                            "description": "만화를 라이브러리에서 제거할 때 카테고리에서도 제거",
+                            "title": "만화 카테고리 잊기"
+                        }
+                    }
+                },
+                "search": {
+                    "ignore_filters": {
+                        "label": {
+                            "description": "검색 결과에 현재 필터와 일치하지 않는 만화도 포함됩니다",
+                            "title": "검색 시 필터 무시"
+                        }
+                    }
+                }
+            },
+            "global_update": {
+                "auto_update": {
+                    "interval": {
+                        "label": {
+                            "title": "자동 업데이트 간격",
+                            "value": "{{hours}}$t(global.time.hour_short)"
+                        }
+                    },
+                    "label": {
+                        "title": "자동 업데이트"
+                    }
+                },
+                "categories": {
+                    "label": {
+                        "info": "제외된 카테고리의 항목은 포함된 카테고리에 속하더라도 업데이트되지 않습니다"
+                    }
+                },
+                "entries": {
+                    "label": {
+                        "completed": "\"완료됨\" 상태로",
+                        "not_started": "시작되지 않은",
+                        "unread_chapters": "읽지 않은 챕터(들)이 있는"
+                    },
+                    "title": "항목 업데이트 건너뛰기"
+                },
+                "label": {
+                    "last_update": "마지막 업데이트: {{date}}",
+                    "last_update_tooltip": "$t(library.settings.global_update.title) ($t(library.settings.global_update.label.last_update, lowercase))"
+                },
+                "metadata": {
+                    "label": {
+                        "description": "라이브러리 업데이트 시 새 표지 및 세부 정보 확인",
+                        "title": "메타데이터 자동 새로 고침"
+                    }
+                },
+                "title": "전역 업데이트"
+            }
+        },
+        "title": "라이브러리"
+    },
+    "manga": {
+        "action": {
+            "category": {
+                "button": {
+                    "selected": "선택된 항목의 카테고리 변경"
+                },
+                "label": {
+                    "action": "카테고리 변경",
+                    "confirmation_other": "{{count}}개 항목의 카테고리를 변경하려고 합니다",
+                    "error_other": "만화 카테고리를 변경할 수 없습니다",
+                    "success_other": "{{count}} 개 만화의 카테고리 변경"
+                }
+            },
+            "library": {
+                "add": {
+                    "dialog": {
+                        "duplicate": {
+                            "label": {
+                                "failure": "라이브러리의 중복 만화를 확인할 수 없습니다. \n\n오류: {{error}}\"",
+                                "info": "라이브러리에 동일한 이름의 항목이 있습니다."
+                            }
+                        }
+                    }
+                },
+                "remove": {
+                    "button": {
+                        "selected": "라이브러리에서 선택된 항목 제거"
+                    },
+                    "dialog": {
+                        "label": {
+                            "message": "라이브러리에서 \"{{title}}\"을(를) 제거하려 합니다"
+                        }
+                    },
+                    "label": {
+                        "action": "라이브러리에서 제거",
+                        "confirmation_other": "라이브러리에서 {{count}}개의 항목을 제거하려고 합니다",
+                        "error_other": "라이브러리에서 만화를 제거할 수 없습니다",
+                        "success_other": "라이브러리에서 만화 {{count}}개를 제거했습니다"
+                    }
+                }
+            },
+            "migrate": {
+                "label": {
+                    "error": "만화를 마이그레이션할 수 없습니다",
+                    "success": "만화가 성공적으로 마이그레이션되었습니다"
+                }
+            },
+            "track": {
+                "add": {
+                    "label": {
+                        "action": "추적",
+                        "error": "만화를 추적할 수 없습니다",
+                        "success": "추적된 만화"
+                    }
+                },
+                "remove": {
+                    "dialog": {
+                        "label": {
+                            "delete_remote_track": "{{tracker}}에서도 제거",
+                            "description": "로컬에서 추적을 제거합니다.",
+                            "title": "{{tracker}} 추적을 제거하시겠습니까?"
+                        }
+                    },
+                    "label": {
+                        "error": "만화 추적을 해제할 수 없습니다",
+                        "success": "추적 해제된 만화"
+                    }
+                }
+            }
+        },
+        "button": {
+            "add_to_library": "라이브러리에 추가",
+            "in_library": "라이브러리에 있음",
+            "track": {
+                "start": "추적 중",
+                "active_other": "{{count}}개의 트래커"
+            }
+        },
+        "error": {
+            "label": {
+                "no_mangas_found": "만화를 찾을 수 없습니다",
+                "no_matches": "이 필터와 일치하는 만화가 없습니다",
+                "request_failure": "만화를 불러올 수 없습니다"
+            }
+        },
+        "label": {
+            "artist": "작가",
+            "author": "저자",
+            "edit_categories": "만화 카테고리 편집",
+            "reload_from_source": "출처에서 데이터 다시 불러오기",
+            "status": "상태"
+        },
+        "status": {
+            "cancelled": "취소됨",
+            "completed": "완료됨",
+            "hiatus": "연중",
+            "licensed": "라이선스됨",
+            "ongoing": "연재 중",
+            "publishing_finished": "출판 완료",
+            "unknown": "$t(global.label.unknown)"
+        },
+        "type": {
+            "comic": "만화",
+            "long_strip": "긴 스트립",
+            "manga": "$t(manga.title_one)",
+            "manhua": "만화",
+            "manhwa": "만화",
+            "webtoon": "$t(reader.settings.reader_type.label.webtoon)"
+        },
+        "title_other": "만화"
+    },
+    "migrate": {
+        "dialog": {
+            "action": {
+                "button": {
+                    "show_entry": "항목 표시"
+                }
+            },
+            "label": {
+                "delete_downloaded": "다운로드된 항목 삭제"
+            },
+            "title": "포함할 데이터 선택"
+        },
+        "label": {
+            "info": "만화 마이그레이션 중…"
+        },
+        "search": {
+            "title": "$t(migrate.title) \"{{title}}\""
+        },
+        "sort": {
+            "by_manga_count": "만화 수순",
+            "by_source_name": "출처 이름순"
+        },
+        "title": "마이그레이션"
+    },
+    "reader": {
+        "button": {
+            "chapter_list": "챕터 목록",
+            "close_menu": "메뉴 닫기",
+            "exit": "리더 종료",
+            "next_chapter": "다음 챕터",
+            "next_page": "다음 페이지",
+            "open_menu": "메뉴 열기",
+            "previous_chapter": "이전 챕터",
+            "previous_page": "이전 페이지",
+            "retry_load_pages": "오류가 발생한 페이지 다시 시도"
+        },
+        "chapter_transition": {
+            "warning": {
+                "next": {
+                    "scanlator": "다음 챕터의 스캔 번역자가 현재 챕터와 다릅니다.\n현재: {{currentScanlator}} \n다음: {{nextScanlator}}",
+                    "chapter_number_other": "누락된 {{count}}개의 챕터가 있습니다.\n현재: {{currentChapter}}\n다음: {{nextChapter}}"
+                },
+                "previous": {
+                    "scanlator": "이전 챕터의 스캔 번역자가 현재 챕터와 다릅니다.\n이전: {{nextScanlator}}\n현재: {{currentScanlator}}",
+                    "chapter_number_other": "누락된 {{count}}개의 챕터가 있습니다.\n이전: {{nextChapter}}\n현재: {{currentChapter}}"
+                },
+                "title": "챕터 전환 경고"
+            }
+        },
+        "error": {
+            "label": {
+                "chapter_not_found": "챕터가 존재하지 않습니다",
+                "next_chapter_does_not_exist": "열 다음 챕터가 없습니다",
+                "no_pages_found": "페이지를 찾을 수 없습니다",
+                "prev_chapter_does_not_exist": "열 이전 챕터가 없습니다"
+            }
+        },
+        "page_info": {
+            "label": {
+                "currently_on_page": "현재 페이지",
+                "of_max_pages": "/ {{maxPages}}",
+                "page": "페이지"
+            }
+        },
+        "settings": {
+            "active_setting": "활성 설정",
+            "auto_scroll": {
+                "smooth": "부드러운 자동 스크롤",
+                "speed": "자동 스크롤 속도",
+                "title": "자동 스크롤"
+            },
+            "auto_webtoon_mode": {
+                "description": "긴 스트립 형식으로 감지된 항목에 대해 웹툰 모드를 자동으로 사용",
+                "title": "자동 웹툰 모드"
+            },
+            "background_color": "배경색",
+            "chapter_transition": {
+                "warning": {
+                    "missing_chapter": "챕터 전환 시 누락된 챕터에 대해 알림",
+                    "scanlator_change": "챕터 전환 시 스캔 번역자 변경에 대해 알림"
+                }
+            },
+            "custom_filter": {
+                "brightness": "사용자 정의 밝기",
+                "contrast": "사용자 정의 대비",
+                "grayscale": "그레이스케일",
+                "hue": "사용자 정의 색조",
+                "invert": "반전",
+                "rgba": {
+                    "alpha": "알파",
+                    "blend_mode": {
+                        "darken": "어둡게 하기",
+                        "default": "$t(global.label.default)",
+                        "lighten": "밝게 하기",
+                        "multiply": "곱하기",
+                        "overlay": "오버레이",
+                        "screen": "스크린",
+                        "title": "색상 필터 혼합 모드"
+                    },
+                    "blue": "파랑",
+                    "green": "초록",
+                    "red": "빨강",
+                    "title": "사용자 정의 색상 필터"
+                },
+                "saturate": "사용자 정의 채도",
+                "sepia": "세피아",
+                "title": "사용자 정의 필터"
+            },
+            "default_setting_footnote": "$t(global.label.asterisk): $t(reader.settings.active_setting)",
+            "error": {
+                "label": {
+                    "failed_to_save_settings": "리더 설정을 서버에 저장할 수 없습니다"
+                }
+            },
+            "exit_mode": "종료 시 페이지 열기",
+            "hotkey": {
+                "auto_scroll": "자동 스크롤 전환",
+                "auto_scroll_speed_decrease": "자동 스크롤 속도 감소",
+                "auto_scroll_speed_increase": "자동 스크롤 속도 증가",
+                "menu": "메뉴 전환",
+                "next_chapter": "다음 챕터",
+                "next_page": "다음 페이지",
+                "offset_spread_pages": "오프셋 펼친 페이지 전환",
+                "previous_chapter": "이전 챕터",
+                "previous_page": "이전 페이지",
+                "reading_direction": "읽기 방향 순환",
+                "reading_mode": "읽기 모드 순환",
+                "scale_type": "이미지 크기 순환",
+                "scroll_backward": "뒤로 스크롤",
+                "scroll_forward": "앞으로 스크롤",
+                "stretch_image": "이미지 늘리기 전환"
+            },
+            "image_preload_amount": "이미지 미리 불러오기",
+            "infinite_scroll": {
+                "description": "연속 읽기 모드에서 읽는 동안 이전 및 다음 챕터를 계속 표시하여 챕터 간에 원활하게 스크롤할 수 있습니다.",
+                "title": "연속 챕터 표시"
+            },
+            "label": {
+                "behaviour": "동작",
+                "custom_scroll_amount": "사용자 정의 스크롤 양",
+                "fit_page_to_window": "페이지를 창에 맞춤",
+                "layout": "레이아웃",
+                "limit_reader_width": "리더 너비 제한",
+                "load_next_chapter": "마지막에 다음 챕터 불러오기",
+                "offset_double_spread": "이중 펼침 오프셋",
+                "page_gap": "페이지 간격",
+                "reader_type": "리더 유형",
+                "reader_width": "리더 너비",
+                "reading_direction": "읽기 방향",
+                "reading_mode": "읽기 모드",
+                "show_page_number": "페이지 번호 표시",
+                "skip_dup_chapters": "중복 챕터 건너뛰기",
+                "skip_filtered_chapters": "필터링된 챕터 건너뛰기",
+                "static_navigation": "정적 탐색",
+                "unchangeable_in_reader": "리더가 열려 있는 동안에는 설정을 변경할 수 없습니다"
+            },
+            "overlay_mode": "오버레이 모드",
+            "page_scale": {
+                "height": "높이 맞춤",
+                "original": "원본 크기",
+                "screen": "화면에 맞춤",
+                "stretch": "작은 페이지 늘리기",
+                "title": "크기 유형",
+                "width": "너비 맞춤"
+            },
+            "preview": {
+                "reading_mode": {
+                    "description": "리더가 열리거나 모드가 변경될 때 현재 모드를 잠시 표시",
+                    "title": "읽기 모드 표시"
+                },
+                "tap_zones": {
+                    "description": "리더가 열리거나 레이아웃이 변경될 때 탭 영역 레이아웃 미리보기를 잠시 표시",
+                    "title": "탭 영역 오버레이 표시"
+                }
+            },
+            "progress_bar": {
+                "auto_vertical_position": {
+                    "title": "자동 진행률 표시줄 세로 위치"
+                },
+                "position": "진행률 표시줄 위치",
+                "size": "진행률 표시줄 크기",
+                "style": "진행률 표시줄 스타일"
+            },
+            "reader_type": {
+                "label": {
+                    "continuous_horizontal": "연속 가로",
+                    "continuous_vertical": "연속 세로",
+                    "double_page": "이중 페이지",
+                    "single_page": "단일 페이지",
+                    "webtoon": "웹툰"
+                }
+            },
+            "reading_direction": {
+                "ltr": "왼쪽에서 오른쪽",
+                "rtl": "오른쪽에서 왼쪽"
+            },
+            "scroll_amount": "스크롤 양",
+            "show_transition_page": "전환 페이지 표시",
+            "source_series": "시리즈 설정",
+            "tap_zones": {
+                "edge": "가장자리",
+                "invert": "탭 영역 반전",
+                "kindle": "킨들",
+                "l_shape": "L자형",
+                "right_left": "오른쪽 및 왼쪽",
+                "title": "탭 영역"
+            },
+            "title": {
+                "quick_settings": "빠른 설정",
+                "reader": "리더"
+            }
+        },
+        "title": "리더 — 만화 {{mangaId}} 챕터 {{chapterIndex}}",
+        "transition_page": {
+            "current": "현재:",
+            "exit": {
+                "manga_page": "만화 페이지로 나가기",
+                "previous_page": "이전 페이지로 나가기"
+            },
+            "finished": "$t(global.label.finished):",
+            "first_chapter": "이전 챕터가 없습니다",
+            "last_chapter": "다음 챕터가 없습니다",
+            "next": "$t(global.label.next):",
+            "previous": "$t(global.label.previous):"
+        }
+    },
+    "search": {
+        "error": {
+            "label": {
+                "failed_to_save_settings": "기본 검색 설정을 서버에 저장할 수 없습니다",
+                "source_search_failed": "출처를 검색할 수 없습니다"
+            }
+        },
+        "filter": {
+            "has_results": "결과 있음"
+        },
+        "title": {
+            "global_search": "전역 검색",
+            "search": "검색"
+        }
+    },
+    "settings": {
+        "about": {
+            "server": {
+                "label": {
+                    "address": "서버 주소",
+                    "build_time": "빌드 시간",
+                    "github": "$t(global.label.github) $t(settings.server.title.server)",
+                    "version": "서버 버전"
+                }
+            },
+            "title": "정보",
+            "webui": {
+                "label": {
+                    "channel": "$t(settings.webui.title.webui) 채널",
+                    "github": "$t(global.label.github) $t(settings.webui.title.webui)",
+                    "info": "$t(settings.webui.title.webui) 버전 {{version}} ({{channel}}) 다운로드 가능",
+                    "update_failure": "$t(settings.webui.title.webui)를 업데이트할 수 없습니다",
+                    "updated": "업데이트된 버전",
+                    "version": "$t(settings.webui.title.webui) 버전"
+                }
+            }
+        },
+        "appearance": {
+            "manga_dynamic_color_schemes": {
+                "description": "만화 페이지의 테마 색상을 미리보기 이미지에 따라 변경합니다",
+                "title": "만화 페이지의 동적 테마 색상"
+            },
+            "manga_thumbnail_backdrop": {
+                "description": "만화 미리보기 이미지를 만화 페이지의 배경 이미지로 설정합니다",
+                "title": "만화 미리보기 이미지를 배경으로"
+            },
+            "theme": {
+                "create": {
+                    "action": "테마 생성 중…",
+                    "dialog": {
+                        "description": "테마를 사용자 지정하는 방법은 공식 <0>MUI 문서</0>를 참조하세요.\n팔레트 API는 지원되지 않으며, 새로운 <1>색상 스키마 API</1>를 사용해야 합니다.\n\n<2>MUI Theme Creator</2>와 같은 테마 생성기를 사용할 수 있지만, 생성된 객체를 새로운 색상 스키마 API에 맞게 조정해야 합니다.\n\n배경이 정의되지 않은 경우, 기본 색상을 기반으로 배경이 계산됩니다",
+                        "error": {
+                            "invalid_json": "잘못된 JSON",
+                            "invalid_name": "테마 이름은 고유해야 하며 16자로 제한됩니다"
+                        },
+                        "theme_name": "이름"
+                    },
+                    "failure": "테마를 만들 수 없습니다",
+                    "success": "테마가 만들어졌습니다",
+                    "title": "테마 만들기"
+                },
+                "delete": {
+                    "action": "테마 \"{{theme}}\" 삭제 중…",
+                    "failure": "테마 \"{{theme}}\"를 삭제할 수 없습니다",
+                    "success": "테마 \"{{theme}}\"가 삭제되었습니다"
+                },
+                "edit": {
+                    "action": "테마 변경 사항 저장 중…",
+                    "failure": "테마 변경 사항을 저장할 수 없습니다",
+                    "success": "테마 변경 사항이 저장되었습니다",
+                    "title": "테마 편집"
+                },
+                "mode": "테마 모드",
+                "pure_black_mode": "순수 검정 다크 모드",
+                "select": {
+                    "fonts": {
+                        "error": "테마 글꼴을 불러올 수 없습니다",
+                        "loading": "테마 글꼴 불러오는 중…"
+                    },
+                    "success": "선택된 테마"
+                },
+                "themes": {
+                    "bright_pink": "밝은 분홍",
+                    "crimson": "크림슨",
+                    "dune": "모래언덕",
+                    "forest_dew": "숲속 이슬",
+                    "lavender": "라벤더",
+                    "minty_miracles": "민티 미라클스",
+                    "mountain_sunset": "산의 노을",
+                    "orange_juice": "오렌지 주스",
+                    "rosegold": "로즈골드",
+                    "tree_frog_green": "청개구리 초록",
+                    "veronica": "베로니카",
+                    "ying_and_yang": "음양"
+                },
+                "title": "테마"
+            },
+            "title": "모양"
+        },
+        "backup": {
+            "action": {
+                "create": {
+                    "label": {
+                        "description": "라이브러리를 Tachiyomi 백업으로 백업",
+                        "title": "백업 만들기"
+                    }
+                },
+                "restore": {
+                    "button": "복원",
+                    "error": {
+                        "label": {
+                            "failure": "백업을 복원할 수 없습니다",
+                            "legacy_backup_unsupported": "레거시 백업은 지원되지 않습니다!"
+                        }
+                    },
+                    "label": {
+                        "description": "백업 파일을 여기에 끌어다 놓아 복원할 수도 있습니다",
+                        "in_progress": "백업 복원 중…",
+                        "success": "백업이 복원되었습니다.",
+                        "title": "백업 복원"
+                    }
+                },
+                "validate": {
+                    "dialog": {
+                        "content": {
+                            "label": {
+                                "missing_sources": "다음 출처는 설치되지 않았습니다:",
+                                "missing_trackers": "다음 트래커는 로그인되지 않았습니다:"
+                            }
+                        },
+                        "title": "백업 유효성 검사"
+                    },
+                    "error": {
+                        "label": {
+                            "failure": "백업의 유효성을 검사할 수 없습니다"
+                        }
+                    }
+                }
+            },
+            "automated": {
+                "cleanup": {
+                    "label": {
+                        "title": "백업 정리",
+                        "value": "$t(global.date.value.label.day)보다 오래된 백업 삭제"
+                    }
+                },
+                "label": {
+                    "interval": "백업 간격",
+                    "time": "백업 시간"
+                },
+                "location": {
+                    "label": {
+                        "description": "자동 백업이 저장될 서버의 디렉터리 경로",
+                        "title": "백업 위치"
+                    }
+                }
+            },
+            "title": "백업"
+        },
+        "clear_cache": {
+            "label": {
+                "description": "클라이언트(브라우저, electron)의 캐시도 함께 지워져야 합니다. 그렇지 않으면 클라이언트 캐시가 계속 사용됩니다",
+                "failure": "서버 캐시를 지울 수 없습니다",
+                "success": "서버 캐시가 지워졌습니다",
+                "title": "서버 캐시 지우기"
+            }
+        },
+        "default_value": "{{value}}<0>($t(global.label.default))</0>",
+        "device": {
+            "active_device": {
+                "label": {
+                    "description": "서버에 저장된 UI 설정을 사용할 기기를 선택하세요",
+                    "title": "활성 기기"
+                }
+            },
+            "devices": {
+                "label": {
+                    "description": "기존 기기를 관리하세요. \n서버에 저장된 UI별 설정은 기기별로 적용됩니다\n이를 통해 데스크톱과 스마트폰에서 다른 설정을 가질 수 있습니다",
+                    "title": "기기"
+                }
+            },
+            "label": {
+                "placeholder": "length: 16, chars: letters, numbers, -, _"
+            },
+            "title": {
+                "device": "기기"
+            }
+        },
+        "label": {
+            "hide_library_entries": "라이브러리에 이미 있는 항목 숨기기",
+            "language_description": "프로젝트 번역에 참여하세요",
+            "manga_item_width": "만화 항목 너비",
+            "show_nsfw": "NSFW 표시",
+            "show_nsfw_description": "NSFW 확장 프로그램 및 출처 숨기기",
+            "theme": "테마"
+        },
+        "server": {
+            "address": {
+                "client": {
+                    "dialog": {
+                        "label": {
+                            "enter_address": "서버 주소 입력"
+                        }
+                    },
+                    "label": {
+                        "description": "클라이언트가 서버에 연결하는 데 사용할 주소"
+                    }
+                },
+                "server": {
+                    "label": {
+                        "ip": "IP",
+                        "port": "포트"
+                    },
+                    "title": "서버 바인딩"
+                }
+            },
+            "auth": {
+                "label": {
+                    "password": "$t(global.label.password)",
+                    "title": "인증 모드",
+                    "username": "$t(global.label.username)"
+                },
+                "mode": {
+                    "option": {
+                        "basicAuth": {
+                            "label": {
+                                "description": "브라우저에 자격 증명 입력 대화 상자가 나타납니다.",
+                                "title": "기본 인증"
+                            }
+                        },
+                        "none": {
+                            "label": {
+                                "description": "인증 비활성화",
+                                "info": "라이브러리에 접근할 수 있습니다. 개인 네트워크에서만 사용하거나 다른 방법으로 접근을 보호할 때 사용하세요.",
+                                "title": "없음"
+                            }
+                        }
+                    }
+                },
+                "title": "설정 방법에 대한 정보는 <2>FlareSolverr</2>을(를) 참조하세요"
+            },
+            "cloudflare": {
+                "flaresolverr": {
+                    "enabled": {
+                        "label": {
+                            "description": "FlareSolverr 활성화됨",
+                            "title": "서버가 Cloudflare 챌린지를 만나고 FlareSolverr는 만나지 않아 챌린지를 해결할 수 없는 경우 FlareSolverr 응답을 사용합니다 (이미지에는 작동하지 않음)"
+                        }
+                    },
+                    "response_fallback": {
+                        "label": {
+                            "description": "응답 대체",
+                            "title": "FlareSolverr 세션 이름"
+                        }
+                    },
+                    "session": {
+                        "name": {
+                            "label": {
+                                "title": "FlareSolverr는 분 단위로 제공된 TTL을 기반으로 만료된 세션을 자동으로 교체합니다"
+                            }
+                        },
+                        "ttl": {
+                            "label": {
+                                "description": "FlareSolverr 세션 TTL",
+                                "title": "FlareSolverr가 요청을 처리하는 데 걸리는 시간"
+                            }
+                        }
+                    },
+                    "timeout": {
+                        "label": {
+                            "description": "FlareSolverr 요청 시간 초과",
+                            "title": "FlareSolverr 서버 주소"
+                        }
+                    },
+                    "url": {
+                        "label": {
+                            "description": "FlareSolverr 서버 URL",
+                            "title": "Cloudflare 우회"
+                        }
+                    }
+                },
+                "title": "로컬 출처 파일이 저장되는 서버의 디렉터리 경로"
+            },
+            "local_source": {
+                "path": {
+                    "label": {
+                        "description": "로컬 출처 위치",
+                        "title": "로그 파일 정리"
+                    }
+                }
+            },
+            "misc": {
+                "log_files": {
+                    "file_cleanup": {
+                        "title": "로그 파일 삭제",
+                        "value": "$t(global.date.value.label.day)보다 오래된 로그 파일을 삭제합니다"
+                    },
+                    "file_size": {
+                        "description": "최대 로그 파일 크기",
+                        "title": "최대 로그 파일 크기"
+                    },
+                    "total_size": {
+                        "description": "$t(settings.server.misc.log_files.file_size.description)",
+                        "title": "개인 정보가 안전하지 않은 정보가 포함된 로그가 포함됩니다"
+                    }
+                },
+                "log_level": {
+                    "graphql": {
+                        "label": {
+                            "description": "GraphQL 디버그 로그 활성화",
+                            "title": "디버그 로그 활성화"
+                        }
+                    },
+                    "label": {
+                        "server": "기타"
+                    }
+                },
+                "title": "서버를 실행 중인 시스템에 이 아이콘이 표시됩니다",
+                "tray_icon": {
+                    "label": {
+                        "description": "시스템 트레이에 아이콘 표시",
+                        "title": "파일 크기를 십진수(KB, MB, GB) 대신 이진수(KiB, MiB, GiB)로 표시"
+                    }
+                }
+            },
+            "opds": {
+                "binary_file_sizes": {
+                    "label": {
+                        "description": "이진수 파일 크기",
+                        "title": "항목",
+                        "unit_other": "항목"
+                    }
+                },
+                "chapter_sort_order": {
+                    "label": {
+                        "description": "챕터 정렬 순서.",
+                        "title": "페이지 스트리밍 중 각 챕터의 페이지별 읽기 진행 상황을 추적하고 업데이트합니다"
+                    }
+                },
+                "enable_page_read_progress": {
+                    "label": {
+                        "description": "페이지 읽기 진행 상황 활성화",
+                        "title": "\"OPDS 피드(예: 라이브러리 기록, 만화 챕터)의 페이지당 항목 수입니다. 값이 높으면 클라이언트 성능에 영향을 미칠 수 있습니다.\""
+                    }
+                },
+                "items_per_page": {
+                    "label": {
+                        "description": "OPDS 피드의 페이지당 항목 수(예: 도서관 내역, 만화 장).\n값이 높을수록 클라이언트 성능에 영향을 줄 수 있습니다.",
+                        "title": "항목",
+                        "unit_other": "항목"
+                    }
+                },
+                "mark_as_read_on_download": {
+                    "label": {
+                        "description": "다운로드 시 챕터를 읽은 것으로 표시.",
+                        "title": "다운로드 시 챕터를 읽음으로 표시"
+                    }
+                },
+                "show_only_downloaded_chapters": {
+                    "label": {
+                        "description": "만화 피드를 필터링하여 다운로드한 챕터만 표시합니다.",
+                        "title": "다운로드한 챕터만 표시"
+                    }
+                },
+                "show_only_unread_chapters": {
+                    "label": {
+                        "description": "읽지 않은 챕터만 표시.",
+                        "title": "OPDS"
+                    }
+                },
+                "title": "병렬 출처 요청"
+            },
+            "requests": {
+                "sources": {
+                    "parallel": {
+                        "label": {
+                            "title": "병렬 소스 요청",
+                            "value": "{{value}} $t(source.title)"
+                        }
+                    }
+                },
+                "title": "SOCKS 프록시 사용"
+            },
+            "socks_proxy": {
+                "label": {
+                    "enable": "SOCKS 호스트",
+                    "host": "SOCKS 비밀번호",
+                    "password": "SOCKS 포트",
+                    "port": "SOCKS 사용자 이름",
+                    "username": "SOCKS 버전",
+                    "version": "SOCKS 프록시"
+                },
+                "title": "서버"
+            },
+            "title": {
+                "server": "설정"
+            }
+        },
+        "title": "업데이트 간격",
+        "webui": {
+            "auto_update": {
+                "label": {
+                    "interval": "최신 버전 자동 다운로드",
+                    "title": "채널"
+                }
+            },
+            "channel": {
+                "label": {
+                    "title": "서버 릴리스와 함께 제공된 버전 사용"
+                },
+                "option": {
+                    "bundled": {
+                        "label": {
+                            "description": "번들",
+                            "title": "내장"
+                        }
+                    },
+                    "preview": {
+                        "label": {
+                            "description": "최신 기능을 사용해 보시고, 안정적인 릴리스를 위해 준비하는 데 도움을 주세요.",
+                            "disclaimer": "이 버전의 기능 및 변경 사항은 아직 완전히 준비되지 않았으며 버그가 발생할 수 있습니다.\n라이브러리 손실을 방지하려면 자동 백업을 활성화하세요!\n\n$t(settings.webui.flavor.label.info)",
+                            "title": "미리보기"
+                        }
+                    },
+                    "stable": {
+                        "label": {
+                            "description": "최신 버전을 사용하세요.",
+                            "title": "서버의 Electron 설치 경로"
+                        }
+                    }
+                }
+            },
+            "electron_path": {
+                "label": {
+                    "description": "Electron 경로",
+                    "title": "이 설정을 변경한 후 \"정보\" 페이지로 이동하여 webUI 업데이트를 확인하고 설치하세요"
+                }
+            },
+            "flavor": {
+                "label": {
+                    "info": "맛",
+                    "title": "버전"
+                },
+                "option": {
+                    "custom": {
+                        "label": {
+                            "description": "사용자 지정 $t(settings.webui.title.webui)를 사용하세요.\n사용자 지정 $t(settings.webui.title.webui)를 사용하려면 서버의 루트 디렉터리에 있는 \"webUI\" 디렉터리의 내용을 사용자 지정 $t(settings.webui.title.webui)의 파일로 교체하세요",
+                            "title": "스벨트로 구축된 미리보기 중심 웹 프론트엔드"
+                        }
+                    },
+                    "vui": {
+                        "label": {
+                            "description": "VUI",
+                            "title": "VUI"
+                        }
+                    },
+                    "webui": {
+                        "label": {
+                            "description": "서버 시작 시 $t(settings.webui.title.webui)를 시작할 위치"
+                        }
+                    }
+                }
+            },
+            "interface": {
+                "label": {
+                    "description": "서버를 시작할 때 $t(settings.webui.title.webui)를 시작할 위치",
+                    "title": "브라우저"
+                },
+                "option": {
+                    "label": {
+                        "browser": "Electron",
+                        "electron": "Electron"
+                    }
+                }
+            },
+            "label": {
+                "initial_open_browser": "서버를 시작할 때 $t(settings.webui.title.webui)를 엽니다"
+            },
+            "title": {
+                "webui": "출처 구성"
+            }
+        }
+    },
+    "source": {
+        "configuration": {
+            "title": "소스 구성"
+        },
+        "error": {
+            "label": {
+                "no_sources_found": "출처를 찾을 수 없습니다. 설치된 확장 프로그램을 확인하세요.",
+                "source_not_found": "소스를 찾을 수 없습니다. 설치된 확장 프로그램을 확인하세요."
+            }
+        },
+        "extension_info": {
+            "title": "확장 정보"
+        },
+        "filter": {
+            "save_search": {
+                "dialog": {
+                    "label": {
+                        "delete": "저장된 검색 \"{{name}}\"이(가) 삭제됩니다",
+                        "title": "검색 삭제"
+                    }
+                },
+                "label": {
+                    "delete": "검색 저장",
+                    "save": "확인"
+                }
+            }
+        },
+        "local_source": {
+            "label": {
+                "checkout": "로컬 출처 가이드",
+                "guide": "로컬 출처"
+            },
+            "title": "출처 고정"
+        },
+        "pin": {
+            "add": "출처 고정 해제",
+            "remove": "출처"
+        },
+        "title_other": "출처"
+    },
+    "tracking": {
+        "action": {
+            "button": {
+                "add_tracking": "비공개로 추적",
+                "track_privately": "공개적으로 추적",
+                "track_publicly": "공개 추적"
+            },
+            "login": {
+                "label": {
+                    "failure": "{{name}}에 로그인할 수 없습니다",
+                    "progress": "{{name}}에 로그인 중입니다…"
+                }
+            },
+            "logout": {
+                "label": {
+                    "failure": "{{name}}에서 로그아웃할 수 없습니다"
+                }
+            }
+        },
+        "error": {
+            "label": {
+                "could_not_fetch_track_info": "추적 정보를 불러올 수 없습니다",
+                "could_not_load_track_info": "\"ID를 통해 검색하세요 (\"\"id:<ID>\"\", 예: \"\"id:13\"\") \"\"my:<Title>\"\"을 통해 목록으로 검색을 제한하세요 (예: \"\"my:One Piece\"\")\""
+            }
+        },
+        "my_anime_list": {
+            "search": {
+                "label": {
+                    "hint": "\"id:<ID>\"로 ID를 검색하세요(예: \"id:13\").\n\"my:<Title>\"로 검색 범위를 제한하세요(예: \"my:One Piece\")"
+                }
+            }
+        },
+        "publishing": {
+            "status": {
+                "cancelled": "현재 출판 중",
+                "currently_publishing": "현재 출판 중",
+                "finished": "$t(global.label.finished)",
+                "hiatus": "아직 출판되지 않음",
+                "not_yet_published": "아직 출시되지 않음",
+                "not_yet_released": "출시 중",
+                "releasing": "동인지"
+            },
+            "type": {
+                "doujinshi": "동인지",
+                "manga": "$t(manga.title_one)",
+                "manhua": "$t(manga.type.manhua)",
+                "manhwa": "$t(manga.type.manhwa)",
+                "novel": "OEL",
+                "oel": "단편",
+                "one_shot": "원샷",
+                "unknown": "$t(global.label.unknown)"
+            }
+        },
+        "settings": {
+            "dialog": {
+                "title": {
+                    "log_in": "{{name}}에서 로그아웃",
+                    "log_out": "{{name}}에서 로그아웃"
+                }
+            },
+            "label": {
+                "update_progress_manual": "읽은 후 진행 상황 업데이트",
+                "update_progress_reading": "한 번에 여러 만화를 읽은 것으로 표시할 때는 작동하지 않습니다",
+                "update_progress_reading_description": "트래커"
+            },
+            "title": {
+                "trackers": "추적"
+            }
+        },
+        "title": "완료 날짜",
+        "track_record": {
+            "label": {
+                "finish_date": "점수",
+                "score": "시작 날짜",
+                "start_date": "시작일"
+            }
+        }
+    },
+    "updates": {
+        "error": {
+            "label": {
+                "no_updates_available": "아직 업데이트가 없습니다."
+            }
+        },
+        "title": "업데이트"
+    }
+}

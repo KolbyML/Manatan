@@ -1,0 +1,56 @@
+{
+    "category": {
+        "error": {
+            "label": {
+                "request_failure": "এই ক্যাটাগরিটি লোড হচ্ছে না",
+                "empty": "এই ক্যাটাগরিটি খালি"
+            },
+            "no_categories_found": {
+                "label": {
+                    "info": "আপনার এখন পর্যন্ত কোন ক্যাটাগরি নেই।"
+                }
+            }
+        },
+        "label": {
+            "category_name": "ক্যাটাগরির নাম",
+            "use_as_default_category": "ডিফল্ট ক্যাটাগরি যখন নতুন মাঙ্গা লাইব্রেরীতে এড হবে"
+        },
+        "title": {
+            "category_one": "ক্যাটাগরি",
+            "category_other": "ক্যাটাগরি গুলো",
+            "set_categories": "ক্যাটাগরি গুলো সেট করুন"
+        },
+        "dialog": {
+            "title": {
+                "edit_category_one": "ক্যাটাগরি সংশোধন",
+                "edit_category_other": ""
+            }
+        },
+        "settings": {
+            "inclusion": {
+                "label": {
+                    "exclude": "বাদ{{excludedCategoriesText}}",
+                    "include": "সংযুক্ত: {{includedCategoriesText}}"
+                }
+            }
+        }
+    },
+    "chapter": {
+        "action": {
+            "bookmark": {
+                "add": {
+                    "button": {
+                        "selected": "বুকমার্ক সিলেক্টেড"
+                    },
+                    "label": {
+                        "action": "নতুন বুকমার্ক সংযুক্ত করুন",
+                        "error_one": "এই চ্যাপ্টারটি বুকমার্ক করা যাচ্ছে না",
+                        "error_other": "এই চ্যাপ্টারগুলো বুকমার্ক করা যাচ্ছে না",
+                        "success_one": "চ্যাপ্টারটি বুক মার্ক করা হয়েছে",
+                        "success_other": "গুলো চ্যাপ্টার বুক মার্ক করা হয়েছে"
+                    }
+                }
+            }
+        }
+    }
+}

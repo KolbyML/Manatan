@@ -1,0 +1,402 @@
+{
+    "category": {
+        "dialog": {
+            "title": {
+                "new_category": "เพิ่มหมวดหมู่",
+                "edit_category_other": "แก้ไขหมวดหมู่"
+            }
+        },
+        "label": {
+            "category_name": "ชื่อหมวดหมู่",
+            "use_as_default_category": "หมวดหมู่เริ่มต้นเมื่อเพิ่มมังงะใหม่เข้าสู่ห้องสมุด"
+        },
+        "error": {
+            "label": {
+                "request_failure": "ไม่สามารถโหลดหมวดหมู่ได้",
+                "empty": "หมวดหมู่ว่างเปล่า",
+                "create_failure": "ไม่สามารถสร้างหมวดหมู่ได้"
+            },
+            "no_categories_found": {
+                "label": {
+                    "info": "คุณยังไม่มีหมวดหมู่ใด ๆ"
+                }
+            }
+        },
+        "settings": {
+            "inclusion": {
+                "label": {
+                    "exclude": "ยกเว้น: {{excludedCategoriesText}}",
+                    "include": "รวม: {{includedCategoriesText}}"
+                }
+            }
+        },
+        "title": {
+            "category_other": "หมวดหมู่",
+            "set_categories": "กำหนดหมวดหมู่"
+        },
+        "value": "{{count}} $t(category.title.category, lowercase)"
+    },
+    "chapter": {
+        "action": {
+            "download": {
+                "add": {
+                    "label": {
+                        "action": "ดาวน์โหลด",
+                        "error_other": "ไม่สามารถเพิ่มเพื่อดาวน์โหลดได้",
+                        "success_other": "{{count}} ถูกเพิ่มการดาวน์โหลดแล้ว",
+                        "ahead": "$t(download.settings.download_ahead.title) ({{count}})",
+                        "all": "$t(extension.language.all)",
+                        "next_other": "$t(reader.button.next_chapter)",
+                        "unread": "$t(global.filter.label.unread)"
+                    },
+                    "button": {
+                        "selected": "ดาวน์โหลดที่เลือก"
+                    }
+                },
+                "delete": {
+                    "button": {
+                        "selected": "ลบที่เลือก"
+                    },
+                    "label": {
+                        "action": "ลบ",
+                        "error_other": "ไม่สามารถลบตอนได้",
+                        "success_other": "{{count}} ตอนถูกลบ"
+                    }
+                }
+            },
+            "label": {
+                "select": "เลือก"
+            },
+            "mark_as_read": {
+                "remove": {
+                    "button": {
+                        "selected": "ทำเครื่องหมายที่เลือกเป็นยังไม่อ่าน"
+                    },
+                    "label": {
+                        "action": "ทำเครื่องหมายว่ายังไม่อ่าน",
+                        "success_other": "{{count}} ตอนนี้ถูกทำเครื่องหมายว่ายังไม่ได้อ่าน",
+                        "error_other": "ไม่สามารถทำเครื่องหมายตอนนี้ว่ายังไม่อ่าน"
+                    }
+                },
+                "add": {
+                    "button": {
+                        "selected": "ทำเครื่องหมายที่เลือกเป็นอ่านแล้ว"
+                    },
+                    "label": {
+                        "action": {
+                            "current": "ทำเครื่องหมายว่าอ่านแล้ว",
+                            "previous": "ทำเครื่องหมายก่อนหน้านี้ว่าอ่านแล้ว"
+                        },
+                        "error_other": "ไม่สามารถทำเครื่องหมายว่าตอนนี้อ่านแล้วได้",
+                        "success_other": "{{count}} ตอนนี้ถูกทำเครื่องหมายว่าอ่านแล้ว"
+                    }
+                }
+            },
+            "bookmark": {
+                "add": {
+                    "button": {
+                        "selected": "บุ๊คมาร์กที่เลือก"
+                    },
+                    "label": {
+                        "action": "เพิ่มบุ๊คมาร์ก",
+                        "error_other": "ไม่สามารถบุ๊คมาร์กตอนนี้ได้",
+                        "success_other": "{{count}} บุ๊คตอนนี้แล้ว"
+                    }
+                },
+                "remove": {
+                    "button": {
+                        "selected": "ลบบุ๊คมาร์กจากที่เลือก"
+                    },
+                    "label": {
+                        "action": "ลบบุ๊คมาร์ก",
+                        "error_other": "ไม่สามารถลบบุ๊คมาร์กได้",
+                        "success_other": "{{count}} ตอนที่บุ๊กมาร์กถูกนำออกแล้ว"
+                    }
+                }
+            }
+        },
+        "error": {
+            "label": {
+                "no_chapter_found": "ไม่พบตอน",
+                "no_matches": "ไม่มีตอนที่ตรงกับตัวกรอง"
+            }
+        },
+        "option": {
+            "display": {
+                "label": {
+                    "chapter_number": "ตอนที่",
+                    "source_title": "ที่มาชื่อเรื่อง"
+                }
+            },
+            "exclude_scanlators": "นักสแกนที่ไม่รวม"
+        },
+        "status": {
+            "label": {
+                "downloaded": "ดาวน์โหลดแล้ว"
+            }
+        },
+        "title_other": "ตอน",
+        "missing_other": "หายไป {{count}} ตอน",
+        "value_other": "{{count}} ตอน"
+    },
+    "global": {
+        "button": {
+            "save": "บันทึก",
+            "open": "เปิด",
+            "remove": "ลบ",
+            "reset": "รีเซ็ต",
+            "reset_to_default": "รีเซ็ตเป็นค่าเริ่มต้น",
+            "restore": "คืนค่า",
+            "resume": "ดำเนินต่อ",
+            "retry": "ลองใหม่อีกครั้ง",
+            "select": "เลือก",
+            "browse": "ค้นหา",
+            "cancel": "ยกเลิก",
+            "changelog": "บันทึกการเปลี่ยนแปลง",
+            "add": "เพิ่ม",
+            "edit": "แก้ไข",
+            "filter": "กรอง",
+            "ignore": "ไม่สนใจ",
+            "select_all": "เลือกทั้งหมด",
+            "set": "ตั้ง",
+            "show_less": "แสดงน้อยลง",
+            "show_more": "แสดงเพิ่มเติม",
+            "start": "เริ่ม",
+            "stop": "หยุด",
+            "submit": "ส่ง",
+            "copy": "คัดลอก",
+            "create": "สร้าง",
+            "delete": "ลบ",
+            "deselect": "ยกเลิกการเลือก",
+            "dont_show_dialog_again": "อย่าแสดงหน้านี้อีกครั้ง",
+            "latest": "ล่าสุด",
+            "log_in": "เข้าสู่ระบบ",
+            "log_out": "ออกจากระบบ",
+            "migrate": "ย้าย",
+            "ok": "โอเค",
+            "options": "ตัวเลือก",
+            "refresh": "รีเฟรช",
+            "popular": "เป็นที่นิยม",
+            "remind_later": "เตือนทีหลัง"
+        },
+        "date": {
+            "label": {
+                "day_other": "วัน",
+                "today": "วันนี้",
+                "yesterday_at": "เมื่อวานนี้เวลา {{timeString}}",
+                "today_at": "วันนี้ที่ {{timeString}}",
+                "yesterday": "เมื่อวาน"
+            }
+        },
+        "label": {
+            "disabled": "ปิดใช้งาน",
+            "discord": "ดิสคอร์ด",
+            "default": "ค่าเริ่มต้น",
+            "display": "แสดงผล",
+            "never": "ไม่เคย",
+            "menu": "เมนู",
+            "mobile": "มือถือ",
+            "copied_clipboard": "คัดลอกไปยังคลิปบอร์ดแล้ว",
+            "desktop": "เดสก์ท็อป",
+            "finished": "เสร็จเรียบร้อย",
+            "left": "ซ้าย",
+            "info": "ข้อมูล",
+            "both": "ทั้งคู่",
+            "filter": "ตัวกรอง",
+            "browse": "ค้นหา",
+            "are_you_sure": "คุณแน่ใจมั้ย?",
+            "client": "ผู้ใช้",
+            "close": "ปิด",
+            "load_in_progress": "กำลังโหลดข้อมูลที่จำเป็นอยู่…",
+            "loading": "กำลังโหลด…",
+            "logged_in": "เข้าสู่ระบบแล้ว",
+            "general": "ทั่วไป",
+            "advanced": "ขั้นสูง",
+            "github": "กิตฮับ",
+            "links": "ลิงค์",
+            "error": "ข้อผิดพลาด",
+            "hidden": "ซ่อน",
+            "horizontal": "แนวนอน",
+            "bottom": "ด้านล่าง",
+            "auto": "ออโต้"
+        },
+        "error": {
+            "label": {
+                "invalid_input": "ข้อมูลอินพุตไม่ถูกต้อง",
+                "update_failed": "ไม่สามารถตรวจสอบการอัปเดตได้",
+                "failed_to_load_data": "ไม่สามารถโหลดข้อมูลได้",
+                "failed_to_save_changes": "ไม่สามารถบันทึกการเปลี่ยนแปลงได้",
+                "invalid_action": "นี่ไม่ใช่การกระทำที่ถูกต้อง",
+                "invalid_file_type": "ประเภทไฟล์ไม่ถูกต้อง"
+            }
+        },
+        "filter": {
+            "label": {
+                "bookmarked": "บุ๊คมาร์กแล้ว",
+                "downloaded": "ดาวน์โหลด",
+                "unread": "ยังไม่ได้อ่าน",
+                "duplicate_chapters": "คัดลอกตอน",
+                "tracked": "ติดตาม",
+                "started": "เริ่มแล้ว"
+            }
+        },
+        "grid_layout": {
+            "label": {
+                "comfortable_grid": "กริดที่สะดวกสบาย",
+                "list": "รายการ",
+                "compact_grid": "กริดแบบกะทัดรัด"
+            },
+            "title": "โหมดการแสดงผล"
+        },
+        "colors": {
+            "black": "สีดำ",
+            "gray": "สีเทา",
+            "white": "สีขาว"
+        }
+    },
+    "extension": {
+        "settings": {
+            "repositories": {
+                "custom": {
+                    "label": {
+                        "description": "เพิ่มที่เก็บข้อมูลซึ่งสามารถติดตั้งส่วนขยายได้",
+                        "disclaimer": "<strong>Suwayomi ไม่ได้ให้การสนับสนุนใด ๆ สำหรับที่เก็บข้อมูลหรือส่วนขยายของบุคคลที่สาม!</strong><br/>ใช้ด้วยความระมัดระวัง เนื่องจากอาจมีผู้ไม่ประสงค์ดีสร้างที่เก็บข้อมูลเหล่านี้<br/>คุณในฐานะผู้ใช้จำเป็นต้องตรวจสอบความปลอดภัยและต้องเชื่อถือที่เก็บข้อมูลหรือส่วนขยายใดๆ",
+                        "title": "ที่เก็บข้อมูลส่วนขยาย"
+                    },
+                    "dialog": {
+                        "action": {
+                            "button": {
+                                "add": "เพิ่มที่เก็บข้อมูล"
+                            }
+                        }
+                    },
+                    "error": {
+                        "label": {
+                            "invalid_url": "URL ของที่เก็บข้อมูลไม่ถูกต้อง"
+                        }
+                    }
+                }
+            }
+        },
+        "label": {
+            "installed_successfully_other": "ติดตั้งส่วนขยายแล้ว",
+            "installing_file": "กำลังติดตั้งไฟล์ส่วนขยาย…",
+            "add_repository_info": "คุณต้องเพิ่มที่เก็บส่วนขยายจึงจะสามารถติดตั้งส่วนขยายได้",
+            "installation_failed_other": "ไม่สามารถติดตั้งส่วนขยายได้",
+            "uninstallation_failed_other": "ไม่สามารถถอนการติดตั้งส่วนขยายได้",
+            "update_failed_other": "ไม่สามารถอัปเดตส่วนขยายได้"
+        },
+        "action": {
+            "label": {
+                "install": "ติดตั้ง",
+                "install_external": "ติดตั้งส่วนขยายภายนอก",
+                "uninstall": "ถอนการติดตั้ง",
+                "update": "อัปเดต",
+                "update_all": "อัพเดตทั้งหมด"
+            }
+        },
+        "language": {
+            "all": "ทั้งหมด",
+            "other": "อื่น"
+        },
+        "state": {
+            "label": {
+                "installed": "ติดตั้งแล้ว",
+                "installing": "กำลังติดตั้ง",
+                "obsolete": "ล้าสมัย",
+                "updating": "กำลังอัพเดต",
+                "uninstalling": "กำลังถอนการติดตั้ง",
+                "update_pending": "การอัปเดตอยู่ระหว่างดำเนินการ"
+            }
+        },
+        "title_other": "ส่วนขยาย"
+    },
+    "download": {
+        "queue": {
+            "error": {
+                "label": {
+                    "failed_to_remove": "ไม่สามารถลบการดาวน์โหลดออกจากคิวได้",
+                    "failed_to_retry": "ไม่สามารถดาวน์โหลดที่ล้มเหลวอีกครั้งได้",
+                    "failed_delete_all": "ไม่สามารถลบการดาวน์โหลดทั้งหมดออกจากคิวได้"
+                }
+            },
+            "label": {
+                "no_downloads": "ไม่มีการดาวน์โหลด",
+                "delete_all": "ลบทั้งหมด"
+            },
+            "info": {
+                "remaining": "{{count}} ที่เหลืออยู่",
+                "paused": "ถูกพัก — $t(download.queue.info.remaining)"
+            }
+        },
+        "settings": {
+            "auto_download": {
+                "categories": {
+                    "label": {
+                        "include_in_download": "รายการในหมวดหมู่ที่ไม่รวมจะไม่ถูกดาวน์โหลดแม้ว่าจะอยู่ในหมวดหมู่ที่รวมอยู่ด้วยก็ตาม"
+                    }
+                },
+                "download_limit": {
+                    "label": {
+                        "description": "จำกัดจำนวนตอนใหม่ที่จะดาวน์โหลด",
+                        "title": "จำกัดการดาวน์โหลดตอน"
+                    }
+                },
+                "label": {
+                    "ignore_re_uploads": "ละเว้นตอนที่อัพโหลดซ้ำ",
+                    "ignore_with_unread_chapters": "ละเว้นการดาวน์โหลดตอนอัตโนมัติสำหรับรายการที่มีตอนที่ยังไม่ได้อ่าน",
+                    "new_chapters": "ดาวน์โหลดตอนใหม่"
+                },
+                "title": "ดาวน์โหลดอัตโนมัติ"
+            },
+            "delete_chapters": {
+                "label": {
+                    "allow_deletion_of_bookmarked": "อนุญาตให้ลบตอนที่บุ๊คมาร์กไว้",
+                    "manually_marked_as_read": "ลบตอนหลังจากทำเครื่องหมายด้วยตนเองว่าอ่านแล้ว"
+                },
+                "title": "ลบตอน",
+                "while_reading": {
+                    "label": {
+                        "title": "ลบตอนที่อ่านจบขณะอ่าน"
+                    },
+                    "option": {
+                        "label": {
+                            "fifth": "ตอนที่ห้าจากสุดท้ายที่อ่าน",
+                            "first": "ตอนที่อ่านล่าสุด",
+                            "fourth": "ตอนที่สี่จากสุดท้ายที่อ่าน",
+                            "second": "อ่านตอนที่สองจากท้ายสุด",
+                            "third": "อ่านตอนที่สามจากสุดท้าย"
+                        }
+                    }
+                }
+            },
+            "download_ahead": {
+                "label": {
+                    "description": "ควรดาวน์โหลดกี่ตอนขณะอ่าน",
+                    "disclaimer": "ใช้งานได้เฉพาะในกรณีที่ดาวน์โหลดตอนปัจจุบันและตอนถัดไปแล้วเท่านั้น",
+                    "unread_chapters_to_download": "จำนวนตอนที่ยังไม่ได้อ่านที่จะดาวน์โหลด",
+                    "while_reading": "ดาวน์โหลดอัตโนมัติขณะอ่าน"
+                },
+                "title": "ดาวน์โหลดก่อน"
+            },
+            "download_path": {
+                "label": {
+                    "description": "เส้นทางไปยังไดเรกทอรีบนเซิร์ฟเวอร์ที่ไฟล์ที่ดาวน์โหลดมาจะถูกบันทึกไว้",
+                    "title": "ตำแหน่งการดาวน์โหลด"
+                }
+            },
+            "file_type": {
+                "label": {
+                    "cbz": "บันทึกเป็นไฟล์เก็บถาวร CBZ"
+                }
+            }
+        },
+        "state": {
+            "label": {
+                "downloading": "กำลังดาวน์โหลด",
+                "error": "ข้อผิดพลาด",
+                "queued": "อยู่ในคิว"
+            }
+        }
+    }
+}

@@ -1,0 +1,46 @@
+{
+    "category": {
+        "settings": {
+            "inclusion": {
+                "label": {
+                    "exclude": "Utelukk: {{excludedCategoriesText}}",
+                    "include": "Inkluder:{{includedCategoriesText}}"
+                }
+            }
+        },
+        "title": {
+            "category_one": "Kategori",
+            "category_other": "Kategorier"
+        },
+        "dialog": {
+            "title": {
+                "edit_category_one": "Rediger kategori",
+                "edit_category_other": "",
+                "new_category": "Ny kategori"
+            }
+        },
+        "error": {
+            "label": {
+                "empty": "Kategorien er tom",
+                "request_failure": "Kunne ikke laste kategorier"
+            }
+        },
+        "label": {
+            "category_name": "Kategori navn"
+        }
+    },
+    "chapter": {
+        "action": {
+            "bookmark": {
+                "add": {
+                    "button": {
+                        "selected": "Bokmerke valgt"
+                    },
+                    "label": {
+                        "action": "Legg til bokmerke"
+                    }
+                }
+            }
+        }
+    }
+}
