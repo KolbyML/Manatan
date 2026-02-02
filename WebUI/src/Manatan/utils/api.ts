@@ -1,0 +1,354 @@
+import { DictionaryResult, YomitanLanguage } from '../types';
+import { isNoSpaceLanguage } from '@/Manatan/utils/language';
+
+export type AuthCredentials = { user?: string; pass?: string };
+
+export type ChapterStatus = 
+    | { status: 'processed' }
+    | { status: 'processing', progress: number, total: number }
+    | { status: 'idle', cached: number, total: number };
+
+export interface DictionaryMeta {
+    id: number;
+    name: string;
+    priority: number;
+    enabled: boolean;
+}
+
+export interface AppVersionInfo {
+    version: string;
+    variant: 'browser' | 'native-webview' | 'desktop' | 'ios' | 'unknown';
+    update_status?: 'idle' | 'downloading' | 'ready';
+}
+
+const MANGA_CHAPTERS_QUERY = `
+query MangaIdToChapterIDs($id: Int!) {
+  manga(id: $id) {
+    chapters {
+      nodes {
+        id
+        name
+        chapterNumber
+      }
+    }
+  }
+}
+`;
+
+const GRAPHQL_QUERY = `
+mutation GET_CHAPTER_PAGES_FETCH($input: FetchChapterPagesInput!) {
+  fetchChapterPages(input: $input) {
+    chapter {
+      id
+      pageCount
+    }
+    pages
+  }
+}
+`;
+
+const resolveChapterId = async (mangaId: number, chapterNumber: number): Promise<number> => {
+    const response = await fetch('/api/graphql', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+            operationName: "MangaIdToChapterIDs",
+            variables: { id: mangaId },
+            query: MANGA_CHAPTERS_QUERY
+        })
+    });
+    const json = await response.json();
+    
+    if (json.errors) {
+        console.error("GraphQL Errors:", json.errors);
+        throw new Error(`GraphQL Error: ${json.errors[0]?.message || 'Unknown error'}`);
+    }
+
+    const chapters = json.data?.manga?.chapters?.nodes;
+
+    if (!Array.isArray(chapters)) {
+        throw new Error("Failed to retrieve chapter list from GraphQL");
+    }
+
+    return parseInt(chapters[chapterNumber - 1].id, 10);
+};
+
+export const fetchChapterPagesGraphQL = async (chapterId: number) => {
+    const response = await fetch('/api/graphql', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+            operationName: "GET_CHAPTER_PAGES_FETCH",
+            variables: { input: { chapterId } },
+            query: GRAPHQL_QUERY
+        })
+    });
+    const json = await response.json();
+    return json.data?.fetchChapterPages?.pages as string[] | undefined;
+};
+
+// --- SAFE API REQUEST WRAPPER ---
+export const apiRequest = async <T>(
+    url: string,
+    options: { method?: string; body?: any; headers?: any } = {},
+): Promise<T> => {
+    const fullUrl = url.startsWith('http') ? url : `${window.location.origin}${url}`;
+    
+    const response = await fetch(fullUrl, {
+        method: options.method || 'GET',
+        headers: { 'Content-Type': 'application/json', ...options.headers },
+        body: options.body ? JSON.stringify(options.body) : undefined,
+    });
+
+    const text = await response.text();
+    if (!text) return {} as T;
+
+    try {
+        return JSON.parse(text);
+    } catch (e) {
+        console.warn(`[API] Response from ${url} was not JSON:`, text.substring(0, 50));
+        return {} as T; 
+    }
+};
+
+// --- YOMITAN API ---
+
+export const lookupYomitan = async (
+    text: string, 
+    index: number = 0, 
+    groupingMode: 'grouped' | 'flat' = 'grouped',
+    language?: YomitanLanguage
+): Promise<DictionaryResult[] | 'loading'> => {
+    try {
+        // Convert dropdown value to backend boolean
+        const groupParam = groupingMode === 'grouped';
+        const languageParam = language ? `&language=${encodeURIComponent(language)}` : '';
+        const url = `/api/yomitan/lookup?text=${encodeURIComponent(text)}&index=${index}&group=${groupParam}${languageParam}`;
+        const res = await apiRequest<any>(url);
+        
+        if (res && res.error === 'loading') return 'loading';
+        if (Array.isArray(res)) return res as DictionaryResult[];
+        
+        return [];
+    } catch (e) {
+        console.error("Lookup failed:", e);
+        return [];
+    }
+};
+
+export const getDictionaries = async (): Promise<DictionaryMeta[] | null> => {
+    try {
+        const res = await apiRequest<{ dictionaries: any[], status: string }>('/api/yomitan/dictionaries');
+        if (res.status && res.status !== 'ready') {
+            return null;
+        }
+        // Backend returns "dictionaries" array with {id: [number], name, priority, enabled}
+        return res.dictionaries.map(d => ({
+            id: d.id, // Rust DictionaryId is a tuple struct or plain integer based on serialization
+            name: d.name,
+            priority: d.priority,
+            enabled: d.enabled
+        }));
+    } catch (e) {
+        console.error("Failed to fetch dictionaries", e);
+        return null;
+    }
+};
+export const getFrequencyDictionaries = async (): Promise<string[]> => {
+    try {
+        const dicts = await getDictionaries();
+        if (!dicts) {
+            return [];
+        }
+        // Return all dictionary names (not just filtered ones)
+        return dicts.map(d => d.name);
+    } catch (e) {
+        console.error('Failed to fetch dictionaries', e);
+        return [];
+    }
+};
+
+export const manageDictionary = async (action: 'Toggle' | 'Delete' | 'Reorder', payload: any) => {
+    return apiRequest<{status: string}>('/api/yomitan/manage', {
+        method: 'POST',
+        body: { action, payload }
+    });
+};
+
+// --- OCR / CHAPTER API ---
+
+export const checkChapterStatus = async (
+    baseUrl: string,
+    creds?: AuthCredentials,
+    language?: YomitanLanguage
+): Promise<ChapterStatus> => {
+    try {
+        const body: any = { base_url: baseUrl, context: 'Check Status' };
+        if (creds?.user) body.user = creds.user;
+        if (creds?.pass) body.pass = creds.pass;
+        if (language) body.language = language;
+
+        const res = await apiRequest<any>('/api/ocr/is-chapter-preprocessed', {
+            method: 'POST',
+            body: body
+        });
+        
+        if (res.status === 'processing') {
+            return { 
+                status: 'processing', 
+                progress: res.progress || 0, 
+                total: res.total || 0 
+            };
+        }
+        
+        if (res.status === 'processed') {
+            return { status: 'processed' };
+        }
+        
+        return { 
+            status: 'idle', 
+            cached: res.cached_count || 0, 
+            total: res.total_expected || 0 
+        };
+    } catch (e) {
+        console.error("Failed to check chapter status", e);
+        return { status: 'idle', cached: 0, total: 0 };
+    }
+};
+
+export const preprocessChapter = async (
+    baseUrl: string,
+    chapterPath: string,
+    creds?: AuthCredentials,
+    language?: YomitanLanguage
+): Promise<void> => {
+    const mangaMatch = chapterPath.match(/\/manga\/(\d+)/);
+    const chapterMatch = chapterPath.match(/\/chapter\/([\d.]+)/);
+
+    if (!mangaMatch || !chapterMatch) {
+        throw new Error("Could not parse Manga ID or Chapter Number from path");
+    }
+
+    const mangaId = parseInt(mangaMatch[1], 10);
+    const chapterNum = parseInt(chapterMatch[1], 10); 
+
+    const internalChapterId = await resolveChapterId(mangaId, chapterNum);
+    const pages = await fetchChapterPagesGraphQL(internalChapterId);
+    
+    if (!pages || pages.length === 0) throw new Error("No pages found via GraphQL");
+
+    const origin = window.location.origin;
+    const absolutePages = pages.map(p => {
+        if (p.startsWith('http')) return p;
+        return `${origin}${p}`;
+    });
+
+    const body: any = {
+        base_url: baseUrl,
+        context: document.title,
+        pages: absolutePages,
+        add_space_on_merge: !isNoSpaceLanguage(language),
+    };
+    if (creds?.user) body.user = creds.user;
+    if (creds?.pass) body.pass = creds.pass;
+    if (language) body.language = language;
+
+    await apiRequest('/api/ocr/preprocess-chapter', {
+        method: 'POST',
+        body: body
+    });
+};
+
+export const logDebug = (msg: string, isDebug: boolean) => {
+    if (isDebug) console.log(`[OCR PC Hybrid] ${new Date().toLocaleTimeString()} ${msg}`);
+};
+
+export const cleanPunctuation = (text: string, preserveSpaces: boolean = false): string => {
+    if (!text) return text;
+    let t = text
+        .replace(/[ ]*!!+/g, '‼')
+        .replace(/[ ]*\?\?+/g, '⁇')
+        .replace(/[ ]*\.\.+/g, '…')
+        .replace(/[ ]*(!\?)+/g, '⁉')
+        .replace(/[ ]*(\?!)+/g, '⁈')
+        .replace(/[ ]*\u2026+/g, '…')
+        .replace(/[ ]*\u30FB\u30FB+/g, '…')
+        .replace(/[ ]*\uFF65\uFF65+/g, '…')
+        .replace(/[ ]*-+/g, 'ー')
+        .replace(/[ ]*\u2013+/g, '―')
+        .replace(/[ ]*:+[ ]*/g, '…');
+
+    t = t
+        .replace(/^[!?:]+$/g, '')
+        .replace(/([⁉⁈‼⁇])[!?:]+/g, '$1')
+        .replace(/[!?:]+([⁉⁈‼⁇])/g, '$1');
+
+    if (preserveSpaces) return t;
+    return t.replace(/\u0020/g, '');
+};
+
+// --- SYSTEM API (Update & Versioning) ---
+
+export const getAppVersion = async (): Promise<AppVersionInfo> => {
+    try {
+        const res = await apiRequest<{version: string, variant?: string, update_status?: string}>('/api/system/version');
+        return {
+            version: res.version || '0.0.0',
+            variant: (res.variant as any) || 'unknown',
+            update_status: (res.update_status as any) || 'idle' // <--- Essential mapping
+        };
+    } catch (e) {
+        return { version: '0.0.0', variant: 'unknown', update_status: 'idle' };
+    }
+};
+
+export const triggerAppUpdate = async (url: string, filename: string) => {
+    return apiRequest('/api/system/download-update', {
+        method: 'POST',
+        body: { url, filename }
+    });
+};
+
+export const installAppUpdate = async () => {
+    return apiRequest('/api/system/install-update', { method: 'POST' });
+};
+
+const UPDATE_RELEASE_URLS = [
+    'https://api.github.com/repos/KolbyML/Manatan/releases/latest',
+    'https://api.github.com/repos/KolbyML/Mangatan/releases/latest',
+];
+
+const fetchLatestRelease = async () => {
+    for (const url of UPDATE_RELEASE_URLS) {
+        const res = await fetch(url);
+        if (!res.ok) continue;
+        const json = await res.json();
+        if (json?.tag_name) return json;
+    }
+
+    return null;
+};
+
+export const checkForUpdates = async (currentVersion: string, variant: string) => {
+    try {
+        const json = await fetchLatestRelease();
+        if (!json) return { hasUpdate: false };
+        const latestTag = json.tag_name?.replace(/^v/, '');
+        const current = currentVersion.replace(/^v/, '');
+        
+        if (latestTag && latestTag !== current) {
+            let targetString = '';
+            if (variant === 'native-webview') targetString = 'Android-NativeWebview';
+            else if (variant === 'browser') targetString = 'Android-Browser';
+            
+            if (!targetString) return { hasUpdate: false };
+
+            const asset = json.assets.find((a: any) => a.name.includes(targetString) && a.name.endsWith('.apk'));
+            
+            if (asset) {
+                return { hasUpdate: true, version: latestTag, url: asset.browser_download_url, name: asset.name, releaseUrl: json.html_url };
+            }
+        }
+        return { hasUpdate: false };
+    } catch (e) { return { hasUpdate: false }; }
+};

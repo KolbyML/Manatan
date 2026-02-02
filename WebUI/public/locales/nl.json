@@ -1,0 +1,860 @@
+{
+    "category": {
+        "dialog": {
+            "title": {
+                "edit_category_one": "Categorie bewerken",
+                "edit_category_other": "Categorieën bewerken",
+                "new_category": "Nieuw categorie"
+            }
+        },
+        "error": {
+            "no_categories_found": {
+                "label": {
+                    "info": "Je hebt nog geen categorieën."
+                }
+            },
+            "label": {
+                "empty": "De categorie is leeg",
+                "request_failure": "Kan de categorieën niet laden",
+                "create_failure": "Kan de categorie niet aanmaken"
+            }
+        },
+        "label": {
+            "category_name": "Categorie Naam",
+            "use_as_default_category": "Standaard categorie bij het toevoegen van een nieuwe manga in de bibliotheek"
+        },
+        "settings": {
+            "inclusion": {
+                "label": {
+                    "include": "Insluiten:{{includedCategoriesText}}",
+                    "exclude": "Uitsluiten:{{excludedCategoriesText}}"
+                }
+            }
+        },
+        "title": {
+            "category_one": "Categorie",
+            "category_other": "Categorieën",
+            "set_categories": "Zet categorieën"
+        },
+        "value": "{{count}} $t(category.title.category, lowercase)"
+    },
+    "download": {
+        "queue": {
+            "error": {
+                "label": {
+                    "failed_delete_all": "Kan niet alle downloads uit de wachtrij verwijderen",
+                    "failed_to_remove": "Kan niet alle downloads uit de wachtrij verwijderen.",
+                    "failed_to_retry": "Kon de mislukte download niet opnieuw proberen."
+                }
+            },
+            "label": {
+                "delete_all": "Alle verwijderen",
+                "no_downloads": "Geen downloads"
+            },
+            "info": {
+                "paused": "Gepauzeerd — $t(download.queue.info.remaining)",
+                "remaining": "{{count}} resterend"
+            }
+        },
+        "settings": {
+            "auto_download": {
+                "download_limit": {
+                    "label": {
+                        "description": "Beperk het aantal nieuwe hoofdstukken dat wordt gedownload.",
+                        "title": "Hoofdstuk downloadlimiet"
+                    }
+                },
+                "label": {
+                    "ignore_re_uploads": "Negeer opnieuw geüploade hoofdstukken",
+                    "new_chapters": "Download nieuwe hoofdstukken",
+                    "ignore_with_unread_chapters": "Negeer automatische hoofdstukdownloads voor items met ongelezen hoofdstukken"
+                },
+                "title": "Automatisch downloaden",
+                "categories": {
+                    "label": {
+                        "include_in_download": "Geselecteerde in uitgesloten categorieën worden niet gedownload, zelfs als ze zich ook in de opgenomen categorieën bevinden"
+                    }
+                }
+            },
+            "delete_chapters": {
+                "label": {
+                    "allow_deletion_of_bookmarked": "Sta het verwijderen van hoofdstukken met bladwijzers toe",
+                    "manually_marked_as_read": "Verwijder het hoofdstuk nadat hij handmatig als gelezen is gemarkeerd"
+                },
+                "title": "Verwijder hoofdstukken",
+                "while_reading": {
+                    "label": {
+                        "title": "Verwijder voltooide hoofdstukken tijdens het lezen"
+                    },
+                    "option": {
+                        "label": {
+                            "first": "Laatst gelezen hoofdstuk",
+                            "second": "Tweede tot laatst gelezen hoofdstuk",
+                            "third": "Derde tot laatst gelezen hoofdstuk",
+                            "fifth": "Vijfde tot laatst gelezen hoofdstuk",
+                            "fourth": "Vierde tot laatst gelezen hoofdstuk"
+                        }
+                    }
+                }
+            },
+            "download_ahead": {
+                "label": {
+                    "description": "Hoeveel hoofdstukken moeten worden gedownload tijdens het lezen.",
+                    "disclaimer": "Werkt alleen als het huidige hoofdstuk plus het volgende hoofdstuk al zijn gedownload.",
+                    "unread_chapters_to_download": "Aantal ongelezen hoofdstukken om te downloaden",
+                    "while_reading": "Automatisch downloaden bij het lezen",
+                    "value": "{{chapters}} $t(chapter.title)"
+                },
+                "title": "Vooraf downloaden"
+            },
+            "download_path": {
+                "label": {
+                    "description": "Het pad naar de map op de server waar gedownloade bestanden moeten worden opgeslagen",
+                    "title": "Download locatie"
+                }
+            },
+            "file_type": {
+                "label": {
+                    "cbz": "Opslaan als CBZ archief"
+                }
+            }
+        },
+        "state": {
+            "label": {
+                "downloading": "Downloaden",
+                "error": "Fout",
+                "finished": "$t(global.label.finished)",
+                "queued": "Wachtrij"
+            }
+        },
+        "title": {
+            "download": "Downloads",
+            "queue": "Download wachtrij"
+        }
+    },
+    "chapter": {
+        "title_one": "Hoofdstuk",
+        "title_other": "Hoofdstukken",
+        "action": {
+            "download": {
+                "add": {
+                    "label": {
+                        "action": "Download",
+                        "error_one": "Kan de download niet toevoegen",
+                        "error_other": "Kan de downloads niet toevoegen",
+                        "success_one": "Download toegevoegd",
+                        "success_other": "{{count}} downloads toegevoegd",
+                        "next_one": "Volgend hoofdstuk",
+                        "next_other": "Volgende {{count}} hoofdstukken",
+                        "ahead": "$t(download.settings.download_ahead.title) ({{count}})",
+                        "all": "$t(extension.language.all)",
+                        "unread": "$t(global.filter.label.unread)",
+                        "confirmation_one": "U staat op het punt een hoofdstuk te downloaden",
+                        "confirmation_other": "Je staat op het punt {{count}} hoofdstukken te downloaden.\nSuwayomi downloadt niet massaal en te veel downloads kunnen leiden tot een blokkade van de bronnen en/of prestatieproblemen."
+                    },
+                    "button": {
+                        "selected": "Download geselecteerde"
+                    }
+                },
+                "delete": {
+                    "label": {
+                        "error_one": "Kan het hoofdstuk niet verwijderen",
+                        "error_other": "Kan de hoofdstukken niet verwijderen",
+                        "action": "Verwijder",
+                        "success_one": "Hoofstuk verwijderd",
+                        "success_other": "{{count}} hoofstukken verwijderd",
+                        "confirmation_one": "U staat op het punt één download te verwijderen",
+                        "confirmation_other": "U staat op het punt {{count}} downloads te verwijderen"
+                    },
+                    "button": {
+                        "selected": "Verwijder geselecteerde"
+                    }
+                }
+            },
+            "bookmark": {
+                "add": {
+                    "button": {
+                        "selected": "Bladwijzer geselecteerd"
+                    },
+                    "label": {
+                        "action": "Bladwijzer toevoegen",
+                        "error_one": "Kan geen bladwijzer maken voor het hoofdstuk",
+                        "error_other": "Kan geen bladwijzer maken voor de hoofdstukken",
+                        "success_one": "Hoofdstuk gemarkeerd",
+                        "success_other": "{{count}} hoofdstukken gemarkeerd"
+                    }
+                },
+                "remove": {
+                    "button": {
+                        "selected": "Verwijder bladwijzers uit geselecteerde"
+                    },
+                    "label": {
+                        "action": "Verwijder bladwijzer",
+                        "error_one": "Kan de bladwijzer niet verwijderen",
+                        "error_other": "Kan de bladwijzers niet verwijderen",
+                        "success_one": "Hoofstuk bladwijzer verwijderd",
+                        "success_other": "{{count}} hoofstuk bladwijzers verwijderd",
+                        "confirmation_one": "Je staat op het punt om een badwijzer te verwijderen",
+                        "confirmation_other": "Je staat op het punt om {{count}} badwijzers te verwijderen"
+                    }
+                }
+            },
+            "label": {
+                "select": "Selecteer"
+            },
+            "mark_as_read": {
+                "add": {
+                    "button": {
+                        "selected": "Markeer geselecteerd als gelezen"
+                    },
+                    "label": {
+                        "action": {
+                            "current": "Markeer als gelezen",
+                            "previous": "Markeer vorige als gelezen"
+                        },
+                        "error_one": "Kan het hoofdstuk niet markeren als gelezen",
+                        "error_other": "Kan de hoofdstukken niet markeren als gelezen",
+                        "success_one": "Hoofdstuk gemarkeerd als gelezen",
+                        "success_other": "{{count}} hoofdstukken gemarkeerd als gelezen",
+                        "confirmation_one": "U staat op het punt om een hoofdstuk als gelezen te markeren",
+                        "confirmation_other": "Je staat op het punt om {{count}} hoofdstukken als gelezen te markeren"
+                    }
+                },
+                "remove": {
+                    "button": {
+                        "selected": "Markeer geselecteerde als ongelezen"
+                    },
+                    "label": {
+                        "action": "Markeer als ongelezen",
+                        "error_one": "Kan het hoofdstuk niet markeren als ongelezen",
+                        "error_other": "Kan de hoofstukken niet markeren als ongelezen",
+                        "success_one": "Hoofdstuk gemarkeerd als ongelezen",
+                        "success_other": "{{count}} hoofdstukken gemerkeerd als ongelezen",
+                        "confirmation_one": "U staat op het punt een hoofdstuk als ongelezen te markeren",
+                        "confirmation_other": "U staat op het punt om {{count}} hoofdstukken als ongelezen te markeren"
+                    }
+                }
+            }
+        },
+        "error": {
+            "label": {
+                "no_chapter_found": "Geen hoofdstukken gevonden",
+                "no_matches": "Er zijn geen hoofdstukken die overeenkomen met het filter"
+            }
+        },
+        "option": {
+            "display": {
+                "label": {
+                    "chapter_number": "Hoofdstuk nummer",
+                    "source_title": "Bron titel"
+                }
+            },
+            "exclude_scanlators": "Scanlators uitsluiten"
+        },
+        "status": {
+            "label": {
+                "downloaded": "Gedownload"
+            }
+        },
+        "missing_one": "{{count}} missend hoofdstuk",
+        "missing_other": "{{count}} missende hoofdstukken",
+        "value_one": "{{count}} hoofdstuk",
+        "value_other": "{{count}} hoofdstukken"
+    },
+    "extension": {
+        "action": {
+            "label": {
+                "install": "Installatie",
+                "install_external": "Installeer externe extensies",
+                "update": "Update",
+                "uninstall": "De-installeer",
+                "update_all": "Alles updaten"
+            }
+        },
+        "label": {
+            "add_repository_info": "U moet een extensierepository toevoegen om extensies te kunnen installeren",
+            "installation_failed_one": "Kan de extensie niet installeren",
+            "installation_failed_other": "Kan de extensies niet installeren",
+            "installed_successfully_one": "Extensie geïnstalleerd",
+            "installed_successfully_other": "Extensies geïnstalleerd",
+            "installing_file": "Extensie bestand aan het installeren…",
+            "uninstallation_failed_one": "Kan de extensie niet de-installeren",
+            "uninstallation_failed_other": "Kan de extensies niet de-installeren",
+            "update_failed_one": "Kan de extensie niet updaten",
+            "update_failed_other": "Kan de extensies niet updaten",
+            "age_rating": "Leeftijdsclassificatie"
+        },
+        "settings": {
+            "repositories": {
+                "custom": {
+                    "dialog": {
+                        "action": {
+                            "button": {
+                                "add": "Voeg repository toe"
+                            }
+                        }
+                    },
+                    "label": {
+                        "description": "Voeg repositories toe, waaruit extensies kunnen worden geïnstalleerd",
+                        "title": "Extensie-repository's",
+                        "disclaimer": "<strong>Suwayomi biedt geen ondersteuning voor repository's of extensies van derden!</strong><br/>Wees voorzichtig, want er kunnen kwaadwillende mensen zijn die deze repository's maken.<br/>U als gebruiker moet de beveiliging verifiëren, dat u elke repository of extensie vertrouwt."
+                    },
+                    "error": {
+                        "label": {
+                            "invalid_url": "Ongeldige repository-URL"
+                        }
+                    }
+                }
+            },
+            "dialog": {
+                "title": "Instellingen voor extensies per taal"
+            }
+        },
+        "state": {
+            "label": {
+                "installed": "Geïnstalleerd",
+                "installing": "Installeren",
+                "update_pending": "Update in behandeling",
+                "updating": "Aan het updaten",
+                "uninstalling": "De-installeren",
+                "obsolete": "Verouderd"
+            }
+        },
+        "language": {
+            "other": "Ander",
+            "all": "Alles"
+        },
+        "title_one": "Extensie",
+        "title_other": "Extensies"
+    },
+    "global": {
+        "button": {
+            "add": "Toevoegen",
+            "browse": "Zoeken",
+            "cancel": "Annuleer",
+            "changelog": "Wijzigingslog",
+            "deselect": "De-selecteer",
+            "dont_show_dialog_again": "Laat dit dialoogvenster niet meer zien",
+            "edit": "Aanpassen",
+            "filter": "Filter",
+            "ignore": "Negeren",
+            "latest": "Laatste",
+            "log_in": "Inloggen",
+            "log_out": "Uitloggen",
+            "migrate": "Migreren",
+            "ok": "Oké",
+            "options": "Opties",
+            "popular": "Populair",
+            "refresh": "Vernieuwen",
+            "remind_later": "Herinner mij later",
+            "remove": "Verwijder",
+            "reset": "Reset",
+            "reset_to_default": "Reset naar standaard",
+            "set": "instellen",
+            "restore": "Terugzetten",
+            "resume": "Hervat",
+            "retry": "Opnieuw proberen",
+            "select_all": "Alles selecteren",
+            "copy": "Kopiëren",
+            "create": "Aanmaken",
+            "delete": "Verwijder",
+            "select": "Selecteer",
+            "show_less": "Laat minder zien",
+            "show_more": "Meer laten zien",
+            "start": "Begin",
+            "stop": "Stop",
+            "submit": "Indienen",
+            "open": "Open",
+            "save": "Opslaan"
+        },
+        "label": {
+            "disabled": "Uitgeschakeld",
+            "discord": "Discord",
+            "links": "Links",
+            "load_in_progress": "De vereiste gegevens worden nog steeds geladen…",
+            "loading": "Laden…",
+            "logged_in": "Ingelogd",
+            "never": "Nooit",
+            "none": "Geen",
+            "open_in_browser": "Openen in browser",
+            "other": "Ander",
+            "sort": "Sorteer",
+            "started": "Gestart",
+            "type": "Type",
+            "unknown": "Onbekend",
+            "browse": "Zoeken",
+            "advanced": "Geavanceerd",
+            "close": "Afsluiten",
+            "general": "Algemeen",
+            "are_you_sure": "Weet u het zeker?",
+            "client": "Cliënt",
+            "filter": "Filter",
+            "password": "Wachtwoord",
+            "display": "Weergaven",
+            "github": "GitHub",
+            "placeholder": "Plaatshouder",
+            "username": "Gebruikersnaam",
+            "asterisk": "*",
+            "auto": "Automatisch",
+            "both": "Beiden",
+            "bottom": "Bodum",
+            "copied_clipboard": "Gekopieerd naar klembord",
+            "dark": "Donker",
+            "default": "Standaard",
+            "desktop": "Bureablad",
+            "error": "Fout",
+            "finished": "Afgerond",
+            "footnote": "{{value}}<0>$t(global.label.asterisk)</0>",
+            "hidden": "Verborgen",
+            "horizontal": "Horizontaal",
+            "info": "Informatie",
+            "large": "Groot",
+            "last_used": "Laatst gebruikt",
+            "left": "Links",
+            "light": "Licht",
+            "medium": "Gemiddeld",
+            "menu": "Menu",
+            "mobile": "Mobiel",
+            "more": "Meer",
+            "next": "Volgende",
+            "pinned": "Vastgemaakt",
+            "previous": "Vorige",
+            "right": "Rechts",
+            "scanlator": "Scanlator",
+            "share": "Delen",
+            "small": "Klein",
+            "standard": "Standaard",
+            "stopped": "Gestopt",
+            "success": "Succes",
+            "system": "Systeem",
+            "tiny": "Heel klein",
+            "version": "Versie",
+            "vertical": "Verticaal",
+            "warning": "Waarschuwing"
+        },
+        "language": {
+            "label": {
+                "language_with_code": "Taal met code: {{code}}",
+                "language": "Taal"
+            },
+            "title": {
+                "enabled_languages": "Toegestane talen",
+                "weblate": "Weblate"
+            },
+            "error": {
+                "load": "Kan de taal niet laden"
+            }
+        },
+        "sort": {
+            "label": {
+                "by_chapter_number": "Bij hoofdstuk nummer",
+                "by_fetch_date": "Per opgehaalde datum",
+                "by_source": "Per bron",
+                "by_upload_date": "Op uploaddatum",
+                "asc": "Oplopend",
+                "desc": "Aflopend"
+            }
+        },
+        "time": {
+            "hour_short": "u",
+            "minutes": {
+                "minute_one": "Minuut",
+                "minute_other": "minuten",
+                "value": "{{count}} $t(global.time.minutes.minute, lowercase)"
+            },
+            "seconds": {
+                "second_one": "Seconde",
+                "second_other": "Seconden",
+                "value": "{{count}} $t(global.time.seconds.second, lowercase)"
+            }
+        },
+        "date": {
+            "label": {
+                "day_one": "Dag",
+                "day_other": "Dagen",
+                "today": "Vandaag",
+                "yesterday_at": "Gister om {{timeString}}",
+                "today_at": "Vandaag om {{timeString}}",
+                "yesterday": "Gister"
+            },
+            "value": {
+                "label": {
+                    "day": "{{days}} $t(global.date.label.day, lowercase)"
+                }
+            }
+        },
+        "error": {
+            "label": {
+                "invalid_file_type": "Ongeldig bestandstype",
+                "failed_to_load_data": "Kan gegevens niet laden",
+                "invalid_action": "Dit is geen geldige actie",
+                "failed_to_save_changes": "Kan wijzigingen niet opslaan",
+                "update_failed": "Kan niet controleren op updates",
+                "invalid_input": "Ongeldig invoer",
+                "unrecoverable_error": "Er is iets misgegaan\nEr is een fout opgetreden die we niet kunnen herstellen"
+            }
+        },
+        "filter": {
+            "label": {
+                "bookmarked": "Gemarkeerd",
+                "downloaded": "Gedownload",
+                "tracked": "Bijgehouden",
+                "unread": "Ongelezen",
+                "duplicate_chapters": "Dubbele hoofdstukken",
+                "started": "Gestart"
+            }
+        },
+        "grid_layout": {
+            "label": {
+                "comfortable_grid": "Comfortabel rooster",
+                "compact_grid": "Compakt rooster",
+                "list": "Lijst"
+            },
+            "title": "Weergaven modus"
+        },
+        "update": {
+            "label": {
+                "available": "Update beschikbaar",
+                "check_failure": "Kan niet controleren op updates",
+                "checking": "Controlleren op updates",
+                "update_failure": "Update mislukt",
+                "update_success": "{{name}} is bijgewerkt naar versie {{version}} {{channel}}",
+                "updating": "{{progress}}% | Bijgewerkt…",
+                "info": "Serverversie {{version}} ({{channel}}) beschikbaar om te downloaden",
+                "up_to_date": "Dit is de laatste versie"
+            },
+            "settings": {
+                "inform": {
+                    "label": {
+                        "title": "Informeer over beschikbare updates",
+                        "description": "Toont een dialoogvenster voor het geval er een nieuwe versie beschikbaar is"
+                    }
+                }
+            }
+        },
+        "colors": {
+            "black": "Zwart",
+            "gray": "Grijs",
+            "white": "Wit"
+        },
+        "unit": {
+            "px": "px"
+        },
+        "value": "{{value}}{{unit}}"
+    },
+    "library": {
+        "error": {
+            "label": {
+                "stop_global_update": "Kan de globale update niet stoppen",
+                "add_to_library": "Kan manga niet toevoegen aan bibliotheek!",
+                "empty": "Je bibliotheek is leeg",
+                "remove_from_library": "Kan manga niet uit de bibliotheek verwijderen!",
+                "no_matches": "Geen enkele manga komt overeen met dit filter"
+            }
+        },
+        "info": {
+            "label": {
+                "added_to_library": "Manga toegevoegd aan bibliotheek!",
+                "removed_from_library": "Manga uit bibliotheek verwijderd!"
+            }
+        },
+        "settings": {
+            "global_update": {
+                "entries": {
+                    "title": "Sla het bijwerken van manga's over",
+                    "label": {
+                        "completed": "Met de status \"Voltooid\"",
+                        "not_started": "Die zijn nog niet begonnen",
+                        "unread_chapters": "Met ongelezen hoofdstukken"
+                    }
+                },
+                "label": {
+                    "last_update": "Laatste update: {{date}}",
+                    "last_update_tooltip": "$t(library.settings.global_update.title) ($t(library.settings.global_update.label.last_update, lowercase))"
+                },
+                "metadata": {
+                    "label": {
+                        "description": "Controleer op nieuwe voorblad en details, wanneer de bibliotheek wordt bijwerkt",
+                        "title": "Metagegevens automatisch vernieuwen"
+                    }
+                },
+                "title": "Globale update",
+                "auto_update": {
+                    "interval": {
+                        "label": {
+                            "value": "{{hours}}$t(global.time.hour_short)",
+                            "title": "Automatisch update-interval"
+                        }
+                    },
+                    "label": {
+                        "title": "Automatische updates"
+                    }
+                },
+                "categories": {
+                    "label": {
+                        "info": "Manga's in uitgesloten categorieën worden niet bijgewerkt, zelfs als ze zich ook in opgenomen categorieën bevinden"
+                    }
+                }
+            },
+            "advanced": {
+                "database": {
+                    "cleanup": {
+                        "label": {
+                            "description": "Verwijder niet-bibliotheek-manga uit categorieën",
+                            "title": "Database opschonen",
+                            "error": "Kan manga die niet in de bibliotheek staan, niet uit de categorieën verwijderen",
+                            "success": "Niet-bibliotheek manga uit categorieën verwijderd"
+                        }
+                    }
+                },
+                "duplicates": {
+                    "label": {
+                        "description": "Alle dubbele manga's in bibliotheek weergeven",
+                        "title": "Dubbele manga's"
+                    },
+                    "settings": {
+                        "label": {
+                            "check_description": "Controleer beschrijving"
+                        }
+                    }
+                }
+            },
+            "general": {
+                "add_to_library": {
+                    "category_selection": {
+                        "label": {
+                            "description": "Toon het categorieselectiedialoogvenster wanneer u een manga aan de bibliotheek toevoegt",
+                            "title": "Dialoogvenster voor categorieselectie"
+                        }
+                    }
+                },
+                "search": {
+                    "ignore_filters": {
+                        "label": {
+                            "description": "Zoekresultaten bevatten manga die niet overeenkomen met de huidige filters",
+                            "title": "Negeer filters tijdens het zoeken"
+                        }
+                    }
+                },
+                "remove_from_library": {
+                    "remove_from_categories": {
+                        "label": {
+                            "description": "Verwijder manga uit categorieën wanneer u ze uit de bibliotheek verwijdert",
+                            "title": "Vergeet mangacategorieën"
+                        }
+                    }
+                }
+            }
+        },
+        "action": {
+            "label": {
+                "stop_update": "Stop de globale update",
+                "update_category": "Categorie bijwerken",
+                "update_library": "Bibliotheek bijwerken"
+            }
+        },
+        "option": {
+            "display": {
+                "tab": {
+                    "title": "Tabbladen",
+                    "label": {
+                        "show_number_of_items": "Toon aantal hoofdstukken"
+                    }
+                },
+                "badge": {
+                    "title": "Badges",
+                    "label": {
+                        "download_badges": "Badges downloaden",
+                        "unread_badges": "Ongelezen badges"
+                    }
+                },
+                "other": {
+                    "label": {
+                        "show_continue_reading_button": "Knop doorgaan met lezen tonen"
+                    }
+                }
+            },
+            "sort": {
+                "label": {
+                    "alphabetically": "A-Z",
+                    "by_date_added": "Recent toegevoegd",
+                    "by_last_read": "Recent gelezen",
+                    "by_latest_fetched_chapter": "Laatst opgehaalde hoofdstuk",
+                    "by_unread_chapters": "Ongelezen hoofdstukken",
+                    "by_latest_uploaded_chapter": "Laatst geüpload hoofdstuk"
+                }
+            }
+        },
+        "title": "Bibliotheek"
+    },
+    "manga": {
+        "button": {
+            "track": {
+                "active_one": "{{count}} bijgehouden",
+                "active_other": "{{count}} bijgehouden",
+                "start": "Bijhouden"
+            },
+            "add_to_library": "Toevoegen aan bibliotheek",
+            "in_library": "In bibliotheek"
+        },
+        "action": {
+            "category": {
+                "button": {
+                    "selected": "Wijzig de categorieën van geselecteerde"
+                },
+                "label": {
+                    "action": "Wijzig de categorieën",
+                    "error_one": "Kan de categorie van de manga niet wijzigen",
+                    "error_other": "Kan de categorieën van de manga niet wijzigen",
+                    "success_one": "Gewijzigde mangacategorieën",
+                    "success_other": "Gewijzigde categorieën van {{count}} manga"
+                }
+            },
+            "library": {
+                "add": {
+                    "dialog": {
+                        "duplicate": {
+                            "label": {
+                                "failure": "Kan niet controleren op dubbele manga in je bibliotheek.\n\nFout: {{error}}",
+                                "info": "U heeft een manga in uw bibliotheek met dezelfde naam."
+                            }
+                        }
+                    }
+                },
+                "remove": {
+                    "button": {
+                        "selected": "Verwijder geselecteerde uit de bibliotheek"
+                    },
+                    "label": {
+                        "action": "Verwijderen uit de bibliotheek",
+                        "error_one": "Kan manga niet uit de bibliotheek verwijderen",
+                        "error_other": "Kan manga's niet uit de bibliotheek verwijderen",
+                        "success_one": "Manga uit de bibliotheek verwijderd",
+                        "success_other": "{{count}} manga uit de bibliotheek verwijderd"
+                    },
+                    "dialog": {
+                        "label": {
+                            "message": "U staat op het punt \"{{title}}\" uit uw bibliotheek te verwijderen"
+                        }
+                    }
+                }
+            },
+            "migrate": {
+                "label": {
+                    "success": "Manga met succes gemigreerd",
+                    "error": "Kan manga niet migreren"
+                }
+            },
+            "track": {
+                "add": {
+                    "label": {
+                        "action": "Bijhouden",
+                        "error": "Kan manga niet bijhouden",
+                        "success": "Bijgehouden manga"
+                    }
+                },
+                "remove": {
+                    "dialog": {
+                        "label": {
+                            "delete_remote_track": "Ook verwijderen uit {{tracker}}",
+                            "description": "Hiermee wordt het bijhouden ook lokaal verwijderd.",
+                            "title": "Bijhouden {{tracker}} weghalen?"
+                        }
+                    },
+                    "label": {
+                        "error": "Kan bijhouden van manga niet stopzetten",
+                        "success": "Niet bijgehouden manga"
+                    }
+                }
+            }
+        },
+        "error": {
+            "label": {
+                "no_mangas_found": "Geen manga gevonden",
+                "no_matches": "Geen enkele manga komt overeen met dit filter",
+                "request_failure": "Kan manga niet laden"
+            }
+        },
+        "label": {
+            "artist": "Artiest",
+            "author": "Schrijver",
+            "edit_categories": "Manga-categorieën bewerken",
+            "reload_from_source": "Gegevens opnieuw laden vanuit de bron",
+            "status": "Status"
+        },
+        "title_one": "Manga",
+        "title_other": "Manga's"
+    },
+    "migrate": {
+        "dialog": {
+            "action": {
+                "button": {
+                    "show_entry": "Invoer tonen"
+                }
+            },
+            "label": {
+                "delete_downloaded": "Verwijder downloads"
+            },
+            "title": "Selecteer gegevens die u wilt opnemen"
+        },
+        "label": {
+            "info": "Manga migreren…"
+        },
+        "title": "Migreren",
+        "search": {
+            "title": "$t(migrate.title) \"{{title}}\""
+        }
+    },
+    "reader": {
+        "button": {
+            "close_menu": "Menu sluiten",
+            "exit": "Verlaat lezer",
+            "next_chapter": "Volgend hoofdstuk",
+            "open_menu": "Menu openen",
+            "previous_chapter": "Vorig hoofdstuk"
+        },
+        "error": {
+            "label": {
+                "no_pages_found": "Geen pagina's gevonden",
+                "prev_chapter_does_not_exist": "Er is geen vorig hoofdstuk om te openen",
+                "next_chapter_does_not_exist": "Er is geen volgend hoofdstuk om te openen"
+            }
+        },
+        "page_info": {
+            "label": {
+                "currently_on_page": "Momenteel op pagina",
+                "of_max_pages": "van {{maxPages}}"
+            }
+        },
+        "settings": {
+            "error": {
+                "label": {
+                    "failed_to_save_settings": "Kon de lezerinstellingen niet opslaan op de server"
+                }
+            },
+            "label": {
+                "fit_page_to_window": "Pagina passend maken voor venster",
+                "load_next_chapter": "Laad het volgende hoofdstuk aan het einde"
+            }
+        }
+    },
+    "history": {
+        "error": {
+            "label": {
+                "no_history_available": "Je hebt nog geen enkele serie gelezen."
+            }
+        },
+        "settings": {
+            "hide": "Geschiedenis verbergen"
+        },
+        "title": "Geschiedenis"
+    },
+    "hotkeys": {
+        "create": {
+            "dialog": {
+                "label": "Opgenomen toetsen: <Keys/>",
+                "placeholder": "Druk op toetsen"
+            }
+        }
+    }
+}

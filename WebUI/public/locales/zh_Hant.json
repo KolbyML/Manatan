@@ -1,0 +1,1609 @@
+{
+    "reader": {
+        "settings": {
+            "label": {
+                "fit_page_to_window": "自適應",
+                "skip_dup_chapters": "略過重複章節",
+                "show_page_number": "顯示頁數",
+                "static_navigation": "靜態導覽",
+                "load_next_chapter": "在尾頁載入下一章",
+                "reader_type": "閱讀器類型",
+                "reader_width": "閱讀器寬度",
+                "behaviour": "行為",
+                "layout": "佈局",
+                "limit_reader_width": "限制閱讀器寬度",
+                "page_gap": "頁間距",
+                "reading_direction": "閱讀順序",
+                "reading_mode": "閱讀模式",
+                "offset_double_spread": "調整跨頁偏移",
+                "skip_filtered_chapters": "略過已過濾的章節",
+                "unchangeable_in_reader": "在閱讀器開啟時無法變更設定",
+                "custom_scroll_amount": "自動捲動量"
+            },
+            "reader_type": {
+                "label": {
+                    "webtoon": "條漫",
+                    "continuous_vertical": "連續縱向捲動",
+                    "double_page": "雙頁",
+                    "continuous_horizontal": "連續橫向捲動",
+                    "single_page": "單頁"
+                }
+            },
+            "title": {
+                "quick_settings": "快速設定",
+                "reader": "閱讀器"
+            },
+            "error": {
+                "label": {
+                    "failed_to_save_settings": "無法儲存此閱讀器設定到伺服器"
+                }
+            },
+            "custom_filter": {
+                "brightness": "自訂亮度",
+                "rgba": {
+                    "red": "紅色",
+                    "title": "自訂色彩濾鏡",
+                    "blue": "藍色",
+                    "green": "綠色",
+                    "blend_mode": {
+                        "overlay": "覆蓋",
+                        "lighten": "變亮",
+                        "screen": "濾色",
+                        "title": "色彩濾鏡混合模式",
+                        "multiply": "相乘",
+                        "darken": "變暗",
+                        "default": "$t(global.label.default)"
+                    },
+                    "alpha": "透明通道"
+                },
+                "grayscale": "灰階",
+                "invert": "反轉",
+                "sepia": "深褐色",
+                "contrast": "自訂對比度",
+                "saturate": "自訂飽和度",
+                "title": "自訂濾鏡",
+                "hue": "自訂色調"
+            },
+            "hotkey": {
+                "next_page": "下一頁",
+                "next_chapter": "下一章",
+                "previous_chapter": "上一章",
+                "previous_page": "上一頁",
+                "menu": "開關選單",
+                "reading_direction": "循環切換閱讀方向",
+                "reading_mode": "循環切換閱讀模式",
+                "scale_type": "循環切換圖片縮放類型",
+                "auto_scroll_speed_decrease": "降低自動捲動速度",
+                "auto_scroll_speed_increase": "增加自動捲動速度",
+                "auto_scroll": "開關自動捲動",
+                "scroll_backward": "向後捲動",
+                "scroll_forward": "向前捲動",
+                "stretch_image": "開關拉伸圖片",
+                "offset_spread_pages": "調整跨頁偏移"
+            },
+            "reading_direction": {
+                "rtl": "由右至左",
+                "ltr": "由左至右"
+            },
+            "page_scale": {
+                "title": "縮放類型",
+                "width": "符合寬度",
+                "height": "符合高度",
+                "original": "原始尺寸",
+                "screen": "符合螢幕",
+                "stretch": "拉伸較小的頁面"
+            },
+            "progress_bar": {
+                "position": "進度列位置",
+                "size": "進度列大小",
+                "style": "進度列樣式",
+                "auto_vertical_position": {
+                    "title": "自動進度列垂直位置"
+                }
+            },
+            "background_color": "背景色",
+            "tap_zones": {
+                "invert": "反轉觸控區域",
+                "edge": "邊緣",
+                "kindle": "Kindle",
+                "right_left": "左右",
+                "title": "觸控區域",
+                "l_shape": "L 式"
+            },
+            "image_preload_amount": "預載圖片",
+            "overlay_mode": "覆蓋模式",
+            "exit_mode": "退出後開啟漫畫頁面",
+            "source_series": "系列設定",
+            "preview": {
+                "reading_mode": {
+                    "title": "顯示閱讀模式",
+                    "description": "當閱讀器開啟或變更模式時短暫地顯示目前模式"
+                },
+                "tap_zones": {
+                    "title": "顯示觸控區域",
+                    "description": "當閱讀器開啟或變更佈局時短暫地顯示目前觸控區域佈局預覽"
+                }
+            },
+            "chapter_transition": {
+                "warning": {
+                    "missing_chapter": "在章節切換時提示章節遺失",
+                    "scanlator_change": "在章節切換時提示掃譯者變更"
+                }
+            },
+            "active_setting": "啟用設定",
+            "auto_scroll": {
+                "smooth": "平滑自動捲動",
+                "speed": "自動捲動速度",
+                "title": "自動捲動"
+            },
+            "auto_webtoon_mode": {
+                "title": "自動條漫模式",
+                "description": "對於檢測為可能是長條格式的作品，自動使用條慢模式"
+            },
+            "default_setting_footnote": "$t(global.label.asterisk): $t(reader.settings.active_setting)",
+            "scroll_amount": "捲動量",
+            "show_transition_page": "顯示過度頁面",
+            "infinite_scroll": {
+                "title": "連續章節顯示",
+                "description": "在連續閱讀模式下，保持前一章節和後一章節可見，實現章節間無縫滾動。"
+            }
+        },
+        "title": "瀏覽 - 漫畫 {{mangaId}} 章節 {{chapterIndex}}",
+        "error": {
+            "label": {
+                "prev_chapter_does_not_exist": "沒有可打開的前一章",
+                "next_chapter_does_not_exist": "沒有可打開的下一章",
+                "no_pages_found": "找不到頁面",
+                "chapter_not_found": "章節不存在"
+            }
+        },
+        "page_info": {
+            "label": {
+                "currently_on_page": "目前頁面",
+                "of_max_pages": "/ {{maxPages}}",
+                "page": "頁"
+            }
+        },
+        "button": {
+            "next_chapter": "下一章",
+            "previous_chapter": "上一章",
+            "open_menu": "開啟選單",
+            "close_menu": "關閉選單",
+            "exit": "退出閱讀器",
+            "chapter_list": "章節清單",
+            "next_page": "下一頁",
+            "previous_page": "上一頁",
+            "retry_load_pages": "重試錯誤的頁面"
+        },
+        "transition_page": {
+            "previous": "$t(global.label.previous):",
+            "current": "目前：",
+            "finished": "$t(global.label.finished):",
+            "first_chapter": "沒有上一章節",
+            "last_chapter": "沒有下一章節",
+            "next": "$t(global.label.next):",
+            "exit": {
+                "previous_page": "返回至上一頁面",
+                "manga_page": "返回至漫畫頁面"
+            }
+        },
+        "chapter_transition": {
+            "warning": {
+                "title": "章節切換警告",
+                "previous": {
+                    "scanlator": "上一章節的掃譯者與目前的不同。\n上一章節：{{nextScanlator}}\n目前章節：{{currentScanlator}}",
+                    "chapter_number_other": "遺失 {{count}} 個章節。\n上一章節：{{nextChapter}}\n目前章節：{{currentChapter}}"
+                },
+                "next": {
+                    "chapter_number_other": "遺失 {{count}} 個章節。\n目前章節：{{currentChapter}}\n下一章節：{{nextChapter}}",
+                    "scanlator": "下一章節的掃譯者與目前的不同。\n目前章節：{{currentScanlator}}\n下一章節：{{nextScanlator}}"
+                }
+            }
+        }
+    },
+    "category": {
+        "error": {
+            "no_categories_found": {
+                "label": {
+                    "info": "你還沒有任何分類。"
+                }
+            },
+            "label": {
+                "empty": "分類為空",
+                "request_failure": "無法載入分類",
+                "create_failure": "無法建立分類"
+            }
+        },
+        "label": {
+            "category_name": "分類名稱",
+            "use_as_default_category": "預設新增到此書櫃"
+        },
+        "title": {
+            "set_categories": "設定分類",
+            "category_other": "分類"
+        },
+        "dialog": {
+            "title": {
+                "edit_category_other": "編輯分類",
+                "new_category": "新分類"
+            }
+        },
+        "settings": {
+            "inclusion": {
+                "label": {
+                    "exclude": "排除：{{excludedCategoriesText}}",
+                    "include": "包含：{{includedCategoriesText}}"
+                }
+            }
+        },
+        "value": "{{count}} $t(category.title.category, lowercase)"
+    },
+    "chapter": {
+        "action": {
+            "bookmark": {
+                "add": {
+                    "button": {
+                        "selected": "收藏已選擇的"
+                    },
+                    "label": {
+                        "action": "新增收藏",
+                        "error_other": "無法收藏此章節",
+                        "success_other": "已收藏 {{count}} 章節"
+                    }
+                },
+                "remove": {
+                    "button": {
+                        "selected": "取消收藏已選取"
+                    },
+                    "label": {
+                        "action": "取消收藏",
+                        "error_other": "無法移除收藏",
+                        "success_other": "刪除{{count}}章節收藏",
+                        "confirmation_other": "您即將移除 {{count}} 個書籤"
+                    }
+                }
+            },
+            "download": {
+                "add": {
+                    "label": {
+                        "action": "下載",
+                        "error_other": "無法新增下載",
+                        "success_other": "已新增{{count}}下載",
+                        "ahead": "$t(download.settings.download_ahead.title) ({{count}})",
+                        "all": "$t(extension.language.all)",
+                        "unread": "$t(global.filter.label.unread)",
+                        "next_other": "$t(reader.button.next_chapter)",
+                        "confirmation_other": "您即將下載 {{count}} 個章節。\nSuwayomi 不是一個大量夏下載工具，太多的下載可能導致您被來源封鎖或性能問題。"
+                    },
+                    "button": {
+                        "selected": "下載已選擇"
+                    }
+                },
+                "delete": {
+                    "button": {
+                        "selected": "刪除已選擇"
+                    },
+                    "label": {
+                        "action": "刪除",
+                        "success_other": "{{count}}章節已刪除",
+                        "error_other": "無法刪除章節",
+                        "confirmation_other": "您即將刪除 {{count}} 下載"
+                    }
+                }
+            },
+            "label": {
+                "select": "選擇"
+            },
+            "mark_as_read": {
+                "add": {
+                    "button": {
+                        "selected": "標記已選擇為已讀"
+                    },
+                    "label": {
+                        "action": {
+                            "current": "標記為已讀",
+                            "previous": "標記之前的章節為已讀"
+                        },
+                        "error_other": "無法標記章節為已讀",
+                        "success_other": "{{count}}章節已標記為已讀",
+                        "confirmation_other": "您即將標記 {{count}} 個章節為已讀"
+                    }
+                },
+                "remove": {
+                    "button": {
+                        "selected": "標記已選擇為未讀"
+                    },
+                    "label": {
+                        "action": "標記為未讀",
+                        "error_other": "無法標記章節為未讀",
+                        "success_other": "{{count}}章節標記為未讀",
+                        "confirmation_other": "您即將標記 {{count}} 個章節為未讀"
+                    }
+                }
+            }
+        },
+        "error": {
+            "label": {
+                "no_chapter_found": "沒有找到章節",
+                "no_matches": "沒有符合篩選的章節"
+            }
+        },
+        "option": {
+            "display": {
+                "label": {
+                    "chapter_number": "章節數",
+                    "source_title": "原標題"
+                }
+            },
+            "exclude_scanlators": "排除掃翻者"
+        },
+        "status": {
+            "label": {
+                "downloaded": "已下載"
+            }
+        },
+        "title_other": "章節",
+        "missing_other": "遺失 {{count}} 個章節",
+        "value_other": "{{count}} 個章節"
+    },
+    "extension": {
+        "state": {
+            "label": {
+                "installed": "已安裝",
+                "update_pending": "待更新",
+                "installing": "正在安裝",
+                "updating": "更新中",
+                "obsolete": "過時",
+                "uninstalling": "正在解除安裝"
+            }
+        },
+        "label": {
+            "installed_successfully_other": "擴充套件已安裝",
+            "installing_file": "正在安裝擴充套件檔案…",
+            "installation_failed_other": "無法安裝此擴充套件",
+            "uninstallation_failed_other": "無法解除安裝此擴充套件",
+            "update_failed_other": "無法更新此擴充套件",
+            "add_repository_info": "您必須新增擴充套件儲存庫才能夠安裝擴充套件",
+            "age_rating": "年齡分級"
+        },
+        "title_other": "擴充套件",
+        "action": {
+            "label": {
+                "install": "安裝",
+                "uninstall": "解除安裝",
+                "update": "更新",
+                "install_external": "安裝額外的擴充套件",
+                "update_all": "全部更新"
+            }
+        },
+        "language": {
+            "all": "全部",
+            "other": "其它"
+        },
+        "settings": {
+            "repositories": {
+                "custom": {
+                    "error": {
+                        "label": {
+                            "invalid_url": "無效的儲存庫超連結"
+                        }
+                    },
+                    "label": {
+                        "title": "擴充套件儲存庫",
+                        "description": "新增可以安裝擴充套件的儲存庫",
+                        "disclaimer": "<strong>Suwayomi 不提供任何第三方儲存庫或擴充套件的支援！</strong><br/>請謹慎使用，因為可能是惡意行為者製作了這些儲存庫。<br/>作為使用者，您需要確認其安全性以及是否信任任何儲存庫或擴充套件。"
+                    },
+                    "dialog": {
+                        "action": {
+                            "button": {
+                                "add": "新增儲存庫"
+                            }
+                        }
+                    }
+                }
+            },
+            "dialog": {
+                "title": "語言擴展設置"
+            }
+        }
+    },
+    "global": {
+        "button": {
+            "reset": "重置",
+            "popular": "熱門",
+            "reset_to_default": "重置為預設值",
+            "resume": "復原",
+            "select_all": "全選",
+            "set": "選",
+            "browse": "瀏覽",
+            "cancel": "取消",
+            "start": "開始",
+            "submit": "提交",
+            "filter": "篩選",
+            "latest": "最新",
+            "ok": "Ok",
+            "restore": "還原",
+            "select": "選擇",
+            "stop": "停止",
+            "deselect": "取消選擇",
+            "edit": "編輯",
+            "options": "選項",
+            "copy": "複製",
+            "retry": "重試",
+            "migrate": "遷移",
+            "add": "新增",
+            "create": "建立",
+            "dont_show_dialog_again": "不要再次顯示此對話方塊",
+            "log_out": "登出",
+            "remove": "移除",
+            "log_in": "登入",
+            "show_less": "顯示較少項目",
+            "show_more": "顯示更多項目",
+            "delete": "刪除",
+            "changelog": "變更日誌",
+            "ignore": "忽略",
+            "refresh": "重新整理",
+            "remind_later": "稍後提醒",
+            "save": "儲存",
+            "open": "開啟",
+            "open_browser": "在瀏覽器中開啟",
+            "open_webview": "在 WebView 中開啟"
+        },
+        "date": {
+            "label": {
+                "today": "今日",
+                "yesterday_at": "昨日{{timeString}}",
+                "today_at": "今日{{timeString}}",
+                "yesterday": "昨日",
+                "day_other": "日"
+            },
+            "value": {
+                "label": {
+                    "day": "{{days}} $t(global.date.label.day, lowercase)"
+                }
+            }
+        },
+        "label": {
+            "none": "無",
+            "unknown": "未知",
+            "browse": "瀏覽",
+            "display": "顯示",
+            "filter": "篩選",
+            "loading": "正在載入…",
+            "sort": "排序",
+            "advanced": "進階",
+            "client": "客戶端",
+            "close": "關閉",
+            "disabled": "禁用",
+            "username": "使用者名稱",
+            "password": "密碼",
+            "github": "GitHub",
+            "links": "連結",
+            "never": "永不",
+            "other": "其它",
+            "general": "一般",
+            "placeholder": "占位符",
+            "discord": "Discord",
+            "open_in_browser": "在瀏覽器中開啟",
+            "started": "已開始",
+            "type": "類型",
+            "load_in_progress": "正在載入所需的資料…",
+            "logged_in": "已登入",
+            "are_you_sure": "您確定嗎？",
+            "default": "預設",
+            "auto": "自動",
+            "both": "兩者皆是",
+            "bottom": "底部",
+            "copied_clipboard": "已複製到剪貼簿",
+            "desktop": "桌面",
+            "next": "下一個",
+            "previous": "上一個",
+            "horizontal": "橫向",
+            "finished": "已完成",
+            "hidden": "已隱藏",
+            "left": "左",
+            "menu": "選單",
+            "mobile": "行動端",
+            "right": "右",
+            "share": "分享",
+            "standard": "標準",
+            "vertical": "直向",
+            "error": "錯誤",
+            "info": "資訊",
+            "footnote": "{{value}}<0>$t(global.label.asterisk)</0>",
+            "warning": "警告",
+            "success": "成功",
+            "dark": "深色",
+            "light": "淺色",
+            "system": "系統",
+            "asterisk": "*",
+            "more": "更多",
+            "medium": "中",
+            "large": "大",
+            "small": "小",
+            "pinned": "已釘選",
+            "last_used": "上次使用",
+            "scanlator": "掃譯者",
+            "stopped": "已停止",
+            "version": "版本"
+        },
+        "language": {
+            "label": {
+                "language_with_code": "帶有代碼的語言：{{code}}",
+                "language": "語言"
+            },
+            "title": {
+                "enabled_languages": "使用語言",
+                "weblate": "Weblate"
+            },
+            "error": {
+                "load": "無法載入語言"
+            }
+        },
+        "sort": {
+            "label": {
+                "by_source": "依照來源",
+                "by_fetch_date": "依照獲取日期",
+                "by_upload_date": "依照更新日期",
+                "by_chapter_number": "依照章節編號",
+                "asc": "升序",
+                "desc": "降序"
+            }
+        },
+        "error": {
+            "label": {
+                "invalid_action": "無效的操作",
+                "invalid_file_type": "無效的檔案類型",
+                "update_failed": "無法檢查更新",
+                "failed_to_save_changes": "儲存變更失敗",
+                "failed_to_load_data": "無法載入資料",
+                "invalid_input": "無效的輸入",
+                "unrecoverable_error": "發生錯誤\n發生了一個無法恢復的錯誤"
+            }
+        },
+        "grid_layout": {
+            "label": {
+                "comfortable_grid": "鬆散網格",
+                "compact_grid": "緊湊網格",
+                "list": "清單"
+            },
+            "title": "顯示模式"
+        },
+        "filter": {
+            "label": {
+                "bookmarked": "已收藏",
+                "downloaded": "已下載",
+                "unread": "未讀",
+                "tracked": "已追蹤",
+                "duplicate_chapters": "重複章節",
+                "started": "已開始"
+            }
+        },
+        "update": {
+            "label": {
+                "available": "可用更新",
+                "check_failure": "無法檢查更新",
+                "info": "伺服器版本 {{version}} ({{channel}}) 可供下載",
+                "updating": "{{progress}}% | 正在更新…",
+                "update_failure": "更新失敗",
+                "up_to_date": "此為最新的版本",
+                "checking": "正在檢查更新",
+                "update_success": "{{name}} 已經更新至版本 {{version}} ({{channel}})"
+            },
+            "settings": {
+                "inform": {
+                    "label": {
+                        "description": "在新版本可用時顯示對話方塊",
+                        "title": "通知可用的更新"
+                    }
+                }
+            }
+        },
+        "time": {
+            "hour_short": "時",
+            "minutes": {
+                "minute_other": "分",
+                "value": "{{count}} $t(global.time.minutes.minute, lowercase)"
+            },
+            "seconds": {
+                "second_other": "秒",
+                "value": "{{count}} $t(global.time.seconds.second, lowercase)"
+            }
+        },
+        "colors": {
+            "black": "黑色",
+            "gray": "灰色",
+            "white": "白色"
+        },
+        "value": "{{value}}{{unit}}",
+        "unit": {
+            "px": "px"
+        }
+    },
+    "library": {
+        "error": {
+            "label": {
+                "empty": "您的書櫃是空的",
+                "no_matches": "沒有漫畫符合篩選",
+                "add_to_library": "無法新增漫畫至書櫃！",
+                "remove_from_library": "無法從書櫃中移除漫畫！",
+                "stop_global_update": "無法停止全域更新"
+            }
+        },
+        "option": {
+            "display": {
+                "badge": {
+                    "label": {
+                        "download_badges": "已下載數量",
+                        "unread_badges": "未讀數量"
+                    },
+                    "title": "標記"
+                },
+                "tab": {
+                    "title": "標籤",
+                    "label": {
+                        "show_number_of_items": "顯示項目的數量"
+                    }
+                },
+                "other": {
+                    "label": {
+                        "show_continue_reading_button": "顯示繼續閱讀按鈕"
+                    }
+                }
+            },
+            "sort": {
+                "label": {
+                    "by_date_added": "依照新增的日期",
+                    "by_unread_chapters": "依照未讀章節",
+                    "alphabetically": "A-Z",
+                    "by_last_read": "依照最後一次閱讀",
+                    "by_latest_fetched_chapter": "最新獲取的章節",
+                    "by_latest_uploaded_chapter": "最新上傳的章節",
+                    "by_total_chapters": "總章節數"
+                }
+            }
+        },
+        "settings": {
+            "global_update": {
+                "categories": {
+                    "label": {
+                        "info": "不會更新位於排除分類的作品，即使它們同樣位於包含分類"
+                    }
+                },
+                "title": "全域更新",
+                "auto_update": {
+                    "interval": {
+                        "label": {
+                            "value": "{{hours}}$t(global.time.hour_short)",
+                            "title": "自動更新間隔"
+                        }
+                    },
+                    "label": {
+                        "title": "自動更新"
+                    }
+                },
+                "entries": {
+                    "label": {
+                        "unread_chapters": "包含未讀章節",
+                        "not_started": "尚未開始",
+                        "completed": "狀態為「已讀」"
+                    },
+                    "title": "略過更新作品"
+                },
+                "metadata": {
+                    "label": {
+                        "description": "當更新書櫃時，檢查新封面與詳細資料",
+                        "title": "自動地重新整理詮釋資料"
+                    }
+                },
+                "label": {
+                    "last_update": "最近更新：{{date}}",
+                    "last_update_tooltip": "$t(library.settings.global_update.title) ($t(library.settings.global_update.label.last_update, lowercase))"
+                }
+            },
+            "general": {
+                "add_to_library": {
+                    "category_selection": {
+                        "label": {
+                            "description": "標籤",
+                            "title": "分類選擇對話框"
+                        }
+                    }
+                },
+                "search": {
+                    "ignore_filters": {
+                        "label": {
+                            "title": "搜尋時忽略篩選器",
+                            "description": "搜尋結果將包含不符合目前篩選器的漫畫"
+                        }
+                    }
+                },
+                "remove_from_library": {
+                    "remove_from_categories": {
+                        "label": {
+                            "description": "當你在庫中移除漫畫時也壹並將其從對應分類中移除",
+                            "title": "忘記漫畫分類偏好"
+                        }
+                    }
+                }
+            },
+            "advanced": {
+                "database": {
+                    "cleanup": {
+                        "label": {
+                            "title": "清理資料庫",
+                            "success": "已從分類中移除非書櫃漫畫",
+                            "description": "從分類中刪除非書櫃漫畫",
+                            "error": "無法從分類中移除非書櫃漫畫"
+                        }
+                    }
+                },
+                "duplicates": {
+                    "settings": {
+                        "label": {
+                            "check_description": "檢查描述"
+                        }
+                    },
+                    "label": {
+                        "description": "顯示在您的書櫃中所有重複的項目",
+                        "title": "重複的項目"
+                    }
+                }
+            }
+        },
+        "title": "書櫃",
+        "info": {
+            "label": {
+                "removed_from_library": "已從書櫃中移除漫畫！",
+                "added_to_library": "已新增漫畫到書櫃！"
+            }
+        },
+        "action": {
+            "label": {
+                "update_category": "更新分類",
+                "stop_update": "停止全域更新",
+                "update_library": "更新書櫃"
+            }
+        }
+    },
+    "manga": {
+        "button": {
+            "in_library": "在書櫃中",
+            "add_to_library": "新增到書櫃",
+            "track": {
+                "start": "正在追蹤",
+                "active_other": "{{count}} 個追蹤"
+            }
+        },
+        "error": {
+            "label": {
+                "request_failure": "無法載入漫畫",
+                "no_mangas_found": "沒有漫畫",
+                "no_matches": "沒有漫畫符合篩選"
+            }
+        },
+        "label": {
+            "author": "作者",
+            "edit_categories": "編輯漫畫分類",
+            "reload_from_source": "從來源重新載入資料",
+            "status": "狀態",
+            "artist": "畫家"
+        },
+        "title_other": "漫畫",
+        "action": {
+            "category": {
+                "label": {
+                    "success_other": "已變更{{count}}本漫畫的分類",
+                    "action": "變更分類名稱",
+                    "error_other": "無法變更此漫畫的分類"
+                },
+                "button": {
+                    "selected": "變更已選擇的分類名稱"
+                }
+            },
+            "library": {
+                "remove": {
+                    "label": {
+                        "success_other": "已從書櫃中移除{{count}}本漫畫",
+                        "action": "從書櫃中移除",
+                        "error_other": "無法從書櫃中移除漫畫"
+                    },
+                    "button": {
+                        "selected": "從書櫃中移除選取項目"
+                    },
+                    "dialog": {
+                        "label": {
+                            "message": "您將要從您的書櫃中刪除「{{title}}」"
+                        }
+                    }
+                },
+                "add": {
+                    "dialog": {
+                        "duplicate": {
+                            "label": {
+                                "failure": "無法檢查在您的書櫃中重複的漫畫。\n\n錯誤：{{error}}",
+                                "info": "您的書櫃中存在相同名稱的項目。"
+                            }
+                        }
+                    }
+                }
+            },
+            "migrate": {
+                "label": {
+                    "error": "無法遷移漫畫",
+                    "success": "成功地遷移了漫畫"
+                }
+            },
+            "track": {
+                "add": {
+                    "label": {
+                        "action": "追蹤",
+                        "error": "無法追蹤漫畫",
+                        "success": "已追蹤漫畫"
+                    }
+                },
+                "remove": {
+                    "label": {
+                        "error": "無法取消追蹤漫畫",
+                        "success": "已取消追蹤漫畫"
+                    },
+                    "dialog": {
+                        "label": {
+                            "delete_remote_track": "也從 {{tracker}} 中移除",
+                            "description": "這將會移除本機追蹤。",
+                            "title": "移除追蹤 {{tracker}}？"
+                        }
+                    }
+                }
+            }
+        },
+        "status": {
+            "cancelled": "中止連載",
+            "completed": "已完结",
+            "hiatus": "暫時停更",
+            "licensed": "版權授權",
+            "ongoing": "連載中",
+            "publishing_finished": "已出版完畢",
+            "unknown": "$t(global.label.unknown)"
+        },
+        "type": {
+            "comic": "美漫",
+            "long_strip": "條漫",
+            "manga": "$t(manga.title_one)",
+            "webtoon": "$t(reader.settings.reader_type.label.webtoon)",
+            "manhua": "國漫",
+            "manhwa": "韓漫"
+        }
+    },
+    "search": {
+        "error": {
+            "label": {
+                "source_search_failed": "無法搜尋來源",
+                "failed_to_save_settings": "無法儲存預設搜尋設定到伺服器"
+            }
+        },
+        "title": {
+            "search": "搜尋",
+            "global_search": "全域搜尋"
+        },
+        "filter": {
+            "has_results": "有搜尋結果"
+        }
+    },
+    "settings": {
+        "about": {
+            "title": "關於",
+            "server": {
+                "label": {
+                    "version": "伺服器版本",
+                    "build_time": "建置時間",
+                    "github": "$t(global.label.github) $t(settings.server.title.server)",
+                    "address": "伺服器位址"
+                }
+            },
+            "webui": {
+                "label": {
+                    "channel": "$t(settings.webui.title.webui) 頻道",
+                    "github": "$t(global.label.github) $t(settings.webui.title.webui)",
+                    "update_failure": "無法更新 $t(settings.webui.title.webui)",
+                    "version": "$t(settings.webui.title.webui) 版本",
+                    "updated": "已更新的版本",
+                    "info": "$t(settings.webui.title.webui) 版本 {{version}} ({{channel}}) 可供下載"
+                }
+            }
+        },
+        "backup": {
+            "title": "備份",
+            "action": {
+                "validate": {
+                    "error": {
+                        "label": {
+                            "failure": "無法驗證備份"
+                        }
+                    },
+                    "dialog": {
+                        "content": {
+                            "label": {
+                                "missing_sources": "以下來源未安裝：",
+                                "missing_trackers": "以下追蹤器尚未登入："
+                            }
+                        },
+                        "title": "備份驗證"
+                    }
+                },
+                "create": {
+                    "label": {
+                        "description": "備份書櫃為 Tachiyomi 備份",
+                        "title": "建立備份"
+                    }
+                },
+                "restore": {
+                    "button": "還原",
+                    "error": {
+                        "label": {
+                            "legacy_backup_unsupported": "不支援舊的備份！",
+                            "failure": "無法還原備份"
+                        }
+                    },
+                    "label": {
+                        "description": "您也可以拖曳及放下備份檔案至此以還原它",
+                        "in_progress": "正在還原備份…",
+                        "success": "備份已還原。",
+                        "title": "還原備份"
+                    }
+                }
+            },
+            "automated": {
+                "location": {
+                    "label": {
+                        "title": "備份位置",
+                        "description": "伺服器上的自動備份的儲存目錄路徑"
+                    }
+                },
+                "cleanup": {
+                    "label": {
+                        "title": "清理備份",
+                        "value": "刪除早於 $t(global.date.value.label.day) 的備份"
+                    }
+                },
+                "label": {
+                    "interval": "備份間隔",
+                    "time": "備份時間"
+                }
+            }
+        },
+        "label": {
+            "language_description": "準確的翻譯離不開大家的指正 ->",
+            "manga_item_width": "漫畫單元格寬度",
+            "show_nsfw": "NSFW (18+) 內容",
+            "show_nsfw_description": "顯示 NSFW 擴充套件與來源",
+            "hide_library_entries": "隱藏已在書櫃中的條目",
+            "theme": "主題"
+        },
+        "title": "設定",
+        "server": {
+            "auth": {
+                "title": "認證",
+                "mode": {
+                    "option": {
+                        "basicAuth": {
+                            "label": {
+                                "description": "您的瀏覽器將通過對話框提示您輸入憑證。",
+                                "title": "基本認證"
+                            }
+                        },
+                        "none": {
+                            "label": {
+                                "title": "無",
+                                "description": "禁用認證"
+                            }
+                        }
+                    }
+                },
+                "label": {
+                    "password": "$t(global.label.password)",
+                    "username": "$t(global.label.username)",
+                    "title": "認證模式"
+                }
+            },
+            "title": {
+                "server": "伺服器"
+            },
+            "misc": {
+                "log_level": {
+                    "graphql": {
+                        "label": {
+                            "description": "這包含非隱私安全資訊的日誌",
+                            "title": "啟用 graphql 除錯日誌"
+                        }
+                    },
+                    "label": {
+                        "server": "啟用除錯日誌"
+                    }
+                },
+                "tray_icon": {
+                    "label": {
+                        "title": "在系統匣中顯示圖示",
+                        "description": "此圖示將被顯示在執行伺服器的系統上"
+                    }
+                },
+                "title": "雜項",
+                "log_files": {
+                    "file_size": {
+                        "description": "可能值的範例：1 （位元組）、1KB（千位元組）、1MB（百萬位元組）、1GB（十億位元組）",
+                        "title": "日誌檔案最大大小"
+                    },
+                    "file_cleanup": {
+                        "title": "清理日誌檔案",
+                        "value": "刪除早於 $t(global.date.value.label.day) 的日誌檔案"
+                    },
+                    "total_size": {
+                        "title": "所有日誌檔案的最大大小",
+                        "description": "$t(settings.server.misc.log_files.file_size.description)"
+                    }
+                }
+            },
+            "socks_proxy": {
+                "label": {
+                    "host": "SOCKS 主機",
+                    "enable": "使用 SOCKS Proxy",
+                    "port": "SOCKS 通訊埠",
+                    "username": "SOCKS 使用者名稱",
+                    "password": "SOCKS 密碼",
+                    "version": "SOCKS 版本"
+                },
+                "title": "SOCKS Proxy"
+            },
+            "address": {
+                "server": {
+                    "label": {
+                        "ip": "IP",
+                        "port": "通訊埠"
+                    },
+                    "title": "伺服器綁定"
+                },
+                "client": {
+                    "dialog": {
+                        "label": {
+                            "enter_address": "輸入伺服器位址"
+                        }
+                    },
+                    "label": {
+                        "description": "客戶端用於連接伺服器的位址"
+                    }
+                }
+            },
+            "cloudflare": {
+                "flaresolverr": {
+                    "enabled": {
+                        "label": {
+                            "title": "已啟用 FlareSolverr",
+                            "description": "請見 <2>FlareSolverr</2> 以了解如何設定的資訊"
+                        }
+                    },
+                    "url": {
+                        "label": {
+                            "title": "FlareSolverr 伺服器超連結",
+                            "description": "FlareSolverr 伺服器的位址"
+                        }
+                    },
+                    "session": {
+                        "name": {
+                            "label": {
+                                "title": "FlareSolverr 會話名稱"
+                            }
+                        },
+                        "ttl": {
+                            "label": {
+                                "title": "FlareSolverr 會話 TTL",
+                                "description": "FlareSolverr 將會根據以分鐘為單位提供的 TTL 自動輪換過期的會話"
+                            }
+                        }
+                    },
+                    "timeout": {
+                        "label": {
+                            "title": "FlareSolverr 請求逾時",
+                            "description": "FlareSolverr 需要多少時間來處理請求"
+                        }
+                    },
+                    "response_fallback": {
+                        "label": {
+                            "title": "回應預設機制",
+                            "description": "如果伺服器遇到Cloudflare驗證，而FlareSolverr沒有遇到並且因此無法解決該驗證（不適用於圖像），請使用FlareSolverr的回應"
+                        }
+                    }
+                },
+                "title": "繞過 Cloudflare"
+            },
+            "requests": {
+                "title": "請求",
+                "sources": {
+                    "parallel": {
+                        "label": {
+                            "value": "{{value}} $t(source.title)",
+                            "title": "並行來源請求數"
+                        }
+                    }
+                }
+            },
+            "local_source": {
+                "path": {
+                    "label": {
+                        "title": "本機來源位置",
+                        "description": "伺服器上的本機來源檔案的儲存目錄路徑"
+                    }
+                }
+            },
+            "opds": {
+                "show_only_downloaded_chapters": {
+                    "label": {
+                        "title": "僅顯示下載的章節"
+                    }
+                },
+                "show_only_unread_chapters": {
+                    "label": {
+                        "title": "僅顯示未讀的章節"
+                    }
+                },
+                "binary_file_sizes": {
+                    "label": {
+                        "description": "以二進位制（KiB、MiB、GiB）顯示檔案大小，而不是十進位制（KB、MB、GB）",
+                        "title": "二進位制檔案大小"
+                    }
+                },
+                "mark_as_read_on_download": {
+                    "label": {
+                        "description": "下載後自動標記章節為已讀。",
+                        "title": "下載章節時標記其為已讀"
+                    }
+                },
+                "enable_page_read_progress": {
+                    "label": {
+                        "title": "啟用頁面閱讀進度"
+                    }
+                }
+            }
+        },
+        "webui": {
+            "auto_update": {
+                "label": {
+                    "interval": "更新間隔",
+                    "title": "自動地下載最新版本"
+                }
+            },
+            "electron_path": {
+                "label": {
+                    "title": "Electron 路徑",
+                    "description": "伺服器上的 Electron 安裝路徑"
+                }
+            },
+            "channel": {
+                "option": {
+                    "bundled": {
+                        "label": {
+                            "description": "使用隨伺服器一起提供的版本",
+                            "title": "綑綁"
+                        }
+                    },
+                    "preview": {
+                        "label": {
+                            "title": "預覽版",
+                            "disclaimer": "在此版本中的功能與變更可能還未完全準備好，並且可能導致錯誤。\n請確保您有啟用自動備份，以防止遺失您的書櫃！\n\n$t(settings.webui.flavor.label.info)",
+                            "description": "使用最新的功能，並協助我們為穩定版本做好準備。"
+                        }
+                    },
+                    "stable": {
+                        "label": {
+                            "description": "使用最新的發行版本。",
+                            "title": "穩定"
+                        }
+                    }
+                },
+                "label": {
+                    "title": "頻道"
+                }
+            },
+            "label": {
+                "initial_open_browser": "伺服器啟動時開啟 $t(settings.webui.title.webui)"
+            },
+            "title": {
+                "webui": "WebUI"
+            },
+            "flavor": {
+                "option": {
+                    "custom": {
+                        "label": {
+                            "title": "自訂",
+                            "description": "使用自訂 $t(settings.webui.title.webui)。\n要使用自訂 $t(settings.webui.title.webui)，請將在伺服器上的根目錄中「webUI」目錄的內容替換為自訂 $t(settings.webui.title.webui) 的檔案"
+                        }
+                    },
+                    "webui": {
+                        "label": {
+                            "description": "使用預設 $t(settings.webui.title.webui)"
+                        }
+                    },
+                    "vui": {
+                        "label": {
+                            "description": "以預覽為重點的網絡前端，採用纖瘦設計",
+                            "title": "VUI"
+                        }
+                    }
+                },
+                "label": {
+                    "title": "類型",
+                    "info": "更改此設定後，轉到“關於”頁面，檢查webUI更新並安裝它"
+                }
+            },
+            "interface": {
+                "label": {
+                    "description": "啟動伺服器時啟動 $t(settings.webui.title.webui)",
+                    "title": "介面"
+                },
+                "option": {
+                    "label": {
+                        "browser": "瀏覽",
+                        "electron": "Electron"
+                    }
+                }
+            }
+        },
+        "clear_cache": {
+            "label": {
+                "description": "客戶端（瀏覽器、Electron）應與之一併清除。否則，客戶端快取將繼續被使用",
+                "failure": "無法清除伺服器快取",
+                "success": "已清除伺服器快取",
+                "title": "清除伺服器快取"
+            }
+        },
+        "device": {
+            "title": {
+                "device": "設備"
+            },
+            "devices": {
+                "label": {
+                    "title": "設備",
+                    "description": "管理您現有的裝置。\n儲存在伺服器上的個別裝置的具體 UI 設定。\n這可以使例如桌面或智慧型手機擁有不同的設定"
+                }
+            },
+            "active_device": {
+                "label": {
+                    "title": "使用中的設備",
+                    "description": "選擇一個裝置以使用它儲存在伺服器中的 UI 設定"
+                }
+            },
+            "label": {
+                "placeholder": "手機_Name-1 | length: 16, chars: letters, numbers, -, _"
+            }
+        },
+        "appearance": {
+            "theme": {
+                "create": {
+                    "dialog": {
+                        "error": {
+                            "invalid_json": "無效的 JSON",
+                            "invalid_name": "主題名稱必須是唯一且限制為 16 字元以下"
+                        },
+                        "theme_name": "名稱",
+                        "description": "參見官方的 <0>MUI 文件</0> 以得知如何自訂主題。\n尚不支援調色盤 API，您必須使用新的 <1>色彩方案 API</1>.\n\n您可以使用主題建立器，例如 <2>MUI Theme Creator</2>。然而，您必須根據新色彩方案 API 調整建立的物件。\n\n如果沒有定義背景，將基於主要顏色演算出背景"
+                    },
+                    "action": "建立主題…",
+                    "failure": "無法建立主題",
+                    "title": "建立主題",
+                    "success": "已建立的主題"
+                },
+                "delete": {
+                    "action": "刪除主題「{{theme}}」…",
+                    "success": "已刪除主題「{{theme}}」",
+                    "failure": "無法刪除主題「{{theme}}」"
+                },
+                "edit": {
+                    "action": "正在儲存主題變更…",
+                    "failure": "無法儲存主題變更",
+                    "success": "已儲存主題變更",
+                    "title": "編輯主題"
+                },
+                "pure_black_mode": "純黑深色模式",
+                "select": {
+                    "fonts": {
+                        "error": "無法載入主題字型",
+                        "loading": "正在載入主題字型…"
+                    },
+                    "success": "已選擇的主題"
+                },
+                "title": "主題",
+                "themes": {
+                    "crimson": "丹霞緋紅",
+                    "minty_miracles": "薄荷奇境",
+                    "mountain_sunset": "暮色黃昏",
+                    "rosegold": "玫瑰流金",
+                    "bright_pink": "炫彩桃紅",
+                    "dune": "蒼茫沙海",
+                    "forest_dew": "謐林涓露",
+                    "lavender": "紫氣薰衣",
+                    "orange_juice": "橙味橘香",
+                    "tree_frog_green": "翠蛙青綠",
+                    "veronica": "幽藍婉柔",
+                    "ying_and_yang": "陰陽"
+                },
+                "mode": "主題模式"
+            },
+            "title": "外觀",
+            "manga_thumbnail_backdrop": {
+                "description": "將漫畫縮圖設定為漫畫頁面背景",
+                "title": "漫畫縮圖設為背景"
+            },
+            "manga_dynamic_color_schemes": {
+                "description": "根據縮圖變更漫畫頁面的主題色彩",
+                "title": "動態變更漫畫頁面的主題色彩"
+            }
+        },
+        "default_value": "{{value}}<0>($t(global.label.default))</0>"
+    },
+    "source": {
+        "configuration": {
+            "title": "來源組態"
+        },
+        "error": {
+            "label": {
+                "no_sources_found": "沒有找到來源。請先安裝一些擴充套件。",
+                "source_not_found": "無法找到來源，請檢查您已安裝的擴充套件。"
+            }
+        },
+        "local_source": {
+            "label": {
+                "checkout": "查看",
+                "guide": "本機來源指南"
+            },
+            "title": "本機來源"
+        },
+        "title_other": "來源",
+        "filter": {
+            "save_search": {
+                "label": {
+                    "delete": "刪除搜尋",
+                    "save": "儲存搜尋"
+                },
+                "dialog": {
+                    "label": {
+                        "delete": "這將會刪除已儲存的搜尋「{{name}}」",
+                        "title": "儲存目前的搜尋"
+                    }
+                }
+            }
+        },
+        "pin": {
+            "add": "釘選來源",
+            "remove": "取消釘選來源"
+        },
+        "extension_info": {
+            "title": "擴充套件資訊"
+        }
+    },
+    "updates": {
+        "title": "更新",
+        "error": {
+            "label": {
+                "no_updates_available": "最近沒有更新。"
+            }
+        }
+    },
+    "download": {
+        "queue": {
+            "error": {
+                "label": {
+                    "failed_to_remove": "無法從隊列中刪除此下載。",
+                    "failed_delete_all": "無法從隊列中移除所有下載",
+                    "failed_to_retry": "無法重試已失敗的下載。"
+                }
+            },
+            "label": {
+                "no_downloads": "沒有下載",
+                "delete_all": "刪除所有"
+            }
+        },
+        "state": {
+            "label": {
+                "error": "錯誤",
+                "finished": "$t(global.label.finished)",
+                "downloading": "正在下載",
+                "queued": "排隊中"
+            }
+        },
+        "settings": {
+            "auto_download": {
+                "label": {
+                    "new_chapters": "下載新章節",
+                    "ignore_with_unread_chapters": "忽略包含未讀章節的作品的自動下載",
+                    "ignore_re_uploads": "忽略重新上傳的章節"
+                },
+                "categories": {
+                    "label": {
+                        "include_in_download": "在排除分類中的作品將不會被下載，即使它們也在包含的分類中"
+                    }
+                },
+                "title": "自動下載",
+                "download_limit": {
+                    "label": {
+                        "description": "限制將要下載的新章節的數量。",
+                        "title": "章節下載限制"
+                    }
+                }
+            },
+            "delete_chapters": {
+                "while_reading": {
+                    "option": {
+                        "label": {
+                            "second": "閱讀倒數第二章節",
+                            "third": "閱讀倒數第三章節",
+                            "fourth": "閱讀倒數第四章節",
+                            "fifth": "閱讀倒數第五章節",
+                            "first": "上次閱讀章節"
+                        }
+                    },
+                    "label": {
+                        "title": "刪除已閱讀完畢的章節"
+                    }
+                },
+                "label": {
+                    "allow_deletion_of_bookmarked": "允許刪除已收藏的章節",
+                    "manually_marked_as_read": "手動標記為已讀後刪除章節"
+                },
+                "title": "刪除章節"
+            },
+            "download_ahead": {
+                "label": {
+                    "unread_chapters_to_download": "要下載的未讀章節數量",
+                    "value": "{{chapters}} $t(chapter.title)",
+                    "while_reading": "閱讀時自動下載",
+                    "disclaimer": "當前章節加上下一章已經下載時才有效。",
+                    "description": "閱讀時應下載多少章節。"
+                },
+                "title": "預先下載"
+            },
+            "download_path": {
+                "label": {
+                    "title": "下載位置",
+                    "description": "伺服器上的下載檔案的儲存目錄路徑"
+                }
+            },
+            "file_type": {
+                "label": {
+                    "cbz": "儲存為 CBZ 壓縮檔"
+                }
+            },
+            "conversion": {
+                "compression_level": "壓縮等級",
+                "title": "下載並轉換格式"
+            }
+        },
+        "title": {
+            "download": "下載",
+            "queue": "下載隊列"
+        }
+    },
+    "migrate": {
+        "dialog": {
+            "title": "選擇要包含的資料",
+            "action": {
+                "button": {
+                    "show_entry": "顯示條目"
+                }
+            },
+            "label": {
+                "delete_downloaded": "刪除已下載項目"
+            }
+        },
+        "label": {
+            "info": "正在遷移漫畫…"
+        },
+        "title": "遷移",
+        "search": {
+            "title": "$t(migrate.title) \"{{title}}\""
+        },
+        "sort": {
+            "by_manga_count": "依照漫畫數量",
+            "by_source_name": "依照來源名稱"
+        }
+    },
+    "tracking": {
+        "settings": {
+            "dialog": {
+                "title": {
+                    "log_in": "登入 {{name}}",
+                    "log_out": "登出 {{name}}"
+                }
+            },
+            "title": {
+                "trackers": "追蹤器"
+            },
+            "label": {
+                "update_progress_manual": "在手動標記為已讀後更新進度",
+                "update_progress_reading_description": "當同時標記多個漫畫為已讀時沒有作用",
+                "update_progress_reading": "在閱讀後更新進度"
+            }
+        },
+        "action": {
+            "button": {
+                "add_tracking": "新增追蹤",
+                "track_publicly": "公開追蹤",
+                "track_privately": "私密追蹤"
+            },
+            "login": {
+                "label": {
+                    "failure": "無法登入 {{name}}",
+                    "progress": "正在登入 {{name}}…"
+                }
+            },
+            "logout": {
+                "label": {
+                    "failure": "無法登出 {{name}}"
+                }
+            }
+        },
+        "error": {
+            "label": {
+                "could_not_load_track_info": "無法載入追蹤資訊",
+                "could_not_fetch_track_info": "無法從追蹤器載入最新的追蹤資訊"
+            }
+        },
+        "title": "追蹤",
+        "track_record": {
+            "label": {
+                "finish_date": "完成日期",
+                "score": "評分",
+                "start_date": "開始日期"
+            }
+        },
+        "my_anime_list": {
+            "search": {
+                "label": {
+                    "hint": "通過 \"id:<ID>\" 搜尋 ID（例如： \"id:13\"）\n通過 \"my:<Title>\" 限制搜尋在您的清單內（例如：\"my:One Piece\"）"
+                }
+            }
+        },
+        "publishing": {
+            "type": {
+                "unknown": "$t(global.label.unknown)",
+                "manga": "$t(manga.title_one)",
+                "manhua": "$t(manga.type.manhua)",
+                "manhwa": "$t(manga.type.manhwa)",
+                "doujinshi": "同人",
+                "novel": "小說",
+                "one_shot": "單篇"
+            },
+            "status": {
+                "not_yet_published": "尚未發布",
+                "finished": "$t(global.label.finished)",
+                "hiatus": "$(manga.status.hiatus)",
+                "cancelled": "$(manga.status.cancelled)"
+            }
+        }
+    },
+    "hotkeys": {
+        "title_other": "按鍵綁定",
+        "create": {
+            "dialog": {
+                "label": "已紀錄的按鍵：<Keys/>",
+                "title": "紀錄按鍵綁定",
+                "placeholder": "按下快捷鍵"
+            },
+            "error": {
+                "exists": "快捷鍵已存在"
+            }
+        },
+        "info": {
+            "delete": "點擊按鍵以移除綁定"
+        }
+    },
+    "history": {
+        "title": "歷史記錄",
+        "settings": {
+            "hide": "隱藏歷史記錄"
+        },
+        "error": {
+            "label": {
+                "no_history_available": "您尚未閱讀任何系列。"
+            }
+        }
+    }
+}

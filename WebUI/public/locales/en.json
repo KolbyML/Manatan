@@ -1,0 +1,1849 @@
+{
+  "category": {
+    "dialog": {
+      "title": {
+        "edit_category_one": "Edit category",
+        "edit_category_other": "Edit categories",
+        "new_category": "New category"
+      }
+    },
+    "error": {
+      "label": {
+        "create_failure": "Could not create category",
+        "empty": "The category is empty",
+        "request_failure": "Could not load categories"
+      },
+      "no_categories_found": {
+        "label": {
+          "info": "You don't have any categories yet."
+        }
+      }
+    },
+    "label": {
+      "category_name": "Category Name",
+      "use_as_default_category": "Default category when adding new manga to the library"
+    },
+    "settings": {
+      "inclusion": {
+        "label": {
+          "exclude": "Exclude: {{excludedCategoriesText}}",
+          "include": "Include: {{includedCategoriesText}}"
+        }
+      }
+    },
+    "title": {
+      "category_one": "Category",
+      "category_other": "Categories",
+      "set_categories": "Set categories"
+    },
+    "value": "{{count}} $t(category.title.category, lowercase)"
+  },
+  "chapter": {
+    "action": {
+      "bookmark": {
+        "add": {
+          "button": {
+            "selected": "Bookmark selected"
+          },
+          "label": {
+            "action": "Add bookmark",
+            "error_one": "Could not bookmark the chapter",
+            "error_other": "Could not bookmark chapters",
+            "success_one": "Chapter bookmarked",
+            "success_other": "{{count}} chapters bookmarked"
+          }
+        },
+        "remove": {
+          "button": {
+            "selected": "Remove bookmarks from selected"
+          },
+          "label": {
+            "action": "Remove bookmark",
+            "confirmation_one": "You are about to remove one bookmark",
+            "confirmation_other": "You are about to remove {{count}} bookmarks",
+            "error_one": "Could not remove the bookmark",
+            "error_other": "Could not remove the bookmarks",
+            "success_one": "Chapter bookmark removed",
+            "success_other": "{{count}} chapter bookmarks removed"
+          }
+        }
+      },
+      "download": {
+        "add": {
+          "button": {
+            "selected": "Download selected"
+          },
+          "label": {
+            "action": "Download",
+            "ahead": "$t(download.settings.download_ahead.title) ({{count}})",
+            "all": "$t(extension.language.all)",
+            "confirmation_one": "You are about to download one chapter",
+            "confirmation_other": "You are about to download {{count}} chapters.\nSuwayomi is not a mass downloader and too many downloads can get you banned from sources and/or cause performance issues.",
+            "error_one": "Could not add the download",
+            "error_other": "Could not add downloads",
+            "next_one": "Next chapter",
+            "next_other": "Next {{count}} chapters",
+            "success_one": "Download added",
+            "success_other": "{{count}} downloads added",
+            "unread": "$t(global.filter.label.unread)"
+          }
+        },
+        "delete": {
+          "button": {
+            "selected": "Delete selected"
+          },
+          "label": {
+            "action": "Delete",
+            "confirmation_one": "You are about to delete one download",
+            "confirmation_other": "You are about to delete {{count}} downloads",
+            "error_one": "Could not delete the chapter",
+            "error_other": "Could not delete chapters",
+            "success_one": "Chapter deleted",
+            "success_other": "{{count}} chapters deleted"
+          }
+        }
+      },
+      "filter_and_sort": {
+        "label": "Filter and sort"
+      },
+      "label": {
+        "select": "Select"
+      },
+      "mark_as_read": {
+        "add": {
+          "button": {
+            "selected": "Mark selected as read"
+          },
+          "label": {
+            "action": {
+              "all": "Mark all as read",
+              "current": "Mark as read",
+              "previous": "Mark previous as read"
+            },
+            "confirmation_one": "You are about to mark one chapter as read",
+            "confirmation_other": "You are about to mark {{count}} chapters as read",
+            "error_one": "Could not mark the chapter as read",
+            "error_other": "Could not mark chapters as read",
+            "success_one": "Chapter marked as read",
+            "success_other": "{{count}} chapters marked as read"
+          }
+        },
+        "remove": {
+          "button": {
+            "selected": "Mark selected as unread"
+          },
+          "label": {
+            "action": "Mark as unread",
+            "confirmation_one": "You are about to mark one chapter as unread",
+            "confirmation_other": "You are about to mark {{count}} chapters as unread",
+            "error_one": "Could not mark the chapter as unread",
+            "error_other": "Could not mark chapters as unread",
+            "success_one": "Chapter marked as unread",
+            "success_other": "{{count}} chapters marked as unread"
+          }
+        }
+      },
+      "read": {
+        "resume": "Continue reading\n#{{chapterNumber}} — {{title}}\n{{scanlator}}",
+        "start": "Start reading\n#{{chapterNumber}} — {{title}}\n{{scanlator}}"
+      }
+    },
+    "error": {
+      "label": {
+        "no_chapter_found": "No chapters found",
+        "no_matches": "No chapters matching filter"
+      }
+    },
+    "missing_one": "Missing {{count}} chapter",
+    "missing_other": "Missing {{count}} chapters",
+    "option": {
+      "display": {
+        "label": {
+          "chapter_number": "Chapter number",
+          "source_title": "Source title"
+        }
+      },
+      "exclude_scanlators": "Exclude scanlators"
+    },
+    "status": {
+      "label": {
+        "downloaded": "Downloaded"
+      }
+    },
+    "title_one": "Chapter",
+    "title_other": "Chapters",
+    "value_one": "{{count}} chapter",
+    "value_other": "{{count}} chapters"
+  },
+  "download": {
+    "queue": {
+      "error": {
+        "label": {
+          "failed_delete_all": "Could not remove all downloads from the queue",
+          "failed_to_remove": "Could not remove the download from the queue.",
+          "failed_to_retry": "Could not retry failed download."
+        }
+      },
+      "info": {
+        "paused": "Paused — $t(download.queue.info.remaining)",
+        "remaining": "{{count}} remaining"
+      },
+      "label": {
+        "delete_all": "Delete all",
+        "no_downloads": "No downloads"
+      }
+    },
+    "settings": {
+      "auto_download": {
+        "categories": {
+          "label": {
+            "include_in_download": "Entries in excluded categories will not be downloaded even if they are also in included categories"
+          }
+        },
+        "download_limit": {
+          "label": {
+            "description": "Limit the amount of new chapters that are going to get downloaded.",
+            "title": "Chapter download limit"
+          }
+        },
+        "label": {
+          "ignore_re_uploads": "Ignore re-uploaded chapters",
+          "ignore_with_unread_chapters": "Ignore automatic chapter downloads for entries with unread chapters",
+          "new_chapters": "Download new chapters"
+        },
+        "title": "Auto-download"
+      },
+      "conversion": {
+        "call_timeout": "Call timeout",
+        "compression_level": "Compression level",
+        "connect_timeout": "Connect timeout",
+        "description": "In case no MIME-Type is defined, the \"default\" one will be used for the processing.\nSet the target mode to disabled to prevent processing for a MIME-Type",
+        "headers": {
+          "button": "Headers ({{count}})",
+          "name": "Name",
+          "title": "Headers",
+          "value": "Value"
+        },
+        "mime_type": "MIME-Type",
+        "target": "MIME-Type target",
+        "target_modes": {
+          "image": {
+            "description": "Convert images to different formats",
+            "title": "Image"
+          },
+          "title": "Target mode",
+          "url": {
+            "description": "Image conversion will be handled by an external service",
+            "title": "URL"
+          }
+        },
+        "title": "Image download processing"
+      },
+      "delete_chapters": {
+        "label": {
+          "allow_deletion_of_bookmarked": "Allow deleting bookmarked chapters",
+          "manually_marked_as_read": "Delete chapter after manually marking it as read"
+        },
+        "title": "Delete chapters",
+        "while_reading": {
+          "label": {
+            "title": "Delete finished chapters while reading"
+          },
+          "option": {
+            "label": {
+              "fifth": "Fifth to last read chapter",
+              "first": "Last read chapter",
+              "fourth": "Fourth to last read chapter",
+              "second": "Second to last read chapter",
+              "third": "Third to last read chapter"
+            }
+          }
+        }
+      },
+      "download_ahead": {
+        "label": {
+          "description": "How many chapters should get downloaded while reading.",
+          "disclaimer": "Only works if the current chapter plus the next chapter are already downloaded.",
+          "unread_chapters_to_download": "Number of unread chapters to download",
+          "value": "{{chapters}} $t(chapter.title)",
+          "while_reading": "Auto download while reading"
+        },
+        "title": "Download ahead"
+      },
+      "download_path": {
+        "label": {
+          "description": "The path to the directory on the server where downloaded files should get saved in",
+          "title": "Download location"
+        }
+      },
+      "file_type": {
+        "label": {
+          "cbz": "Save as CBZ archive"
+        }
+      }
+    },
+    "state": {
+      "label": {
+        "downloading": "Downloading",
+        "error": "Error",
+        "finished": "$t(global.label.finished)",
+        "queued": "Queued"
+      }
+    },
+    "title": {
+      "download": "Downloads",
+      "queue": "Download queue"
+    }
+  },
+  "extension": {
+    "action": {
+      "label": {
+        "install": "Install",
+        "install_external": "Install external extension",
+        "uninstall": "Uninstall",
+        "update": "Update",
+        "update_all": "Update all"
+      }
+    },
+    "label": {
+      "add_repository_info": "You have to add a extension repository to be able to install extensions",
+      "age_rating": "Age rating",
+      "available_updates_one": "{{count}} update available",
+      "available_updates_other": "{{count}} updates available",
+      "installation_failed_one": "Could not install the extension",
+      "installation_failed_other": "Could not install the extensions",
+      "installed_successfully_one": "Extension installed",
+      "installed_successfully_other": "Extensions installed",
+      "installing_file": "Installing extension file…",
+      "uninstallation_failed_one": "Could not uninstall the extension",
+      "uninstallation_failed_other": "Could not uninstall the extensions",
+      "update_failed_one": "Could not update the extension",
+      "update_failed_other": "Could not update the extensions"
+    },
+    "language": {
+      "all": "All",
+      "other": "Other"
+    },
+    "settings": {
+      "dialog": {
+        "title": "Per-language extension settings"
+      },
+      "repositories": {
+        "custom": {
+          "dialog": {
+            "action": {
+              "button": {
+                "add": "Add repository"
+              }
+            }
+          },
+          "error": {
+            "label": {
+              "invalid_url": "Invalid repository url"
+            }
+          },
+          "label": {
+            "description": "Add repositories from which extensions can be installed",
+            "disclaimer": "<strong>Suwayomi does not provide any support for 3rd party repositories or extensions!</strong><br/>Use with caution as there could be malicious actors making those repositories.<br/>You as the user need to verify the security and that you trust any repository or extension.",
+            "title": "Extension repositories"
+          }
+        }
+      }
+    },
+    "state": {
+      "label": {
+        "installed": "Installed",
+        "installing": "Installing",
+        "obsolete": "Obsolete",
+        "uninstalling": "Uninstalling",
+        "update_pending": "Update pending",
+        "updating": "Updating"
+      }
+    },
+    "title_one": "Extension",
+    "title_other": "Extensions"
+  },
+  "global": {
+    "button": {
+      "add": "Add",
+      "browse": "Browse",
+      "cancel": "Cancel",
+      "changelog": "Changelog",
+      "clear_selection": "Clear",
+      "copy": "Copy",
+      "create": "Create",
+      "delete": "Delete",
+      "deselect": "Deselect",
+      "dont_show_dialog_again": "Don't show this dialog again",
+      "download": "Download",
+      "edit": "Edit",
+      "filter": "Filter",
+      "ignore": "Ignore",
+      "latest": "Latest",
+      "log_in": "Log in",
+      "log_out": "Log out",
+      "migrate": "Migrate",
+      "ok": "Ok",
+      "open": "Open",
+      "open_browser": "Open in browser",
+      "open_webview": "Open in WebView",
+      "options": "Options",
+      "popular": "Popular",
+      "refresh": "Refresh",
+      "remind_later": "Remind later",
+      "remove": "Remove",
+      "reset": "Reset",
+      "reset_to_default": "Reset to Default",
+      "restore": "Restore",
+      "resume": "Resume",
+      "retry": "Retry",
+      "save": "Save",
+      "select": "Select",
+      "select_all": "Select all",
+      "set": "Set",
+      "show_less": "Show less",
+      "show_more": "Show more",
+      "start": "Start",
+      "stop": "Stop",
+      "submit": "Submit"
+    },
+    "colors": {
+      "black": "Black",
+      "gray": "Gray",
+      "white": "White"
+    },
+    "date": {
+      "label": {
+        "day_one": "Day",
+        "day_other": "Days",
+        "second_one": "Second",
+        "second_other": "Seconds",
+        "today": "Today",
+        "today_at": "Today at {{timeString}}",
+        "yesterday": "Yesterday",
+        "yesterday_at": "Yesterday at {{timeString}}"
+      },
+      "value": {
+        "label": {
+          "day": "{{days}} $t(global.date.label.day, lowercase)"
+        }
+      }
+    },
+    "error": {
+      "label": {
+        "failed_to_load_data": "Unable to load data",
+        "failed_to_save_changes": "Failed to save changes",
+        "invalid_action": "This is not a valid action",
+        "invalid_file_type": "Invalid filetype",
+        "invalid_input": "Invalid input",
+        "unrecoverable_error": "Something went wrong\nAn error occurred that we cannot recover from",
+        "update_failed": "Could not check for updates"
+      }
+    },
+    "filter": {
+      "label": {
+        "bookmarked": "Bookmarked",
+        "downloaded": "Downloaded",
+        "duplicate_chapters": "Duplicate chapters",
+        "started": "Started",
+        "tracked": "Tracked",
+        "unread": "Unread"
+      }
+    },
+    "grid_layout": {
+      "label": {
+        "comfortable_grid": "Comfortable grid",
+        "compact_grid": "Compact grid",
+        "list": "List"
+      },
+      "title": "Display mode"
+    },
+    "label": {
+      "advanced": "Advanced",
+      "are_you_sure": "Are you sure?",
+      "asterisk": "*",
+      "auto": "Auto",
+      "both": "Both",
+      "bottom": "Bottom",
+      "browse": "Browse",
+      "client": "Client",
+      "close": "Close",
+      "copied_clipboard": "Copied to clipboard",
+      "dark": "Dark",
+      "default": "Default",
+      "desktop": "Desktop",
+      "disabled": "Disabled",
+      "discord": "Discord",
+      "display": "Display",
+      "error": "Error",
+      "filter": "Filter",
+      "finished": "Finished",
+      "footnote": "{{value}}<0>$t(global.label.asterisk)</0>",
+      "general": "General",
+      "github": "GitHub",
+      "hidden": "Hidden",
+      "horizontal": "Horizontal",
+      "info": "Information",
+      "large": "Large",
+      "last_used": "Last used",
+      "left": "Left",
+      "light": "Light",
+      "links": "Links",
+      "load_in_progress": "Still loading required data…",
+      "loading": "Loading…",
+      "logged_in": "Logged in",
+      "logged_out": "Logged out",
+      "medium": "Medium",
+      "menu": "Menu",
+      "mobile": "Mobile",
+      "more": "More",
+      "never": "Never",
+      "next": "Next",
+      "none": "None",
+      "open_in_browser": "Open in browser",
+      "other": "Other",
+      "password": "Password",
+      "pinned": "Pinned",
+      "placeholder": "Placeholder",
+      "previous": "Previous",
+      "right": "Right",
+      "scanlator": "Scanlator",
+      "share": "Share",
+      "small": "Small",
+      "sort": "Sort",
+      "standard": "Standard",
+      "started": "Started",
+      "stopped": "Stopped",
+      "success": "Success",
+      "system": "System",
+      "tiny": "Tiny",
+      "type": "Type",
+      "unknown": "Unknown",
+      "username": "Username",
+      "version": "Version",
+      "vertical": "Vertical",
+      "warning": "Warning"
+    },
+    "language": {
+      "error": {
+        "load": "Could not load language"
+      },
+      "label": {
+        "language": "Language",
+        "language_with_code": "Language with code: {{code}}"
+      },
+      "title": {
+        "enabled_languages": "Allowed Languages",
+        "weblate": "Weblate"
+      }
+    },
+    "sort": {
+      "label": {
+        "asc": "Ascending",
+        "by_chapter_number": "By chapter number",
+        "by_fetch_date": "By date fetched",
+        "by_source": "By source",
+        "by_upload_date": "By upload date",
+        "desc": "Descending"
+      }
+    },
+    "time": {
+      "days": {
+        "day_one": "Day",
+        "day_other": "Days",
+        "value": "{{count}} $t(global.time.days.day, lowercase)"
+      },
+      "hour_short": "h",
+      "minutes": {
+        "minute_one": "Minute",
+        "minute_other": "Minutes",
+        "value": "{{count}} $t(global.time.minutes.minute, lowercase)"
+      },
+      "seconds": {
+        "second_one": "Second",
+        "second_other": "Seconds",
+        "value": "{{count}} $t(global.time.seconds.second, lowercase)"
+      }
+    },
+    "unit": {
+      "px": "px"
+    },
+    "update": {
+      "label": {
+        "available": "Update available",
+        "check_failure": "Could not check for update",
+        "checking": "Checking for update",
+        "info": "Server version {{version}} ({{channel}}) available for download",
+        "up_to_date": "This is the latest version",
+        "update_failure": "Update failed",
+        "update_success": "{{name}} was updated to version {{version}} ({{channel}})",
+        "updating": "{{progress}}% | Updating…"
+      },
+      "settings": {
+        "inform": {
+          "label": {
+            "description": "Shows a dialog in case a new version is available",
+            "title": "Inform about available update"
+          }
+        }
+      }
+    },
+    "value": "{{value}}{{unit}}"
+  },
+  "history": {
+    "error": {
+      "label": {
+        "no_history_available": "You have not read any series yet."
+      }
+    },
+    "settings": {
+      "hide": "Hide history"
+    },
+    "title": "History"
+  },
+  "hotkeys": {
+    "create": {
+      "dialog": {
+        "label": "Recorded keys: <Keys/>",
+        "placeholder": "Press keys",
+        "title": "Record keybind"
+      },
+      "error": {
+        "exists": "Hotkey already exists"
+      }
+    },
+    "info": {
+      "delete": "Click key to remove binding"
+    },
+    "title_one": "Keybind",
+    "title_other": "Keybinds"
+  },
+  "library": {
+    "action": {
+      "label": {
+        "search_globally": "Search for \"{{query}}\" globally",
+        "stop_update": "Stop global update",
+        "update_category": "Update category",
+        "update_library": "Update library"
+      }
+    },
+    "error": {
+      "label": {
+        "add_to_library": "Could not add manga to library!",
+        "empty": "Your library is empty",
+        "no_matches": "No manga matches this filter",
+        "remove_from_library": "Could not remove manga from library!",
+        "stop_global_update": "Could not stop global update"
+      }
+    },
+    "info": {
+      "label": {
+        "added_to_library": "Added manga to library!",
+        "removed_from_library": "Removed manga from library!"
+      }
+    },
+    "option": {
+      "display": {
+        "badge": {
+          "label": {
+            "download_badges": "Download badges",
+            "unread_badges": "Unread badges"
+          },
+          "title": "Badges"
+        },
+        "other": {
+          "label": {
+            "show_continue_reading_button": "Show continue reading button"
+          }
+        },
+        "tab": {
+          "label": {
+            "show_number_of_items": "Show number of items"
+          },
+          "title": "Tabs"
+        }
+      },
+      "sort": {
+        "label": {
+          "alphabetically": "A-Z",
+          "by_date_added": "Recently added",
+          "by_last_read": "Recently read",
+          "by_latest_fetched_chapter": "Latest fetched chapter",
+          "by_latest_uploaded_chapter": "Latest uploaded chapter",
+          "by_total_chapters": "Total chapters",
+          "by_unread_chapters": "Unread chapters"
+        }
+      }
+    },
+    "settings": {
+      "advanced": {
+        "database": {
+          "cleanup": {
+            "label": {
+              "description": "Remove non library manga from categories",
+              "error": "Could not remove non library manga from categories",
+              "success": "Removed non library manga from categories",
+              "title": "Cleanup database"
+            }
+          }
+        },
+        "duplicates": {
+          "label": {
+            "description": "Show all duplicated entries in your library",
+            "title": "Duplicated entries"
+          },
+          "settings": {
+            "label": {
+              "check_description": "Check description"
+            }
+          }
+        }
+      },
+      "general": {
+        "add_to_library": {
+          "category_selection": {
+            "label": {
+              "description": "Show the category selection dialog when adding a manga to the library",
+              "title": "Category selection dialog"
+            }
+          }
+        },
+        "remove_from_library": {
+          "remove_from_categories": {
+            "label": {
+              "description": "Remove manga from categories when removing them from the library",
+              "title": "Forget manga categories"
+            }
+          }
+        },
+        "search": {
+          "ignore_filters": {
+            "label": {
+              "description": "Search results will include manga that do not match the current filters",
+              "title": "Ignore filters when searching"
+            }
+          }
+        }
+      },
+      "global_update": {
+        "auto_update": {
+          "interval": {
+            "label": {
+              "title": "Automatic update interval",
+              "value": "{{hours}}$t(global.time.hour_short)"
+            }
+          },
+          "label": {
+            "title": "Automatic updates"
+          }
+        },
+        "categories": {
+          "label": {
+            "info": "Entries in excluded categories will not be updated even if they are also in included categories"
+          }
+        },
+        "entries": {
+          "label": {
+            "completed": "With \"Completed\" status",
+            "not_started": "That haven't been started",
+            "unread_chapters": "With unread chapter(s)"
+          },
+          "title": "Skip updating entries"
+        },
+        "label": {
+          "last_update": "Last update: {{date}}",
+          "last_update_tooltip": "$t(library.settings.global_update.title) ($t(library.settings.global_update.label.last_update, lowercase))"
+        },
+        "metadata": {
+          "label": {
+            "description": "Check for new cover and details when updating library",
+            "title": "Automatically refresh metadata"
+          }
+        },
+        "title": "Global update"
+      }
+    },
+    "title": "Library"
+  },
+  "manga": {
+    "action": {
+      "category": {
+        "button": {
+          "selected": "Change categories of selected"
+        },
+        "label": {
+          "action": "Change categories",
+          "confirmation_one": "You are about to change the category of one entry",
+          "confirmation_other": "You are about to change the category of {{count}} entries",
+          "error_one": "Could not change the categories of the manga",
+          "error_other": "Could not change the categories of the manga",
+          "success_one": "Changed categories of manga",
+          "success_other": "Changed categories of {{count}} manga"
+        }
+      },
+      "library": {
+        "add": {
+          "dialog": {
+            "duplicate": {
+              "label": {
+                "failure": "Could not check for duplicated manga in your library.\n\nError: {{error}}",
+                "info": "You have an entry in your library with the same name."
+              }
+            }
+          }
+        },
+        "remove": {
+          "button": {
+            "selected": "Remove selected from the library"
+          },
+          "dialog": {
+            "label": {
+              "message": "You are about to remove \"{{title}}\" from your library"
+            }
+          },
+          "label": {
+            "action": "Remove from the library",
+            "confirmation_one": "You are about to remove one entry from your library",
+            "confirmation_other": "You are about to remove {{count}} entries from your library",
+            "error_one": "Could not remove manga from the library",
+            "error_other": "Could not remove manga from the library",
+            "success_one": "Removed manga from the library",
+            "success_other": "Removed {{count}} manga from the library"
+          }
+        }
+      },
+      "migrate": {
+        "label": {
+          "error": "Could not migrate manga",
+          "success": "Successfully migrated manga"
+        }
+      },
+      "track": {
+        "add": {
+          "label": {
+            "action": "Track",
+            "error": "Could not track manga",
+            "success": "Tracked manga"
+          }
+        },
+        "remove": {
+          "dialog": {
+            "label": {
+              "delete_remote_track": "Also remove from {{tracker}}",
+              "description": "This will remove the tracking locally.",
+              "title": "Remove {{tracker}} tracking?"
+            }
+          },
+          "label": {
+            "error": "Could not untrack manga",
+            "success": "Untracked manga"
+          }
+        }
+      }
+    },
+    "button": {
+      "add_to_library": "Add To Library",
+      "in_library": "In Library",
+      "track": {
+        "active_one": "{{count}} Tracker",
+        "active_other": "{{count}} Tracker",
+        "start": "Tracking"
+      }
+    },
+    "error": {
+      "label": {
+        "no_mangas_found": "No manga found",
+        "no_matches": "No manga matches this filter",
+        "request_failure": "Could not load manga"
+      }
+    },
+    "label": {
+      "artist": "Artist",
+      "author": "Author",
+      "edit_categories": "Edit manga categories",
+      "reload_from_source": "Reload data from source",
+      "status": "Status"
+    },
+    "status": {
+      "cancelled": "Cancelled",
+      "completed": "Completed",
+      "hiatus": "Hiatus",
+      "licensed": "Licensed",
+      "ongoing": "Ongoing",
+      "publishing_finished": "Publishing finished",
+      "unknown": "$t(global.label.unknown)"
+    },
+    "title_one": "Manga",
+    "title_other": "Manga",
+    "type": {
+      "comic": "Comic",
+      "long_strip": "Long strip",
+      "manga": "$t(manga.title_one)",
+      "manhua": "Manhua",
+      "manhwa": "Manhwa",
+      "webtoon": "$t(reader.settings.reader_type.label.webtoon)"
+    }
+  },
+  "migrate": {
+    "dialog": {
+      "action": {
+        "button": {
+          "show_entry": "Show entry"
+        }
+      },
+      "label": {
+        "delete_downloaded": "Delete downloaded"
+      },
+      "title": "Select data to include"
+    },
+    "label": {
+      "info": "Migrating manga…"
+    },
+    "search": {
+      "title": "$t(migrate.title) \"{{title}}\""
+    },
+    "sort": {
+      "by_manga_count": "By manga count",
+      "by_source_name": "By source name"
+    },
+    "title": "Migrate"
+  },
+  "reader": {
+    "button": {
+      "chapter_list": "Chapter list",
+      "close_menu": "Close menu",
+      "exit": "Exit reader",
+      "next_chapter": "Next chapter",
+      "next_page": "Next page",
+      "open_menu": "Open menu",
+      "previous_chapter": "Previous chapter",
+      "previous_page": "Previous page",
+      "retry_load_pages": "Retry errored pages"
+    },
+    "chapter_transition": {
+      "warning": {
+        "next": {
+          "chapter_number_one": "There is one missing chapter.\nCurrent: {{currentChapter}}\nNext: {{nextChapter}}",
+          "chapter_number_other": "There are {{count}} missing chapters.\nCurrent: {{currentChapter}}\nNext: {{nextChapter}}",
+          "scanlator": "The next chapter has a different scanlator then the current one.\nCurrent: {{currentScanlator}}\nNext: {{nextScanlator}}"
+        },
+        "previous": {
+          "chapter_number_one": "There is one missing chapter.\nPrevious: {{nextChapter}}\nCurrent: {{currentChapter}}",
+          "chapter_number_other": "There are {{count}} missing chapters.\nPrevious: {{nextChapter}}\nCurrent: {{currentChapter}}",
+          "scanlator": "The previous chapter has a different scanlator then the current one.\nPrevious: {{nextScanlator}}\nCurrent: {{currentScanlator}}"
+        },
+        "title": "Chapter transition warning"
+      }
+    },
+    "error": {
+      "label": {
+        "chapter_not_found": "Chapter does not exist",
+        "next_chapter_does_not_exist": "There is no next chapter to open",
+        "no_pages_found": "No pages found",
+        "prev_chapter_does_not_exist": "There is no previous chapter to open"
+      }
+    },
+    "page_info": {
+      "label": {
+        "currently_on_page": "Currently on page",
+        "of_max_pages": "of {{maxPages}}",
+        "page": "Page"
+      }
+    },
+    "settings": {
+      "active_setting": "Active setting",
+      "auto_scroll": {
+        "smooth": "Smooth auto scrolling",
+        "speed": "Auto scroll speed",
+        "title": "Auto scroll"
+      },
+      "auto_webtoon_mode": {
+        "description": "Automatically use webtoon mode for entries that are detected to likely use the long strip format",
+        "title": "Auto webtoon mode"
+      },
+      "background_color": "Background color",
+      "chapter_transition": {
+        "warning": {
+          "missing_chapter": "Inform about missing chapters on chapter transition",
+          "scanlator_change": "Inform about changing scanlator on chapter transition"
+        }
+      },
+      "custom_filter": {
+        "brightness": "Custom brightness",
+        "contrast": "Custom contrast",
+        "grayscale": "Grayscale",
+        "hue": "Custom hue",
+        "invert": "Invert",
+        "rgba": {
+          "alpha": "Alpha",
+          "blend_mode": {
+            "darken": "Darken",
+            "default": "$t(global.label.default)",
+            "lighten": "Lighten",
+            "multiply": "Multiply",
+            "overlay": "Overlay",
+            "screen": "Screen",
+            "title": "Color filter blend mode"
+          },
+          "blue": "Blue",
+          "green": "Green",
+          "red": "Red",
+          "title": "Custom color filters"
+        },
+        "saturate": "Custom saturate",
+        "sepia": "Sepia",
+        "title": "Custom filter"
+      },
+      "default_setting_footnote": "$t(global.label.asterisk): $t(reader.settings.active_setting)",
+      "error": {
+        "label": {
+          "failed_to_save_settings": "Could not save the reader settings to the server"
+        }
+      },
+      "exit_mode": "Open page on exit",
+      "hotkey": {
+        "auto_scroll": "Toggle auto scroll",
+        "auto_scroll_speed_decrease": "Decrease auto scroll speed",
+        "auto_scroll_speed_increase": "Increase auto scroll speed",
+        "menu": "Toggle menu",
+        "next_chapter": "Next chapter",
+        "next_page": "Next page",
+        "offset_spread_pages": "Toggle offset spread pages",
+        "previous_chapter": "Previous chapter",
+        "previous_page": "Previous page",
+        "reading_direction": "Cycle reading direction",
+        "reading_mode": "Cycle reading mode",
+        "scale_type": "Cycle image scale type",
+        "scroll_backward": "Scroll backward",
+        "scroll_forward": "Scroll forward",
+        "stretch_image": "Toggle stretch image"
+      },
+      "image_preload_amount": "Preload images",
+      "infinite_scroll": {
+        "description": "Keep previous and upcoming chapters visible while reading in continuous reading modes, allowing seamless scrolling between chapters.",
+        "title": "Continuous chapter display"
+      },
+      "label": {
+        "behaviour": "Behaviour",
+        "custom_scroll_amount": "Custom scroll amount",
+        "fit_page_to_window": "Fit page to window",
+        "layout": "Layout",
+        "limit_reader_width": "Limit reader width",
+        "load_next_chapter": "Load next chapter at ending",
+        "offset_double_spread": "Offset double spreads",
+        "page_gap": "Page gap",
+        "reader_type": "Reader type",
+        "reader_width": "Reader width",
+        "reading_direction": "Reading direction",
+        "reading_mode": "Reading mode",
+        "show_page_number": "Show page number",
+        "skip_dup_chapters": "Skip duplicate chapters",
+        "skip_filtered_chapters": "Skip filtered chapters",
+        "static_navigation": "Static navigation",
+        "unchangeable_in_reader": "Setting can not be changed while the reader is opened"
+      },
+      "overlay_mode": "Overlay mode",
+      "page_scale": {
+        "height": "Fit height",
+        "original": "Original size",
+        "screen": "Fit screen",
+        "stretch": "Stretch small pages",
+        "title": "Scale type",
+        "width": "Fit width"
+      },
+      "preview": {
+        "reading_mode": {
+          "description": "Briefly show current mode when reader is opened or mode got changed",
+          "title": "Show reading mode"
+        },
+        "tap_zones": {
+          "description": "Briefly show tap zone layout preview when reader is opened or layout got changed",
+          "title": "Show tap zones overlay"
+        }
+      },
+      "progress_bar": {
+        "auto_vertical_position": {
+          "title": "Automatic progress bar vertical position"
+        },
+        "position": "Progress bar position",
+        "size": "Progress bar size",
+        "style": "Progress bar style"
+      },
+      "reader_type": {
+        "label": {
+          "continuous_horizontal": "Continuous horizontal",
+          "continuous_vertical": "Continuous vertical",
+          "double_page": "Double page",
+          "single_page": "Single page",
+          "webtoon": "Webtoon"
+        }
+      },
+      "reading_direction": {
+        "ltr": "Left to right",
+        "rtl": "Right to left"
+      },
+      "scroll_amount": "Scroll amount",
+      "show_transition_page": "Show transition page",
+      "source_series": "Series settings",
+      "tap_zones": {
+        "edge": "Edge",
+        "invert": "Invert tap zones",
+        "kindle": "Kindle",
+        "l_shape": "L-Shape",
+        "right_left": "Right and left",
+        "title": "Tap zones"
+      },
+      "title": {
+        "quick_settings": "Quick settings",
+        "reader": "Reader"
+      }
+    },
+    "title": "Reader — Manga {{mangaId}} Chapter {{chapterIndex}}",
+    "transition_page": {
+      "current": "Current:",
+      "exit": {
+        "manga_page": "Exit to manga page",
+        "previous_page": "Exit to previous page"
+      },
+      "finished": "$t(global.label.finished):",
+      "first_chapter": "There is no previous chapter",
+      "last_chapter": "There is no next chapter",
+      "next": "$t(global.label.next):",
+      "previous": "$t(global.label.previous):"
+    }
+  },
+  "search": {
+    "error": {
+      "label": {
+        "failed_to_save_settings": "Could not save the default search settings to the server",
+        "source_search_failed": "Could not search source"
+      }
+    },
+    "filter": {
+      "has_results": "Has results"
+    },
+    "title": {
+      "global_search": "Global Search",
+      "search": "Search"
+    }
+  },
+  "settings": {
+    "about": {
+      "server": {
+        "label": {
+          "address": "Server address",
+          "build_time": "Build time",
+          "github": "$t(global.label.github) $t(settings.server.title.server)",
+          "version": "Server version"
+        }
+      },
+      "title": "About",
+      "webui": {
+        "label": {
+          "channel": "$t(settings.webui.title.webui) channel",
+          "github": "$t(global.label.github) $t(settings.webui.title.webui)",
+          "info": "$t(settings.webui.title.webui) version {{version}} ({{channel}}) available for download",
+          "update_failure": "Could not update $t(settings.webui.title.webui)",
+          "updated": "Updated version",
+          "version": "$t(settings.webui.title.webui) version"
+        }
+      }
+    },
+    "appearance": {
+      "manga_dynamic_color_schemes": {
+        "description": "Changes the theme colors on the manga page based on the thumbnail",
+        "title": "Dynamic theme colors on manga page"
+      },
+      "manga_thumbnail_backdrop": {
+        "description": "Sets the manga thumbnail as the background image on the manga page",
+        "title": "Manga thumbnail as background"
+      },
+      "theme": {
+        "create": {
+          "action": "Creating theme…",
+          "dialog": {
+            "description": "See the official <0>MUI documentation</0> for how to customize the theme.\nThe palette API is not supported, you have to use the new <1>color schemes API</1>.\n\nYou can use theme creators like <2>MUI Theme Creator</2>, however, you have to adjust the created object according to the new color schemes API.\n\nIn case no background is defined, a background will be calculated based on the primary color",
+            "error": {
+              "invalid_json": "Invalid json",
+              "invalid_name": "The theme name must be unique and has a limit of 16 characters"
+            },
+            "theme_name": "Name"
+          },
+          "failure": "Could not create theme",
+          "success": "Created theme",
+          "title": "Create theme"
+        },
+        "delete": {
+          "action": "Deleting theme \"{{theme}}\"…",
+          "failure": "Could not delete theme \"{{theme}}\"",
+          "success": "Deleted theme \"{{theme}}\""
+        },
+        "edit": {
+          "action": "Saving theme changes…",
+          "failure": "Could not save theme changes",
+          "success": "Saved theme changes",
+          "title": "Edit theme"
+        },
+        "mode": "Theme mode",
+        "pure_black_mode": "Pure black dark mode",
+        "select": {
+          "fonts": {
+            "error": "Could not load theme fonts",
+            "loading": "Loading theme fonts…"
+          },
+          "success": "Selected theme"
+        },
+        "themes": {
+          "bright_pink": "Bright Pink",
+          "crimson": "Crimson",
+          "dune": "Dune",
+          "forest_dew": "Forest Dew",
+          "lavender": "Lavender",
+          "minty_miracles": "Minty Miracles",
+          "mountain_sunset": "Mountain Sunset",
+          "orange_juice": "Orange Juice",
+          "rosegold": "Rosegold",
+          "tree_frog_green": "Tree Frog Green",
+          "veronica": "Veronica",
+          "ying_and_yang": "Ying & Yang"
+        },
+        "title": "Theme"
+      },
+      "title": "Appearance"
+    },
+    "backup": {
+      "action": {
+        "create": {
+          "error": {
+            "failure": "Could not create backup"
+          },
+          "label": {
+            "description": "Back up library as a Tachiyomi backup",
+            "in_progress": "Creating backup…",
+            "title": "Create backup"
+          }
+        },
+        "restore": {
+          "button": "Restore",
+          "error": {
+            "label": {
+              "failure": "Could not restore backup",
+              "legacy_backup_unsupported": "legacy backups are not supported!"
+            }
+          },
+          "label": {
+            "description": "You can also drag and drop the backup file here to restore it",
+            "in_progress": "Restoring backup…",
+            "success": "Backup restored.",
+            "title": "Restore Backup"
+          }
+        },
+        "validate": {
+          "dialog": {
+            "content": {
+              "label": {
+                "missing_sources": "The following sources are not installed:",
+                "missing_trackers": "The following trackers are not logged in:"
+              }
+            },
+            "title": "Backup validation"
+          },
+          "error": {
+            "label": {
+              "failure": "Could not validate backup"
+            }
+          }
+        }
+      },
+      "automated": {
+        "cleanup": {
+          "label": {
+            "title": "Backup cleanup",
+            "value": "Delete backups that are older than $t(global.date.value.label.day)"
+          }
+        },
+        "flags": {
+          "title": "Backup data"
+        },
+        "label": {
+          "interval": "Backup interval",
+          "time": "Backup time"
+        },
+        "location": {
+          "label": {
+            "description": "The path to the directory on the server where automated backups should get saved in",
+            "title": "Backup location"
+          }
+        }
+      },
+      "flag": {
+        "categories": "Categories",
+        "chapters": "Chapters",
+        "client_data": "Client data",
+        "group": {
+          "library": "Library",
+          "settings": "Settings"
+        },
+        "history": "History",
+        "manga": "Library entries",
+        "server_settings": "Server settings",
+        "tracking": "Tracking"
+      },
+      "title": "Backup"
+    },
+    "clear_cache": {
+      "label": {
+        "description": "The cache of the client (browser, electron) should get cleared alongside it, otherwise, the client cache will keep getting used",
+        "failure": "Could not clear the cache",
+        "success": "Cleared the cache",
+        "title": "Clear cache"
+      }
+    },
+    "default_value": "{{value}}<0>($t(global.label.default))</0>",
+    "device": {
+      "active_device": {
+        "label": {
+          "description": "Select a device to use its server stored UI settings",
+          "title": "Active device"
+        }
+      },
+      "devices": {
+        "label": {
+          "description": "Manage your existing devices.\nUI specific settings that are stored on the server are per device.\nThis makes it possible to have e.g. different settings on a desktop and a smartphone",
+          "title": "Devices"
+        }
+      },
+      "label": {
+        "placeholder": "Smartphone_Name-1 | length: 16, chars: letters, numbers, -, _"
+      },
+      "title": {
+        "device": "Device"
+      }
+    },
+    "images": {
+      "processing": {
+        "download": {
+          "description": "Images are processed once during the download"
+        },
+        "serve": {
+          "description": "Images are processed on every request",
+          "title": "Image serve processing"
+        },
+        "title": "Image processing"
+      },
+      "title": "Images"
+    },
+    "label": {
+      "hide_library_entries": "Hide entries already in library",
+      "language_description": "Feel free to translate the project on",
+      "manga_item_width": "Manga item width",
+      "show_nsfw": "Show NSFW",
+      "show_nsfw_description": "Hide NSFW extensions and sources",
+      "theme": "Theme"
+    },
+    "server": {
+      "address": {
+        "client": {
+          "dialog": {
+            "label": {
+              "enter_address": "Enter server address"
+            }
+          },
+          "label": {
+            "description": "The address the client will use to connect to the server"
+          }
+        },
+        "server": {
+          "label": {
+            "ip": "IP",
+            "port": "Port"
+          },
+          "title": "Server bindings"
+        }
+      },
+      "auth": {
+        "jwt": {
+          "access_token_expiry": "JWT access token expiry",
+          "audience": "JWT audience claim",
+          "refresh_token_expiry": "JWT refresh token expiry"
+        },
+        "label": {
+          "password": "$t(global.label.password)",
+          "title": "Authentication Mode",
+          "username": "$t(global.label.username)"
+        },
+        "mode": {
+          "option": {
+            "basicAuth": {
+              "label": {
+                "description": "Your browser will prompt you to enter credentials with a dialog.",
+                "title": "Basic Authentication"
+              }
+            },
+            "none": {
+              "label": {
+                "description": "Disable authentication",
+                "info": "Your library will be accessible. Use this only on private networks or when otherwise securing access.",
+                "title": "None"
+              }
+            },
+            "simple_login": {
+              "label": {
+                "description": "The login will be handled by the server.",
+                "info": "When you enable this, you may need to refresh this tab for the login page to appear.",
+                "title": "Simple Login"
+              }
+            },
+            "ui_login": {
+              "label": {
+                "description": "The login will be handled by the client.",
+                "title": "UI Login"
+              }
+            }
+          }
+        },
+        "title": "Authentication"
+      },
+      "cloudflare": {
+        "flaresolverr": {
+          "enabled": {
+            "label": {
+              "description": "See <2>FlareSolverr</2> for information on how to set it up",
+              "title": "FlareSolverr enabled"
+            }
+          },
+          "response_fallback": {
+            "label": {
+              "description": "Use the FlareSolverr response in case the server runs into a Cloudflare challenge while FlareSolverr does not and is therefore unable to solve the challenge (does not work for images)",
+              "title": "Response fallback"
+            }
+          },
+          "session": {
+            "name": {
+              "label": {
+                "title": "FlareSolverr session name"
+              }
+            },
+            "ttl": {
+              "label": {
+                "description": "FlareSolverr will automatically rotate expired sessions based on the TTL provided in minutes",
+                "title": "FlareSolverr session TTL"
+              }
+            }
+          },
+          "timeout": {
+            "label": {
+              "description": "How much time FlareSolverr has to handle the request",
+              "title": "FlareSolverr request timeout"
+            }
+          },
+          "url": {
+            "label": {
+              "description": "The address of the FlareSolverr server",
+              "title": "FlareSolverr server url"
+            }
+          }
+        },
+        "title": "Cloudflare bypass"
+      },
+      "database": {
+        "address": "Database url",
+        "hikari_connection_pool": {
+          "description": "Improves performance, but may cause issues for some installations where data cannot be read from the database",
+          "title": "Hikari connection pool"
+        },
+        "password": "$t(global.label.password)",
+        "title": "Database",
+        "type": {
+          "h2": "H2",
+          "postgresql": "PostgreSQL",
+          "title": "Type"
+        },
+        "username": "$t(global.label.username)"
+      },
+      "koreader": {
+        "sync": {
+          "check_sum_method": {
+            "binary": "Binary",
+            "filename": "Filename",
+            "title": "Document matching method"
+          },
+          "connection": {
+            "connect": "Connect to KOReader Sync server",
+            "connected": "Connected as {{username}} to {{serverAddress}}",
+            "disconnect": "Disconnect from KOReader Sync server",
+            "disconnected": "Disconnected",
+            "message": {
+              "connect_error": "Failed to connect to KOReader Sync server.",
+              "connect_success": "Successfully connected to KOReader Sync server.",
+              "disconnect_error": "Failed to disconnect from KOReader Sync server.",
+              "disconnect_success": "Successfully disconnected from KOReader Sync server."
+            },
+            "status": "Sync status"
+          },
+          "description": "Synchronize reading progress with KOReader devices.",
+          "device_id": "Device ID",
+          "device_name": "Device Name",
+          "server_address": "Server address",
+          "strategy": {
+            "backward_title": "Sync to an older state",
+            "forward_title": "Sync to a newer state",
+            "option": {
+              "disabled": "Disabled",
+              "keep_local": "Keep local",
+              "keep_remote": "Keep remote",
+              "prompt": "Prompt"
+            }
+          },
+          "title": "KOReader Sync",
+          "tolerance": {
+            "description": "Sync will not be triggered if the progress difference is within this tolerance.",
+            "title": "Percentage Tolerance"
+          }
+        }
+      },
+      "local_source": {
+        "path": {
+          "label": {
+            "description": "The path to the directory on the server where local source files are saved in",
+            "title": "Local source location"
+          }
+        }
+      },
+      "local_anime_source": {
+        "path": {
+          "label": {
+            "description": "The path to the directory on the server where local anime files are saved in",
+            "title": "Local anime source location"
+          }
+        }
+      },
+      "misc": {
+        "log_files": {
+          "file_cleanup": {
+            "title": "Log file cleanup",
+            "value": "Delete log files that are older than $t(global.date.value.label.day)"
+          },
+          "file_size": {
+            "description": "Example for possible values: 1 (bytes), 1KB (kilobytes), 1MB (megabytes), 1GB (gigabytes)",
+            "title": "Maximum log file size"
+          },
+          "total_size": {
+            "description": "$t(settings.server.misc.log_files.file_size.description)",
+            "title": "Maximum size of all log files"
+          }
+        },
+        "log_level": {
+          "graphql": {
+            "label": {
+              "description": "This includes logs with non privacy safe information",
+              "title": "Enable graphql debug logs"
+            }
+          },
+          "label": {
+            "server": "Enable debug logs"
+          }
+        },
+        "title": "Misc",
+        "tray_icon": {
+          "label": {
+            "description": "This icon will be shown on the system that is running the server",
+            "title": "Show icon in system tray"
+          }
+        }
+      },
+      "opds": {
+        "binary_file_sizes": {
+          "label": {
+            "description": "Display file sizes in binary (KiB, MiB, GiB) instead of decimal (KB, MB, GB)",
+            "title": "Binary file size",
+            "unit_one": "item",
+            "unit_other": "items"
+          }
+        },
+        "cbz_mime_type": {
+          "compatible": "Compatible",
+          "description": "Controls the MimeType that Suwayomi sends in OPDS entries for CBZ archives. Also affects global CBZ download.\nModern follows recent IANA standard (2017), while LEGACY (deprecated mimetype for .cbz) and COMPATIBLE (deprecated mimetype for all comic archives) might be more compatible with older clients.",
+          "legacy": "Legacy",
+          "modern": "Modern",
+          "title": "CBZ MIME-Type"
+        },
+        "chapter_sort_order": {
+          "label": {
+            "description": "Choose the order in which chapters are displayed.",
+            "title": "Chapter sort order"
+          }
+        },
+        "enable_page_read_progress": {
+          "label": {
+            "description": "Track and update your reading progress by page for each chapter during page streaming",
+            "title": "Enable page read progress"
+          }
+        },
+        "items_per_page": {
+          "label": {
+            "description": "Number of items per page in OPDS feeds (e.g., Library History, Manga Chapters). \nHigher values may affect client performance.",
+            "title": "Items per page",
+            "unit_one": "item",
+            "unit_other": "items"
+          }
+        },
+        "mark_as_read_on_download": {
+          "label": {
+            "description": "Automatically mark chapters as read when you download them.",
+            "title": "Mark chapters as read on download"
+          }
+        },
+        "show_only_downloaded_chapters": {
+          "label": {
+            "description": "Filter manga feed to display only chapters you have downloaded.",
+            "title": "Show only downloaded chapters"
+          }
+        },
+        "show_only_unread_chapters": {
+          "label": {
+            "description": "Filter manga feed to display only chapters you haven’t read yet.",
+            "title": "Show only unread chapters"
+          }
+        },
+        "title": "OPDS"
+      },
+      "requests": {
+        "sources": {
+          "parallel": {
+            "label": {
+              "title": "Parallel source requests",
+              "value": "{{value}} $t(source.title)"
+            }
+          }
+        },
+        "title": "Requests"
+      },
+      "socks_proxy": {
+        "label": {
+          "enable": "Use SOCKS proxy",
+          "host": "SOCKS host",
+          "password": "SOCKS password",
+          "port": "SOCKS port",
+          "username": "SOCKS username",
+          "version": "SOCKS version"
+        },
+        "title": "SOCKS proxy"
+      },
+      "title": {
+        "server": "Server"
+      }
+    },
+    "title": "Settings",
+    "webui": {
+      "auto_update": {
+        "label": {
+          "interval": "Update interval",
+          "title": "Automatically download the latest version"
+        }
+      },
+      "channel": {
+        "label": {
+          "title": "Channel"
+        },
+        "option": {
+          "bundled": {
+            "label": {
+              "description": "Use the version that was delivered with the server release",
+              "title": "Bundled"
+            }
+          },
+          "preview": {
+            "label": {
+              "description": "Use the latest features and help us get them ready for a stable release.",
+              "disclaimer": "Features and changes in this version might not be completely ready yet and can cause bugs.\nMake sure that you have automatic backups enabled to prevent loss of your library!\n\n$t(settings.webui.flavor.label.info)",
+              "title": "Preview"
+            }
+          },
+          "stable": {
+            "label": {
+              "description": "Use the latest released version.",
+              "title": "Stable"
+            }
+          }
+        }
+      },
+      "electron_path": {
+        "label": {
+          "description": "The path to the electron installation on the server",
+          "title": "Electron path"
+        }
+      },
+      "flavor": {
+        "label": {
+          "info": "After changing this setting go to the \"About\" page and check for a webUI update and install it",
+          "title": "Flavor"
+        },
+        "option": {
+          "custom": {
+            "label": {
+              "description": "Use a custom $t(settings.webui.title.webui).\nTo use a custom $t(settings.webui.title.webui) replace the content of the \"webUI\" directory in the root directory on the server with the files of the custom $t(settings.webui.title.webui)",
+              "title": "Custom"
+            }
+          },
+          "vui": {
+            "label": {
+              "description": "A preview focused web frontend built with svelte",
+              "title": "VUI"
+            }
+          },
+          "webui": {
+            "label": {
+              "description": "Use the default $t(settings.webui.title.webui)"
+            }
+          }
+        }
+      },
+      "interface": {
+        "label": {
+          "description": "Where to start the $t(settings.webui.title.webui) when starting the server",
+          "title": "Interface"
+        },
+        "option": {
+          "label": {
+            "browser": "Browser",
+            "electron": "Electron"
+          }
+        }
+      },
+      "label": {
+        "initial_open_browser": "Open the $t(settings.webui.title.webui) when starting the server"
+      },
+      "title": {
+        "webui": "WebUI"
+      }
+    }
+  },
+  "source": {
+    "configuration": {
+      "title": "Source Configuration"
+    },
+    "error": {
+      "label": {
+        "no_sources_found": "No sources found. Install Some extensions first.",
+        "source_not_found": "Could not find source. Check your installed extensions."
+      }
+    },
+    "extension_info": {
+      "title": "Extension info"
+    },
+    "filter": {
+      "save_search": {
+        "dialog": {
+          "label": {
+            "delete": "This will delete the saved search \"{{name}}\"",
+            "title": "Save current search"
+          }
+        },
+        "label": {
+          "delete": "Delete search",
+          "save": "Save search"
+        }
+      }
+    },
+    "local_source": {
+      "label": {
+        "checkout": "Check out",
+        "guide": "Local source guide"
+      },
+      "title": "Local source"
+    },
+    "pin": {
+      "add": "Pin source",
+      "remove": "Unpin source"
+    },
+    "title_one": "Source",
+    "title_other": "Sources"
+  },
+  "tracking": {
+    "action": {
+      "button": {
+        "add_tracking": "Add tracking",
+        "track_privately": "Track privately",
+        "track_publicly": "Track publicly"
+      },
+      "login": {
+        "label": {
+          "failure": "Could not log in to {{name}}",
+          "progress": "Logging in to {{name}}…"
+        }
+      },
+      "logout": {
+        "label": {
+          "failure": "Could not log out from {{name}}"
+        }
+      }
+    },
+    "error": {
+      "label": {
+        "could_not_fetch_track_info": "Could not load latest track info from tracker",
+        "could_not_load_track_info": "Could not load track info"
+      }
+    },
+    "my_anime_list": {
+      "search": {
+        "label": {
+          "hint": "Search for a ID via \"id:<ID>\" (e.g. \"id:13\")\nLimit search to your lists via \"my:<Title>\" (e.g. \"my:One Piece\")"
+        }
+      }
+    },
+    "publishing": {
+      "status": {
+        "cancelled": "$(manga.status.cancelled)",
+        "currently_publishing": "Currently publishing",
+        "finished": "$t(global.label.finished)",
+        "hiatus": "$(manga.status.hiatus)",
+        "not_yet_published": "Not yet published",
+        "not_yet_released": "Not yet released",
+        "releasing": "Releasing"
+      },
+      "type": {
+        "doujinshi": "Doujinshi",
+        "manga": "$t(manga.title_one)",
+        "manhua": "$t(manga.type.manhua)",
+        "manhwa": "$t(manga.type.manhwa)",
+        "novel": "Novel",
+        "oel": "OEL",
+        "one_shot": "Oneshot",
+        "unknown": "$t(global.label.unknown)"
+      }
+    },
+    "settings": {
+      "dialog": {
+        "title": {
+          "log_in": "Log in to {{name}}",
+          "log_out": "Log out from {{name}}"
+        }
+      },
+      "label": {
+        "update_progress_manual": "Update progress after manually marking as read",
+        "update_progress_reading": "Update progress after reading",
+        "update_progress_reading_description": "Does not work when marking multiple manga as read at once"
+      },
+      "title": {
+        "trackers": "Trackers"
+      }
+    },
+    "title": "Tracking",
+    "track_record": {
+      "label": {
+        "finish_date": "Finish date",
+        "score": "Score",
+        "start_date": "Start date"
+      }
+    }
+  },
+  "updates": {
+    "error": {
+      "label": {
+        "no_updates_available": "You don't have any updates yet."
+      }
+    },
+    "title": "Updates"
+  }
+}

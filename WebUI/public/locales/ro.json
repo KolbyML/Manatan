@@ -1,0 +1,51 @@
+{
+    "category": {
+        "dialog": {
+            "title": {
+                "new_category": "Categorie nouă",
+                "edit_category_one": "Editare categorie",
+                "edit_category_few": "Editare categorii",
+                "edit_category_other": "Editare categorii"
+            }
+        },
+        "error": {
+            "label": {
+                "create_failure": "Nu s-a putut crea categoria",
+                "empty": "Această categorie este goală",
+                "request_failure": "Nu s-au putut încărca categoriile"
+            },
+            "no_categories_found": {
+                "label": {
+                    "info": "Nu ai nicio categorie încă."
+                }
+            }
+        },
+        "label": {
+            "category_name": "Numele Categoriei",
+            "use_as_default_category": "Categoria principală când adaugi manga nouă în librărie"
+        },
+        "title": {
+            "category_one": "Categorie",
+            "category_few": "Categorii",
+            "category_other": "Categorii",
+            "set_categories": "Setare categorii"
+        }
+    },
+    "chapter": {
+        "action": {
+            "download": {
+                "add": {
+                    "button": {
+                        "selected": "Descărcare selectată"
+                    },
+                    "label": {
+                        "action": "Descărcare",
+                        "confirmation_one": "Urmează să descarci un capitol",
+                        "confirmation_few": "Urmează să descarci {{count}} capitole.",
+                        "confirmation_other": "Urmează să descarci {{count}} capitole."
+                    }
+                }
+            }
+        }
+    }
+}

@@ -142,7 +142,7 @@ The following links, repos, companies and projects have been important in the de
 - https://github.com/kaihouguide/Mangatan
 - https://github.com/exn251/Mangatan/
 - https://github.com/Suwayomi/Suwayomi-Server
-- https://github.com/KolbyML/Manatan-WebUI
+- https://github.com/Suwayomi/Suwayomi-WebUI
 
 ## Privacy Policy
 
@@ -157,3 +157,7 @@ Last updated: 12/23/2025
 ## Star History
 
 [![Star History Chart](https://api.star-history.com/svg?repos=KolbyML/Manatan&type=date&legend=top-left)](https://www.star-history.com/#KolbyML/Manatan&type=date&legend=top-left)
+
+## License Disclaimer
+
+The WebUI folder is licensed under MPL-2.0. The rest of this repository is licensed under MIT unless otherwise noted.

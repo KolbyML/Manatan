@@ -1,0 +1,281 @@
+{
+    "category": {
+        "dialog": {
+            "title": {
+                "new_category": "Ny kategori",
+                "edit_category_one": "Rediger kategori",
+                "edit_category_other": ""
+            }
+        },
+        "error": {
+            "label": {
+                "request_failure": "Kunne ikke indlæse kategorier",
+                "empty": "Denne kategori er tom"
+            },
+            "no_categories_found": {
+                "label": {
+                    "info": "Du har ikke nogen kategorier endnu."
+                }
+            }
+        },
+        "label": {
+            "category_name": "Kategorinavn",
+            "use_as_default_category": "Standardkategori ved tilføjelse af ny manga til biblioteket"
+        },
+        "settings": {
+            "inclusion": {
+                "label": {
+                    "exclude": "Ekskluder: {{excludedCategoriesText}}",
+                    "include": "Inkluder: {{includedCategoriesText}}"
+                }
+            }
+        },
+        "title": {
+            "category_one": "Kategori",
+            "category_other": "Kategorier",
+            "set_categories": "Vælg kategorier"
+        }
+    },
+    "chapter": {
+        "action": {
+            "bookmark": {
+                "add": {
+                    "button": {
+                        "selected": "Bogmærke valgt"
+                    },
+                    "label": {
+                        "action": "Tilføj bogmærke",
+                        "error_one": "Kunne ikke bogmærke kapitlet",
+                        "error_other": "Kunne ikke bogmærke kapitlerne",
+                        "success_one": "Kapitel bogmærket",
+                        "success_other": "{{count}} kapitler bogmærket"
+                    }
+                },
+                "remove": {
+                    "button": {
+                        "selected": "Fjern bogmærker fra de valgte"
+                    },
+                    "label": {
+                        "action": "Fjern bogmærke",
+                        "error_one": "Kunne ikke fjerne bogmærket",
+                        "error_other": "Kunne ikke fjerne bogmærkerne",
+                        "success_one": "Kapitelbogmærke fjernet",
+                        "success_other": "{{count}} kapitelbogmærker fjernet"
+                    }
+                }
+            },
+            "download": {
+                "add": {
+                    "button": {
+                        "selected": "Download de valgte"
+                    },
+                    "label": {
+                        "ahead": "$t(download.settings.download_ahead.title) ({{count}})",
+                        "error_one": "Kunne ikke tilføje dit download",
+                        "error_other": "Kunne ikke tilføje dine downloads",
+                        "action": "Download",
+                        "success_one": "Download tilføjet",
+                        "success_other": "{{count}} downloads tilføjet"
+                    }
+                },
+                "delete": {
+                    "label": {
+                        "action": "Slet",
+                        "error_one": "Kunne ikke slette kapitlet",
+                        "error_other": "Kunne ikke slette kapitlerne",
+                        "success_one": "Kapitel slettet",
+                        "success_other": "{{count}} kapitler slettet"
+                    },
+                    "button": {
+                        "selected": "Slet valgte"
+                    }
+                }
+            },
+            "label": {
+                "select": "Vælg"
+            },
+            "mark_as_read": {
+                "add": {
+                    "label": {
+                        "action": {
+                            "previous": "Marker forrige som læst",
+                            "current": "Marker som læst"
+                        },
+                        "error_one": "Kunne ikke markere kapitlet som læst",
+                        "error_other": "Kunne ikke markere kapitlerne som læst",
+                        "success_one": "Kapitel markeret som læst",
+                        "success_other": "{{count}} kapitler markeret som læst"
+                    },
+                    "button": {
+                        "selected": "Marker valgte som læst"
+                    }
+                },
+                "remove": {
+                    "button": {
+                        "selected": "Marker valgte som ulæst"
+                    },
+                    "label": {
+                        "action": "Marker som ulæst",
+                        "error_one": "Kunne ikke markere kapitlet som ulæst",
+                        "error_other": "Kunne ikke markere kapitlerne som ulæst",
+                        "success_one": "Kapitel markeret som ulæst",
+                        "success_other": "{{count}} kapitler markeret som ulæst"
+                    }
+                }
+            }
+        },
+        "error": {
+            "label": {
+                "no_matches": "Ingen kapitler matcher filteret",
+                "no_chapter_found": "Ingen kapitler fundet"
+            }
+        },
+        "option": {
+            "display": {
+                "label": {
+                    "chapter_number": "Kapitelnummer",
+                    "source_title": "Kildenavn"
+                }
+            }
+        },
+        "title_one": "Kapitel",
+        "title_other": "Kapitler",
+        "status": {
+            "label": {
+                "downloaded": "Downloaded"
+            }
+        }
+    },
+    "download": {
+        "queue": {
+            "error": {
+                "label": {
+                    "failed_delete_all": "Kunne ikke fjerne alle downloads fra køen",
+                    "failed_to_retry": "Kunne ikke genstarte mislykket download.",
+                    "failed_to_remove": "Kunne ikke fjerne download fra køen."
+                }
+            },
+            "label": {
+                "no_downloads": "Ingen downloads",
+                "delete_all": "Slet alle"
+            }
+        },
+        "settings": {
+            "auto_download": {
+                "download_limit": {
+                    "label": {
+                        "title": "Kapiteldownloadgrænse",
+                        "description": "Begræns antallet af nye kapitler der bliver downloadet."
+                    }
+                },
+                "label": {
+                    "ignore_with_unread_chapters": "Ignorer automatiske kapiteldownloads for emner med ulæste kapitler",
+                    "ignore_re_uploads": "Ignorer re-uploaded kapitler",
+                    "new_chapters": "Download nye kapitler"
+                },
+                "categories": {
+                    "label": {
+                        "include_in_download": "Emner i ekskluderede kategorier vil ikke blive downloadet, selvom de også er i de inkluderede kategorier"
+                    }
+                }
+            },
+            "delete_chapters": {
+                "label": {
+                    "manually_marked_as_read": "Slet kapitel efter det er blevet manuelt markeret som læst",
+                    "allow_deletion_of_bookmarked": "Tillad sletning af bogmærket kapitler"
+                },
+                "while_reading": {
+                    "label": {
+                        "title": "Slet færdiggjorte kapitler mens du læser"
+                    },
+                    "option": {
+                        "label": {
+                            "fifth": "Femtesidste læste kapitel",
+                            "first": "Sidste læste kapitel",
+                            "fourth": "Fjerdesidste læste kapitel",
+                            "second": "Andensidste læste kapitel",
+                            "third": "Tredjesidste læste kapitel"
+                        }
+                    }
+                },
+                "title": "Slet kapitler"
+            },
+            "download_ahead": {
+                "label": {
+                    "description": "Hvor mange kapitler der skal downloades mens der læses.",
+                    "while_reading": "Download automatisk mens du læser",
+                    "unread_chapters_to_download": "Antal af ulæste kapitler der skal downloades",
+                    "disclaimer": "Virker kun hvis nuværende kapitel og det næste kapitel allerede er downloadet."
+                },
+                "title": "Download fremad"
+            },
+            "download_path": {
+                "label": {
+                    "description": "Stien til mappen på serveren, hvor de downloadede filer skal gemmes",
+                    "title": "Downloadlokation"
+                }
+            },
+            "file_type": {
+                "label": {
+                    "cbz": "Gem som CBZ arkiv"
+                }
+            }
+        },
+        "state": {
+            "label": {
+                "error": "Fejl",
+                "finished": "Gennemført",
+                "queued": "I kø",
+                "downloading": "Downloader"
+            }
+        }
+    },
+    "extension": {
+        "action": {
+            "label": {
+                "install": "Installer",
+                "uninstall": "Afinstaller",
+                "update": "Opdater",
+                "update_all": "Opdater alle",
+                "install_external": "Installer eksternt plugin"
+            }
+        },
+        "label": {
+            "add_repository_info": "Du skal tilføje et repository for at kunne installere plugins",
+            "installation_failed_one": "Kunne ikke installere plugin",
+            "installation_failed_other": "Kunne ikke installere plugins",
+            "installed_successfully_one": "Plugin installeret",
+            "installed_successfully_other": "Plugins installeret",
+            "uninstallation_failed_one": "Kunne ikke afinstallere pluginnet",
+            "uninstallation_failed_other": "Kunne ikke afinstallere plugins",
+            "update_failed_one": "Kunne ikke opdatere pluginet",
+            "update_failed_other": "Kunne ikke opdatere plugins",
+            "installing_file": "Installerer pluginfil…"
+        },
+        "language": {
+            "all": "Alle",
+            "other": "Andre"
+        },
+        "settings": {
+            "repositories": {
+                "custom": {
+                    "dialog": {
+                        "action": {
+                            "button": {
+                                "add": "Tilføj repository"
+                            }
+                        }
+                    },
+                    "error": {
+                        "label": {
+                            "invalid_url": "Ugyldigt repositorylink"
+                        }
+                    },
+                    "label": {
+                        "description": "Tilføj repositories hvor plugins kan blive installeret fra"
+                    }
+                }
+            }
+        }
+    }
+}

@@ -1,0 +1,308 @@
+{
+    "category": {
+        "dialog": {
+            "title": {
+                "edit_category_one": "I-edit ang kategorya",
+                "edit_category_other": "I-edit ang mga kategorya",
+                "new_category": "Bagong kategorya"
+            }
+        },
+        "error": {
+            "label": {
+                "empty": "Walang laman ang kategorya",
+                "request_failure": "Hindi ma-load ang mga kategorya",
+                "create_failure": "Hindi makalikha ng kategorya"
+            },
+            "no_categories_found": {
+                "label": {
+                    "info": "Wala ka pang mga kategorya."
+                }
+            }
+        },
+        "label": {
+            "category_name": "Pangalan ng Kategorya",
+            "use_as_default_category": "Default na kategorya kung magdagdag ng bagong manga sa aklatan"
+        },
+        "settings": {
+            "inclusion": {
+                "label": {
+                    "exclude": "Ibukod: {{excludedCategoriesText}}",
+                    "include": "Isama: {{includedCategoriesText}}"
+                }
+            }
+        },
+        "title": {
+            "category_one": "Kategorya",
+            "category_other": "Mga Kategorya",
+            "set_categories": "I-set ang mga kategorya"
+        }
+    },
+    "chapter": {
+        "action": {
+            "bookmark": {
+                "add": {
+                    "label": {
+                        "success_one": "Na-bookmark ang kabanata",
+                        "success_other": "{{count}} na kabanata ay na-bookmark",
+                        "action": "Magdagdag ng bookmark",
+                        "error_one": "Hindi ma-bookmark ang kabanata",
+                        "error_other": "Hindi ma-bookmark ang mga kabanata"
+                    },
+                    "button": {
+                        "selected": "Napili ang bookmark"
+                    }
+                },
+                "remove": {
+                    "button": {
+                        "selected": "Alisin ang mga bookmark sa napili"
+                    },
+                    "label": {
+                        "action": "Alisin ang bookmark",
+                        "error_one": "Hindi maalis ang bookmark",
+                        "error_other": "Hindi maalis ang mga bookmark",
+                        "success_one": "Natanggal ang bookmark ng kabanata",
+                        "success_other": "{{count}} na kabanata ay natanggal"
+                    }
+                }
+            },
+            "download": {
+                "add": {
+                    "label": {
+                        "error_one": "Hindi maidagdag ang pag-download",
+                        "error_other": "Hindi maidagdag ang mga pag-download",
+                        "action": "I-download",
+                        "success_one": "Idinagdag ang pag-download",
+                        "success_other": "{{count}} na download ang nadagdag"
+                    },
+                    "button": {
+                        "selected": "Napili ang pag-download"
+                    }
+                },
+                "delete": {
+                    "label": {
+                        "action": "Tanggalin",
+                        "error_one": "Hindi matanggal ang kabanata",
+                        "error_other": "Hindi matanggal ang mga kabanata",
+                        "success_one": "Natanggal ang kabanata",
+                        "success_other": "{{count}} na kabanata ang natanggal"
+                    },
+                    "button": {
+                        "selected": "Tanggalin ang napili"
+                    }
+                }
+            },
+            "label": {
+                "select": "Pumili"
+            },
+            "mark_as_read": {
+                "add": {
+                    "button": {
+                        "selected": "Markahan ang napili bilang nabasa na"
+                    },
+                    "label": {
+                        "action": {
+                            "current": "Markahan bilang nabasa na",
+                            "previous": "Markahan ang nakaraan bilang nabasa na"
+                        },
+                        "error_one": "Hindi namarkahan ang kabanata bilang nabasa na",
+                        "error_other": "Hindi namarkahan ang mga kabanata bilang nabasa na",
+                        "success_one": "Ang kabanata ay minarkahan bilang nabasa na",
+                        "success_other": "{{count}} na mga kabanata ay minarkahan bilang nabasa na"
+                    }
+                },
+                "remove": {
+                    "button": {
+                        "selected": "Markahan ang napili bilang hindi pa nababasa"
+                    },
+                    "label": {
+                        "action": "Markahan bilang hindi pa nababasa",
+                        "error_one": "Hindi mamarkahan ang kabanata bilang hindi pa nababasa",
+                        "error_other": "Hindi mamarkahan ang mga kabanata bilang hindi pa nababasa",
+                        "success_one": "Ang kabanata ay minarkahan bilang hindi pa nababasa",
+                        "success_other": "{{count}} na mga kabanata ang minarkahan bilang hindi pa nababasa"
+                    }
+                }
+            }
+        },
+        "title_one": "Kabanata",
+        "title_other": "Mga kabanata",
+        "error": {
+            "label": {
+                "no_chapter_found": "Walang nahanap na mga kabanata",
+                "no_matches": "Walang mga kabanata na tumutugma sa filter"
+            }
+        },
+        "option": {
+            "display": {
+                "label": {
+                    "chapter_number": "Numero ng kabanata",
+                    "source_title": "Pamagat ng source"
+                }
+            }
+        },
+        "status": {
+            "label": {
+                "downloaded": "Na-download"
+            }
+        }
+    },
+    "download": {
+        "settings": {
+            "auto_download": {
+                "download_limit": {
+                    "label": {
+                        "description": "Limitahan ang dami ng mga bagong kabanata na mada-download.",
+                        "title": "Limitasyon sa pag-download ng kabanata"
+                    }
+                },
+                "label": {
+                    "ignore_re_uploads": "Huwag pansinin ang mga muling na-upload na kabanata",
+                    "ignore_with_unread_chapters": "Huwag pansinin ang mga awtomatikong pag-download ng kabanata para sa mga entry na may mga hindi pa nababasang kabanata",
+                    "new_chapters": "Mag-download ng mga bagong kabanata"
+                },
+                "categories": {
+                    "label": {
+                        "include_in_download": "Ang mga entry sa mga ibinukod na kategorya ay hindi mada-download kahit na sila ay kasama rin sa mga kategoryang kasama"
+                    }
+                }
+            },
+            "download_ahead": {
+                "label": {
+                    "description": "Ilang kabanata ang dapat ma-download habang nagbabasa.",
+                    "disclaimer": "Gumagana lamang kung ang kasalukuyang kabanata at ang susunod na kabanata ay na-download na.",
+                    "while_reading": "Auto download habang nagbabasa",
+                    "unread_chapters_to_download": "Bilang ng mga hindi pa nababasang kabanata na ida-download"
+                },
+                "title": "Mag-download nang maaga"
+            },
+            "delete_chapters": {
+                "while_reading": {
+                    "option": {
+                        "label": {
+                            "fourth": "Ikaapat hanggang huling binasa na kabanata",
+                            "fifth": "Ikalima hanggang huling binasa ang kabanata",
+                            "first": "Huling nabasa na kabanata",
+                            "second": "Pangalawa hanggang sa huling binasa na kabanata",
+                            "third": "Ikatlo hanggang huling binasa ang kabanata"
+                        }
+                    },
+                    "label": {
+                        "title": "Tanggalin ang mga natapos na kabanata habang nagbabasa"
+                    }
+                },
+                "label": {
+                    "allow_deletion_of_bookmarked": "Payagan ang pagtanggal ng mga naka-bookmark na kabanata",
+                    "manually_marked_as_read": "Tanggalin ang kabanata pagkatapos ng mano-manong markahan ito bilang nabasa na"
+                },
+                "title": "Tanggalin ang mga kabanata"
+            },
+            "download_path": {
+                "label": {
+                    "description": "Ang path sa directory sa server kung saan dapat ma-save ang mga na-download na file",
+                    "title": "Lokasyon ng download"
+                }
+            },
+            "file_type": {
+                "label": {
+                    "cbz": "I-save bilang CBZ archive"
+                }
+            }
+        },
+        "title": {
+            "queue": "Pila ng download",
+            "download": "Mga Downoad"
+        },
+        "queue": {
+            "error": {
+                "label": {
+                    "failed_to_remove": "Hindi maalis ang pag-download mula sa pila.",
+                    "failed_to_retry": "Hindi masubukang muli ang nabigong pag-download.",
+                    "failed_delete_all": "Hindi maalis ang lahat ng pag-download mula sa pila"
+                }
+            },
+            "label": {
+                "delete_all": "Tanggalin lahat",
+                "no_downloads": "Walang mga download"
+            }
+        },
+        "state": {
+            "label": {
+                "downloading": "Nagda-download",
+                "queued": "Nakapila"
+            }
+        }
+    },
+    "extension": {
+        "settings": {
+            "repositories": {
+                "custom": {
+                    "label": {
+                        "title": "Mga Extension repository",
+                        "description": "Magdagdag ng mga repository kung saan maaaring mai-install ang mga extension",
+                        "disclaimer": "<strong>Ang Suwayomi ay hindi nagbibigay ng anumang suporta para sa mga 3rd party na repository o extension!</strong><br/>Gumamit nang may pag-iingat dahil maaaring may mga malisyosong aktor na gumagawa ng mga repository na iyon.<br/>Ikaw bilang user ay kailangang i-verify ang seguridad at na pinagkakatiwalaan mo ang anumang repository o extension."
+                    },
+                    "dialog": {
+                        "action": {
+                            "button": {
+                                "add": "Magdagdag ng repository"
+                            }
+                        }
+                    },
+                    "error": {
+                        "label": {
+                            "invalid_url": "Di-wastong url ng repository"
+                        }
+                    }
+                }
+            },
+            "dialog": {
+                "title": "Mga setting ng extension sa bawat wika"
+            }
+        },
+        "state": {
+            "label": {
+                "installed": "Na-install na",
+                "installing": "Nag-iinstall",
+                "obsolete": "Di-suportado",
+                "uninstalling": "Nag-uninstall",
+                "updating": "Nag-a-update",
+                "update_pending": "Nakabinbin ang pag-update"
+            }
+        },
+        "action": {
+            "label": {
+                "install_external": "Mag-install ng external na extension",
+                "install": "I-install",
+                "uninstall": "I-uninstall",
+                "update": "I-update",
+                "update_all": "I-update lahat"
+            }
+        },
+        "label": {
+            "installation_failed_one": "Hindi ma-install ang extension",
+            "installation_failed_other": "Hindi ma-install ang mga extension",
+            "update_failed_one": "Hindi ma-update ang extension",
+            "update_failed_other": "Hindi ma-update ang mga extension",
+            "installed_successfully_one": "Naka-install ang extension",
+            "installed_successfully_other": "Naka-install na mga extension",
+            "installing_file": "Ini-install ang extension file…",
+            "uninstallation_failed_one": "Hindi ma-uninstall ang extension",
+            "uninstallation_failed_other": "Hindi ma-uninstall ang mga extension",
+            "add_repository_info": "Kailangan mong magdagdag ng extension repository upang makapag-install ng mga extension"
+        },
+        "language": {
+            "all": "Lahat",
+            "other": "Iba pa"
+        },
+        "title_one": "Extension",
+        "title_other": "Mga Extension"
+    },
+    "global": {
+        "button": {
+            "add": "Magdagdag",
+            "browse": "Maghanap",
+            "cancel": "Kanselahin",
+            "copy": "Kopyahin"
+        }
+    }
+}

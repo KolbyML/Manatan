@@ -1,0 +1,580 @@
+/* =====================================================
+   PAGED READER - CSS Columns
+   ===================================================== */
+
+.paged-reader-wrapper {
+    position: fixed;
+    inset: 0;
+    overflow: hidden;
+
+    /* Safe area support for notches */
+    padding-top: env(safe-area-inset-top);
+    padding-bottom: env(safe-area-inset-bottom);
+    padding-left: env(safe-area-inset-left);
+    padding-right: env(safe-area-inset-right);
+}
+
+/* =====================================================
+   VIEWPORT CONTAINER
+   ===================================================== */
+
+.paged-viewport {
+    position: absolute;
+    inset: 0;
+    overflow: hidden;
+    /* Viewport clips the content - no scrolling */
+}
+
+/* =====================================================
+   CONTENT
+   ===================================================== */
+
+.paged-content {
+    /* Column properties set via inline styles */
+
+    /* Performance optimization for transforms */
+    will-change: transform;
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
+
+    /* Prevent breaking inside paragraphs */
+    orphans: 2;
+    widows: 2;
+}
+
+/* Break avoidance */
+.paged-content p,
+.paged-content blockquote,
+.paged-content figure,
+.paged-content pre {
+    break-inside: avoid;
+}
+
+.paged-content h1,
+.paged-content h2,
+.paged-content h3,
+.paged-content h4,
+.paged-content h5,
+.paged-content h6 {
+    break-after: avoid;
+}
+
+/* =====================================================
+   TYPOGRAPHY
+   ===================================================== */
+
+.paged-content p {
+    margin: 0 0 1em 0;
+}
+
+.paged-content h1,
+.paged-content h2,
+.paged-content h3,
+.paged-content h4 {
+    font-weight: bold;
+    margin: 1.2em 0 0.5em 0;
+}
+
+.paged-content h1 {
+    font-size: 1.4em;
+}
+
+.paged-content h2 {
+    font-size: 1.25em;
+}
+
+.paged-content h3 {
+    font-size: 1.15em;
+}
+
+.paged-content a {
+    color: inherit;
+    text-decoration: underline;
+}
+
+.paged-content ruby {
+    ruby-align: center;
+}
+
+.paged-content rt {
+    font-size: 0.5em;
+}
+
+.paged-content blockquote {
+    margin: 1em 0;
+    padding-left: 1em;
+    border-left: 2px solid currentColor;
+    opacity: 0.85;
+}
+
+/* =====================================================
+   IMAGES
+   ===================================================== */
+
+.paged-content img,
+.paged-content svg,
+.paged-content figure {
+    max-width: 100%;
+    max-height: 80vh;
+    width: auto;
+    height: auto;
+    display: block;
+    margin: 0.5em auto;
+    object-fit: contain;
+    break-inside: avoid;
+
+    /* Prevent image transforms from looking blurry */
+    image-rendering: -webkit-optimize-contrast;
+    image-rendering: crisp-edges;
+}
+
+/* Ensure SVG images inside SVGs scale correctly */
+.paged-content svg image {
+    width: 100%;
+    height: 100%;
+}
+
+/* =====================================================
+   CONTROLS
+   ===================================================== */
+
+.paged-controls {
+    position: fixed;
+    inset: 0;
+    z-index: 100;
+    pointer-events: none;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.2s, visibility 0.2s;
+}
+
+.paged-reader-wrapper.show-controls .paged-controls {
+    opacity: 1;
+    visibility: visible;
+}
+
+.paged-controls>* {
+    pointer-events: auto;
+}
+
+/* =====================================================
+   NAV BUTTONS
+   ===================================================== */
+
+.nav-btn {
+    position: fixed;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 44px;
+    height: 44px;
+    background: rgba(0, 0, 0, 0.5);
+    backdrop-filter: blur(4px);
+    border: none;
+    border-radius: 50%;
+    color: #fff;
+    font-size: 22px;
+    cursor: pointer;
+    transition: background 0.15s, transform 0.15s;
+    user-select: none;
+    -webkit-user-select: none;
+}
+
+.nav-btn:hover:not(:disabled) {
+    background: rgba(0, 0, 0, 0.7);
+}
+
+.nav-btn:active:not(:disabled) {
+    transform: scale(0.9);
+}
+
+.nav-btn:disabled {
+    opacity: 0.2;
+    cursor: default;
+}
+
+/* Horizontal mode - left/right */
+.nav-btn.horizontal.prev {
+    left: calc(12px + env(safe-area-inset-left));
+    top: 50%;
+    transform: translateY(-50%);
+}
+
+.nav-btn.horizontal.next {
+    right: calc(12px + env(safe-area-inset-right));
+    top: 50%;
+    transform: translateY(-50%);
+}
+
+/* Vertical mode */
+.nav-btn.vertical.prev {
+    right: calc(12px + env(safe-area-inset-right));
+    top: 50%;
+    transform: translateY(-50%);
+}
+
+.nav-btn.vertical.next {
+    left: calc(12px + env(safe-area-inset-left));
+    top: 50%;
+    transform: translateY(-50%);
+}
+
+/* =====================================================
+   PROGRESS
+   ===================================================== */
+
+.paged-progress {
+    position: fixed;
+    bottom: calc(14px + env(safe-area-inset-bottom));
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 5px;
+    padding: 8px 18px;
+    border-radius: 12px;
+    font-size: 12px;
+    font-family: system-ui, sans-serif;
+    backdrop-filter: blur(10px);
+    user-select: none;
+    -webkit-user-select: none;
+}
+
+.progress-row {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.progress-text {
+    font-weight: 500;
+    font-variant-numeric: tabular-nums;
+}
+
+.progress-sep {
+    opacity: 0.3;
+}
+
+.progress-chapter {
+    opacity: 0.6;
+    font-size: 11px;
+}
+
+.progress-bar {
+    width: 80px;
+    height: 2px;
+    background: rgba(128, 128, 128, 0.25);
+    border-radius: 1px;
+    overflow: hidden;
+}
+
+.progress-fill {
+    height: 100%;
+    border-radius: 1px;
+    transition: width 0.2s;
+}
+
+/* =====================================================
+   SLIDER
+   ===================================================== */
+
+.paged-slider-wrap {
+    position: fixed;
+    bottom: calc(58px + env(safe-area-inset-bottom));
+    left: 50%;
+    transform: translateX(-50%);
+    width: 50%;
+    max-width: 250px;
+    padding: 10px 16px;
+    border-radius: 14px;
+    backdrop-filter: blur(10px);
+    user-select: none;
+    -webkit-user-select: none;
+}
+
+.paged-slider {
+    width: 100%;
+    height: 4px;
+    -webkit-appearance: none;
+    appearance: none;
+    background: rgba(128, 128, 128, 0.25);
+    border-radius: 2px;
+    cursor: pointer;
+    outline: none;
+}
+
+.paged-slider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 16px;
+    height: 16px;
+    background: currentColor;
+    border-radius: 50%;
+    cursor: pointer;
+}
+
+.paged-slider::-moz-range-thumb {
+    width: 16px;
+    height: 16px;
+    background: currentColor;
+    border-radius: 50%;
+    border: none;
+}
+
+/* =====================================================
+   LOADING
+   ===================================================== */
+
+.paged-loading {
+    position: fixed;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 200;
+    pointer-events: none;
+}
+
+.loading-spinner {
+    width: 28px;
+    height: 28px;
+    border: 2px solid currentColor;
+    border-top-color: transparent;
+    border-radius: 50%;
+    animation: spin 0.6s linear infinite;
+    opacity: 0.5;
+}
+
+@keyframes spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+/* =====================================================
+   MOBILE
+   ===================================================== */
+
+@media (max-width: 768px) {
+    .nav-btn {
+        width: 36px;
+        height: 36px;
+        font-size: 18px;
+    }
+
+    .paged-progress {
+        bottom: 10px;
+        padding: 6px 14px;
+        font-size: 11px;
+    }
+
+    .paged-slider-wrap {
+        bottom: 48px;
+        width: 65%;
+    }
+}
+
+/* =====================================================
+   TOUCH DEVICES
+   ===================================================== */
+
+@media (hover: none) {
+    .paged-controls {
+        opacity: 1 !important;
+        visibility: visible !important;
+    }
+
+    .nav-btn {
+        opacity: 0.6;
+    }
+}
+
+/* =====================================================
+   REDUCED MOTION
+   ===================================================== */
+
+@media (prefers-reduced-motion: reduce) {
+    .paged-content {
+        transition: none !important;
+    }
+
+    .paged-controls,
+    .progress-fill {
+        transition: none;
+    }
+
+    .loading-spinner {
+        animation: none;
+    }
+}
+
+/* =====================================================
+   IMAGE-ONLY CHAPTERS - CENTERED
+   ===================================================== */
+
+.paged-content .image-only-chapter {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 100%;
+    height: 100%;
+    width: 100%;
+    padding: 0;
+    margin: 0;
+}
+
+.paged-content .image-only-chapter img,
+.paged-content .image-only-chapter svg,
+.paged-content .image-only-chapter figure {
+    max-width: 95%;
+    max-height: 95vh;
+    width: auto;
+    height: auto;
+    object-fit: contain;
+    margin: 0;
+}
+
+.paged-content .image-only-chapter p,
+.paged-content .image-only-chapter div {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    height: 100%;
+    margin: 0;
+    padding: 0;
+}
+
+/* Vertical mode */
+.paged-content[style*="vertical-rl"] .image-only-chapter {
+    writing-mode: horizontal-tb;
+    min-width: 100%;
+    min-height: auto;
+}
+
+.paged-content[style*="vertical-rl"] .image-only-chapter img,
+.paged-content[style*="vertical-rl"] .image-only-chapter svg,
+.paged-content[style*="vertical-rl"] .image-only-chapter figure {
+    max-height: 90vh;
+    max-width: 90vw;
+    width: auto;
+    height: auto;
+}
+
+/* =====================================================
+   FURIGANA VISIBILITY
+   ===================================================== */
+
+.paged-content.furigana-hidden ruby rt,
+.paged-content.furigana-hidden rt {
+    visibility: hidden;
+    font-size: 0;
+}
+
+/* =====================================================
+   SCROLL CONTAINER (Legacy - kept for compatibility)
+   ===================================================== */
+
+.paged-scroll {
+    position: absolute;
+    inset: 0;
+    overflow: hidden;
+    transition: opacity 0.1s ease-out;
+}
+
+/* Drop caps / Decorative initial letters */
+.paged-content .drop-cap,
+.paged-content img.initial {
+    display: inline-block;
+    float: left;
+    margin: 0 0.1em 0 0;
+    max-height: 3em;
+    width: auto;
+    line-height: 1;
+}
+
+/* Emoji and small inline icons */
+.paged-content .emoji,
+.paged-content img[class*="icon"],
+.paged-content img[class*="emoji"] {
+    display: inline;
+    height: 1em;
+    width: auto;
+    margin: 0;
+    vertical-align: -0.1em;
+    break-inside: auto;
+}
+
+/* Ruby annotations with images (rare but exists) */
+.paged-content ruby img {
+    display: inline;
+    height: 0.5em;
+    width: auto;
+    margin: 0;
+    vertical-align: baseline;
+}
+
+/* =====================================================
+   HYPERLINKS
+   ===================================================== */
+
+.paged-content a,
+.continuous-content a,
+.chapter-block a {
+    color: #4890ff;
+    text-decoration: underline;
+    text-decoration-color: rgba(72, 144, 255, 0.5);
+    cursor: pointer;
+    transition: opacity 0.2s ease;
+}
+
+.paged-content a:hover,
+.continuous-content a:hover,
+.chapter-block a:hover {
+    opacity: 0.7;
+    text-decoration-color: rgba(72, 144, 255, 0.8);
+}
+
+.paged-content a:active,
+.continuous-content a:active,
+.chapter-block a:active {
+    opacity: 0.5;
+}
+
+/* =====================================================
+   INLINE IMAGES - Override
+   ===================================================== */
+
+.paged-content img.gaiji,
+.paged-content img.gaiji-line,
+.paged-content img.gaiji1,
+.paged-content img.inline-img {
+    display: inline-block !important;
+    vertical-align: baseline !important;
+    max-width: 1.5em !important;
+    max-height: 1.5em !important;
+    width: auto !important;
+    height: auto !important;
+    margin: 0 0.1em !important;
+    padding: 0 !important;
+}
+
+.paged-content img[width="1"],
+.paged-content img[width="2"],
+.paged-content img[height="1"],
+.paged-content img[height="2"] {
+    display: inline-block !important;
+    max-width: 1.5em !important;
+    max-height: 1.5em !important;
+    vertical-align: baseline !important;
+    margin: 0 0.1em !important;
+}
+
+.paged-content img[style*="display: inline"],
+.paged-content img[style*="display:inline"] {
+    display: inline-block !important;
+    vertical-align: baseline !important;
+    max-width: 1.5em !important;
+    max-height: 1.5em !important;
+    margin: 0 0.1em !important;
+}

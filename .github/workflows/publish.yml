@@ -118,25 +118,25 @@ jobs:
       - name: Set up NodeJs
         uses: actions/setup-node@v4
         with:
-          node-version-file: 'Manatan-WebUI/package.json'
+          node-version-file: 'WebUI/package.json'
           cache: 'yarn'
-          cache-dependency-path: 'Manatan-WebUI/yarn.lock'
+          cache-dependency-path: 'WebUI/yarn.lock'
       - name: Build WebUI Assets
         run: |
-          cd Manatan-WebUI
+          cd WebUI
           yarn install --frozen-lockfile
           yarn build
-          tar -czf ../manatan-webui-dist.tar.gz build/
+          tar -czf ../webui-dist.tar.gz build/
       - name: Upload WebUI Artifact
         uses: actions/upload-artifact@v4
         with:
           name: webui-assets
-          path: Manatan-WebUI/build 
+          path: WebUI/build 
       - name: Upload WebUI Dist (Tarball)
         uses: actions/upload-artifact@v4
         with:
           name: webui-dist
-          path: manatan-webui-dist.tar.gz          
+          path: webui-dist.tar.gz          
 
   # --- JOB 4: Build Manatan Launcher ---
   build_manatan:
@@ -245,7 +245,7 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: webui-assets
-          path: bin/manatan/resources/manatan-webui
+          path: bin/manatan/resources/webui
 
       - name: Build Binary
         shell: bash
@@ -386,12 +386,12 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: webui-assets
-          path: Manatan-WebUI/build
+          path: WebUI/build
 
       - name: Prepare Assets
         run: |
           mkdir -p bin/manatan_android/assets
-          tar -cf bin/manatan_android/assets/manatan-webui.tar -C Manatan-WebUI/build .
+          tar -cf bin/manatan_android/assets/webui.tar -C WebUI/build .
           make download_android_jar
           make download_android_jre
           make android_icon
@@ -485,7 +485,7 @@ jobs:
         with:
           node-version: '22.12.0'
           cache: 'yarn'
-          cache-dependency-path: 'Manatan-WebUI/yarn.lock'
+          cache-dependency-path: 'WebUI/yarn.lock'
 
       # --- NEW: Install Signing Certificates & Profile ---
       - name: Install Apple Certificates and Profiles
@@ -669,7 +669,7 @@ jobs:
           cp release/manatan-ios/Manatan.ipa final_release/Manatan-${VERSION}-iOS.ipa
           
           # WebUI Tarball
-          cp release/webui-dist/manatan-webui-dist.tar.gz final_release/manatan-webui-dist.tar.gz
+          cp release/webui-dist/webui-dist.tar.gz final_release/webui-dist.tar.gz
 
       - name: Generate Checksums
         run: cd final_release && sha256sum * > Checksums.sha256
