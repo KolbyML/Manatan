@@ -3330,6 +3330,11 @@ export const AnimeVideoPlayer = ({
     const isTapZoneActive = isMobile && !dictionaryVisible && !isOverlayVisible;
     const tapZonePercentRaw = Number.isFinite(settings.tapZonePercent) ? settings.tapZonePercent : 30;
     const tapZonePercent = Math.min(Math.max(tapZonePercentRaw, 10), 60);
+    const popupWidthRaw = Number.isFinite(settings.animePopupWidthPercent) ? settings.animePopupWidthPercent : 100;
+    const popupHeightRaw = Number.isFinite(settings.animePopupHeightPercent) ? settings.animePopupHeightPercent : 50;
+    const popupWidthPercent = Math.min(Math.max(popupWidthRaw, 30), 100);
+    const popupHeightPercent = Math.min(Math.max(popupHeightRaw, 20), 90);
+    const popupHorizontalInset = (100 - popupWidthPercent) / 2;
     const subtitleBottomOffset = isMobile
         ? isLandscape
             ? 'calc(env(safe-area-inset-bottom) + 28px)'
@@ -4101,9 +4106,9 @@ export const AnimeVideoPlayer = ({
                         sx={{
                             position: 'absolute',
                             top: 0,
-                            left: 0,
-                            right: 0,
-                            height: '50%',
+                            left: `${popupHorizontalInset}%`,
+                            width: `${popupWidthPercent}%`,
+                            height: `${popupHeightPercent}%`,
                             backgroundColor: 'rgba(26,29,33,0.96)',
                             color: '#eee',
                             p: 2,

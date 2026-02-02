@@ -80,6 +80,8 @@ export interface Settings {
     boundingBoxAdjustment: number;
     subtitleFontSize: number;
     subtitleFontWeight: number;
+    animePopupWidthPercent: number;
+    animePopupHeightPercent: number;
     animeSubtitleHoverLookup: boolean;
     animeSubtitleHoverAutoResume: boolean;
     animeHotkeys: Record<AnimeHotkey, string[]>;
@@ -224,6 +226,8 @@ export const DEFAULT_SETTINGS: Settings = {
     boundingBoxAdjustment: 5,
     subtitleFontSize: 22,
     subtitleFontWeight: 600,
+    animePopupWidthPercent: 100,
+    animePopupHeightPercent: 50,
     animeSubtitleHoverLookup: true,
     animeSubtitleHoverAutoResume: false,
     animeHotkeys: DEFAULT_ANIME_HOTKEYS,
