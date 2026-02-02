@@ -807,6 +807,20 @@ export const AnimeVideoPlayer = ({
         }
     }, [autoOverlayDisabled, isPaused, dictionaryVisible]);
 
+    useEffect(() => {
+        if (!isOverlayVisible || isPaused || dictionaryVisible || isAnyMenuOpen) {
+            return;
+        }
+        const timeout = window.setTimeout(() => {
+            if (!isPaused && !dictionaryVisible && !isAnyMenuOpen) {
+                setIsOverlayVisible(false);
+            }
+        }, 4000);
+        return () => {
+            window.clearTimeout(timeout);
+        };
+    }, [dictionaryVisible, isAnyMenuOpen, isOverlayVisible, isPaused]);
+
     const availableSubtitleTracks = useMemo(
         () => [...subtitleTracks, ...localSubtitleTracks],
         [subtitleTracks, localSubtitleTracks],
