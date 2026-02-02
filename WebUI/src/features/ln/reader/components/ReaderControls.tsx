@@ -546,13 +546,13 @@ export const ReaderControls: React.FC<Props> = ({
                                     checked={settings.lnShowCharProgress ?? false}
                                     onChange={(e) => onUpdateSettings('lnShowCharProgress', e.target.checked)}
                                 />
-                            }
-                            label="Show Character Progress"
-                            sx={{ color: theme.fg }}
-                        />
-                        <Typography variant="caption" sx={{ display: 'block', mt: 0.5, opacity: 0.7, color: theme.fg }}>
-                            Display character count and percentage instead of page numbers
-                        </Typography>
+                        }
+                        label="Show Character Progress"
+                        sx={{ color: 'text.primary' }}
+                    />
+                    <Typography variant="caption" sx={{ display: 'block', mt: 0.5, opacity: 0.7, color: 'text.secondary' }}>
+                        Display character count and percentage instead of page numbers
+                    </Typography>
                     </Box>
                     <FormControlLabel
                         control={
