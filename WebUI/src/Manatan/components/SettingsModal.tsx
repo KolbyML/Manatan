@@ -3,6 +3,7 @@ import Stack from '@mui/material/Stack';
 import IconButton from '@mui/material/IconButton';
 import Typography from '@mui/material/Typography';
 import AddIcon from '@mui/icons-material/Add';
+import RestartAltIcon from '@mui/icons-material/RestartAlt';
 import { bindTrigger, usePopupState } from 'material-ui-popup-state/hooks';
 import { useOCR } from '@/Manatan/context/OCRContext';
 import { AppStorage } from '@/lib/storage/AppStorage.ts';
@@ -47,6 +48,36 @@ const hotkeyRowStyle: React.CSSProperties = {
     gap: '8px',
     flexWrap: 'wrap',
 };
+
+const inlineInputWrapperStyle: React.CSSProperties = {
+    position: 'relative',
+    display: 'flex',
+    alignItems: 'center',
+};
+
+const inlineInputActionsStyle: React.CSSProperties = {
+    position: 'absolute',
+    right: 6,
+    top: '50%',
+    transform: 'translateY(-50%)',
+    display: 'flex',
+    gap: '4px',
+    alignItems: 'center',
+};
+
+const inlineInputStyle: React.CSSProperties = {
+    paddingRight: '94px',
+};
+
+const unitToggleStyle = (active: boolean): React.CSSProperties => ({
+    padding: '2px 6px',
+    borderRadius: '4px',
+    border: '1px solid #444',
+    background: active ? '#444' : '#222',
+    color: '#fff',
+    fontSize: '0.75em',
+    cursor: 'pointer',
+});
 
 const AnimeHotkeyRow = ({
     hotkey,
@@ -119,6 +150,22 @@ export const SettingsModal: React.FC<{ onClose: () => void }> = ({ onClose }) =>
     const fileInputRef = useRef<HTMLInputElement>(null);
     const [dictManagerKey, setDictManagerKey] = useState(0);
     const [dictionaryNames, setDictionaryNames] = useState<string[]>([]);
+    const popupWidthUnit = localSettings.animePopupWidthUnit ?? 'percent';
+    const popupHeightUnit = localSettings.animePopupHeightUnit ?? 'percent';
+    const popupTopUnit = localSettings.animePopupTopOffsetUnit ?? 'percent';
+    const popupLeftUnit = localSettings.animePopupLeftOffsetUnit ?? 'percent';
+    const popupWidthValue = popupWidthUnit === 'px'
+        ? localSettings.animePopupWidthPx
+        : localSettings.animePopupWidthPercent;
+    const popupHeightValue = popupHeightUnit === 'px'
+        ? localSettings.animePopupHeightPx
+        : localSettings.animePopupHeightPercent;
+    const popupTopValue = popupTopUnit === 'px'
+        ? localSettings.animePopupTopOffsetPx
+        : localSettings.animePopupTopOffsetPercent;
+    const popupLeftValue = popupLeftUnit === 'px'
+        ? localSettings.animePopupLeftOffsetPx
+        : localSettings.animePopupLeftOffsetPercent;
     const persistSettings = useCallback((nextSettings: typeof settings) => {
         AppStorage.local.setItem('mangatan_settings_v3', JSON.stringify(nextSettings));
         setSettings(nextSettings);
@@ -360,6 +407,30 @@ export const SettingsModal: React.FC<{ onClose: () => void }> = ({ onClose }) =>
             const language = (key === 'yomitanLanguage' ? value : localSettings.yomitanLanguage) || 'japanese';
             await installDictionary(language);
         }
+    };
+
+    const resetPopupWidth = () => {
+        handleChange('animePopupWidthUnit', DEFAULT_SETTINGS.animePopupWidthUnit);
+        handleChange('animePopupWidthPercent', DEFAULT_SETTINGS.animePopupWidthPercent);
+        handleChange('animePopupWidthPx', DEFAULT_SETTINGS.animePopupWidthPx);
+    };
+
+    const resetPopupHeight = () => {
+        handleChange('animePopupHeightUnit', DEFAULT_SETTINGS.animePopupHeightUnit);
+        handleChange('animePopupHeightPercent', DEFAULT_SETTINGS.animePopupHeightPercent);
+        handleChange('animePopupHeightPx', DEFAULT_SETTINGS.animePopupHeightPx);
+    };
+
+    const resetPopupTop = () => {
+        handleChange('animePopupTopOffsetUnit', DEFAULT_SETTINGS.animePopupTopOffsetUnit);
+        handleChange('animePopupTopOffsetPercent', DEFAULT_SETTINGS.animePopupTopOffsetPercent);
+        handleChange('animePopupTopOffsetPx', DEFAULT_SETTINGS.animePopupTopOffsetPx);
+    };
+
+    const resetPopupLeft = () => {
+        handleChange('animePopupLeftOffsetUnit', DEFAULT_SETTINGS.animePopupLeftOffsetUnit);
+        handleChange('animePopupLeftOffsetPercent', DEFAULT_SETTINGS.animePopupLeftOffsetPercent);
+        handleChange('animePopupLeftOffsetPx', DEFAULT_SETTINGS.animePopupLeftOffsetPx);
     };
 
     const handleFieldMapChange = (ankiField: string, mapValue: string) => {
@@ -1074,31 +1145,178 @@ export const SettingsModal: React.FC<{ onClose: () => void }> = ({ onClose }) =>
                             <div style={{ gridColumn: '1 / -1', fontSize: '0.85em', color: '#aaa' }}>
                                 Higher values make subtitles bolder and easier to read.
                             </div>
-                            <label htmlFor="animePopupWidthPercent">Anime Dictionary Width (%)</label>
-                            <input
-                                id="animePopupWidthPercent"
-                                type="number"
-                                step="1"
-                                min="30"
-                                max="100"
-                                value={localSettings.animePopupWidthPercent}
-                                onChange={(e) => handleChange('animePopupWidthPercent', parseInt(e.target.value, 10))}
-                            />
-                            <div style={{ gridColumn: '1 / -1', fontSize: '0.85em', color: '#aaa' }}>
-                                Controls how wide the anime popup dictionary is.
+                            <div style={{ gridColumn: '1 / -1', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+                                <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                                    <label htmlFor="animePopupWidthValue">Width</label>
+                                    <div style={inlineInputWrapperStyle}>
+                                        <input
+                                            id="animePopupWidthValue"
+                                            type="number"
+                                            step={popupWidthUnit === 'px' ? '10' : '1'}
+                                            min={popupWidthUnit === 'px' ? '280' : '30'}
+                                            max={popupWidthUnit === 'px' ? '1920' : '100'}
+                                            value={popupWidthValue}
+                                            onChange={(e) => handleChange(
+                                                popupWidthUnit === 'px' ? 'animePopupWidthPx' : 'animePopupWidthPercent',
+                                                parseInt(e.target.value, 10),
+                                            )}
+                                            style={inlineInputStyle}
+                                        />
+                                        <div style={inlineInputActionsStyle}>
+                                            <button
+                                                type="button"
+                                                onClick={() => handleChange('animePopupWidthUnit', 'percent')}
+                                                style={unitToggleStyle(popupWidthUnit === 'percent')}
+                                            >
+                                                %
+                                            </button>
+                                            <button
+                                                type="button"
+                                                onClick={() => handleChange('animePopupWidthUnit', 'px')}
+                                                style={unitToggleStyle(popupWidthUnit === 'px')}
+                                            >
+                                                px
+                                            </button>
+                                            <IconButton
+                                                size="small"
+                                                onClick={resetPopupWidth}
+                                                aria-label="Reset anime dictionary width"
+                                                style={{ padding: 4 }}
+                                            >
+                                                <RestartAltIcon fontSize="small" />
+                                            </IconButton>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                                    <label htmlFor="animePopupHeightValue">Height</label>
+                                    <div style={inlineInputWrapperStyle}>
+                                        <input
+                                            id="animePopupHeightValue"
+                                            type="number"
+                                            step={popupHeightUnit === 'px' ? '10' : '1'}
+                                            min={popupHeightUnit === 'px' ? '200' : '20'}
+                                            max={popupHeightUnit === 'px' ? '1080' : '90'}
+                                            value={popupHeightValue}
+                                            onChange={(e) => handleChange(
+                                                popupHeightUnit === 'px' ? 'animePopupHeightPx' : 'animePopupHeightPercent',
+                                                parseInt(e.target.value, 10),
+                                            )}
+                                            style={inlineInputStyle}
+                                        />
+                                        <div style={inlineInputActionsStyle}>
+                                            <button
+                                                type="button"
+                                                onClick={() => handleChange('animePopupHeightUnit', 'percent')}
+                                                style={unitToggleStyle(popupHeightUnit === 'percent')}
+                                            >
+                                                %
+                                            </button>
+                                            <button
+                                                type="button"
+                                                onClick={() => handleChange('animePopupHeightUnit', 'px')}
+                                                style={unitToggleStyle(popupHeightUnit === 'px')}
+                                            >
+                                                px
+                                            </button>
+                                            <IconButton
+                                                size="small"
+                                                onClick={resetPopupHeight}
+                                                aria-label="Reset anime dictionary height"
+                                                style={{ padding: 4 }}
+                                            >
+                                                <RestartAltIcon fontSize="small" />
+                                            </IconButton>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                                    <label htmlFor="animePopupTopValue">Top Offset</label>
+                                    <div style={inlineInputWrapperStyle}>
+                                        <input
+                                            id="animePopupTopValue"
+                                            type="number"
+                                            step={popupTopUnit === 'px' ? '10' : '1'}
+                                            min={popupTopUnit === 'px' ? '0' : '0'}
+                                            max={popupTopUnit === 'px' ? '1600' : '80'}
+                                            value={popupTopValue}
+                                            onChange={(e) => handleChange(
+                                                popupTopUnit === 'px' ? 'animePopupTopOffsetPx' : 'animePopupTopOffsetPercent',
+                                                parseInt(e.target.value, 10),
+                                            )}
+                                            style={inlineInputStyle}
+                                        />
+                                        <div style={inlineInputActionsStyle}>
+                                            <button
+                                                type="button"
+                                                onClick={() => handleChange('animePopupTopOffsetUnit', 'percent')}
+                                                style={unitToggleStyle(popupTopUnit === 'percent')}
+                                            >
+                                                %
+                                            </button>
+                                            <button
+                                                type="button"
+                                                onClick={() => handleChange('animePopupTopOffsetUnit', 'px')}
+                                                style={unitToggleStyle(popupTopUnit === 'px')}
+                                            >
+                                                px
+                                            </button>
+                                            <IconButton
+                                                size="small"
+                                                onClick={resetPopupTop}
+                                                aria-label="Reset anime dictionary top offset"
+                                                style={{ padding: 4 }}
+                                            >
+                                                <RestartAltIcon fontSize="small" />
+                                            </IconButton>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                                    <label htmlFor="animePopupLeftValue">Horizontal Offset</label>
+                                    <div style={inlineInputWrapperStyle}>
+                                        <input
+                                            id="animePopupLeftValue"
+                                            type="number"
+                                            step={popupLeftUnit === 'px' ? '10' : '1'}
+                                            min={popupLeftUnit === 'px' ? '-1600' : '-50'}
+                                            max={popupLeftUnit === 'px' ? '1600' : '50'}
+                                            value={popupLeftValue}
+                                            onChange={(e) => handleChange(
+                                                popupLeftUnit === 'px' ? 'animePopupLeftOffsetPx' : 'animePopupLeftOffsetPercent',
+                                                parseInt(e.target.value, 10),
+                                            )}
+                                            style={inlineInputStyle}
+                                        />
+                                        <div style={inlineInputActionsStyle}>
+                                            <button
+                                                type="button"
+                                                onClick={() => handleChange('animePopupLeftOffsetUnit', 'percent')}
+                                                style={unitToggleStyle(popupLeftUnit === 'percent')}
+                                            >
+                                                %
+                                            </button>
+                                            <button
+                                                type="button"
+                                                onClick={() => handleChange('animePopupLeftOffsetUnit', 'px')}
+                                                style={unitToggleStyle(popupLeftUnit === 'px')}
+                                            >
+                                                px
+                                            </button>
+                                            <IconButton
+                                                size="small"
+                                                onClick={resetPopupLeft}
+                                                aria-label="Reset anime dictionary horizontal offset"
+                                                style={{ padding: 4 }}
+                                            >
+                                                <RestartAltIcon fontSize="small" />
+                                            </IconButton>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
-                            <label htmlFor="animePopupHeightPercent">Anime Dictionary Height (%)</label>
-                            <input
-                                id="animePopupHeightPercent"
-                                type="number"
-                                step="1"
-                                min="20"
-                                max="90"
-                                value={localSettings.animePopupHeightPercent}
-                                onChange={(e) => handleChange('animePopupHeightPercent', parseInt(e.target.value, 10))}
-                            />
                             <div style={{ gridColumn: '1 / -1', fontSize: '0.85em', color: '#aaa' }}>
-                                Controls how tall the anime popup dictionary is.
+                                Adjust the anime popup dictionary size and position. Each field has its own unit toggle and reset.
                             </div>
                             <label htmlFor="tapZonePercent">Video Tap Zone (%)</label>
                             <input
