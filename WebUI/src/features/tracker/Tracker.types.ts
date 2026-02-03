@@ -11,7 +11,7 @@ import {
     TrackRecordSearchFieldsFragment,
     TrackRecordType,
     TrackSearchType,
-} from '@/lib/graphql/generated/graphql.ts';
+} from '@/lib/requests/types.ts';
 
 export type MetadataTrackingSettings = {
     updateProgressAfterReading: boolean;

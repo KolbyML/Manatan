@@ -8,6 +8,7 @@ use std::{
     process::Stdio,
     sync::{
         Arc, Mutex,
+        atomic::{AtomicBool, Ordering},
         mpsc::{Receiver, Sender},
     },
     thread,
@@ -17,13 +18,8 @@ use std::{
 use anyhow::anyhow;
 use axum::{
     Router,
-    body::{Body, Bytes},
-    extract::{
-        FromRequestParts, Request, State,
-        ws::{Message, WebSocket, WebSocketUpgrade},
-    },
-    http::{HeaderMap, StatusCode, Uri},
-    response::{IntoResponse, Response},
+    http::{StatusCode, Uri},
+    response::IntoResponse,
     routing::any,
 };
 use clap::Parser;
@@ -32,7 +28,9 @@ use eframe::{
     egui::{self},
     icon_data,
 };
-use futures::{SinkExt, StreamExt, TryStreamExt};
+use manatan_server_public::{
+    app::build_router_without_cors, build_state, config::Config as ManatanServerConfig,
+};
 use reqwest::{
     Client, Method,
     header::{
@@ -44,13 +42,6 @@ use rust_embed::RustEmbed;
 use self_update::update::ReleaseUpdate;
 use serde::Serialize;
 use tokio::process::Command;
-use tokio_tungstenite::{
-    connect_async,
-    tungstenite::{
-        client::IntoClientRequest,
-        protocol::{Message as TungsteniteMessage, frame::coding::CloseCode},
-    },
-};
 use tower_http::cors::{AllowOrigin, CorsLayer};
 use tracing::{error, info, warn};
 use tracing_subscriber::EnvFilter;
@@ -66,6 +57,9 @@ const REPO_NAME: &str = "Manatan";
 const LEGACY_REPO_NAME: &str = "Mangatan";
 const LEGACY_DATA_DIR_NAME: &str = "mangatan";
 const BIN_NAME: &str = "manatan";
+const SUWAYOMI_HOST: &str = "127.0.0.1";
+const SUWAYOMI_PORT: u16 = 4566;
+const SUWAYOMI_HTTP_BASE_URL: &str = "http://127.0.0.1:4566";
 
 static ICON_BYTES: &[u8] = include_bytes!("../resources/faviconlogo.png");
 static JAR_BYTES: &[u8] = include_bytes!("../resources/Suwayomi-Server.jar");
@@ -205,6 +199,273 @@ fn migrate_legacy_data_dir(legacy_dir: &Path, new_dir: &Path) -> PathBuf {
     }
 }
 
+fn migrate_suwayomi_extensions(data_dir: &Path) {
+    let base_dirs = match BaseDirs::new() {
+        Some(base_dirs) => base_dirs,
+        None => return,
+    };
+
+    let legacy_extensions_dir = base_dirs
+        .data_local_dir()
+        .join("Tachidesk")
+        .join("extensions");
+    if !legacy_extensions_dir.exists() {
+        return;
+    }
+
+    let new_extensions_dir = data_dir.join("extensions");
+    if new_extensions_dir.exists() && !is_dir_empty(&new_extensions_dir) {
+        info!(
+            "Manatan extensions already present at {}. Skipping Suwayomi extension migration.",
+            new_extensions_dir.display()
+        );
+        return;
+    }
+
+    if new_extensions_dir.exists() && is_dir_empty(&new_extensions_dir) {
+        if let Err(err) = fs::remove_dir_all(&new_extensions_dir) {
+            warn!(
+                "Failed to remove empty extensions dir {}: {err}",
+                new_extensions_dir.display()
+            );
+        }
+    }
+
+    if let Some(parent) = new_extensions_dir.parent() {
+        if let Err(err) = fs::create_dir_all(parent) {
+            warn!(
+                "Failed to create extensions parent dir {}: {err}",
+                parent.display()
+            );
+        }
+    }
+
+    match fs::rename(&legacy_extensions_dir, &new_extensions_dir) {
+        Ok(()) => {
+            info!(
+                "Moved Suwayomi extensions from {} to {}",
+                legacy_extensions_dir.display(),
+                new_extensions_dir.display()
+            );
+        }
+        Err(err) => {
+            warn!(
+                "Failed to move Suwayomi extensions ({} -> {}): {err}. Falling back to copy.",
+                legacy_extensions_dir.display(),
+                new_extensions_dir.display()
+            );
+            match copy_dir_recursive(&legacy_extensions_dir, &new_extensions_dir) {
+                Ok(()) => {
+                    info!(
+                        "Copied Suwayomi extensions from {} to {}",
+                        legacy_extensions_dir.display(),
+                        new_extensions_dir.display()
+                    );
+                    if let Err(remove_err) = fs::remove_dir_all(&legacy_extensions_dir) {
+                        warn!(
+                            "Failed to remove legacy extensions dir {}: {remove_err}",
+                            legacy_extensions_dir.display()
+                        );
+                    }
+                }
+                Err(copy_err) => {
+                    warn!(
+                        "Failed to copy Suwayomi extensions ({} -> {}): {copy_err}",
+                        legacy_extensions_dir.display(),
+                        new_extensions_dir.display()
+                    );
+                }
+            }
+        }
+    }
+}
+
+fn migrate_suwayomi_database(data_dir: &Path) {
+    let base_dirs = match BaseDirs::new() {
+        Some(base_dirs) => base_dirs,
+        None => return,
+    };
+
+    let legacy_dir = base_dirs.data_local_dir().join("Tachidesk");
+    let legacy_mv = legacy_dir.join("database.mv.db");
+    let legacy_h2 = legacy_dir.join("database.h2.db");
+    if !legacy_mv.exists() && !legacy_h2.exists() {
+        return;
+    }
+
+    let new_mv = data_dir.join("database.mv.db");
+    let new_h2 = data_dir.join("database.h2.db");
+    if new_mv.exists() || new_h2.exists() {
+        info!(
+            "Manatan database already present at {}. Skipping Suwayomi database migration.",
+            data_dir.display()
+        );
+        return;
+    }
+
+    if let Err(err) = fs::create_dir_all(data_dir) {
+        warn!("Failed to create data dir {}: {err}", data_dir.display());
+        return;
+    }
+
+    for (legacy, new_path) in [(legacy_mv, new_mv), (legacy_h2, new_h2)] {
+        if !legacy.exists() {
+            continue;
+        }
+        match fs::rename(&legacy, &new_path) {
+            Ok(()) => {
+                info!(
+                    "Moved Suwayomi database file from {} to {}",
+                    legacy.display(),
+                    new_path.display()
+                );
+            }
+            Err(err) => {
+                warn!(
+                    "Failed to move Suwayomi database file ({} -> {}): {err}. Falling back to copy.",
+                    legacy.display(),
+                    new_path.display()
+                );
+                match fs::copy(&legacy, &new_path) {
+                    Ok(_) => {
+                        info!(
+                            "Copied Suwayomi database file from {} to {}",
+                            legacy.display(),
+                            new_path.display()
+                        );
+                        if let Err(remove_err) = fs::remove_file(&legacy) {
+                            warn!(
+                                "Failed to remove legacy database file {}: {remove_err}",
+                                legacy.display()
+                            );
+                        }
+                    }
+                    Err(copy_err) => {
+                        warn!(
+                            "Failed to copy Suwayomi database file ({} -> {}): {copy_err}",
+                            legacy.display(),
+                            new_path.display()
+                        );
+                    }
+                }
+            }
+        }
+    }
+}
+
+fn migrate_suwayomi_settings(data_dir: &Path) {
+    let base_dirs = match BaseDirs::new() {
+        Some(base_dirs) => base_dirs,
+        None => return,
+    };
+
+    let legacy_settings_dir = base_dirs
+        .data_local_dir()
+        .join("Tachidesk")
+        .join("settings");
+    if !legacy_settings_dir.exists() {
+        return;
+    }
+
+    let new_settings_dir = data_dir.join("settings");
+    if new_settings_dir.exists() && !is_dir_empty(&new_settings_dir) {
+        if let Err(err) = copy_missing_settings_files(&legacy_settings_dir, &new_settings_dir) {
+            warn!(
+                "Failed to merge Suwayomi settings ({} -> {}): {err}",
+                legacy_settings_dir.display(),
+                new_settings_dir.display()
+            );
+        } else {
+            info!(
+                "Merged Suwayomi settings into {}",
+                new_settings_dir.display()
+            );
+        }
+        return;
+    }
+
+    if new_settings_dir.exists() && is_dir_empty(&new_settings_dir) {
+        if let Err(err) = fs::remove_dir_all(&new_settings_dir) {
+            warn!(
+                "Failed to remove empty settings dir {}: {err}",
+                new_settings_dir.display()
+            );
+        }
+    }
+
+    if let Some(parent) = new_settings_dir.parent() {
+        if let Err(err) = fs::create_dir_all(parent) {
+            warn!(
+                "Failed to create settings parent dir {}: {err}",
+                parent.display()
+            );
+        }
+    }
+
+    match fs::rename(&legacy_settings_dir, &new_settings_dir) {
+        Ok(()) => {
+            info!(
+                "Moved Suwayomi settings from {} to {}",
+                legacy_settings_dir.display(),
+                new_settings_dir.display()
+            );
+        }
+        Err(err) => {
+            warn!(
+                "Failed to move Suwayomi settings ({} -> {}): {err}. Falling back to copy.",
+                legacy_settings_dir.display(),
+                new_settings_dir.display()
+            );
+            match copy_dir_recursive(&legacy_settings_dir, &new_settings_dir) {
+                Ok(()) => {
+                    info!(
+                        "Copied Suwayomi settings from {} to {}",
+                        legacy_settings_dir.display(),
+                        new_settings_dir.display()
+                    );
+                    if let Err(remove_err) = fs::remove_dir_all(&legacy_settings_dir) {
+                        warn!(
+                            "Failed to remove legacy settings dir {}: {remove_err}",
+                            legacy_settings_dir.display()
+                        );
+                    }
+                }
+                Err(copy_err) => {
+                    warn!(
+                        "Failed to copy Suwayomi settings ({} -> {}): {copy_err}",
+                        legacy_settings_dir.display(),
+                        new_settings_dir.display()
+                    );
+                }
+            }
+        }
+    }
+}
+
+fn copy_missing_settings_files(source: &Path, dest: &Path) -> Result<(), std::io::Error> {
+    if !source.exists() || !source.is_dir() {
+        return Ok(());
+    }
+    if !dest.exists() {
+        fs::create_dir_all(dest)?;
+    }
+    for entry in fs::read_dir(source)? {
+        let entry = entry?;
+        let source_path = entry.path();
+        let file_name = entry.file_name();
+        let dest_path = dest.join(file_name);
+        if source_path.is_dir() {
+            copy_missing_settings_files(&source_path, &dest_path)?;
+            continue;
+        }
+        if dest_path.exists() {
+            continue;
+        }
+        fs::copy(&source_path, &dest_path)?;
+    }
+    Ok(())
+}
+
 fn copy_dir_recursive(src: &Path, dst: &Path) -> std::io::Result<()> {
     if !dst.exists() {
         fs::create_dir_all(dst)?;
@@ -234,6 +495,10 @@ fn is_dir_empty(path: &Path) -> bool {
 }
 
 fn main() -> eframe::Result<()> {
+    if manatan_server_public::cef_app::try_handle_subprocess() {
+        return Ok(());
+    }
+
     let args = Cli::parse();
 
     let rust_log = env::var(EnvFilter::DEFAULT_ENV).unwrap_or_default();
@@ -263,17 +528,9 @@ fn main() -> eframe::Result<()> {
 
             let (shutdown_tx, shutdown_rx) = tokio::sync::mpsc::channel::<()>(1);
             tokio::spawn(async move {
-                match tokio::signal::ctrl_c().await {
-                    Ok(()) => {
-                        info!("🛑 Received Ctrl+C, shutting down server...");
-
-                        let _ = shutdown_tx.send(()).await;
-                    }
-
-                    Err(err) => {
-                        error!("Unable to listen for shutdown signal: {}", err);
-                    }
-                }
+                wait_for_shutdown_signal().await;
+                info!("🛑 Shutdown signal received, shutting down server...");
+                let _ = shutdown_tx.send(()).await;
             });
 
             if let Err(err) = run_server(shutdown_rx, &server_data_dir, host, port).await {
@@ -286,20 +543,33 @@ fn main() -> eframe::Result<()> {
 
     let (shutdown_tx, shutdown_rx) = tokio::sync::mpsc::channel::<()>(1);
     let (server_stopped_tx, server_stopped_rx) = std::sync::mpsc::channel::<()>();
+    let shutdown_requested = Arc::new(AtomicBool::new(false));
 
     let thread_host = host.clone();
     thread::spawn(move || {
         let rt = tokio::runtime::Runtime::new().expect("Failed to create Tokio runtime");
         rt.block_on(async {
-            let h = thread_host.clone();
-            tokio::spawn(async move { open_webpage_when_ready(h, port).await });
             let _guard = ServerGuard {
                 tx: server_stopped_tx,
             };
 
+            let h = thread_host.clone();
+            tokio::spawn(async move { open_webpage_when_ready(h, port).await });
+
             if let Err(err) = run_server(shutdown_rx, &server_data_dir, thread_host, port).await {
                 error!("Server crashed: {err}");
             }
+        });
+    });
+
+    let signal_shutdown_flag = Arc::clone(&shutdown_requested);
+    let signal_shutdown_tx = shutdown_tx.clone();
+    thread::spawn(move || {
+        let rt = tokio::runtime::Runtime::new().expect("Failed to create Tokio runtime");
+        rt.block_on(async move {
+            wait_for_shutdown_signal().await;
+            signal_shutdown_flag.store(true, Ordering::SeqCst);
+            let _ = signal_shutdown_tx.send(()).await;
         });
     });
 
@@ -323,6 +593,7 @@ fn main() -> eframe::Result<()> {
                 shutdown_tx,
                 server_stopped_rx,
                 gui_data_dir,
+                shutdown_requested,
                 host.clone(),
                 port,
             )))
@@ -354,6 +625,7 @@ struct MyApp {
     is_shutting_down: bool,
     data_dir: PathBuf,
     update_status: Arc<Mutex<UpdateStatus>>,
+    shutdown_requested: Arc<AtomicBool>,
     host: Ipv4Addr,
     port: u16,
 }
@@ -363,6 +635,7 @@ impl MyApp {
         shutdown_tx: tokio::sync::mpsc::Sender<()>,
         server_stopped_rx: Receiver<()>,
         data_dir: PathBuf,
+        shutdown_requested: Arc<AtomicBool>,
         host: Ipv4Addr,
         port: u16,
     ) -> Self {
@@ -383,8 +656,17 @@ impl MyApp {
             is_shutting_down: false,
             data_dir,
             update_status,
+            shutdown_requested,
             host,
             port,
+        }
+    }
+
+    fn begin_shutdown(&mut self, message: &str) {
+        if !self.is_shutting_down {
+            self.is_shutting_down = true;
+            tracing::info!("{message} Signaling server to stop...");
+            let _ = self.shutdown_tx.try_send(());
         }
     }
 
@@ -407,13 +689,13 @@ impl MyApp {
 
 impl eframe::App for MyApp {
     fn update(&mut self, ctx: &egui::Context, _frame: &mut eframe::Frame) {
+        if self.shutdown_requested.load(Ordering::SeqCst) {
+            self.begin_shutdown("🛑 Shutdown signal received.");
+        }
+
         // Handle window close requests
         if ctx.input(|i| i.viewport().close_requested()) {
-            if !self.is_shutting_down {
-                self.is_shutting_down = true;
-                tracing::info!("❌ Close requested. Signaling server to stop...");
-                let _ = self.shutdown_tx.try_send(());
-            }
+            self.begin_shutdown("❌ Close requested.");
             ctx.send_viewport_cmd(egui::ViewportCommand::CancelClose);
         }
 
@@ -619,6 +901,15 @@ async fn run_server(
     if !data_dir.exists() {
         fs::create_dir_all(data_dir).map_err(|err| anyhow!("Failed to create data dir {err:?}"))?;
     }
+    let local_manga_dir = data_dir.join("local-manga");
+    if !local_manga_dir.exists() {
+        if let Err(err) = fs::create_dir_all(&local_manga_dir) {
+            warn!(
+                "Failed to create local manga dir {}: {err}",
+                local_manga_dir.display()
+            );
+        }
+    }
     let local_anime_dir = data_dir.join("local-anime");
     if !local_anime_dir.exists() {
         if let Err(err) = fs::create_dir_all(&local_anime_dir) {
@@ -632,6 +923,10 @@ async fn run_server(
     if !bin_dir.exists() {
         fs::create_dir_all(&bin_dir).map_err(|err| anyhow!("Failed to create bin dir {err:?}"))?;
     }
+
+    migrate_suwayomi_extensions(data_dir);
+    migrate_suwayomi_database(data_dir);
+    migrate_suwayomi_settings(data_dir);
 
     info!("📦 Extracting assets...");
     let jar_name = "Suwayomi-Server.jar";
@@ -661,11 +956,47 @@ async fn run_server(
         .unwrap_or(data_dir);
 
     info!("☕ Spawning Suwayomi...");
+    let manatan_db_path = env::var("MANATAN_DB_PATH").unwrap_or_else(|_| {
+        data_dir
+            .join("manatan.sqlite")
+            .to_string_lossy()
+            .to_string()
+    });
+    let manatan_migrate_path = env::var("MANATAN_MIGRATE_PATH").ok();
+    let migration_marker = format!("{}.migrated", manatan_db_path);
+    let runtime_only = env::var("MANATAN_RUNTIME_ONLY")
+        .map(|value| value == "true")
+        .unwrap_or(true);
+    if runtime_only {
+        info!("Suwayomi runtime-only mode enabled");
+    }
+
+    let suwayomi_pid_path = data_dir.join("suwayomi.pid");
+    cleanup_orphan_suwayomi(&suwayomi_pid_path);
+
     let mut suwayomi_proc = Command::new(&java_exec)
         .current_dir(data_dir)
         .env("JAVA_HOME", java_home)
+        .env(
+            "SUWAYOMI_RUNTIME_ONLY",
+            if runtime_only { "true" } else { "false" },
+        )
         .arg("-Dsuwayomi.tachidesk.config.server.initialOpenInBrowserEnabled=false")
         .arg("-Dsuwayomi.tachidesk.config.server.webUIEnabled=false")
+        .arg("-Dsuwayomi.tachidesk.config.server.enableCookieApi=true")
+        .arg(format!("-Dsuwayomi.runtimeOnly={}", runtime_only))
+        .arg(format!(
+            "-Dsuwayomi.tachidesk.config.server.rootDir={}",
+            data_dir.display()
+        ))
+        .arg(format!(
+            "-Dsuwayomi.tachidesk.config.server.ip={}",
+            SUWAYOMI_HOST
+        ))
+        .arg(format!(
+            "-Dsuwayomi.tachidesk.config.server.port={}",
+            SUWAYOMI_PORT
+        ))
         .arg(format!(
             "-Dsuwayomi.tachidesk.config.server.localAnimeSourcePath={}",
             local_anime_dir.display()
@@ -681,6 +1012,72 @@ async fn run_server(
         .stderr(Stdio::inherit())
         .spawn()
         .map_err(|err| anyhow!("Failed to launch suwayomi {err:?}"))?;
+
+    if let Some(pid) = suwayomi_proc.id() {
+        if let Err(err) = fs::write(&suwayomi_pid_path, pid.to_string()) {
+            warn!(
+                "Failed to write Suwayomi pid file {}: {err}",
+                suwayomi_pid_path.display()
+            );
+        }
+    } else {
+        warn!(
+            "Suwayomi PID unavailable; skipping pid file at {}",
+            suwayomi_pid_path.display()
+        );
+    }
+
+    let manatan_runtime_url =
+        env::var("MANATAN_JAVA_URL").unwrap_or_else(|_| SUWAYOMI_HTTP_BASE_URL.to_string());
+    let tracker_remote_search = env::var("MANATAN_TRACKER_REMOTE_SEARCH")
+        .ok()
+        .and_then(|value| match value.to_lowercase().as_str() {
+            "1" | "true" | "yes" | "on" => Some(true),
+            "0" | "false" | "no" | "off" => Some(false),
+            _ => None,
+        })
+        .unwrap_or(true);
+    let tracker_search_ttl_seconds = env::var("MANATAN_TRACKER_SEARCH_TTL_SECONDS")
+        .ok()
+        .and_then(|value| value.parse::<i64>().ok())
+        .unwrap_or(3600);
+    let downloads_path =
+        env::var("MANATAN_DOWNLOADS_PATH").unwrap_or_else(|_| "downloads".to_string());
+    let aidoku_index_url = env::var("MANATAN_AIDOKU_INDEX").unwrap_or_default();
+    let aidoku_enabled = env::var("MANATAN_AIDOKU_ENABLED")
+        .ok()
+        .and_then(|value| match value.to_lowercase().as_str() {
+            "1" | "true" | "yes" | "on" => Some(true),
+            "0" | "false" | "no" | "off" => Some(false),
+            _ => None,
+        })
+        .unwrap_or(true);
+    let aidoku_cache_path = env::var("MANATAN_AIDOKU_CACHE")
+        .unwrap_or_else(|_| data_dir.join("aidoku").to_string_lossy().to_string());
+    let local_manga_path = env::var("MANATAN_LOCAL_MANGA_PATH")
+        .unwrap_or_else(|_| data_dir.join("local-manga").to_string_lossy().to_string());
+    let local_anime_path = env::var("MANATAN_LOCAL_ANIME_PATH")
+        .unwrap_or_else(|_| local_anime_dir.to_string_lossy().to_string());
+    let manatan_config = ManatanServerConfig {
+        host: host.to_string(),
+        port,
+        java_runtime_url: manatan_runtime_url,
+        webview_enabled: true,
+        aidoku_index_url,
+        aidoku_enabled,
+        aidoku_cache_path,
+        db_path: manatan_db_path,
+        migrate_path: manatan_migrate_path,
+        tracker_remote_search,
+        tracker_search_ttl_seconds,
+        downloads_path,
+        local_manga_path,
+        local_anime_path,
+    };
+    let manatan_state = build_state(manatan_config)
+        .await
+        .map_err(|err| anyhow!("Failed to init Manatan server: {err}"))?;
+    let manatan_router = build_router_without_cors(manatan_state);
 
     info!("🌍 Starting Web Interface at http://{}:{}", host, port);
 
@@ -710,16 +1107,12 @@ async fn run_server(
         ])
         .allow_credentials(true);
 
-    let proxy_router = Router::new()
-        .route("/api/{*path}", any(proxy_suwayomi_handler))
-        .with_state(client);
-
     let app = Router::new()
         .nest("/api/ocr", ocr_router)
         .nest("/api/yomitan", yomitan_router)
         .nest("/api/audio", audio_router)
         .nest("/api/system", system_router)
-        .merge(proxy_router)
+        .merge(manatan_router)
         .fallback(serve_react_app)
         .layer(cors);
 
@@ -746,243 +1139,10 @@ async fn run_server(
         error!("Error killing Suwayomi: {err}");
     }
     let _ = suwayomi_proc.wait().await;
+    let _ = fs::remove_file(&suwayomi_pid_path);
     info!("   Suwayomi terminated.");
 
     Ok(())
-}
-
-async fn proxy_suwayomi_handler(State(client): State<Client>, req: Request) -> Response {
-    let (mut parts, body) = req.into_parts();
-
-    let is_ws = parts
-        .headers
-        .get("upgrade")
-        .and_then(|v| v.to_str().ok())
-        .map(|v| v.eq_ignore_ascii_case("websocket"))
-        .unwrap_or(false);
-
-    if is_ws {
-        let path_query = parts
-            .uri
-            .path_and_query()
-            .map(|v| v.as_str())
-            .unwrap_or(parts.uri.path());
-        let backend_url = format!("ws://127.0.0.1:4567{path_query}");
-        let headers = parts.headers.clone();
-
-        let protocols: Vec<String> = parts
-            .headers
-            .get("sec-websocket-protocol")
-            .and_then(|v| v.to_str().ok())
-            .map(|v| v.split(',').map(|s| s.trim().to_string()).collect())
-            .unwrap_or_default();
-
-        match WebSocketUpgrade::from_request_parts(&mut parts, &()).await {
-            Ok(ws) => {
-                // FIX 2: Tell Axum to accept these protocols in the handshake
-                return ws
-                    .protocols(protocols)
-                    .on_upgrade(move |socket| handle_socket(socket, headers, backend_url))
-                    .into_response();
-            }
-            Err(err) => {
-                return err.into_response();
-            }
-        }
-    }
-
-    let req = Request::from_parts(parts, body);
-    proxy_request(client, req, "http://127.0.0.1:4567", "").await
-}
-
-pub async fn ws_proxy_handler(
-    ws: WebSocketUpgrade,
-    headers: HeaderMap,
-    uri: Uri,
-) -> impl IntoResponse {
-    let path_query = uri
-        .path_and_query()
-        .map(|v| v.as_str())
-        .unwrap_or(uri.path());
-    let backend_url = format!("ws://127.0.0.1:4567{path_query}");
-
-    // FIX 3: Apply the same protocol logic to the direct handler if used
-    let protocols: Vec<String> = headers
-        .get("sec-websocket-protocol")
-        .and_then(|v| v.to_str().ok())
-        .map(|v| v.split(',').map(|s| s.trim().to_string()).collect())
-        .unwrap_or_default();
-
-    ws.protocols(protocols)
-        .on_upgrade(move |socket| handle_socket(socket, headers, backend_url))
-}
-
-async fn handle_socket(client_socket: WebSocket, headers: HeaderMap, backend_url: String) {
-    let mut request = match backend_url.clone().into_client_request() {
-        Ok(req) => req,
-        Err(e) => {
-            error!("Invalid backend URL {}: {}", backend_url, e);
-            return;
-        }
-    };
-
-    let headers_to_forward = [
-        "cookie",
-        "authorization",
-        "user-agent",
-        "sec-websocket-protocol",
-        "origin",
-    ];
-    for &name in &headers_to_forward {
-        if let Some(value) = headers.get(name) {
-            request.headers_mut().insert(name, value.clone());
-        }
-    }
-
-    let (backend_socket, _) = match connect_async(request).await {
-        Ok(conn) => conn,
-        Err(e) => {
-            error!(
-                "Failed to connect to backend WebSocket at {}: {}",
-                backend_url, e
-            );
-            return;
-        }
-    };
-
-    let (mut client_sender, mut client_receiver) = client_socket.split();
-    let (mut backend_sender, mut backend_receiver) = backend_socket.split();
-
-    loop {
-        tokio::select! {
-            msg = client_receiver.next() => {
-                match msg {
-                    Some(Ok(msg)) => {
-                        if let Some(t_msg) = axum_to_tungstenite(msg) && backend_sender.send(t_msg).await.is_err() { break; }
-                    }
-                    Some(Err(e)) => {
-                        // FIX 4: Filter out noisy "ConnectionReset" logs
-                        if is_connection_reset(&e) {
-                            warn!("Client disconnected (reset): {}", e);
-                        } else {
-                            warn!("Client WebSocket error: {}", e);
-                        }
-                        break;
-                    }
-                    None => break,
-                }
-            }
-            msg = backend_receiver.next() => {
-                match msg {
-                    Some(Ok(msg)) => {
-                        let a_msg = tungstenite_to_axum(msg);
-                        if client_sender.send(a_msg).await.is_err() { break; }
-                    }
-                    Some(Err(e)) => {
-                         warn!("Backend WebSocket error: {}", e);
-                         break;
-                    }
-                    None => break,
-                }
-            }
-        }
-    }
-}
-
-// Helper to identify benign reset errors
-fn is_connection_reset(err: &axum::Error) -> bool {
-    let s = err.to_string();
-    s.contains("Connection reset")
-        || s.contains("broken pipe")
-        || s.contains("without closing handshake")
-}
-
-// ... (Converters and other functions remain the same) ...
-fn axum_to_tungstenite(msg: Message) -> Option<TungsteniteMessage> {
-    match msg {
-        Message::Text(t) => Some(TungsteniteMessage::Text(t.as_str().into())),
-        Message::Binary(b) => Some(TungsteniteMessage::Binary(b)),
-        Message::Ping(p) => Some(TungsteniteMessage::Ping(p)),
-        Message::Pong(p) => Some(TungsteniteMessage::Pong(p)),
-        Message::Close(c) => {
-            let frame = c.map(|cf| tokio_tungstenite::tungstenite::protocol::CloseFrame {
-                code: CloseCode::from(cf.code),
-                reason: cf.reason.as_str().into(),
-            });
-            Some(TungsteniteMessage::Close(frame))
-        }
-    }
-}
-
-fn tungstenite_to_axum(msg: TungsteniteMessage) -> Message {
-    match msg {
-        TungsteniteMessage::Text(t) => Message::Text(t.as_str().into()),
-        TungsteniteMessage::Binary(b) => Message::Binary(b),
-        TungsteniteMessage::Ping(p) => Message::Ping(p),
-        TungsteniteMessage::Pong(p) => Message::Pong(p),
-        TungsteniteMessage::Close(c) => {
-            let frame = c.map(|cf| axum::extract::ws::CloseFrame {
-                code: u16::from(cf.code),
-                reason: cf.reason.as_str().into(),
-            });
-            Message::Close(frame)
-        }
-        TungsteniteMessage::Frame(_) => Message::Binary(Bytes::new()),
-    }
-}
-
-async fn proxy_request(
-    client: Client,
-    req: Request,
-    base_url: &str,
-    strip_prefix: &str,
-) -> Response {
-    let path_query = req
-        .uri()
-        .path_and_query()
-        .map(|v| v.as_str())
-        .unwrap_or(req.uri().path());
-
-    let target_path = if !strip_prefix.is_empty() && path_query.starts_with(strip_prefix) {
-        &path_query[strip_prefix.len()..]
-    } else {
-        path_query
-    };
-
-    let target_url = format!("{base_url}{target_path}");
-
-    let method = req.method().clone();
-    let headers = req.headers().clone();
-    let body = reqwest::Body::wrap_stream(req.into_body().into_data_stream());
-
-    let mut builder = client.request(method, &target_url).body(body);
-
-    for (key, value) in headers.iter() {
-        if key.as_str() != "host" {
-            builder = builder.header(key, value);
-        }
-    }
-
-    match builder.send().await {
-        Ok(resp) => {
-            let status = resp.status();
-            let mut response_builder = Response::builder().status(status);
-            for (key, value) in resp.headers() {
-                response_builder = response_builder.header(key, value);
-            }
-            let stream = resp.bytes_stream().map_err(std::io::Error::other);
-            response_builder
-                .body(Body::from_stream(stream))
-                .expect("Failed to build proxied response")
-        }
-        Err(err) => {
-            info!("Proxy Error to {target_url}: {err}");
-            Response::builder()
-                .status(StatusCode::BAD_GATEWAY)
-                .body(Body::empty())
-                .expect("Failed to build error response")
-        }
-    }
 }
 
 async fn serve_react_app(uri: Uri) -> impl IntoResponse {
@@ -1034,6 +1194,88 @@ fn get_asset_target_string() -> &'static str {
         #[cfg(target_arch = "x86_64")]
         return "Linux-amd64.tar";
     }
+}
+
+fn cleanup_orphan_suwayomi(pid_path: &Path) {
+    let Some(pid) = read_pid_file(pid_path) else {
+        return;
+    };
+
+    #[cfg(unix)]
+    {
+        if !is_suwayomi_process(pid) {
+            warn!(
+                "Stale pid file {} does not match Suwayomi process; removing.",
+                pid_path.display()
+            );
+            let _ = fs::remove_file(pid_path);
+            return;
+        }
+
+        if !is_process_alive(pid) {
+            let _ = fs::remove_file(pid_path);
+            return;
+        }
+
+        info!("Found leftover Suwayomi process (pid {pid}). Shutting it down...");
+        terminate_process(pid, Duration::from_secs(5));
+        let _ = fs::remove_file(pid_path);
+    }
+
+    #[cfg(not(unix))]
+    {
+        let _ = pid;
+        let _ = fs::remove_file(pid_path);
+    }
+}
+
+fn read_pid_file(pid_path: &Path) -> Option<i32> {
+    let contents = fs::read_to_string(pid_path).ok()?;
+    let trimmed = contents.trim();
+    if trimmed.is_empty() {
+        let _ = fs::remove_file(pid_path);
+        return None;
+    }
+    match trimmed.parse::<i32>() {
+        Ok(pid) => Some(pid),
+        Err(_) => {
+            let _ = fs::remove_file(pid_path);
+            None
+        }
+    }
+}
+
+#[cfg(unix)]
+fn is_process_alive(pid: i32) -> bool {
+    let result = unsafe { libc::kill(pid, 0) };
+    if result == 0 {
+        return true;
+    }
+    let err = std::io::Error::last_os_error();
+    err.raw_os_error() == Some(libc::EPERM)
+}
+
+#[cfg(unix)]
+fn is_suwayomi_process(pid: i32) -> bool {
+    let cmdline_path = format!("/proc/{pid}/cmdline");
+    let Ok(bytes) = fs::read(cmdline_path) else {
+        return false;
+    };
+    let text = String::from_utf8_lossy(&bytes).replace('\0', " ");
+    text.contains("Suwayomi-Server.jar")
+}
+
+#[cfg(unix)]
+fn terminate_process(pid: i32, timeout: Duration) {
+    let _ = unsafe { libc::kill(pid, libc::SIGTERM) };
+    let start = std::time::Instant::now();
+    while start.elapsed() < timeout {
+        if !is_process_alive(pid) {
+            return;
+        }
+        thread::sleep(Duration::from_millis(100));
+    }
+    let _ = unsafe { libc::kill(pid, libc::SIGKILL) };
 }
 
 fn check_for_updates(status: Arc<Mutex<UpdateStatus>>) {
@@ -1162,7 +1404,6 @@ fn build_updater_with_download(
 
 async fn open_webpage_when_ready(host: Ipv4Addr, port: u16) {
     let client = Client::new();
-    let query_payload = r#"{"query": "query AllCategories { categories { nodes { mangas { nodes { title } } } } }"}"#;
 
     let host_target = if host == Ipv4Addr::new(0, 0, 0, 0) {
         "localhost".to_string()
@@ -1170,21 +1411,15 @@ async fn open_webpage_when_ready(host: Ipv4Addr, port: u16) {
         host.to_string()
     };
     let url = format!("http://{host_target}:{port}");
+    let health_url = format!("http://{host_target}:{port}/health");
 
-    info!("⏳ Polling GraphQL endpoint for readiness (timeout 10s)...");
+    info!("⏳ Polling health endpoint for readiness (timeout 10s)...");
 
     // Define the polling task
     let polling_task = async {
         loop {
-            let request = client
-                .post("http://127.0.0.1:4567/api/graphql")
-                .header("Content-Type", "application/json")
-                .body(query_payload);
-
-            match request.send().await {
-                Ok(resp)
-                    if resp.status().is_success() || resp.status() == StatusCode::UNAUTHORIZED =>
-                {
+            match client.get(&health_url).send().await {
+                Ok(resp) if resp.status().is_success() => {
                     info!("✅ Server is responsive! Opening browser...");
                     if let Err(e) = open::that(&url) {
                         error!("❌ Failed to open browser: {}", e);
@@ -1192,7 +1427,7 @@ async fn open_webpage_when_ready(host: Ipv4Addr, port: u16) {
                     return;
                 }
                 err => {
-                    warn!("Failed to poll graphql to open webpage: {err:?}");
+                    warn!("Failed to poll health to open webpage: {err:?}");
                     tokio::time::sleep(Duration::from_millis(500)).await;
                 }
             }
@@ -1204,6 +1439,30 @@ async fn open_webpage_when_ready(host: Ipv4Addr, port: u16) {
         .is_err()
     {
         error!("❌ Timed out waiting for server readiness (10s). Browser open cancelled.");
+    }
+}
+
+async fn wait_for_shutdown_signal() {
+    #[cfg(unix)]
+    {
+        use tokio::signal::unix::{SignalKind, signal};
+
+        let mut sigterm = signal(SignalKind::terminate()).ok();
+        tokio::select! {
+            _ = tokio::signal::ctrl_c() => {},
+            _ = async {
+                if let Some(sigterm) = &mut sigterm {
+                    sigterm.recv().await;
+                } else {
+                    std::future::pending::<()>().await;
+                }
+            } => {},
+        }
+    }
+
+    #[cfg(not(unix))]
+    {
+        let _ = tokio::signal::ctrl_c().await;
     }
 }
 

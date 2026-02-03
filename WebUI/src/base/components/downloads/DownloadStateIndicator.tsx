@@ -10,7 +10,7 @@ import CircularProgress from '@mui/material/CircularProgress';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import { useTranslation } from 'react-i18next';
-import { DownloadState } from '@/lib/graphql/generated/graphql.ts';
+import { DownloadState } from '@/lib/requests/types.ts';
 import { Chapters } from '@/features/chapter/services/Chapters.ts';
 import { ChapterIdInfo } from '@/features/chapter/Chapter.types.ts';
 import { TranslationKey } from '@/base/Base.types.ts';

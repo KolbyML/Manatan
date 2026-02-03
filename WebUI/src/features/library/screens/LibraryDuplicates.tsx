@@ -25,8 +25,6 @@ import { defaultPromiseErrorHandler } from '@/lib/DefaultPromiseErrorHandler.ts'
 import { MangaCard } from '@/features/manga/components/cards/MangaCard.tsx';
 import { StyledGroupedVirtuoso } from '@/base/components/virtuoso/StyledGroupedVirtuoso.tsx';
 import { StyledGroupHeader } from '@/base/components/virtuoso/StyledGroupHeader.tsx';
-import { GetMangasDuplicatesQuery, GetMangasDuplicatesQueryVariables } from '@/lib/graphql/generated/graphql.ts';
-import { GET_MANGAS_DUPLICATES } from '@/lib/graphql/manga/MangaQuery.ts';
 import { BaseMangaGrid } from '@/features/manga/components/BaseMangaGrid.tsx';
 import { IMangaGridProps } from '@/features/manga/components/MangaGrid.tsx';
 import { StyledGroupItemWrapper } from '@/base/components/virtuoso/StyledGroupItemWrapper.tsx';
@@ -71,10 +69,7 @@ export const LibraryDuplicates = () => {
         [t, gridLayout, checkAlternativeTitles],
     );
 
-    const { data, loading, error, refetch } = requestManager.useGetMangas<
-        GetMangasDuplicatesQuery,
-        GetMangasDuplicatesQueryVariables
-    >(GET_MANGAS_DUPLICATES, { condition: { inLibrary: true } });
+    const { data, loading, error, refetch } = requestManager.useGetMangasDuplicates();
 
     const [isCheckingForDuplicates, setIsCheckingForDuplicates] = useState(true);
 

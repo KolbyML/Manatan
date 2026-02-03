@@ -917,6 +917,8 @@ useEffect(() => {
         ? ((currentPage + 1) / totalPages) * 100
         : 0;
 
+    const handleUpdateSettings = onUpdateSettings ?? (() => {});
+
     return (
         <div
     ref={wrapperRef}
@@ -986,8 +988,8 @@ useEffect(() => {
                     theme={theme}
                     isVertical={isVertical}
                     mode="paged"
-                    currentPosition={currentPosition}
-                    bookStats={stats}
+                    currentPosition={currentPosition ?? undefined}
+                    bookStats={stats ?? undefined}
                     settings={settings}
                     onUpdateSettings={onUpdateSettings}
                     isSaved={isSaved}

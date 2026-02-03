@@ -408,6 +408,8 @@ const BaseReaderViewer = ({
                         <ReaderChapterViewer
                             key={chapter.id}
                             chapterId={chapter.id}
+                            mangaId={chapter.mangaId}
+                            chapterSourceOrder={chapter.sourceOrder}
                             previousChapterId={previousChapter?.id}
                             nextChapterId={nextChapter?.id}
                             isPreviousChapterVisible={previousNextChapterVisibility.previous}

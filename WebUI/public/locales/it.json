@@ -914,12 +914,6 @@
                 "log_level": {
                     "label": {
                         "server": "Abilita i log di debug"
-                    },
-                    "graphql": {
-                        "label": {
-                            "title": "Abilitare i log di debug di Graphql",
-                            "description": "Questo include i log con informazioni non sicure per la privacy"
-                        }
                     }
                 },
                 "title": "Varie",

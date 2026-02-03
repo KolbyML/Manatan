@@ -6,15 +6,12 @@
  * file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
 
-import gql from 'graphql-tag';
-import { KO_SYNC_STATUS } from '@/lib/graphql/koreader/KoreaderSyncFragments.ts';
+export class RequestError extends Error {
+    public readonly extraInfo?: unknown;
 
-export const GET_KO_SYNC_STATUS = gql`
-    ${KO_SYNC_STATUS}
-
-    query GET_KO_SYNC_STATUS {
-        koSyncStatus {
-            ...KO_SYNC_STATUS
-        }
+    constructor(message: string, extraInfo?: unknown) {
+        super(message);
+        this.name = 'RequestError';
+        this.extraInfo = extraInfo;
     }
-`;
+}

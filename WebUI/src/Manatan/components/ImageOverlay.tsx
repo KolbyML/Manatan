@@ -217,6 +217,13 @@ export const ImageOverlay: React.FC<{
             let url = `/api/ocr/ocr?url=${encodeURIComponent(img.src)}`;
             url += `&add_space_on_merge=${!isNoSpaceLanguage(settings.yomitanLanguage)}`;
             url += `&language=${encodeURIComponent(settings.yomitanLanguage)}`;
+            const mangaMatch = window.location.pathname.match(/\/manga\/(\d+)/);
+            const chapterMatch = window.location.pathname.match(/\/chapter\/(\d+)/);
+            if (mangaMatch && chapterMatch) {
+                const chapterPath = `/manga/${mangaMatch[1]}/chapter/${chapterMatch[1]}`;
+                const baseUrl = `${window.location.origin}/api/v1${chapterPath}/page/`;
+                url += `&base_url=${encodeURIComponent(baseUrl)}`;
+            }
             if (serverSettings?.authUsername?.trim() && serverSettings?.authPassword?.trim()) {
                 url += `&user=${encodeURIComponent(serverSettings.authUsername.trim())}`;
                 url += `&pass=${encodeURIComponent(serverSettings.authPassword.trim())}`;

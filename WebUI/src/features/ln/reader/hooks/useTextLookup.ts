@@ -210,7 +210,9 @@ export function useTextLookup() {
         const charAtOffset = text[charInfo.offset];
         if (!charAtOffset || /\s/.test(charAtOffset)) return false;
 
-        const { sentence, byteOffset } = getSentenceContext(charInfo.node, charInfo.offset);
+        const sentenceContext = getSentenceContext(charInfo.node, charInfo.offset);
+        if (!sentenceContext) return false;
+        const { sentence, byteOffset } = sentenceContext;
 
         if (!sentence.trim()) return false;
 

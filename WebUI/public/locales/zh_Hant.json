@@ -1011,12 +1011,6 @@
             },
             "misc": {
                 "log_level": {
-                    "graphql": {
-                        "label": {
-                            "description": "這包含非隱私安全資訊的日誌",
-                            "title": "啟用 graphql 除錯日誌"
-                        }
-                    },
                     "label": {
                         "server": "啟用除錯日誌"
                     }

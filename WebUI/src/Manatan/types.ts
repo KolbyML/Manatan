@@ -212,6 +212,8 @@ export interface DialogState {
     type: 'alert' | 'confirm' | 'progress';
     title?: string;
     message: React.ReactNode;
+    confirmText?: string;
+    cancelText?: string;
     onConfirm?: () => void;
     onCancel?: () => void;
     extraAction?: {

@@ -21,71 +21,14 @@ export interface AppVersionInfo {
     update_status?: 'idle' | 'downloading' | 'ready';
 }
 
-const MANGA_CHAPTERS_QUERY = `
-query MangaIdToChapterIDs($id: Int!) {
-  manga(id: $id) {
-    chapters {
-      nodes {
-        id
-        name
-        chapterNumber
-      }
-    }
-  }
-}
-`;
-
-const GRAPHQL_QUERY = `
-mutation GET_CHAPTER_PAGES_FETCH($input: FetchChapterPagesInput!) {
-  fetchChapterPages(input: $input) {
-    chapter {
-      id
-      pageCount
-    }
-    pages
-  }
-}
-`;
-
-const resolveChapterId = async (mangaId: number, chapterNumber: number): Promise<number> => {
-    const response = await fetch('/api/graphql', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-            operationName: "MangaIdToChapterIDs",
-            variables: { id: mangaId },
-            query: MANGA_CHAPTERS_QUERY
-        })
-    });
+const fetchChapterPages = async (mangaId: number, chapterIndex: number): Promise<string[] | undefined> => {
+    const response = await fetch(`/api/v1/manga/${mangaId}/chapter/${chapterIndex}/pages`);
     const json = await response.json();
-    
-    if (json.errors) {
-        console.error("GraphQL Errors:", json.errors);
-        throw new Error(`GraphQL Error: ${json.errors[0]?.message || 'Unknown error'}`);
-    }
-
-    const chapters = json.data?.manga?.chapters?.nodes;
-
-    if (!Array.isArray(chapters)) {
-        throw new Error("Failed to retrieve chapter list from GraphQL");
-    }
-
-    return parseInt(chapters[chapterNumber - 1].id, 10);
+    return json?.pages as string[] | undefined;
 };
 
-export const fetchChapterPagesGraphQL = async (chapterId: number) => {
-    const response = await fetch('/api/graphql', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-            operationName: "GET_CHAPTER_PAGES_FETCH",
-            variables: { input: { chapterId } },
-            query: GRAPHQL_QUERY
-        })
-    });
-    const json = await response.json();
-    return json.data?.fetchChapterPages?.pages as string[] | undefined;
-};
+export const buildChapterBaseUrl = (chapterPath: string): string =>
+    `${window.location.origin}/api/v1${chapterPath}/page/`;
 
 // --- SAFE API REQUEST WRAPPER ---
 export const apiRequest = async <T>(
@@ -193,11 +136,29 @@ export const checkChapterStatus = async (
             body: body
         });
         
+        const pickNumber = (value: any): number => {
+            if (typeof value === 'number' && !Number.isNaN(value)) return value;
+            if (typeof value === 'string') {
+                const parsed = Number(value);
+                if (!Number.isNaN(parsed)) return parsed;
+            }
+            return 0;
+        };
+
+        const cached = pickNumber(
+            res.cached_count ?? res.cachedCount ?? res.cached ?? res.cached_pages ?? res.cachedPages,
+        );
+        const totalExpected = pickNumber(
+            res.total_expected ?? res.totalExpected ?? res.total ?? res.total_pages ?? res.totalPages,
+        );
+        const progress = pickNumber(res.progress ?? res.processed ?? res.done ?? res.completed);
+        const totalProgress = pickNumber(res.total ?? res.total_pages ?? res.totalPages ?? res.total_expected);
+
         if (res.status === 'processing') {
             return { 
                 status: 'processing', 
-                progress: res.progress || 0, 
-                total: res.total || 0 
+                progress, 
+                total: totalProgress 
             };
         }
         
@@ -207,12 +168,71 @@ export const checkChapterStatus = async (
         
         return { 
             status: 'idle', 
-            cached: res.cached_count || 0, 
-            total: res.total_expected || 0 
+            cached, 
+            total: totalExpected 
         };
     } catch (e) {
         console.error("Failed to check chapter status", e);
         return { status: 'idle', cached: 0, total: 0 };
+    }
+};
+
+export const checkChaptersStatus = async (
+    baseUrls: string[],
+    creds?: AuthCredentials,
+    language?: YomitanLanguage
+): Promise<Record<string, ChapterStatus>> => {
+    try {
+        const body: any = {
+            chapters: baseUrls.map(baseUrl => ({ base_url: baseUrl })),
+        };
+        if (creds?.user) body.user = creds.user;
+        if (creds?.pass) body.pass = creds.pass;
+        if (language) body.language = language;
+
+        const res = await apiRequest<Record<string, any>>('/api/ocr/is-chapters-preprocessed', {
+            method: 'POST',
+            body,
+        });
+
+        const pickNumber = (value: any): number => {
+            if (typeof value === 'number' && !Number.isNaN(value)) return value;
+            if (typeof value === 'string') {
+                const parsed = Number(value);
+                if (!Number.isNaN(parsed)) return parsed;
+            }
+            return 0;
+        };
+
+        const out: Record<string, ChapterStatus> = {};
+        for (const baseUrl of baseUrls) {
+            const item = res?.[baseUrl];
+            if (!item) {
+                out[baseUrl] = { status: 'idle', cached: 0, total: 0 };
+                continue;
+            }
+            const cached = pickNumber(
+                item.cached_count ?? item.cachedCount ?? item.cached ?? item.cached_pages ?? item.cachedPages,
+            );
+            const totalExpected = pickNumber(
+                item.total_expected ?? item.totalExpected ?? item.total ?? item.total_pages ?? item.totalPages,
+            );
+            const progress = pickNumber(item.progress ?? item.processed ?? item.done ?? item.completed);
+            const totalProgress = pickNumber(item.total ?? item.total_pages ?? item.totalPages ?? item.total_expected);
+
+            if (item.status === 'processing') {
+                out[baseUrl] = { status: 'processing', progress, total: totalProgress };
+            } else if (item.status === 'processed') {
+                out[baseUrl] = { status: 'processed' };
+            } else {
+                out[baseUrl] = { status: 'idle', cached, total: totalExpected };
+            }
+        }
+
+        return out;
+    } catch (e) {
+        console.error('Failed to check chapters status', e);
+        return Object.fromEntries(baseUrls.map((baseUrl) => [baseUrl, { status: 'idle', cached: 0, total: 0 }]));
     }
 };
 
@@ -232,10 +252,9 @@ export const preprocessChapter = async (
     const mangaId = parseInt(mangaMatch[1], 10);
     const chapterNum = parseInt(chapterMatch[1], 10); 
 
-    const internalChapterId = await resolveChapterId(mangaId, chapterNum);
-    const pages = await fetchChapterPagesGraphQL(internalChapterId);
-    
-    if (!pages || pages.length === 0) throw new Error("No pages found via GraphQL");
+    const pages = await fetchChapterPages(mangaId, chapterNum);
+
+    if (!pages || pages.length === 0) throw new Error("No pages found via REST");
 
     const origin = window.location.origin;
     const absolutePages = pages.map(p => {

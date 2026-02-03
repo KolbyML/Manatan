@@ -17,8 +17,7 @@ import { makeToast } from '@/base/utils/Toast.ts';
 import { TrackManga } from '@/features/tracker/components/TrackManga.tsx';
 import { Trackers } from '@/features/tracker/services/Trackers.ts';
 import { CustomButton } from '@/base/components/buttons/CustomButton.tsx';
-import { GetTrackersSettingsQuery, MangaType } from '@/lib/graphql/generated/graphql.ts';
-import { GET_TRACKERS_SETTINGS } from '@/lib/graphql/tracker/TrackerQuery.ts';
+import { MangaType } from '@/lib/requests/types.ts';
 import { MangaTrackRecordInfo } from '@/features/manga/Manga.types.ts';
 import { AppRoutes } from '@/base/AppRoute.constants.ts';
 
@@ -26,7 +25,7 @@ export const TrackMangaButton = ({ manga }: { manga: MangaTrackRecordInfo & Pick
     const { t } = useTranslation();
     const navigate = useNavigate();
 
-    const trackerList = requestManager.useGetTrackerList<GetTrackersSettingsQuery>(GET_TRACKERS_SETTINGS);
+    const trackerList = requestManager.useGetTrackersSettings();
     const trackers = trackerList.data?.trackers.nodes ?? [];
     const mangaTrackers = manga.trackRecords.nodes;
 

@@ -27,7 +27,7 @@ import { NavbarContextType } from '@/features/navigation-bar/NavigationBar.types
 import { withPropsFrom } from '@/base/hoc/withPropsFrom.tsx';
 import { getValueFromObject, noOp } from '@/lib/HelperFunctions.ts';
 import { READER_BACKGROUND_TO_COLOR } from '@/features/reader/settings/ReaderSettings.constants.tsx';
-import { ChapterType } from '@/lib/graphql/generated/graphql.ts';
+import { ChapterType } from '@/lib/requests/types.ts';
 import { ChapterIdInfo } from '@/features/chapter/Chapter.types.ts';
 import {
     useReaderChaptersStore,

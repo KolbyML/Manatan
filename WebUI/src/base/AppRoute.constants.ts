@@ -6,7 +6,7 @@
  * file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
 
-import { SourceType } from '@/lib/graphql/generated/graphql.ts';
+import { SourceType } from '@/lib/requests/types.ts';
 import { MangaIdInfo } from '@/features/manga/Manga.types.ts';
 
 import { ChapterSourceOrderInfo } from '@/features/chapter/Chapter.types.ts';

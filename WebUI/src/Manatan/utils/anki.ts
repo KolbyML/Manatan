@@ -1,6 +1,34 @@
 /**
  * Updated AnkiConnect API call with automatic permission handshake
  */
+const ANKI_LOG_COOLDOWN_MS = 60000;
+let lastAnkiLogAt = 0;
+
+const isConnectionError = (error: any): boolean => {
+    if (!error) return false;
+    const message = String(error?.message ?? error);
+    if (error instanceof TypeError && message.includes('Failed to fetch')) {
+        return true;
+    }
+    return (
+        message.includes('ERR_CONNECTION_REFUSED') ||
+        message.includes('Connection refused') ||
+        message.includes('NetworkError')
+    );
+};
+
+export const logAnkiError = (message: string, error: any) => {
+    if (isConnectionError(error)) {
+        return;
+    }
+    const now = Date.now();
+    if (now - lastAnkiLogAt < ANKI_LOG_COOLDOWN_MS) {
+        return;
+    }
+    lastAnkiLogAt = now;
+    console.warn(message, error);
+};
+
 async function ankiConnect(
     action: string,
     params: Record<string, any>,
@@ -41,7 +69,7 @@ async function ankiConnect(
                 return await execute();
             }
         } catch (handshakeError) {
-            console.error("Handshake failed", handshakeError);
+            logAnkiError("Anki handshake failed", handshakeError);
         }
 
         // Standard error handling if handshake doesn't resolve the issue

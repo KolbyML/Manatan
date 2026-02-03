@@ -25,17 +25,18 @@ import MoreHorizIcon from '@mui/icons-material/MoreHoriz';
 import SettingsIcon from '@mui/icons-material/Settings';
 import InfoIcon from '@mui/icons-material/Info';
 import { useTranslation } from 'react-i18next';
-import { NavbarItem, NavBarItemMoreGroup } from '@/features/navigation-bar/NavigationBar.types.ts';
+import type { NavbarItem } from '@/features/navigation-bar/NavigationBar.types.ts';
+import { NavBarItemMoreGroup } from '@/features/navigation-bar/NavigationBar.types.ts';
 import { AppRoutes } from '@/base/AppRoute.constants.ts';
 import { requestManager } from '@/lib/requests/RequestManager.ts';
-import { DownloaderState } from '@/lib/graphql/generated/graphql.ts';
+import { DownloaderState } from '@/lib/requests/types.ts';
 
 type RestrictedNavBarItem<Show extends NavbarItem['show']> = Omit<NavbarItem, 'show'> & { show: Show };
 
 const NAVIGATION_BAR_BASE_ITEMS = [
     {
         path: AppRoutes.anime.path as RestrictedNavBarItem<'both'>['path'],
-        title: 'Anime',
+        title: 'Anime' as NavbarItem['title'],
         SelectedIconComponent: MovieFilterIcon,
         IconComponent: MovieFilterOutlinedIcon,
         show: 'both',
@@ -43,7 +44,7 @@ const NAVIGATION_BAR_BASE_ITEMS = [
     },
     {
         path: AppRoutes.library.path() as RestrictedNavBarItem<'both'>['path'],
-        title: 'Manga',
+        title: 'Manga' as NavbarItem['title'],
         SelectedIconComponent: MenuBookIcon,
         IconComponent: MenuBookOutlinedIcon,
         show: 'both',
@@ -59,19 +60,11 @@ const NAVIGATION_BAR_BASE_ITEMS = [
     },
     {
         path: AppRoutes.dictionary.path as RestrictedNavBarItem<'both'>['path'],
-        title: 'Dictionary',
+        title: 'Dictionary' as NavbarItem['title'],
         SelectedIconComponent: TranslateIcon,
         IconComponent: TranslateOutlinedIcon,
         show: 'both',
         moreGroup: NavBarItemMoreGroup.GENERAL,
-    },
-    {
-        path: AppRoutes.history.path,
-        title: 'history.title',
-        SelectedIconComponent: HistoryIcon,
-        IconComponent: HistoryOutlinedIcon,
-        show: 'desktop',
-        moreGroup: NavBarItemMoreGroup.HIDDEN_ITEM,
     },
     {
         path: AppRoutes.browse.path() as RestrictedNavBarItem<'both'>['path'],
@@ -103,6 +96,14 @@ const NAVIGATION_BAR_BASE_ITEMS = [
 ] as const satisfies RestrictedNavBarItem<'both'>[];
 
 const NAVIGATION_BAR_DESKTOP_ITEMS = [
+    {
+        path: AppRoutes.history.path,
+        title: 'history.title',
+        SelectedIconComponent: HistoryIcon,
+        IconComponent: HistoryOutlinedIcon,
+        show: 'desktop',
+        moreGroup: NavBarItemMoreGroup.HIDDEN_ITEM,
+    },
     {
         path: AppRoutes.updates.path,
         title: 'updates.title',

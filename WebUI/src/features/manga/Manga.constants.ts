@@ -6,7 +6,7 @@
  * file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
 
-import { MangaStatus } from '@/lib/graphql/generated/graphql.ts';
+import { MangaStatus } from '@/lib/requests/types.ts';
 import { MangaAction, MangaIdInfo, MangaType } from '@/features/manga/Manga.types.ts';
 import {
     CHAPTER_ACTION_TO_CONFIRMATION_REQUIRED,

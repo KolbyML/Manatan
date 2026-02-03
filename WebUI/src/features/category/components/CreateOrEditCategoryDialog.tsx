@@ -25,9 +25,11 @@ import { assertIsDefined } from '@/base/Asserts.ts';
 export const CreateOrEditCategoryDialog = ({
     category,
     onClose,
+    onSaved,
 }: {
     category: (CategoryIdInfo & CategoryNameInfo & CategoryDefaultInfo) | undefined;
     onClose: () => void;
+    onSaved?: () => void;
 }) => {
     const isEditMode = !!category;
 
@@ -39,24 +41,30 @@ export const CreateOrEditCategoryDialog = ({
     const isInvalidName = dialogName !== undefined && !dialogName.trim().length;
     const canSubmit = dialogName !== undefined && !isInvalidName;
 
-    const handleDialogSubmit = () => {
+    const handleDialogSubmit = async () => {
         assertIsDefined(dialogName);
 
         onClose();
 
         if (isEditMode) {
-            requestManager
-                .updateCategory(category.id, { name: dialogName, default: dialogDefault })
-                .response.catch((e) =>
-                    makeToast(t('global.error.label.failed_to_save_changes'), 'error', getErrorMessage(e)),
-                );
+            try {
+                await requestManager
+                    .updateCategory(category.id, { name: dialogName, default: dialogDefault })
+                    .response;
+                onSaved?.();
+            } catch (e) {
+                makeToast(t('global.error.label.failed_to_save_changes'), 'error', getErrorMessage(e));
+            }
 
             return;
         }
 
-        requestManager
-            .createCategory({ name: dialogName, default: dialogDefault })
-            .response.catch((e) => makeToast(t('category.error.label.create_failure'), 'error', getErrorMessage(e)));
+        try {
+            await requestManager.createCategory({ name: dialogName, default: dialogDefault }).response;
+            onSaved?.();
+        } catch (e) {
+            makeToast(t('category.error.label.create_failure'), 'error', getErrorMessage(e));
+        }
     };
 
     return (

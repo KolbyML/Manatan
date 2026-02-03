@@ -14,7 +14,7 @@ import Typography from '@mui/material/Typography';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { requestManager } from '@/lib/requests/RequestManager.ts';
-import { GetMigratableSourcesQuery } from '@/lib/graphql/generated/graphql.ts';
+import { GetMigratableSourcesQuery } from '@/lib/requests/types.ts';
 import { translateExtensionLanguage } from '@/features/extension/Extensions.utils.ts';
 import { AppRoutes } from '@/base/AppRoute.constants.ts';
 import { ListCardAvatar } from '@/base/components/lists/cards/ListCardAvatar.tsx';

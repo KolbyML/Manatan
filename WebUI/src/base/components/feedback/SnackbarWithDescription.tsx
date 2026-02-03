@@ -7,7 +7,7 @@
  */
 
 import { closeSnackbar, CustomContentProps, SnackbarContent, VariantType } from 'notistack';
-import { ForwardedRef, Fragment, memo } from 'react';
+import { ForwardedRef, memo } from 'react';
 import Alert from '@mui/material/Alert';
 import AlertTitle from '@mui/material/AlertTitle';
 import Button from '@mui/material/Button';
@@ -15,7 +15,6 @@ import { useTranslation } from 'react-i18next';
 import { useTheme } from '@mui/material/styles';
 import { defaultPromiseErrorHandler } from '@/lib/DefaultPromiseErrorHandler.ts';
 import { MediaQuery } from '@/base/utils/MediaQuery.tsx';
-import { extractGraphqlExceptionInfo } from '@/lib/HelperFunctions.ts';
 import { TranslationKey } from '@/base/Base.types.ts';
 import { Confirmation } from '@/base/AppAwaitableComponent.ts';
 
@@ -47,13 +46,10 @@ export const SnackbarWithDescription = memo(
         const severity = variant === 'default' ? 'info' : variant;
         const finalAction = typeof action === 'function' ? action(id) : action;
 
-        const { isGraphqlException, graphqlError, graphqlStackTrace } = extractGraphqlExceptionInfo(description);
-
-        const finalDescription = isGraphqlException ? graphqlError : description;
-        const isDescriptionTooLong = (finalDescription?.length ?? 0) > MAX_DESCRIPTION_LENGTH;
+        const isDescriptionTooLong = (description?.length ?? 0) > MAX_DESCRIPTION_LENGTH;
         const actualDescription = isDescriptionTooLong
-            ? finalDescription?.slice(0, MAX_DESCRIPTION_LENGTH)
-            : finalDescription;
+            ? description?.slice(0, MAX_DESCRIPTION_LENGTH)
+            : description;
 
         // Logic check: Do we need a bold Title, or just body text?
         const hasDescription = !!actualDescription?.length;
@@ -112,7 +108,7 @@ export const SnackbarWithDescription = memo(
                     )}
 
                     {/* --- SHOW MORE BUTTON --- */}
-                    {isDescriptionTooLong || (isGraphqlException && graphqlStackTrace) ? (
+                    {isDescriptionTooLong ? (
                         <Button
                             onClick={() => {
                                 Confirmation.show({

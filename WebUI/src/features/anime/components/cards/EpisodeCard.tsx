@@ -34,6 +34,7 @@ type Episode = {
     episodeNumber: number;
     uploadDate: number;
     index: number;
+    sourceOrder?: number | null;
     isRead: boolean;
     isDownloaded: boolean;
     realUrl?: string | null;
@@ -108,7 +109,10 @@ export const EpisodeCard = ({
                     <Card>
                         <CardActionArea
                             component={Link}
-                            to={AppRoutes.anime.childRoutes.episode.path(animeId, episode.index)}
+                            to={AppRoutes.anime.childRoutes.episode.path(
+                                animeId,
+                                episode.sourceOrder ?? episode.index,
+                            )}
                             onContextMenu={preventMobileContextMenu}
                             sx={MediaQuery.preventMobileContextMenuSx()}
                             style={{

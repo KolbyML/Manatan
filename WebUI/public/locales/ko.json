@@ -1338,12 +1338,6 @@
                     }
                 },
                 "log_level": {
-                    "graphql": {
-                        "label": {
-                            "description": "GraphQL 디버그 로그 활성화",
-                            "title": "디버그 로그 활성화"
-                        }
-                    },
                     "label": {
                         "server": "기타"
                     }

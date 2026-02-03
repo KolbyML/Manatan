@@ -2,7 +2,6 @@ import React, { useCallback, useRef, useLayoutEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { useOCR } from '@/Manatan/context/OCRContext';
 import { cleanPunctuation, lookupYomitan } from '@/Manatan/utils/api';
-import { DictionaryResult } from '@/Manatan/types';
 import { DictionaryView } from '@/Manatan/components/DictionaryView';
 
 const POPUP_GAP = 10;
@@ -128,7 +127,7 @@ export const YomitanPopup = () => {
         }));
 
         try {
-            const results = await lookupYomitan(cleanText, 0, 'group', 'japanese');
+            const results = await lookupYomitan(cleanText, 0, 'grouped', 'japanese');
             if (results === 'loading') {
                 setDictPopup((prev) => ({
                     ...prev,
@@ -341,7 +340,7 @@ export const YomitanPopup = () => {
                 <DictionaryView
                     results={processedEntries}
                     isLoading={dictPopup.isLoading}
-                    systemLoading={dictPopup.systemLoading}
+                    systemLoading={dictPopup.systemLoading ?? false}
                     onLinkClick={handleDefinitionLink}
                     context={dictPopup.context}
                 />

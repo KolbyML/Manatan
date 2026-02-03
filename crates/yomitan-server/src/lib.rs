@@ -7,15 +7,16 @@ use axum::{
 };
 use tower_http::{cors::CorsLayer, limit::RequestBodyLimitLayer};
 
-pub mod handlers;
 pub mod deinflector;
+pub mod handlers;
 pub mod import;
 pub mod lookup;
 pub mod state;
 
 use handlers::{
-    audio_handler, import_handler, install_defaults_handler, install_language_handler, list_dictionaries_handler,
-    lookup_handler, manage_dictionaries_handler, reset_db_handler, unload_handler,
+    audio_handler, import_handler, install_defaults_handler, install_language_handler,
+    list_dictionaries_handler, lookup_handler, manage_dictionaries_handler, reset_db_handler,
+    unload_handler,
 };
 use lookup::LookupService;
 use state::AppState;

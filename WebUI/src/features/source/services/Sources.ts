@@ -18,6 +18,7 @@ import {
 } from '@/features/source/Source.types.ts';
 import {
     DefaultLanguage,
+    getLanguage,
     languageSpecialSortComparator,
     toComparableLanguage,
     toComparableLanguages,
@@ -43,11 +44,73 @@ export class Sources {
             return DefaultLanguage.OTHER;
         }
 
+        if (source.lang === 'multi') {
+            return DefaultLanguage.ALL;
+        }
+
         return source.lang;
     }
 
-    static getLanguages(sources: (SourceIdInfo & SourceLanguageInfo)[]): string[] {
-        return [...new Set(sources.map(Sources.getLanguage))];
+    static getMetaValue(source: Partial<SourceMetaInfo>, key: string): string | undefined {
+        if (!source.meta?.length) {
+            return undefined;
+        }
+
+        return source.meta.find((entry) => entry.key === key)?.value;
+    }
+
+    static getMetaLanguages(source: Partial<SourceMetaInfo>): string[] {
+        const raw = Sources.getMetaValue(source, 'languages');
+        if (!raw) {
+            return [];
+        }
+
+        const trimmed = raw.trim();
+        if (!trimmed) {
+            return [];
+        }
+
+        const normalizeValue = (value: string) => {
+            const normalized = value.trim();
+            if (!normalized) {
+                return '';
+            }
+            const lower = normalized.toLowerCase();
+            const canonical = lower === 'all' || lower === 'multi' ? lower : normalized;
+            return getLanguage(canonical).isoCode;
+        };
+
+        if (trimmed.startsWith('[') && trimmed.endsWith(']')) {
+            try {
+                const parsed = JSON.parse(trimmed);
+                if (Array.isArray(parsed)) {
+                    return parsed
+                        .filter((value) => typeof value === 'string')
+                        .map((value) => normalizeValue(value as string))
+                        .filter(Boolean);
+                }
+            } catch {
+                // fall through to string parsing
+            }
+        }
+
+        return trimmed
+            .split(',')
+            .map((value) => normalizeValue(value))
+            .filter(Boolean);
+    }
+
+    static getLanguages(sources: (SourceIdInfo & SourceLanguageInfo & Partial<SourceMetaInfo>)[]): string[] {
+        const languages = new Set<string>();
+        sources.forEach((source) => {
+            const sourceLanguage = Sources.getLanguage(source);
+            languages.add(sourceLanguage);
+
+            if (sourceLanguage === DefaultLanguage.ALL) {
+                Sources.getMetaLanguages(source).forEach((language) => languages.add(language));
+            }
+        });
+        return [...languages];
     }
 
     static groupByLanguage<Source extends SourceIdInfo & SourceLanguageInfo & SourceDisplayNameInfo & SourceMetaInfo>(
@@ -82,7 +145,7 @@ export class Sources {
         return Object.fromEntries(sortedSourcesBySortedLanguage);
     }
 
-    static filter<Source extends SourceIdInfo & SourceLanguageInfo & SourceNsfwInfo>(
+    static filter<Source extends SourceIdInfo & SourceLanguageInfo & SourceNsfwInfo & Partial<SourceMetaInfo>>(
         sources: Source[],
         {
             showNsfw,
@@ -99,6 +162,49 @@ export class Sources {
         } = {},
     ): Source[] {
         const normalizedLanguages = toComparableLanguages(toUniqueLanguageCodes(languages ?? []));
+        const allLanguage = toComparableLanguage(DefaultLanguage.ALL);
+        const hasAllLanguage = normalizedLanguages.includes(allLanguage);
+        const otherLanguages = normalizedLanguages.filter((language) => language !== allLanguage);
+        const hasOtherLanguages = otherLanguages.length > 0;
+
+        const isLanguageAllowed = (source: Source): boolean => {
+            if (!languages || languages.length === 0) {
+                return true;
+            }
+
+            if (keepLocalSource && Sources.isLocalSource(source)) {
+                return true;
+            }
+
+            const sourceLanguage = toComparableLanguage(Sources.getLanguage(source));
+            const isMultiLanguage = sourceLanguage === allLanguage;
+
+            if (isMultiLanguage) {
+                if (!hasAllLanguage) {
+                    return false;
+                }
+
+                if (!hasOtherLanguages) {
+                    return true;
+                }
+
+                const metaLanguages = Sources.getMetaLanguages(source)
+                    .map((language) => toComparableLanguage(language));
+                if (!metaLanguages.length) {
+                    return false;
+                }
+
+                return metaLanguages.some(
+                    (language) => language === allLanguage || otherLanguages.includes(language),
+                );
+            }
+
+            if (hasAllLanguage && !hasOtherLanguages) {
+                return true;
+            }
+
+            return otherLanguages.includes(sourceLanguage);
+        };
 
         return sources
             .filter(
@@ -109,10 +215,7 @@ export class Sources {
                     (keepLocalSource && Sources.isLocalSource(source)),
             )
             .filter(
-                (source) =>
-                    !languages ||
-                    normalizedLanguages.includes(toComparableLanguage(Sources.getLanguage(source))) ||
-                    (keepLocalSource && Sources.isLocalSource(source)),
+                (source) => isLanguageAllowed(source),
             )
             .filter(
                 (source) =>

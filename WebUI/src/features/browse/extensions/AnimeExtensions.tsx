@@ -57,12 +57,6 @@ import { AuthManager } from '@/features/authentication/AuthManager.ts';
 const LANGUAGE = 0;
 const EXTENSIONS = 1;
 
-type AnimeExtensionInfoNormalized = AnimeExtensionInfo & {
-    isInstalled: boolean;
-    isObsolete: boolean;
-};
-
-
 export function AnimeExtensions({ tabsMenuHeight }: { tabsMenuHeight: number }) {
     const { t } = useTranslation();
 
@@ -84,43 +78,26 @@ export function AnimeExtensions({ tabsMenuHeight }: { tabsMenuHeight: number }) 
         error: serverSettingsError,
         refetch: refetchServerSettings,
     } = requestManager.useGetServerSettings({ notifyOnNetworkStatusChange: true });
-    const [fetchExtensions, { loading: areExtensionsLoading, error: extensionsError }] =
+    const [fetchExtensions, { data, loading: areExtensionsLoading, error: extensionsError }] =
         requestManager.useAnimeExtensionListFetch();
-    const {
-        data: listData,
-        loading: areExtensionsListLoading,
-        error: extensionsListError,
-        refetch: refetchExtensionsList,
-    } = requestManager.useGetAnimeExtensionList({ notifyOnNetworkStatusChange: true });
 
     const animeExtensionRepos = (serverSettingsData?.settings as { animeExtensionRepos?: string[] })
         ?.animeExtensionRepos;
     const areReposDefined = !!animeExtensionRepos?.length;
     const areMultipleReposInUse = (animeExtensionRepos?.length ?? 0) > 1;
 
-    const isLoading = areServerSettingsLoading || areExtensionsLoading || areExtensionsListLoading;
-    const error = serverSettingsError ?? extensionsError ?? extensionsListError;
+    const isLoading = areServerSettingsLoading || areExtensionsLoading;
+    const error = serverSettingsError ?? extensionsError;
 
     useEffect(() => {
         fetchExtensions();
     }, [refetchExtensions]);
 
-    const normalizedExtensions: AnimeExtensionInfoNormalized[] = useMemo(() => {
-        const allExtensions = listData?.animeExtensions?.nodes ?? [];
-        return allExtensions.map((extension: any) => ({
-            ...extension,
-            installed: extension.installed ?? extension.isInstalled,
-            obsolete: extension.obsolete ?? extension.isObsolete,
-            hasUpdate: extension.hasUpdate,
-            isInstalled: extension.installed ?? extension.isInstalled,
-            isObsolete: extension.obsolete ?? extension.isObsolete,
-        }));
-    }, [listData]);
-
+    const allExtensions = data?.fetchAnimeExtensions?.extensions;
     const filteredExtensions = useMemo(
-        () => filterExtensions(normalizedExtensions as TExtension[], { selectedLanguages: shownLangs, showNsfw, query }),
-        [normalizedExtensions, shownLangs, showNsfw, query],
-    ) as AnimeExtensionInfoNormalized[];
+        () => filterExtensions(allExtensions ?? [], { selectedLanguages: shownLangs, showNsfw, query }),
+        [allExtensions, shownLangs, showNsfw, query],
+    ) as AnimeExtensionInfo[];
 
     const groupedExtensions = useMemo(
         () => groupExtensionsByLanguage(filteredExtensions as TExtension[]),
@@ -171,10 +148,6 @@ export function AnimeExtensions({ tabsMenuHeight }: { tabsMenuHeight: number }) 
             .catch((e) => makeToast(t('extension.label.installation_failed'), 'error', getErrorMessage(e)));
     };
 
-    useEffect(() => {
-        fetchExtensions();
-    }, [refetchExtensions]);
-
     useAppAction(
         <>
             <AppbarSearch />
@@ -205,10 +178,10 @@ export function AnimeExtensions({ tabsMenuHeight }: { tabsMenuHeight: number }) 
                 selectedLanguages={shownLangs}
                 setSelectedLanguages={(languages: string[]) =>
                     updateMetadataServerSettings('animeExtensionLanguages', languages)}
-                languages={getLanguagesFromExtensions(normalizedExtensions as TExtension[])}
+                languages={getLanguagesFromExtensions(allExtensions ?? [])}
             />
         </>,
-        [shownLangs, normalizedExtensions],
+        [shownLangs, allExtensions],
     );
 
     useWindowEvent('drop', async (e) => {
@@ -235,18 +208,17 @@ export function AnimeExtensions({ tabsMenuHeight }: { tabsMenuHeight: number }) 
                             defaultPromiseErrorHandler('AnimeExtensions::refetchServerSettings'),
                         );
                     }
-                    if (extensionsListError) {
-                        refetchExtensionsList().catch(
-                            defaultPromiseErrorHandler('AnimeExtensions::refetchList'),
+                    if (extensionsError) {
+                        fetchExtensions().catch(
+                            defaultPromiseErrorHandler('AnimeExtensions::refetchExtensions'),
                         );
                     }
-                    handleExtensionUpdate();
                 }}
             />
         );
     }
 
-    if (!normalizedExtensions.length && !areReposDefined) {
+    if (!(allExtensions ?? []).length && !areReposDefined) {
         return (
             <Stack
                 sx={{
@@ -322,7 +294,7 @@ export function AnimeExtensions({ tabsMenuHeight }: { tabsMenuHeight: number }) 
                         <AnimeExtensionCard
                             extension={item as AnimeExtensionInfo}
                             handleUpdate={handleExtensionUpdate}
-                            showSourceRepo={areMultipleReposInUse}
+                            showSourceRepo={true}
                             forcedState={
                                 updatingExtensionIds.includes(item.pkgName) ? ExtensionState.UPDATING : undefined
                             }

@@ -6,7 +6,7 @@
  * file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
 
-import React, { ReactNode, useContext, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
+import React, { ReactNode, useCallback, useContext, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Direction, ThemeProvider } from '@mui/material/styles';
 import { CacheProvider } from '@emotion/react';
@@ -23,7 +23,7 @@ import { getErrorMessage } from '@/lib/HelperFunctions.ts';
 import { createAndSetTheme } from '@/features/theme/services/ThemeCreator.ts';
 import { AppStorage } from '@/lib/storage/AppStorage.ts';
 import { DIRECTION_TO_CACHE } from '@/features/theme/ThemeDirectionCache.ts';
-import { TAppThemeContext, ThemeMode } from '@/features/theme/AppTheme.types.ts';
+import { AppThemes, TAppThemeContext, ThemeMode } from '@/features/theme/AppTheme.types.ts';
 
 export const AppThemeContext = React.createContext<TAppThemeContext>({
     appTheme: 'default',
@@ -48,6 +48,7 @@ export const AppThemeContextProvider = ({ children }: { children: ReactNode }) =
         'appTheme',
         getTheme(serverAppTheme, customThemes),
     );
+    const [pendingAppTheme, setPendingAppTheme] = useState<AppThemes | null>(null);
     const [localThemeMode] = useLocalStorage(MUI_THEME_MODE_KEY, themeMode);
 
     const directionRef = useRef<Direction>('ltr');
@@ -58,7 +59,7 @@ export const AppThemeContextProvider = ({ children }: { children: ReactNode }) =
     const areMetadataServerSettingsReady =
         !metadataServerSettingsRequest.loading && !metadataServerSettingsRequest.error;
 
-    const appTheme = areMetadataServerSettingsReady ? serverAppTheme : localAppTheme.id;
+    const appTheme = areMetadataServerSettingsReady ? (pendingAppTheme ?? serverAppTheme) : localAppTheme.id;
     const actualThemeMode = areMetadataServerSettingsReady ? themeMode : localThemeMode;
     const currentDirection = i18n.dir();
 
@@ -66,11 +67,20 @@ export const AppThemeContextProvider = ({ children }: { children: ReactNode }) =
         makeToast(t('global.error.label.failed_to_save_changes'), 'error', getErrorMessage(e)),
     );
 
+    const applyAppTheme = useCallback(
+        (value: AppThemes) => {
+            setPendingAppTheme(value);
+            setLocalAppTheme(getTheme(value, { [localAppTheme.id]: localAppTheme, ...customThemes }));
+            updateSetting('appTheme', value);
+        },
+        [customThemes, localAppTheme, setLocalAppTheme, updateSetting],
+    );
+
     const appThemeContext = useMemo(
         () =>
             ({
                 appTheme,
-                setAppTheme: (value) => updateSetting('appTheme', value),
+                setAppTheme: applyAppTheme,
                 themeMode,
                 setThemeMode: (value) => updateSetting('themeMode', value),
                 shouldUsePureBlackMode,
@@ -78,7 +88,7 @@ export const AppThemeContextProvider = ({ children }: { children: ReactNode }) =
                 dynamicColor,
                 setDynamicColor,
             }) satisfies TAppThemeContext,
-        [themeMode, shouldUsePureBlackMode, appTheme, dynamicColor],
+        [themeMode, shouldUsePureBlackMode, appTheme, dynamicColor, applyAppTheme, updateSetting],
     );
 
     const theme = useMemo(
@@ -115,7 +125,10 @@ export const AppThemeContextProvider = ({ children }: { children: ReactNode }) =
         if (serverAppTheme !== localAppTheme.id) {
             setLocalAppTheme(getTheme(serverAppTheme, customThemes));
         }
-    }, [serverAppTheme, localAppTheme]);
+        if (pendingAppTheme && serverAppTheme === pendingAppTheme) {
+            setPendingAppTheme(null);
+        }
+    }, [serverAppTheme, localAppTheme, pendingAppTheme, customThemes, setLocalAppTheme]);
 
     useEffect(() => {
         // The set background color is not necessary anymore, since the theme has been loaded

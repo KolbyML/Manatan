@@ -6,7 +6,7 @@
  * file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
 
-import { GetMigratableSourcesQuery } from '@/lib/graphql/generated/graphql.ts';
+import { GetMigratableSourcesQuery } from '@/lib/requests/types.ts';
 
 export enum SortBy {
     SOURCE_NAME,

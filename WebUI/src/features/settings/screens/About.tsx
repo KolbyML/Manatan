@@ -8,7 +8,7 @@
 
 import Box from '@mui/material/Box';
 import Chip from '@mui/material/Chip';
-import Grid from '@mui/material/Grid';
+import Grid from '@mui/material/GridLegacy';
 import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
 import ListItemText from '@mui/material/ListItemText';
@@ -284,34 +284,6 @@ export function About() {
         error: serverUpdateCheckError,
     } = requestManager.useCheckForServerUpdate({ notifyOnNetworkStatusChange: true });
 
-    const copyDonationAddress = (address: string) => {
-        navigator.clipboard
-            .writeText(address)
-            .then(() => makeToast(t('global.label.copied_clipboard'), 'info'))
-            .catch(defaultPromiseErrorHandler('About::copyDonationAddress'));
-    };
-
-    if (loading) {
-        return <LoadingPlaceholder />;
-    }
-
-    if (error) {
-        return (
-            <EmptyViewAbsoluteCentered
-                message={t('global.error.label.failed_to_load_data')}
-                messageExtra={getErrorMessage(error)}
-                retry={() => refetch().catch(defaultPromiseErrorHandler('About::refetch'))}
-            />
-        );
-    }
-
-    const { aboutServer } = data!;
-    const selectedServerChannelInfo = serverUpdateCheckData?.checkForServerUpdates?.find(
-        (channel) => channel.channel === aboutServer.buildType,
-    );
-    const isServerUpdateAvailable =
-        !!selectedServerChannelInfo?.tag && selectedServerChannelInfo.tag !== aboutServer.version;
-
     useEffect(() => {
         let cancelled = false;
 
@@ -354,8 +326,34 @@ export function About() {
         };
     }, []);
 
-    return (
-        <Box sx={{ px: { xs: 2, md: 3 }, py: 2 }}>
+    const copyDonationAddress = (address: string) => {
+        navigator.clipboard
+            .writeText(address)
+            .then(() => makeToast(t('global.label.copied_clipboard'), 'info'))
+            .catch(defaultPromiseErrorHandler('About::copyDonationAddress'));
+    };
+
+    let content: ReactNode;
+
+    if (loading) {
+        content = <LoadingPlaceholder />;
+    } else if (error || !data) {
+        content = (
+            <EmptyViewAbsoluteCentered
+                message={t('global.error.label.failed_to_load_data')}
+                messageExtra={getErrorMessage(error ?? new Error('Missing about response'))}
+                retry={() => refetch().catch(defaultPromiseErrorHandler('About::refetch'))}
+            />
+        );
+    } else {
+        const { aboutServer } = data;
+        const selectedServerChannelInfo = serverUpdateCheckData?.checkForServerUpdates?.find(
+            (channel) => channel.channel === aboutServer.buildType,
+        );
+        const isServerUpdateAvailable =
+            !!selectedServerChannelInfo?.tag && selectedServerChannelInfo.tag !== aboutServer.version;
+
+        content = (
             <Stack spacing={2.5}>
                 <Paper
                     variant="outlined"
@@ -595,6 +593,8 @@ export function About() {
                     </Grid>
                 </Grid>
             </Stack>
-        </Box>
-    );
+        );
+    }
+
+    return <Box sx={{ px: { xs: 2, md: 3 }, py: 2 }}>{content}</Box>;
 }

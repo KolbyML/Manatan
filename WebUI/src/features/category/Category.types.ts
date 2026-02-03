@@ -7,7 +7,7 @@
  */
 
 import { LibraryOptions } from '@/features/library/Library.types.ts';
-import { CategoryMetaType, CategoryType } from '@/lib/graphql/generated/graphql.ts';
+import { CategoryMetaType, CategoryType } from '@/lib/requests/types.ts';
 
 export interface ICategoryMetadata extends LibraryOptions {}
 

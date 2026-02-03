@@ -6,22 +6,21 @@
  * file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
 
-import { ComponentProps, useMemo, useState } from 'react';
+import { ComponentProps, useEffect, useMemo, useState } from 'react';
 import Fab from '@mui/material/Fab';
 import AddIcon from '@mui/icons-material/Add';
 import { useTranslation } from 'react-i18next';
 import Box from '@mui/material/Box';
 import { closestCenter, DndContext, DragEndEvent } from '@dnd-kit/core';
-import { SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable';
+import { arrayMove, SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable';
 import { requestManager } from '@/lib/requests/RequestManager.ts';
 import { DEFAULT_FULL_FAB_HEIGHT } from '@/base/components/buttons/StyledFab.tsx';
 import { LoadingPlaceholder } from '@/base/components/feedback/LoadingPlaceholder.tsx';
 import { EmptyViewAbsoluteCentered } from '@/base/components/feedback/EmptyViewAbsoluteCentered.tsx';
 import { defaultPromiseErrorHandler } from '@/lib/DefaultPromiseErrorHandler.ts';
-import { GetCategoriesSettingsQuery, GetCategoriesSettingsQueryVariables } from '@/lib/graphql/generated/graphql.ts';
-import { GET_CATEGORIES_SETTINGS } from '@/lib/graphql/category/CategoryQuery.ts';
 import { CategorySettingsCard } from '@/features/category/components/CategorySettingsCard.tsx';
 import { CategoryIdInfo } from '@/features/category/Category.types.ts';
+import { CategoryType } from '@/lib/requests/types.ts';
 import { getErrorMessage, noOp } from '@/lib/HelperFunctions.ts';
 import { DndSortableItem } from '@/lib/dnd-kit/DndSortableItem.tsx';
 import { DndKitUtil } from '@/lib/dnd-kit/DndKitUtil.ts';
@@ -36,10 +35,9 @@ export function CategorySettings() {
 
     useAppTitle(t('category.dialog.title.edit_category_other'));
 
-    const { data, loading, error, refetch } = requestManager.useGetCategories<
-        GetCategoriesSettingsQuery,
-        GetCategoriesSettingsQueryVariables
-    >(GET_CATEGORIES_SETTINGS, { notifyOnNetworkStatusChange: true });
+    const { data, loading, error, refetch } = requestManager.useGetCategoriesSettings({
+        notifyOnNetworkStatusChange: true,
+    });
     const [reorderCategory, { reset: revertReorder }] = requestManager.useReorderCategory();
 
     const [categoryToEdit, setCategoryToEdit] = useState<number>(CREATE_NEW_CATEGORY_ID);
@@ -48,20 +46,22 @@ export function CategorySettings() {
         ComponentProps<typeof CategorySettingsCard>['category'] | null
     >(null);
 
-    const categories = useMemo(() => {
-        const res = [...(data?.categories.nodes ?? [])];
-        if (res.length > 0 && res[0].name === 'Default') {
-            res.shift();
-        }
-        return res;
-    }, [data]);
+    const [categories, setCategories] = useState<CategoryType[]>([]);
+    const allCategories = data?.categories.nodes ?? [];
+    const categoriesFromData = useMemo(
+        () => allCategories.filter((category) => category.id !== 0),
+        [allCategories],
+    );
 
-    const categoryReorder = (list: CategoryIdInfo[], from: number, to: number) => {
-        const reorderedCategory = list[from];
+    useEffect(() => {
+        setCategories(categoriesFromData);
+    }, [categoriesFromData]);
 
-        reorderCategory({ variables: { input: { id: reorderedCategory.id, position: to + 1 } } }).catch(() =>
-            revertReorder(),
-        );
+    const categoryReorder = (id: number, position: number, onFailure?: () => void) => {
+        reorderCategory({ variables: { input: { id, position } } }).catch(() => {
+            revertReorder?.();
+            onFailure?.();
+        });
     };
 
     const onDragEnd = (event: DragEndEvent) => {
@@ -76,7 +76,12 @@ export function CategorySettings() {
         const oldIndex = categories.findIndex((category) => category.id === active.id);
         const newIndex = categories.findIndex((category) => category.id === over.id);
 
-        categoryReorder(categories, oldIndex, newIndex);
+        const previous = categories;
+        const reordered = arrayMove(categories, oldIndex, newIndex);
+        setCategories(reordered);
+
+        const position = newIndex;
+        categoryReorder(categories[oldIndex].id, position, () => setCategories(previous));
     };
 
     const handleDialogOpen = (categoryId?: CategoryIdInfo['id']) => {
@@ -146,7 +151,11 @@ export function CategorySettings() {
             </Fab>
 
             {dialogOpen && (
-                <CreateOrEditCategoryDialog category={categories[categoryToEdit]} onClose={handleDialogCancel} />
+                <CreateOrEditCategoryDialog
+                    category={categories[categoryToEdit]}
+                    onClose={handleDialogCancel}
+                    onSaved={() => refetch().catch(defaultPromiseErrorHandler('CategorySettings::refetch'))}
+                />
             )}
         </>
     );

@@ -22,14 +22,14 @@ import {
 } from '@/features/reader/Reader.types.ts';
 import { updateReaderSettings } from '@/features/reader/settings/ReaderSettingsMetadata.ts';
 import { requestManager } from '@/lib/requests/RequestManager.ts';
-import { MANGA_META_FIELDS } from '@/lib/graphql/manga/MangaFragments.ts';
 import { makeToast } from '@/base/utils/Toast.ts';
 import { MediaQuery } from '@/base/utils/MediaQuery.tsx';
-import { GLOBAL_METADATA } from '@/lib/graphql/common/Fragments.ts';
-import { updateMetadataList } from '@/features/metadata/services/MetadataApolloCacheHandler.ts';
 import { useBackButton } from '@/base/hooks/useBackButton.ts';
-import { GLOBAL_READER_SETTING_KEYS } from '@/features/reader/settings/ReaderSettings.constants.tsx';
-import { UpdateChapterPatchInput } from '@/lib/graphql/generated/graphql.ts';
+import {
+    DEFAULT_READER_SETTINGS,
+    GLOBAL_READER_SETTING_KEYS,
+} from '@/features/reader/settings/ReaderSettings.constants.tsx';
+import { UpdateChapterPatchInput } from '@/lib/requests/types.ts';
 import { useMetadataServerSettings } from '@/features/settings/services/ServerSettingsMetadata.ts';
 import {
     getChapterIdsForDownloadAhead,
@@ -238,7 +238,7 @@ export class ReaderService {
     }
 
     /**
-     * Writes the change immediately to the cache and sends a mutation in case "commit" is true.
+     * Updates local reader settings and persists if "commit" is true.
      */
     static updateSetting<Setting extends keyof IReaderSettings>(
         setting: Setting,
@@ -253,48 +253,20 @@ export class ReaderService {
         if (!manga || manga.id === FALLBACK_MANGA.id) {
             return;
         }
-        const key = getMetadataKey(setting, profile !== undefined ? [profile?.toString()] : undefined);
-
-        const { cache } = requestManager.graphQLClient.client;
-
         const isGlobalSetting = isGlobal || GLOBAL_READER_SETTING_KEYS.includes(setting);
-        if (isGlobalSetting) {
-            const reference = cache.writeFragment({
-                fragment: GLOBAL_METADATA,
-                data: {
-                    __typename: 'GlobalMetaType',
-                    key,
-                    value: JSON.stringify(value),
-                },
-            });
-            cache.modify({
-                fields: {
-                    metas(existingMetas, { readField }) {
-                        return {
-                            ...existingMetas,
-                            nodes: updateMetadataList(key, existingMetas?.nodes, readField, () => reference),
-                        };
-                    },
-                },
-            });
-        } else {
-            const reference = cache.writeFragment({
-                fragment: MANGA_META_FIELDS,
-                data: {
-                    __typename: 'MangaMetaType',
-                    mangaId: manga.id,
-                    key,
-                    value: JSON.stringify(value),
-                },
-            });
-            cache.modify({
-                id: cache.identify({ __typename: 'MangaType', id: manga.id }),
-                fields: {
-                    meta(existingMetas, { readField }) {
-                        return updateMetadataList(key, existingMetas, readField, () => reference);
-                    },
-                },
-            });
+        const settingsStore = getReaderSettingsStore();
+        if (settingsStore?.setSettings) {
+            const nextSettings = {
+                ...settingsStore,
+                [setting]: isGlobalSetting
+                    ? value
+                    : {
+                          ...(settingsStore[setting] as { value: IReaderSettings[Setting]; isDefault: boolean }),
+                          value,
+                          isDefault: false,
+                      },
+            } as typeof settingsStore;
+            settingsStore.setSettings(nextSettings);
         }
 
         if (commit) {
@@ -322,13 +294,19 @@ export class ReaderService {
 
         const key = getMetadataKey(setting, profile !== undefined ? [profile] : undefined);
 
-        const { cache } = requestManager.graphQLClient.client;
-
         const isGlobalSetting = isGlobal || GLOBAL_READER_SETTING_KEYS.includes(setting);
-        if (isGlobalSetting) {
-            cache.evict({ id: cache.identify({ __typename: 'GlobalMetaType', key }) });
-        } else {
-            cache.evict({ id: cache.identify({ __typename: 'MangaMetaType', mangaId: manga.id, key }) });
+        const settingsStore = getReaderSettingsStore();
+        if (settingsStore?.setSettings) {
+            const nextSettings = {
+                ...settingsStore,
+                [setting]: isGlobalSetting
+                    ? DEFAULT_READER_SETTINGS[setting]
+                    : {
+                          value: DEFAULT_READER_SETTINGS[setting],
+                          isDefault: true,
+                      },
+            } as typeof settingsStore;
+            settingsStore.setSettings(nextSettings);
         }
 
         const deleteSetting = isGlobalSetting

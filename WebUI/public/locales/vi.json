@@ -1244,12 +1244,6 @@
                 "log_level": {
                     "label": {
                         "server": "Bật nhật ký gỡ lỗi"
-                    },
-                    "graphql": {
-                        "label": {
-                            "description": "Điều này bao gồm các nhật ký có thông tin không an toàn về quyền riêng tư",
-                            "title": "Bật nhật ký gỡ lỗi graphql"
-                        }
                     }
                 },
                 "title": "Khác",

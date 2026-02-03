@@ -1153,12 +1153,6 @@
                 },
                 "title": "Verschiedenes",
                 "log_level": {
-                    "graphql": {
-                        "label": {
-                            "title": "Aktiviere GraphQL Debug Logs",
-                            "description": "Dies inkludiert Logs mit Informationen, welche nicht Privatsphäre-schützend sind"
-                        }
-                    },
                     "label": {
                         "server": "Aktiviere Debug Logs"
                     }

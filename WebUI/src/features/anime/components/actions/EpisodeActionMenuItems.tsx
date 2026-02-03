@@ -97,7 +97,7 @@ export const EpisodeActionMenuItems = ({
                         onDeleteDownload();
                         onClose();
                     }}
-                    title={t('chapter.action.label.delete')}
+                    title={t('chapter.action.label.delete' as any)}
                 />
             )}
             {!episode.isRead && (

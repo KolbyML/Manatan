@@ -6,11 +6,7 @@
  * file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
 
-import {
-    ChapterReaderFieldsFragment,
-    ChapterType,
-    DownloadStatusFieldsFragment,
-} from '@/lib/graphql/generated/graphql.ts';
+import { ChapterReaderFieldsFragment, ChapterType, GetDownloadStatusQuery } from '@/lib/requests/types.ts';
 
 export type ChapterSortMode = 'fetchedAt' | 'source' | 'chapterNumber' | 'uploadedAt';
 
@@ -28,7 +24,7 @@ export type TChapterReader = ChapterReaderFieldsFragment;
 
 export type ChapterAction = 'download' | 'delete' | 'bookmark' | 'unbookmark' | 'mark_as_read' | 'mark_as_unread';
 
-export type ChapterDownloadStatus = DownloadStatusFieldsFragment['queue'][number];
+export type ChapterDownloadStatus = GetDownloadStatusQuery['downloadStatus']['queue'][number] & { position: number };
 
 export type ChapterIdInfo = Pick<ChapterType, 'id'>;
 

@@ -9,7 +9,7 @@ pub struct AppState {
 impl AppState {
     pub fn new(data_dir: PathBuf) -> Self {
         let suwayomi_base_url = std::env::var("MANATAN_SUWAYOMI_URL")
-            .unwrap_or_else(|_| "http://127.0.0.1:4567".to_string());
+            .unwrap_or_else(|_| "http://127.0.0.1:4566".to_string());
         Self {
             suwayomi_base_url,
             data_dir,

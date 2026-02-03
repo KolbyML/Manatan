@@ -42,7 +42,7 @@ import { getErrorMessage, noOp } from '@/lib/HelperFunctions.ts';
 import { LoadingPlaceholder } from '@/base/components/feedback/LoadingPlaceholder.tsx';
 import { ReaderInfiniteScrollUpdateChapter } from '@/features/reader/infinite-scroll/ReaderInfiniteScrollUpdateChapter.tsx';
 import { useResizeObserver } from '@/base/hooks/useResizeObserver.tsx';
-import { ChapterIdInfo } from '@/features/chapter/Chapter.types.ts';
+import { ChapterIdInfo, ChapterMangaInfo, ChapterSourceOrderInfo } from '@/features/chapter/Chapter.types.ts';
 
 import { READER_DEFAULT_PAGES_STATE } from '@/features/reader/stores/ReaderPagesStore.ts';
 import { getReaderChaptersStore } from '@/features/reader/stores/ReaderStore.ts';
@@ -68,6 +68,8 @@ const BaseReaderChapterViewer = ({
     imagePreLoadAmount,
     pageGap,
     chapterId,
+    mangaId,
+    chapterSourceOrder,
     previousChapterId,
     nextChapterId,
     isPreviousChapterVisible,
@@ -109,6 +111,8 @@ const BaseReaderChapterViewer = ({
     > & {
         updateCurrentPageIndex: ReturnType<typeof ReaderControls.useUpdateCurrentPageIndex>;
         chapterId: ChapterIdInfo['id'];
+        mangaId: ChapterMangaInfo['mangaId'];
+        chapterSourceOrder: ChapterSourceOrderInfo['sourceOrder'];
         previousChapterId?: ChapterIdInfo['id'];
         nextChapterId?: ChapterIdInfo['id'];
         isPreviousChapterVisible: boolean;
@@ -169,7 +173,11 @@ const BaseReaderChapterViewer = ({
         return () => window.removeEventListener('ocr-input-move', handleManualMove);
     }, [isMobile, isScaleChanged]);
 
-    const [fetchPages, pagesResponse] = requestManager.useGetChapterPagesFetch(chapterId ?? -1);
+    const [fetchPages, pagesResponse] = requestManager.useGetChapterPagesFetch(
+        mangaId,
+        chapterSourceOrder,
+        chapterId ?? -1,
+    );
     const [arePagesFetched, setArePagesFetched] = useState(false);
     const [totalPages, setTotalPages] = useState<ReaderStatePages['totalPages']>(READER_DEFAULT_PAGES_STATE.totalPages);
     const [pageUrls, setPageUrls] = useState<ReaderStatePages['pageUrls']>(READER_DEFAULT_PAGES_STATE.pageUrls);
@@ -217,7 +225,7 @@ const BaseReaderChapterViewer = ({
     }
 
     const doFetchPages = useCallback(() => {
-        if (!chapterId) return;
+        if (chapterId == null) return;
         setArePagesFetched(false);
         fetchPages({ variables: { input: { chapterId } } }).catch(
             defaultPromiseErrorHandler(`ReaderChapterViewer(${chapterId})::fetchPages`),

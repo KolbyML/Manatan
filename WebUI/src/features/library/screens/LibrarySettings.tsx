@@ -26,14 +26,6 @@ import { EmptyViewAbsoluteCentered } from '@/base/components/feedback/EmptyViewA
 import { defaultPromiseErrorHandler } from '@/lib/DefaultPromiseErrorHandler.ts';
 import { LoadingPlaceholder } from '@/base/components/feedback/LoadingPlaceholder.tsx';
 import { ListItemLink } from '@/base/components/lists/ListItemLink.tsx';
-import {
-    GetCategoriesSettingsQuery,
-    GetCategoriesSettingsQueryVariables,
-    GetMangasBaseQuery,
-    GetMangasBaseQueryVariables,
-} from '@/lib/graphql/generated/graphql.ts';
-import { GET_CATEGORIES_SETTINGS } from '@/lib/graphql/category/CategoryQuery.ts';
-import { GET_MANGAS_BASE } from '@/lib/graphql/manga/MangaQuery.ts';
 import { MetadataLibrarySettings } from '@/features/library/Library.types.ts';
 import { AppRoutes } from '@/base/AppRoute.constants.ts';
 import { getErrorMessage } from '@/lib/HelperFunctions.ts';
@@ -41,15 +33,14 @@ import { useAppTitle } from '@/features/navigation-bar/hooks/useAppTitle.ts';
 
 const removeNonLibraryMangasFromCategories = async (): Promise<void> => {
     try {
-        const nonLibraryMangas = await requestManager.getMangas<GetMangasBaseQuery, GetMangasBaseQueryVariables>(
-            GET_MANGAS_BASE,
+        const nonLibraryMangas = await requestManager.getMangasBase(
             {
                 filter: { inLibrary: { equalTo: false }, categoryId: { isNull: false } },
             },
             { fetchPolicy: 'no-cache' },
         ).response;
 
-        const mangaIdsToRemove = Mangas.getIds(nonLibraryMangas.data.mangas.nodes);
+        const mangaIdsToRemove = Mangas.getIds(nonLibraryMangas.data?.mangas.nodes ?? []);
 
         if (mangaIdsToRemove.length) {
             await requestManager.updateMangasCategories(mangaIdsToRemove, {
@@ -67,9 +58,7 @@ export function LibrarySettings() {
 
     useAppTitle(t('library.title'));
 
-    const categories = requestManager.useGetCategories<GetCategoriesSettingsQuery, GetCategoriesSettingsQueryVariables>(
-        GET_CATEGORIES_SETTINGS,
-    );
+    const categories = requestManager.useGetCategoriesSettings();
     const serverSettings = requestManager.useGetServerSettings({ notifyOnNetworkStatusChange: true });
     const {
         settings,

@@ -26,8 +26,6 @@ import { NumberSetting } from '@/base/components/settings/NumberSetting.tsx';
 import { LoadingPlaceholder } from '@/base/components/feedback/LoadingPlaceholder.tsx';
 import { EmptyViewAbsoluteCentered } from '@/base/components/feedback/EmptyViewAbsoluteCentered.tsx';
 import { defaultPromiseErrorHandler } from '@/lib/DefaultPromiseErrorHandler.ts';
-import { GetCategoriesSettingsQuery, GetCategoriesSettingsQueryVariables } from '@/lib/graphql/generated/graphql.ts';
-import { GET_CATEGORIES_SETTINGS } from '@/lib/graphql/category/CategoryQuery.ts';
 import { MetadataDownloadSettings } from '@/features/downloads/Downloads.types.ts';
 import { ServerSettings } from '@/features/settings/Settings.types.ts';
 import { getErrorMessage } from '@/lib/HelperFunctions.ts';
@@ -51,9 +49,7 @@ export const DownloadSettings = () => {
 
     useAppTitle(t('download.title.download'));
 
-    const categories = requestManager.useGetCategories<GetCategoriesSettingsQuery, GetCategoriesSettingsQueryVariables>(
-        GET_CATEGORIES_SETTINGS,
-    );
+    const categories = requestManager.useGetCategoriesSettings();
     const serverSettings = requestManager.useGetServerSettings({ notifyOnNetworkStatusChange: true });
     const [mutateSettings] = requestManager.useUpdateServerSettings();
     const {

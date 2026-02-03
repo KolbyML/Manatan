@@ -28,8 +28,6 @@ import { defaultPromiseErrorHandler } from '@/lib/DefaultPromiseErrorHandler.ts'
 import { useMetadataServerSettings } from '@/features/settings/services/ServerSettingsMetadata.ts';
 import { ChapterCard } from '@/features/chapter/components/cards/ChapterCard.tsx';
 import { requestManager } from '@/lib/requests/RequestManager.ts';
-import { GetChaptersMangaQuery } from '@/lib/graphql/generated/graphql.ts';
-import { GET_CHAPTERS_MANGA } from '@/lib/graphql/chapter/ChapterQuery.ts';
 import { CHAPTER_ACTION_TO_TRANSLATION } from '@/features/chapter/Chapter.constants.ts';
 import {
     ChapterAction,
@@ -79,14 +77,10 @@ export const ChapterActionMenuItems = ({
     const isSingleMode = !!chapter;
     const { isDownloaded, isRead, isBookmarked } = chapter ?? {};
 
-    const mangaChaptersResponse = requestManager.useGetMangaChapters<GetChaptersMangaQuery>(
-        GET_CHAPTERS_MANGA,
-        chapter?.mangaId ?? -1,
-        {
-            skip: !chapter,
-            fetchPolicy: 'cache-only',
-        },
-    );
+    const mangaChaptersResponse = requestManager.useGetMangaChaptersList(chapter?.mangaId ?? -1, {
+        skip: !chapter,
+        fetchPolicy: 'cache-only',
+    });
     const allChapters = mangaChaptersResponse.data?.chapters.nodes ?? [];
 
     const {

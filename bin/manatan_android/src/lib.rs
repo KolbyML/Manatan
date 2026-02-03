@@ -7,7 +7,7 @@ use std::{
     os::unix::io::FromRawFd,
     path::{Path, PathBuf},
     sync::{
-        Arc, Mutex,
+        Arc, Mutex, OnceLock,
         atomic::{AtomicBool, AtomicI64, Ordering},
     },
     thread,
@@ -16,18 +16,17 @@ use std::{
 
 use axum::{
     Json, Router,
-    body::{Body, Bytes},
-    extract::{
-        FromRequestParts, Request, State,
-        ws::{Message, WebSocket, WebSocketUpgrade},
-    },
-    http::{HeaderMap, Method, StatusCode, Uri},
-    response::{IntoResponse, Response},
+    http::{Method, StatusCode, Uri},
+    response::IntoResponse,
     routing::any,
 };
 use eframe::egui;
 use flate2::read::GzDecoder;
-use futures::{SinkExt, StreamExt};
+use manatan_server_public::{
+    app::build_router_without_cors,
+    build_state,
+    config::Config as ManatanServerConfig,
+};
 use jni::{
     JavaVM,
     objects::{JObject, JString, JValue},
@@ -40,16 +39,8 @@ use serde::{Deserialize, Serialize};
 use serde_json::json;
 use tar::Archive;
 use tokio::{fs as tokio_fs, net::TcpListener};
-use tokio_tungstenite::{
-    connect_async,
-    tungstenite::{
-        client::IntoClientRequest,
-        protocol::{Message as TungsteniteMessage, frame::coding::CloseCode},
-    },
-};
 use tower_http::cors::{AllowOrigin, CorsLayer};
-use tracing::warn;
-use tracing::{error, info, trace};
+use tracing::{error, info, trace, warn};
 use tracing_log::LogTracer;
 use tracing_subscriber::{EnvFilter, fmt::MakeWriter};
 use winit::platform::android::{EventLoopBuilderExtAndroid, activity::AndroidApp};
@@ -58,7 +49,20 @@ lazy_static! {
     static ref LOG_BUFFER: Mutex<VecDeque<String>> = Mutex::new(VecDeque::with_capacity(500));
 }
 
+static WEBUI_DIR: OnceLock<PathBuf> = OnceLock::new();
+
 const TACHI_DATA_DIR_NAME: &str = "tachidesk_data";
+
+fn env_bool(key: &str, default: bool) -> bool {
+    std::env::var(key)
+        .ok()
+        .and_then(|value| match value.to_lowercase().as_str() {
+            "1" | "true" | "yes" | "on" => Some(true),
+            "0" | "false" | "no" | "off" => Some(false),
+            _ => None,
+        })
+        .unwrap_or(default)
+}
 
 fn get_files_dir_from_context(env: &mut jni::JNIEnv, context: &JObject) -> Option<PathBuf> {
     let dir_obj = env
@@ -572,17 +576,13 @@ fn android_main(app: AndroidApp) {
         let rt = tokio::runtime::Runtime::new().expect("Failed to build Tokio runtime");
 
         rt.spawn(async move {
-            let client = reqwest::Client::new();
-            let query_payload = r#"{"query": "query AllCategories { categories { nodes { mangas { nodes { title } } } } }"}"#;
+            let client = Client::new();
 
             loop {
-                let request = client
-                    .post("http://127.0.0.1:4568/api/graphql")
-                    .header("Content-Type", "application/json")
-                    .body(query_payload);
+                let request = client.get("http://127.0.0.1:4568/health");
 
                 match request.send().await {
-                    Ok(resp) if resp.status().is_success() || resp.status() == StatusCode::UNAUTHORIZED => {
+                    Ok(resp) if resp.status().is_success() => {
                         if !server_ready_bg.load(Ordering::Relaxed) {
                             server_ready_bg.store(true, Ordering::Relaxed);
                             let app_clone_3 = app_clone_2.clone();
@@ -709,18 +709,52 @@ fn launch_webview_activity(app: &AndroidApp) {
 }
 
 async fn start_web_server(data_dir: PathBuf) -> Result<(), Box<dyn std::error::Error>> {
-    info!("🚀 Initializing Axum Proxy Server on port 4568...");
-    let ocr_router = manatan_ocr_server::create_router(data_dir.clone());
-
-    info!("📚 Initializing Yomitan Server...");
-    let yomitan_router = manatan_yomitan_server::create_router(data_dir.clone());
-
-    let audio_router = manatan_audio_server::create_router(data_dir.clone());
-
+    info!("🚀 Initializing Manatan Server on port 4568...");
     let webui_dir = data_dir.join("webui");
-    let client = Client::new();
+    let _ = WEBUI_DIR.set(webui_dir);
 
-    let state = AppState { client, webui_dir };
+    let manatan_db_path = std::env::var("MANATAN_DB_PATH")
+        .unwrap_or_else(|_| data_dir.join("manatan.sqlite").to_string_lossy().to_string());
+    let manatan_migrate_path = std::env::var("MANATAN_MIGRATE_PATH").ok();
+    let manatan_runtime_url = std::env::var("MANATAN_JAVA_URL")
+        .unwrap_or_else(|_| "http://127.0.0.1:4566".to_string());
+    let tracker_remote_search = env_bool("MANATAN_TRACKER_REMOTE_SEARCH", true);
+    let tracker_search_ttl_seconds = std::env::var("MANATAN_TRACKER_SEARCH_TTL_SECONDS")
+        .ok()
+        .and_then(|value| value.parse::<i64>().ok())
+        .unwrap_or(3600);
+    let downloads_path = std::env::var("MANATAN_DOWNLOADS_PATH")
+        .unwrap_or_else(|_| data_dir.join("downloads").to_string_lossy().to_string());
+    let aidoku_index_url = std::env::var("MANATAN_AIDOKU_INDEX").unwrap_or_default();
+    let aidoku_enabled = env_bool("MANATAN_AIDOKU_ENABLED", true);
+    let aidoku_cache_path = std::env::var("MANATAN_AIDOKU_CACHE")
+        .unwrap_or_else(|_| data_dir.join("aidoku").to_string_lossy().to_string());
+    let local_manga_path = std::env::var("MANATAN_LOCAL_MANGA_PATH")
+        .unwrap_or_else(|_| data_dir.join("local-manga").to_string_lossy().to_string());
+    let local_anime_path = std::env::var("MANATAN_LOCAL_ANIME_PATH")
+        .unwrap_or_else(|_| data_dir.join("local-anime").to_string_lossy().to_string());
+    let manatan_config = ManatanServerConfig {
+        host: "0.0.0.0".to_string(),
+        port: 4568,
+        java_runtime_url: manatan_runtime_url,
+        webview_enabled: false,
+        aidoku_index_url,
+        aidoku_enabled,
+        aidoku_cache_path,
+        db_path: manatan_db_path,
+        migrate_path: manatan_migrate_path,
+        tracker_remote_search,
+        tracker_search_ttl_seconds,
+        downloads_path,
+        local_manga_path,
+        local_anime_path,
+    };
+    let manatan_state = build_state(manatan_config).await?;
+    let manatan_router = build_router_without_cors(manatan_state);
+
+    let ocr_router = manatan_ocr_server::create_router(data_dir.clone());
+    let yomitan_router = manatan_yomitan_server::create_router(data_dir.clone());
+    let audio_router = manatan_audio_server::create_router(data_dir.clone());
 
     let cors = CorsLayer::new()
         .allow_origin(AllowOrigin::mirror_request())
@@ -753,10 +787,9 @@ async fn start_web_server(data_dir: PathBuf) -> Result<(), Box<dyn std::error::E
         .nest_service("/api/ocr", ocr_router)
         .nest_service("/api/yomitan", yomitan_router)
         .nest_service("/api/audio", audio_router)
-        .route("/api/{*path}", any(proxy_suwayomi_handler))
+        .merge(manatan_router)
         .fallback(serve_react_app)
-        .layer(cors)
-        .with_state(state);
+        .layer(cors);
 
     let listener = TcpListener::bind("0.0.0.0:4568").await?;
     info!("✅ Web Server listening on 0.0.0.0:4568");
@@ -764,13 +797,20 @@ async fn start_web_server(data_dir: PathBuf) -> Result<(), Box<dyn std::error::E
     Ok(())
 }
 
-async fn serve_react_app(State(state): State<AppState>, uri: Uri) -> impl IntoResponse {
+async fn serve_react_app(uri: Uri) -> impl IntoResponse {
+    let Some(webui_dir) = WEBUI_DIR.get() else {
+        return (
+            StatusCode::NOT_FOUND,
+            "404 - WebUI assets not configured",
+        )
+            .into_response();
+    };
     let path_str = uri.path().trim_start_matches('/');
 
     if !path_str.is_empty() {
-        let file_path = state.webui_dir.join(path_str);
+        let file_path = webui_dir.join(path_str);
 
-        if file_path.starts_with(&state.webui_dir) && file_path.exists() {
+        if file_path.starts_with(webui_dir) && file_path.exists() {
             if let Ok(content) = tokio_fs::read(&file_path).await {
                 let mime = mime_guess::from_path(&file_path).first_or_octet_stream();
                 return (
@@ -788,7 +828,7 @@ async fn serve_react_app(State(state): State<AppState>, uri: Uri) -> impl IntoRe
         }
     }
 
-    let index_path = state.webui_dir.join("index.html");
+    let index_path = webui_dir.join("index.html");
     if let Ok(html_string) = tokio_fs::read_to_string(index_path).await {
         let fixed_html = html_string.replace("<head>", "<head><base href=\"/\" />");
         return (
@@ -809,170 +849,6 @@ async fn serve_react_app(State(state): State<AppState>, uri: Uri) -> impl IntoRe
         "404 - WebUI assets not found in internal storage",
     )
         .into_response()
-}
-
-async fn proxy_suwayomi_handler(State(state): State<AppState>, req: Request) -> Response {
-    let client = state.client;
-
-    let (mut parts, body) = req.into_parts();
-    let is_ws = parts
-        .headers
-        .get("upgrade")
-        .and_then(|v| v.to_str().ok())
-        .map(|v| v.eq_ignore_ascii_case("websocket"))
-        .unwrap_or(false);
-
-    if is_ws {
-        let path_query = parts
-            .uri
-            .path_and_query()
-            .map(|v| v.as_str())
-            .unwrap_or(parts.uri.path());
-        let backend_url = format!("ws://127.0.0.1:4567{path_query}");
-        let headers = parts.headers.clone();
-        let protocols: Vec<String> = parts
-            .headers
-            .get("sec-websocket-protocol")
-            .and_then(|v| v.to_str().ok())
-            .map(|v| v.split(',').map(|s| s.trim().to_string()).collect())
-            .unwrap_or_default();
-
-        match WebSocketUpgrade::from_request_parts(&mut parts, &()).await {
-            Ok(ws) => {
-                return ws
-                    .protocols(protocols)
-                    .on_upgrade(move |socket| handle_socket(socket, headers, backend_url))
-                    .into_response();
-            }
-            Err(err) => return err.into_response(),
-        }
-    }
-
-    let req = Request::from_parts(parts, body);
-    proxy_request(client, req, "http://127.0.0.1:4567", "").await
-}
-
-async fn handle_socket(client_socket: WebSocket, headers: HeaderMap, backend_url: String) {
-    let mut request = match backend_url.clone().into_client_request() {
-        Ok(req) => req,
-        Err(e) => {
-            error!("Invalid backend URL {}: {}", backend_url, e);
-            return;
-        }
-    };
-    for &name in &[
-        "cookie",
-        "authorization",
-        "user-agent",
-        "sec-websocket-protocol",
-        "origin",
-    ] {
-        if let Some(value) = headers.get(name) {
-            request.headers_mut().insert(name, value.clone());
-        }
-    }
-    let (backend_socket, _) = match connect_async(request).await {
-        Ok(conn) => conn,
-        Err(e) => {
-            error!("Backend WS connect fail: {}", e);
-            return;
-        }
-    };
-    let (mut client_sender, mut client_receiver) = client_socket.split();
-    let (mut backend_sender, mut backend_receiver) = backend_socket.split();
-    loop {
-        tokio::select! {
-            msg = client_receiver.next() => match msg {
-                Some(Ok(msg)) => if let Some(t_msg) = axum_to_tungstenite(msg) {
-                     if backend_sender.send(t_msg).await.is_err() { break; }
-                },
-                _ => break,
-            },
-            msg = backend_receiver.next() => match msg {
-                Some(Ok(msg)) => if client_sender.send(tungstenite_to_axum(msg)).await.is_err() { break; },
-                _ => break,
-            }
-        }
-    }
-}
-
-async fn proxy_request(
-    client: Client,
-    req: Request,
-    base_url: &str,
-    strip_prefix: &str,
-) -> Response {
-    let path_query = req
-        .uri()
-        .path_and_query()
-        .map(|v| v.as_str())
-        .unwrap_or(req.uri().path());
-    let target_path = if !strip_prefix.is_empty() && path_query.starts_with(strip_prefix) {
-        &path_query[strip_prefix.len()..]
-    } else {
-        path_query
-    };
-
-    let target_url = format!("{base_url}{target_path}");
-    let method = req.method().clone();
-    let headers = req.headers().clone();
-    let body = reqwest::Body::wrap_stream(req.into_body().into_data_stream());
-
-    let mut builder = client.request(method, &target_url).body(body);
-    for (key, value) in headers.iter() {
-        if key.as_str() != "host" {
-            builder = builder.header(key, value);
-        }
-    }
-
-    match builder.send().await {
-        Ok(resp) => {
-            let mut response_builder = Response::builder().status(resp.status());
-            for (key, value) in resp.headers() {
-                response_builder = response_builder.header(key, value);
-            }
-            response_builder
-                .body(Body::from_stream(resp.bytes_stream()))
-                .unwrap()
-        }
-        Err(_err) => Response::builder()
-            .status(StatusCode::BAD_GATEWAY)
-            .body(Body::empty())
-            .unwrap(),
-    }
-}
-
-fn axum_to_tungstenite(msg: Message) -> Option<TungsteniteMessage> {
-    match msg {
-        Message::Text(t) => Some(TungsteniteMessage::Text(t.as_str().into())),
-        Message::Binary(b) => Some(TungsteniteMessage::Binary(b.to_vec())),
-        Message::Ping(p) => Some(TungsteniteMessage::Ping(p.to_vec())),
-        Message::Pong(p) => Some(TungsteniteMessage::Pong(p.to_vec())),
-        Message::Close(c) => {
-            let frame = c.map(|cf| tokio_tungstenite::tungstenite::protocol::CloseFrame {
-                code: CloseCode::from(cf.code),
-                reason: cf.reason.to_string().into(),
-            });
-            Some(TungsteniteMessage::Close(frame))
-        }
-    }
-}
-
-fn tungstenite_to_axum(msg: TungsteniteMessage) -> Message {
-    match msg {
-        TungsteniteMessage::Text(t) => Message::Text(t.as_str().into()),
-        TungsteniteMessage::Binary(b) => Message::Binary(b.into()),
-        TungsteniteMessage::Ping(p) => Message::Ping(p.into()),
-        TungsteniteMessage::Pong(p) => Message::Pong(p.into()),
-        TungsteniteMessage::Close(c) => {
-            let frame = c.map(|cf| axum::extract::ws::CloseFrame {
-                code: u16::from(cf.code),
-                reason: cf.reason.to_string().into(),
-            });
-            Message::Close(frame)
-        }
-        TungsteniteMessage::Frame(_) => Message::Binary(Bytes::new().into()),
-    }
 }
 
 fn start_background_services(app: AndroidApp, files_dir: PathBuf) {
@@ -1464,12 +1340,6 @@ fn find_file_in_dir(dir: &Path, filename: &str) -> Option<PathBuf> {
         }
     }
     None
-}
-
-#[derive(Clone)]
-struct AppState {
-    client: Client,
-    webui_dir: PathBuf,
 }
 
 fn ensure_battery_unrestricted(app: &AndroidApp) {

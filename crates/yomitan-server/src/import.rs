@@ -1,11 +1,14 @@
+use std::{
+    collections::{HashMap, HashSet},
+    io::Read,
+};
+
 use anyhow::Result;
 use serde_json::Value;
-use std::collections::{HashMap, HashSet};
-use std::io::Read;
 use tracing::info;
 use wordbase_api::{
-    dict::yomitan::{structured, Glossary, GlossaryTag},
     DictionaryId, DictionaryKind, DictionaryMeta, Record,
+    dict::yomitan::{Glossary, GlossaryTag, structured},
 };
 use zip::ZipArchive;
 

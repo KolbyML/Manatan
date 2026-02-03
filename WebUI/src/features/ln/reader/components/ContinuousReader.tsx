@@ -607,6 +607,8 @@ export const ContinuousReader: React.FC<ContinuousReaderProps> = ({
         direction: 'ltr',
     }), [isVertical]);
 
+    const handleUpdateSettings = onUpdateSettings ?? (() => {});
+
     return (
         <div
     className={`continuous-reader-wrapper ${isRTL ? 'rtl-mode' : 'ltr-mode'}`}
@@ -645,6 +647,8 @@ export const ContinuousReader: React.FC<ContinuousReaderProps> = ({
                 onPrev={() => scrollSmall(false)}
                 canGoNext={scrollProgress < 100}
                 canGoPrev={scrollProgress > 0}
+                currentPage={0}
+                totalPages={1}
                 currentChapter={currentChapter}
                 totalChapters={chapters.length}
                 progress={scrollProgress}
@@ -652,8 +656,8 @@ export const ContinuousReader: React.FC<ContinuousReaderProps> = ({
                 theme={theme}
                 isVertical={isVertical}
                 mode="continuous"
-                currentPosition={currentPosition}
-                bookStats={stats}
+                currentPosition={currentPosition ?? undefined}
+                bookStats={stats ?? undefined}
                 settings={settings}
                 onUpdateSettings={onUpdateSettings}
                 isSaved={isSaved}

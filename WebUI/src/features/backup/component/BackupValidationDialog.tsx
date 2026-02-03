@@ -19,7 +19,7 @@ import Stack from '@mui/material/Stack';
 import { AwaitableComponentProps } from 'awaitable-component';
 import { BrowseTab } from '@/features/browse/Browse.types.ts';
 import { AppRoutes } from '@/base/AppRoute.constants.ts';
-import { ValidateBackupResult } from '@/lib/graphql/generated/graphql.ts';
+import { ValidateBackupResult } from '@/lib/requests/types.ts';
 
 export const BackupValidationDialog = ({
     validationResult,

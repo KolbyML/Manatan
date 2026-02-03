@@ -10,7 +10,7 @@ import { MetadataServerSettingKeys, SearchMetadataKeys } from '@/features/settin
 import { MangaMetadataKeys } from '@/features/manga/Manga.types.ts';
 import { SourceMetadataKeys } from '@/features/source/Source.types.ts';
 import { CategoryMetadataKeys } from '@/features/category/Category.types.ts';
-import { MetaType } from '@/lib/graphql/generated/graphql.ts';
+import { MetaType } from '@/lib/requests/types.ts';
 import { IReaderSettings } from '@/features/reader/Reader.types.ts';
 
 export interface IMetadataMigration {

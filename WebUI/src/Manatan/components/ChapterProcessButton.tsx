@@ -1,23 +1,39 @@
 import React, { useEffect, useState, useRef } from 'react';
-import { checkChapterStatus, preprocessChapter, ChapterStatus, AuthCredentials } from '@/Manatan/utils/api';
+import { buildChapterBaseUrl, checkChapterStatus, preprocessChapter, ChapterStatus, AuthCredentials } from '@/Manatan/utils/api';
 import { YomitanLanguage } from '@/Manatan/types';
 
 interface ChapterProcessButtonProps {
     chapterPath: string; 
     creds?: AuthCredentials;
     language?: YomitanLanguage;
+    initialStatus?: ChapterStatus;
 }
 
 export const ChapterProcessButton: React.FC<ChapterProcessButtonProps> = ({
     chapterPath,
     creds,
     language,
+    initialStatus,
 }) => {
-    const [status, setStatus] = useState<ChapterStatus>({ status: 'idle', cached: 0, total: 0 });
-    const apiBaseUrl = `${window.location.origin}/api/v1${chapterPath}/page/`;
+    const [status, setStatus] = useState<ChapterStatus>(
+        initialStatus ?? { status: 'idle', cached: 0, total: 0 }
+    );
+    const [statusEnabled, setStatusEnabled] = useState(false);
+    const apiBaseUrl = buildChapterBaseUrl(chapterPath);
     const startingRef = useRef(false);
 
     useEffect(() => {
+        if (!initialStatus) return;
+        if (startingRef.current) return;
+        if (status.status === 'processing') return;
+        setStatus(initialStatus);
+        if (initialStatus.status === 'processing') {
+            setStatusEnabled(true);
+        }
+    }, [initialStatus, status.status]);
+
+    useEffect(() => {
+        if (!statusEnabled) return;
         let mounted = true;
         let intervalId: number | null = null;
 
@@ -73,7 +89,7 @@ export const ChapterProcessButton: React.FC<ChapterProcessButtonProps> = ({
             mounted = false; 
             if (intervalId) clearInterval(intervalId);
         };
-    }, [apiBaseUrl, status, creds, language]); 
+    }, [apiBaseUrl, status, creds, language, statusEnabled]); 
 
     const handleClick = async (e: React.MouseEvent) => {
         e.preventDefault();
@@ -81,8 +97,15 @@ export const ChapterProcessButton: React.FC<ChapterProcessButtonProps> = ({
         
         if (status.status !== 'idle') return;
 
+        setStatusEnabled(true);
+        const currentStatus = await checkChapterStatus(apiBaseUrl, creds, language);
+        if (currentStatus.status !== 'idle') {
+            setStatus(currentStatus);
+            return;
+        }
+
         startingRef.current = true;
-        setStatus({ status: 'processing', progress: 0, total: 0 }); 
+        setStatus({ status: 'processing', progress: 0, total: currentStatus.total ?? 0 }); 
         
         try {
             await preprocessChapter(apiBaseUrl, chapterPath, creds, language);
@@ -94,7 +117,7 @@ export const ChapterProcessButton: React.FC<ChapterProcessButtonProps> = ({
         } catch (err) {
             console.error(err);
             startingRef.current = false;
-            setStatus({ status: 'idle', cached: 0, total: 0 });
+            setStatus({ status: 'idle', cached: currentStatus.cached ?? 0, total: currentStatus.total ?? 0 });
         }
     };
 

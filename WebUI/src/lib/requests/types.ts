@@ -511,7 +511,7 @@ export type DoubleFilterInput = {
 };
 
 export type DownloadChangedInput = {
-  /** Sets a max number of updates that can be contained in a download update message.Everything above this limit will be omitted and the "downloadStatus" should be re-fetched via the corresponding query. Due to the graphql subscription execution strategy not supporting batching for data loaders, the data loaders run into the n+1 problem, which can cause the server to get unresponsive until the status update has been handled. This is an issue e.g. when mass en- or dequeuing downloads. */
+  /** Sets a max number of updates that can be contained in a download update message.Everything above this limit will be omitted and the "downloadStatus" should be re-fetched via the corresponding query. Due to the subscription execution strategy not supporting batching for data loaders, the data loaders run into the n+1 problem, which can cause the server to get unresponsive until the status update has been handled. This is an issue e.g. when mass en- or dequeuing downloads. */
   maxUpdates?: InputMaybe<Scalars['Int']['input']>;
 };
 
@@ -905,7 +905,7 @@ export type LibraryUpdateStatus = {
 };
 
 export type LibraryUpdateStatusChangedInput = {
-  /** Sets a max number of updates that can be contained in a updater update message.Everything above this limit will be omitted and the "updateStatus" should be re-fetched via the corresponding query. Due to the graphql subscription execution strategy not supporting batching for data loaders, the data loaders run into the n+1 problem, which can cause the server to get unresponsive until the status update has been handled. This is an issue e.g. when starting an update. */
+  /** Sets a max number of updates that can be contained in a updater update message.Everything above this limit will be omitted and the "updateStatus" should be re-fetched via the corresponding query. Due to the subscription execution strategy not supporting batching for data loaders, the data loaders run into the n+1 problem, which can cause the server to get unresponsive until the status update has been handled. This is an issue e.g. when starting an update. */
   maxUpdates?: InputMaybe<Scalars['Int']['input']>;
 };
 
@@ -1681,6 +1681,7 @@ export type PartialSettingsType = Settings & {
   excludeUnreadChapters?: Maybe<Scalars['Boolean']['output']>;
   extensionRepos?: Maybe<Array<Scalars['String']['output']>>;
   animeExtensionRepos?: Maybe<Array<Scalars['String']['output']>>;
+  novelExtensionRepos?: Maybe<Array<Scalars['String']['output']>>;
   flareSolverrAsResponseFallback?: Maybe<Scalars['Boolean']['output']>;
   flareSolverrEnabled?: Maybe<Scalars['Boolean']['output']>;
   flareSolverrSessionName?: Maybe<Scalars['String']['output']>;
@@ -1773,6 +1774,7 @@ export type PartialSettingsTypeInput = {
   excludeUnreadChapters?: InputMaybe<Scalars['Boolean']['input']>;
   extensionRepos?: InputMaybe<Array<Scalars['String']['input']>>;
   animeExtensionRepos?: InputMaybe<Array<Scalars['String']['input']>>;
+  novelExtensionRepos?: InputMaybe<Array<Scalars['String']['input']>>;
   flareSolverrAsResponseFallback?: InputMaybe<Scalars['Boolean']['input']>;
   flareSolverrEnabled?: InputMaybe<Scalars['Boolean']['input']>;
   flareSolverrSessionName?: InputMaybe<Scalars['String']['input']>;
@@ -2218,6 +2220,7 @@ export type Settings = {
   excludeUnreadChapters?: Maybe<Scalars['Boolean']['output']>;
   extensionRepos?: Maybe<Array<Scalars['String']['output']>>;
   animeExtensionRepos?: Maybe<Array<Scalars['String']['output']>>;
+  novelExtensionRepos?: Maybe<Array<Scalars['String']['output']>>;
   flareSolverrAsResponseFallback?: Maybe<Scalars['Boolean']['output']>;
   flareSolverrEnabled?: Maybe<Scalars['Boolean']['output']>;
   flareSolverrSessionName?: Maybe<Scalars['String']['output']>;
@@ -2362,6 +2365,7 @@ export type SettingsType = Settings & {
   excludeUnreadChapters: Scalars['Boolean']['output'];
   extensionRepos: Array<Scalars['String']['output']>;
   animeExtensionRepos: Array<Scalars['String']['output']>;
+  novelExtensionRepos: Array<Scalars['String']['output']>;
   flareSolverrAsResponseFallback: Scalars['Boolean']['output'];
   flareSolverrEnabled: Scalars['Boolean']['output'];
   flareSolverrSessionName: Scalars['String']['output'];

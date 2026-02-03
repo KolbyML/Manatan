@@ -16,7 +16,7 @@ import { PopupState } from 'material-ui-popup-state/hooks';
 import { bindTrigger } from 'material-ui-popup-state';
 import { CustomTooltip } from '@/base/components/CustomTooltip.tsx';
 import { SelectableCollectionReturnType } from '@/base/collection/hooks/useSelectableCollection.ts';
-import { MangaType } from '@/lib/graphql/generated/graphql.ts';
+import { MangaType } from '@/lib/requests/types.ts';
 import { MUIUtil } from '@/lib/mui/MUI.util.ts';
 
 export const MangaOptionButton = ({

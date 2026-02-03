@@ -24,7 +24,7 @@ import {
     SettingsDownloadConversion,
     SettingsDownloadConversionHeader,
     SettingsDownloadConversionType,
-} from '@/lib/graphql/generated/graphql.ts';
+} from '@/lib/requests/types.ts';
 
 let COUNTER = 0;
 

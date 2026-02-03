@@ -17,9 +17,7 @@ import { Trackers } from '@/features/tracker/services/Trackers.ts';
 import { TrackerCard, TrackerMode } from '@/features/tracker/components/cards/TrackerCard.tsx';
 import { makeToast } from '@/base/utils/Toast.ts';
 import { defaultPromiseErrorHandler } from '@/lib/DefaultPromiseErrorHandler.ts';
-import { GetMangaTrackRecordsQuery, GetTrackersBindQuery, MangaType } from '@/lib/graphql/generated/graphql.ts';
-import { GET_TRACKERS_BIND } from '@/lib/graphql/tracker/TrackerQuery.ts';
-import { GET_MANGA_TRACK_RECORDS } from '@/lib/graphql/manga/MangaQuery.ts';
+import { MangaType } from '@/lib/requests/types.ts';
 import { MangaIdInfo } from '@/features/manga/Manga.types.ts';
 import { AppRoutes } from '@/base/AppRoute.constants.ts';
 import { getErrorMessage } from '@/lib/HelperFunctions.ts';
@@ -43,15 +41,10 @@ export const TrackManga = ({ manga }: { manga: MangaIdInfo & Pick<MangaType, 'ti
 
     const [searchModeForTracker, setSearchModeForTracker] = useState<number>();
 
-    const trackerList = requestManager.useGetTrackerList<GetTrackersBindQuery>(GET_TRACKERS_BIND, {
-        notifyOnNetworkStatusChange: true,
-    });
+    const trackerList = requestManager.useGetTrackersBind({ notifyOnNetworkStatusChange: true });
     const trackers = trackerList.data?.trackers.nodes ?? [];
 
-    const mangaTrackRecordsList = requestManager.useGetManga<GetMangaTrackRecordsQuery>(
-        GET_MANGA_TRACK_RECORDS,
-        manga.id,
-    );
+    const mangaTrackRecordsList = requestManager.useGetMangaTrackRecords(manga.id);
     const mangaTrackRecords = mangaTrackRecordsList.data?.manga.trackRecords.nodes ?? [];
 
     const loggedInTrackers = Trackers.getLoggedIn(trackers);

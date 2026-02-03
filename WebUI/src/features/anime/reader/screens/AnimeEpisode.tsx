@@ -79,7 +79,7 @@ const normalizeVideoLabel = (label: string) =>
 
 export const AnimeEpisode = () => {
     const { t } = useTranslation();
-    const { id, episodeIndex } = useParams();
+    const { id, episodeIndex } = useParams<{ id: string; episodeIndex: string }>();
     const navigate = useNavigate();
     const theme = useTheme();
     const isTouchDevice = MediaQuery.useIsTouchDevice();
@@ -117,7 +117,6 @@ export const AnimeEpisode = () => {
     const [error, setError] = useState<string | null>(null);
     const [loading, setLoading] = useState(true);
     const [videosLoading, setVideosLoading] = useState(true);
-    const [refreshing, setRefreshing] = useState(false);
     const [refreshToken, setRefreshToken] = useState(0);
     const [videoRetryCount, setVideoRetryCount] = useState(0);
     const [jimakuFiles, setJimakuFiles] = useState<JimakuFileEntry[]>([]);
@@ -142,9 +141,7 @@ export const AnimeEpisode = () => {
         const shouldForceFetch = isRefresh || videoRetryCount > 0;
 
         setError(null);
-        if (isRefresh) {
-            setRefreshing(true);
-        } else {
+        if (!isRefresh) {
             setLoading(true);
         }
 
@@ -197,7 +194,6 @@ export const AnimeEpisode = () => {
             .finally(() => {
                 if (isMounted) {
                     setVideosLoading(false);
-                    setRefreshing(false);
                 }
             });
 

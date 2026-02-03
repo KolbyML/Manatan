@@ -730,12 +730,6 @@
                     }
                 },
                 "log_level": {
-                    "graphql": {
-                        "label": {
-                            "description": "Cela inclut les journaux contenant des informations non sécurisées pour la confidentialité",
-                            "title": "Activer les journaux de débogage GraphQL"
-                        }
-                    },
                     "label": {
                         "server": "Activer les journaux de débogage"
                     }

@@ -7,6 +7,8 @@
  */
 
 import { useTranslation } from 'react-i18next';
+import { useEffect } from 'react';
+import { useLocation } from 'react-router-dom';
 import List from '@mui/material/List';
 import ListSubheader from '@mui/material/ListSubheader';
 import ListItem from '@mui/material/ListItem';
@@ -22,14 +24,13 @@ import {
 } from '@/features/settings/services/ServerSettingsMetadata.ts';
 import { makeToast } from '@/base/utils/Toast.ts';
 import { defaultPromiseErrorHandler } from '@/lib/DefaultPromiseErrorHandler.ts';
-import { GET_TRACKERS_SETTINGS } from '@/lib/graphql/tracker/TrackerQuery.ts';
-import { GetTrackersSettingsQuery } from '@/lib/graphql/generated/graphql.ts';
 import { MetadataTrackingSettings } from '@/features/tracker/Tracker.types.ts';
 import { getErrorMessage } from '@/lib/HelperFunctions.ts';
 import { useAppTitle } from '@/features/navigation-bar/hooks/useAppTitle.ts';
 
 export const TrackingSettings = () => {
     const { t } = useTranslation();
+    const location = useLocation();
 
     useAppTitle(t('tracking.title'));
 
@@ -47,10 +48,16 @@ export const TrackingSettings = () => {
         loading: areTrackersLoading,
         error: trackersError,
         refetch: refetchTrackersList,
-    } = requestManager.useGetTrackerList<GetTrackersSettingsQuery>(GET_TRACKERS_SETTINGS, {
-        notifyOnNetworkStatusChange: true,
-    });
+    } = requestManager.useGetTrackersSettings({ notifyOnNetworkStatusChange: true });
     const trackers = data?.trackers.nodes ?? [];
+
+    useEffect(() => {
+        const shouldRefresh = Boolean((location.state as { refreshTrackers?: boolean } | undefined)?.refreshTrackers);
+        if (!shouldRefresh) {
+            return;
+        }
+        refetchTrackersList().catch(defaultPromiseErrorHandler('TrackingSettings::refetchTrackersList'));
+    }, [location.state, refetchTrackersList]);
 
     const loading = areMetadataServerSettingsLoading || areTrackersLoading;
     const error = metadataServerSettingsError ?? trackersError;
@@ -112,7 +119,15 @@ export const TrackingSettings = () => {
                 }
             >
                 {trackers.map((tracker) => (
-                    <SettingsTrackerCard key={tracker.id} tracker={tracker} />
+                    <SettingsTrackerCard
+                        key={tracker.id}
+                        tracker={tracker}
+                        onAuthChange={() =>
+                            refetchTrackersList().catch(
+                                defaultPromiseErrorHandler('TrackingSettings::refetchTrackersList'),
+                            )
+                        }
+                    />
                 ))}
             </List>
         </>

@@ -105,11 +105,13 @@ export class AuthManager {
 
     static setAuthInitialized(value: boolean): void {
         AuthManager.authInitialized = value;
+        console.info('[auth] Auth initialized set', { value });
         AuthManager.notify();
     }
 
     static setAuthRequired(value: boolean | null): void {
         AuthManager.authRequired = value;
+        console.info('[auth] Auth required set', { value });
         AuthManager.notify();
     }
 

@@ -54,6 +54,7 @@ import TextFieldsIcon from '@mui/icons-material/TextFields';
 import { useTheme } from '@mui/material/styles';
 import useMediaQuery from '@mui/material/useMediaQuery';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import type { MouseEvent as ReactMouseEvent } from 'react';
 import { useHotkeys as useHotkeysHook, useHotkeysContext } from 'react-hotkeys-hook';
 import Hls from 'hls.js';
 import { requestManager } from '@/lib/requests/RequestManager.ts';
@@ -672,8 +673,8 @@ export const AnimeVideoPlayer = ({
     const [dictionaryVisible, setDictionaryVisible] = useState(false);
     const [dictionaryResults, setDictionaryResults] = useState<DictionaryResult[]>([]);
     const [dictionaryLoading, setDictionaryLoading] = useState(false);
-    const [dictionarySystemLoading, setDictionarySystemLoading] = useState(false);
-    const [dictionaryQuery, setDictionaryQuery] = useState('');
+    const [, setDictionarySystemLoading] = useState(false);
+    const [, setDictionaryQuery] = useState('');
     const [wordAudioMenuAnchor, setWordAudioMenuAnchor] = useState<{ top: number; left: number } | null>(null);
     const [wordAudioMenuEntry, setWordAudioMenuEntry] = useState<DictionaryResult | null>(null);
     const [wordAudioSelection, setWordAudioSelection] = useState<WordAudioSourceSelection>('auto');
@@ -953,10 +954,11 @@ export const AnimeVideoPlayer = ({
         if (!isMobile || !fillHeight) {
             return;
         }
-        const orientation = screen?.orientation;
-        if (orientation?.lock) {
-            orientation.lock('landscape').catch(() => {});
-        }
+        const orientation =
+            (screen as typeof screen & {
+                orientation?: { lock?: (orientation: string) => Promise<void>; unlock?: () => void };
+            }).orientation ?? undefined;
+        orientation?.lock?.('landscape').catch(() => {});
         return () => {
             orientation?.unlock?.();
         };
@@ -1094,6 +1096,14 @@ export const AnimeVideoPlayer = ({
 
     const markMenuInteraction = useCallback(() => {
         menuInteractionRef.current = Date.now();
+    }, []);
+
+    const stopMenuEvent = useCallback((event?: unknown) => {
+        (event as { stopPropagation?: () => void })?.stopPropagation?.();
+    }, []);
+
+    const stopMenuClick = useCallback((event: ReactMouseEvent<HTMLElement>) => {
+        event.stopPropagation();
     }, []);
 
     const shouldIgnoreOverlayToggle = () => Date.now() - menuInteractionRef.current < 250;
@@ -2040,28 +2050,31 @@ export const AnimeVideoPlayer = ({
         };
 
         const captureNativeFrame = async () => {
-            const native = (window as typeof window & { ManatanNative?: { captureFrame?: (callbackId: string, payload: string) => void } })
-                .ManatanNative;
-            if (!native?.captureFrame) {
+            const native =
+                (window as typeof window & {
+                    ManatanNative?: { captureFrame?: (callbackId: string, payload: string) => void };
+                }).ManatanNative ?? undefined;
+            const capture = native?.captureFrame;
+            if (!capture) {
                 return null;
             }
             const rect = getVideoContentRect();
             if (!rect.width || !rect.height) {
                 return null;
             }
-            const callbacks = (window as typeof window & {
+            const callbacks = window as typeof window & {
                 __manatanNativeCaptureCallbacks?: Record<string, (data?: string | null) => void>;
                 __manatanNativeCaptureCallback?: (id: string, data?: string | null) => void;
-            });
-            if (!callbacks.__manatanNativeCaptureCallbacks) {
-                callbacks.__manatanNativeCaptureCallbacks = {};
-            }
+            };
+            const callbackMap =
+                callbacks.__manatanNativeCaptureCallbacks ??
+                (callbacks.__manatanNativeCaptureCallbacks = {});
             if (!callbacks.__manatanNativeCaptureCallback) {
                 callbacks.__manatanNativeCaptureCallback = (id: string, data?: string | null) => {
-                    const cb = callbacks.__manatanNativeCaptureCallbacks?.[id];
+                    const cb = callbackMap[id];
                     if (cb) {
                         cb(data ?? null);
-                        delete callbacks.__manatanNativeCaptureCallbacks?.[id];
+                        delete callbackMap[id];
                     }
                 };
             }
@@ -2081,7 +2094,7 @@ export const AnimeVideoPlayer = ({
                     delete callbacks.__manatanNativeCaptureCallbacks?.[callbackId];
                     resolve(null);
                 }, 2000);
-                callbacks.__manatanNativeCaptureCallbacks[callbackId] = (data) => {
+                callbackMap[callbackId] = (data) => {
                     window.clearTimeout(timeout);
                     if (!data) {
                         resolve(null);
@@ -2091,10 +2104,10 @@ export const AnimeVideoPlayer = ({
                     resolve(normalized);
                 };
                 try {
-                    native.captureFrame(callbackId, JSON.stringify(payload));
+                    capture(callbackId, JSON.stringify(payload));
                 } catch (error) {
                     window.clearTimeout(timeout);
-                    delete callbacks.__manatanNativeCaptureCallbacks?.[callbackId];
+                    delete callbackMap[callbackId];
                     console.error('[AnimeVideoPlayer] Native screenshot failed', error);
                     resolve(null);
                 }
@@ -2139,8 +2152,18 @@ export const AnimeVideoPlayer = ({
                 return null;
             };
             const captureStreamFrame = async () => {
-                const captureStream = video.captureStream?.bind(video) ?? video.mozCaptureStream?.bind(video);
-                if (!captureStream || !('ImageCapture' in window)) {
+                const videoCapture = video as HTMLVideoElement & {
+                    captureStream?: () => MediaStream;
+                    mozCaptureStream?: () => MediaStream;
+                };
+                const captureStream =
+                    videoCapture.captureStream?.bind(videoCapture) ??
+                    videoCapture.mozCaptureStream?.bind(videoCapture);
+                const ImageCaptureCtor =
+                    ((window as any).ImageCapture as
+                        | (new (track: MediaStreamTrack) => { grabFrame: () => Promise<ImageBitmap> })
+                        | undefined) ?? undefined;
+                if (!captureStream || !ImageCaptureCtor) {
                     return null;
                 }
                 let track: MediaStreamTrack | undefined;
@@ -2150,7 +2173,7 @@ export const AnimeVideoPlayer = ({
                     if (!track) {
                         return null;
                     }
-                    const imageCapture = new (window as typeof window & { ImageCapture: typeof ImageCapture }).ImageCapture(track);
+                    const imageCapture = new ImageCaptureCtor(track);
                     const frame = await imageCapture.grabFrame();
                     const canvas = document.createElement('canvas');
                     canvas.width = frame.width;
@@ -2244,7 +2267,13 @@ export const AnimeVideoPlayer = ({
         if (!video) {
             return null;
         }
-        const captureStream = video.captureStream?.bind(video) ?? video.mozCaptureStream?.bind(video);
+        const videoCapture = video as HTMLVideoElement & {
+            captureStream?: () => MediaStream;
+            mozCaptureStream?: () => MediaStream;
+        };
+        const captureStream =
+            videoCapture.captureStream?.bind(videoCapture) ??
+            videoCapture.mozCaptureStream?.bind(videoCapture);
         if (!captureStream) {
             const audioNodes = ensureAudioNodes();
             if (audioNodes?.destination?.stream) {
@@ -2311,6 +2340,7 @@ export const AnimeVideoPlayer = ({
         const previousTime = video.currentTime;
         const previousPaused = video.paused;
         let audioSource: { stream: MediaStream; mute: () => () => void } | null = null;
+        let activeAudioSource: { stream: MediaStream; mute: () => () => void } | null = null;
         let restoreMute: (() => void) | null = null;
         let scriptProcessor: ScriptProcessorNode | null = null;
         let processorGain: GainNode | null = null;
@@ -2369,10 +2399,12 @@ export const AnimeVideoPlayer = ({
             if (!audioSource) {
                 return null;
             }
-            restoreMute = audioSource.mute();
+            activeAudioSource = audioSource;
+            restoreMute = activeAudioSource.mute();
 
             const captureWithMediaRecorder = async () => {
-                if (typeof MediaRecorder === 'undefined') {
+                const source = activeAudioSource;
+                if (!source || typeof MediaRecorder === 'undefined') {
                     return null;
                 }
                 
@@ -2383,11 +2415,11 @@ export const AnimeVideoPlayer = ({
                 let recorder: MediaRecorder;
                 try {
                     recorder = selectedMimeType
-                        ? new MediaRecorder(audioSource.stream, { mimeType: selectedMimeType })
-                        : new MediaRecorder(audioSource.stream);
+                        ? new MediaRecorder(source.stream, { mimeType: selectedMimeType })
+                        : new MediaRecorder(source.stream);
                 } catch (error) {
                     try {
-                        recorder = new MediaRecorder(audioSource.stream);
+                        recorder = new MediaRecorder(source.stream);
                     } catch {
                         console.error('[AnimeVideoPlayer] MediaRecorder init failed', error);
                         return null;
@@ -2568,15 +2600,15 @@ export const AnimeVideoPlayer = ({
             return null;
         } finally {
             try {
-                if (audioSource?.stream) {
-                    audioSource.stream.getTracks().forEach((track) => track.stop());
+                if (activeAudioSource?.stream) {
+                    activeAudioSource.stream.getTracks().forEach((track) => track.stop());
                 }
             } catch {
                 // ignore
             }
             try {
-                scriptProcessor?.disconnect();
-                processorGain?.disconnect();
+                (scriptProcessor as AudioNode | null)?.disconnect?.();
+                (processorGain as AudioNode | null)?.disconnect?.();
             } catch {
                 // ignore
             }
@@ -3100,7 +3132,6 @@ export const AnimeVideoPlayer = ({
             return;
         }
         dictionaryResults.forEach((entry) => {
-            const entryKey = getDictionaryEntryKey(entry);
             checkDuplicateForEntry(entry);
         });
     }, [
@@ -3297,7 +3328,8 @@ export const AnimeVideoPlayer = ({
             ankiActionPendingRef.current[entryKey] = true;
             setAnkiActionPending((prev) => ({ ...prev, [entryKey]: true }));
             try {
-                const rawSentence = dictionaryContext?.sentence || '';
+                const activeContext = dictionaryContext;
+                const rawSentence = activeContext?.sentence || '';
                 if (!rawSentence) {
                     showAlert('Sentence Missing', 'Select a subtitle to set the sentence context first.');
                     return;
@@ -3315,8 +3347,8 @@ export const AnimeVideoPlayer = ({
                 const url = settings.ankiConnectUrl || 'http://127.0.0.1:8765';
                 const imageBase64 = imgField ? await captureVideoFrame() : null;
                 const audioBase64 =
-                    audioField && dictionaryContext.audioStart != null && dictionaryContext.audioEnd != null
-                        ? await captureSentenceAudio(dictionaryContext.audioStart, dictionaryContext.audioEnd)
+                    audioField && activeContext?.audioStart != null && activeContext?.audioEnd != null
+                        ? await captureSentenceAudio(activeContext.audioStart, activeContext.audioEnd)
                         : null;
 
                 if (imgField && !imageBase64) {
@@ -4964,7 +4996,7 @@ export const AnimeVideoPlayer = ({
                         anchorEl={episodeMenuAnchor}
                         open={Boolean(episodeMenuAnchor)}
                         onClose={(event) => {
-                            event?.stopPropagation?.();
+                            stopMenuEvent(event);
                             markMenuInteraction();
                             setEpisodeMenuAnchor(null);
                         }}
@@ -4972,8 +5004,8 @@ export const AnimeVideoPlayer = ({
                         container={menuContainer}
                         MenuListProps={{
                             'data-word-audio-menu': 'true',
-                            onClick: (event) => event.stopPropagation(),
-                        }}
+                            onClick: stopMenuClick,
+                        } as any}
                         PaperProps={{
                             sx: { maxHeight: '60vh', minWidth: 220 },
                         }}
@@ -4985,14 +5017,14 @@ export const AnimeVideoPlayer = ({
                         anchorEl={videoMenuAnchor}
                         open={Boolean(videoMenuAnchor)}
                         onClose={(event) => {
-                            event?.stopPropagation?.();
+                            stopMenuEvent(event);
                             markMenuInteraction();
                             setVideoMenuAnchor(null);
                         }}
                         disablePortal={isFullscreenOverlay}
                         container={menuContainer}
                         MenuListProps={{
-                            onClick: (event) => event.stopPropagation(),
+                            onClick: stopMenuClick,
                         }}
                         sx={{ zIndex: isPageFullscreen || (fillHeight && isMobile) ? 1601 : undefined }}
                     >
@@ -5002,14 +5034,14 @@ export const AnimeVideoPlayer = ({
                         anchorEl={subtitleMenuAnchor}
                         open={Boolean(subtitleMenuAnchor)}
                         onClose={(event) => {
-                            event?.stopPropagation?.();
+                            stopMenuEvent(event);
                             markMenuInteraction();
                             setSubtitleMenuAnchor(null);
                         }}
                         disablePortal={isFullscreenOverlay}
                         container={menuContainer}
                         MenuListProps={{
-                            onClick: (event) => event.stopPropagation(),
+                            onClick: stopMenuClick,
                         }}
                         sx={{ zIndex: isPageFullscreen || (fillHeight && isMobile) ? 1601 : undefined }}
                     >
@@ -5046,14 +5078,14 @@ export const AnimeVideoPlayer = ({
                         anchorEl={speedMenuAnchor}
                         open={Boolean(speedMenuAnchor)}
                         onClose={(event) => {
-                            event?.stopPropagation?.();
+                            stopMenuEvent(event);
                             markMenuInteraction();
                             setSpeedMenuAnchor(null);
                         }}
                         disablePortal={isFullscreenOverlay}
                         container={menuContainer}
                         MenuListProps={{
-                            onClick: (event) => event.stopPropagation(),
+                            onClick: stopMenuClick,
                         }}
                         sx={{ zIndex: isPageFullscreen || (fillHeight && isMobile) ? 1601 : undefined }}
                     >
@@ -5149,14 +5181,14 @@ export const AnimeVideoPlayer = ({
                         anchorPosition={wordAudioMenuAnchor ?? undefined}
                         open={Boolean(wordAudioMenuAnchor)}
                         onClose={(event) => {
-                            event?.stopPropagation?.();
+                            stopMenuEvent(event);
                             markMenuInteraction();
                             closeWordAudioMenu();
                         }}
                         disablePortal={isFullscreenOverlay}
                         container={menuContainer}
                         MenuListProps={{
-                            onClick: (event) => event.stopPropagation(),
+                            onClick: stopMenuClick,
                         }}
                         PaperProps={{
                             sx: { minWidth: 220 },

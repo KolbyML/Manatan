@@ -14,12 +14,9 @@ import { useDefaultReaderSettings } from '@/features/reader/settings/ReaderSetti
 import { useNavBarContext } from '@/features/navigation-bar/NavbarContext.tsx';
 import { ReaderOverlay } from '@/features/reader/overlay/ReaderOverlay.tsx';
 import { requestManager } from '@/lib/requests/RequestManager.ts';
-import { GetChaptersReaderQuery, GetMangaReaderQuery } from '@/lib/graphql/generated/graphql.ts';
-import { GET_MANGA_READER } from '@/lib/graphql/manga/MangaQuery.ts';
 import { LoadingPlaceholder } from '@/base/components/feedback/LoadingPlaceholder.tsx';
 import { EmptyViewAbsoluteCentered } from '@/base/components/feedback/EmptyViewAbsoluteCentered.tsx';
 import { defaultPromiseErrorHandler } from '@/lib/DefaultPromiseErrorHandler.ts';
-import { GET_CHAPTERS_READER } from '@/lib/graphql/chapter/ChapterQuery.ts';
 import { TapZoneLayout } from '@/features/reader/tap-zones/TapZoneLayout.tsx';
 import { ReaderRGBAFilter } from '@/features/reader/filters/ReaderRGBAFilter.tsx';
 import { ReaderViewer } from '@/features/reader/viewer/ReaderViewer.tsx';
@@ -95,8 +92,8 @@ const BaseReader = ({
     const chapterSourceOrder = Number(paramChapterSourceOrder);
     const mangaId = Number(paramMangaId);
 
-    const mangaResponse = requestManager.useGetManga<GetMangaReaderQuery>(GET_MANGA_READER, mangaId);
-    const chaptersResponse = requestManager.useGetMangaChapters<GetChaptersReaderQuery>(GET_CHAPTERS_READER, mangaId);
+    const mangaResponse = requestManager.useGetMangaReader(mangaId);
+    const chaptersResponse = requestManager.useGetReaderChapters(mangaId);
 
     useAppTitle(
         !manga || !currentChapter

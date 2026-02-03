@@ -26,7 +26,7 @@ services:
 #    example for setting env vars:
 #
 #      - BIND_IP=0.0.0.0
-#      - BIND_PORT=4567
+#      - BIND_PORT=4568
 #      - SOCKS_PROXY_ENABLED=false
 #      - DOWNLOAD_AS_CBZ=true
 #      - AUTH_MODE=basic_auth

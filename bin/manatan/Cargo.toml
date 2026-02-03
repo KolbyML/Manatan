@@ -22,6 +22,7 @@ eframe.workspace = true
 futures.workspace = true
 futures-util.workspace = true
 image.workspace = true
+libc.workspace = true
 mime_guess.workspace = true
 open.workspace = true
 reqwest.workspace = true
@@ -39,6 +40,7 @@ zip.workspace = true
 manatan-ocr-server.workspace = true
 manatan-yomitan-server.workspace = true
 manatan-audio-server.workspace = true
+manatan-server-public.workspace = true
 
 [[bin]]
 name = "manatan"

@@ -31,7 +31,10 @@ export const TrackerOAuthLogin = () => {
                 makeToast(t('tracking.action.login.label.failure', { name: trackerName }), 'error', getErrorMessage(e));
             }
 
-            navigate(AppRoutes.settings.childRoutes.tracking.path, { replace: true });
+            navigate(AppRoutes.settings.childRoutes.tracking.path, {
+                replace: true,
+                state: { refreshTrackers: true },
+            });
         };
 
         login();

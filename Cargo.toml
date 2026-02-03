@@ -3,7 +3,6 @@ default-members = ["bin/manatan"]
 members = [
     "bin/manatan",
     "bin/manatan_android",
-    "bin/manatan_ios/backend",
     "crates/audio-server",
     "crates/ocr-server", 
     "crates/yomitan-server",
@@ -76,6 +75,7 @@ zip = "6.0"
 manatan-ocr-server = { path = "crates/ocr-server" }
 manatan-yomitan-server = { path = "crates/yomitan-server" }
 manatan-audio-server = { path = "crates/audio-server" }
+manatan-server-public = { git = "https://github.com/KolbyML/Manatan-Server-Public", rev = "" }
 
 [profile.test]
 inherits = "release"

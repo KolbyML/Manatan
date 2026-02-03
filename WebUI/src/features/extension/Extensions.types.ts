@@ -6,7 +6,7 @@
  * file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
 
-import { ExtensionType } from '@/lib/graphql/generated/graphql.ts';
+import { ExtensionType } from '@/lib/requests/types.ts';
 
 export enum ExtensionAction {
     UPDATE = 'UPDATE',

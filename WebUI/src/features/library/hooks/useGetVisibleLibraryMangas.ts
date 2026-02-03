@@ -9,7 +9,7 @@
 import { StringParam, useQueryParam } from 'use-query-params';
 import { useMemo } from 'react';
 import { useMetadataServerSettings } from '@/features/settings/services/ServerSettingsMetadata.ts';
-import { ChapterType, MangaType, TrackRecordType } from '@/lib/graphql/generated/graphql.ts';
+import { ChapterType, MangaType, TrackRecordType } from '@/lib/requests/types.ts';
 import { enhancedCleanup } from '@/base/utils/Strings.ts';
 import { useGetCategoryMetadata } from '@/features/category/services/CategoryMetadata.ts';
 import { LibraryOptions, LibrarySortMode } from '@/features/library/Library.types.ts';

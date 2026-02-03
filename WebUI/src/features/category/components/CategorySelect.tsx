@@ -26,14 +26,6 @@ import { CheckboxInput } from '@/base/components/inputs/CheckboxInput.tsx';
 import { makeToast } from '@/base/utils/Toast.ts';
 import { defaultPromiseErrorHandler } from '@/lib/DefaultPromiseErrorHandler.ts';
 import { updateMetadataServerSettings } from '@/features/settings/services/ServerSettingsMetadata.ts';
-import {
-    GetCategoriesBaseQuery,
-    GetCategoriesBaseQueryVariables,
-    GetMangaCategoriesQuery,
-    GetMangaCategoriesQueryVariables,
-} from '@/lib/graphql/generated/graphql.ts';
-import { GET_CATEGORIES_BASE } from '@/lib/graphql/category/CategoryQuery.ts';
-import { GET_MANGA_CATEGORIES } from '@/lib/graphql/manga/MangaQuery.ts';
 import { AppRoutes } from '@/base/AppRoute.constants.ts';
 import { getErrorMessage } from '@/lib/HelperFunctions.ts';
 
@@ -53,11 +45,9 @@ export type CategorySelectProps =
     | (BaseProps & PropertiesNever<SingleMangaModeProps> & MultiMangaModeProps);
 
 const useGetMangaCategoryIds = (mangaId: number | undefined): number[] => {
-    const { data: mangaResult } = requestManager.useGetManga<GetMangaCategoriesQuery, GetMangaCategoriesQueryVariables>(
-        GET_MANGA_CATEGORIES,
-        mangaId ?? -1,
-        { skip: mangaId === undefined },
-    );
+    const { data: mangaResult } = requestManager.useGetMangaCategories(mangaId ?? -1, {
+        skip: mangaId === undefined,
+    });
 
     return useMemo(() => {
         if (mangaId === undefined || !mangaResult) {
@@ -109,9 +99,7 @@ export function CategorySelect(props: CategorySelectProps) {
 
     const mangaCategoryIds = useGetMangaCategoryIds(mangaId);
 
-    const { data } = requestManager.useGetCategories<GetCategoriesBaseQuery, GetCategoriesBaseQueryVariables>(
-        GET_CATEGORIES_BASE,
-    );
+    const { data } = requestManager.useGetCategoriesBase();
     const categoriesData = data?.categories.nodes;
 
     const allCategories = useMemo(() => Categories.getUserCreated(categoriesData ?? []), [categoriesData]);

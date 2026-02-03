@@ -9,7 +9,7 @@
 import { TrackerUntrackedCard } from '@/features/tracker/components/cards/TrackerUntrackedCard.tsx';
 import { TrackerSearch } from '@/features/tracker/components/TrackerSearch.tsx';
 import { TrackerActiveCard } from '@/features/tracker/components/cards/TrackerActiveCard.tsx';
-import { MangaType } from '@/lib/graphql/generated/graphql.ts';
+import { MangaType } from '@/lib/requests/types.ts';
 
 import { MangaIdInfo } from '@/features/manga/Manga.types.ts';
 import { TTrackerBind, TTrackRecordBind } from '@/features/tracker/Tracker.types.ts';

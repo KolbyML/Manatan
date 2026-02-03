@@ -22,7 +22,7 @@ import { useLongPress } from 'use-long-press';
 import { CustomTooltip } from '@/base/components/CustomTooltip.tsx';
 import { getDateString } from '@/base/utils/DateHelper.ts';
 import { DownloadStateIndicator } from '@/base/components/downloads/DownloadStateIndicator.tsx';
-import { ChapterType } from '@/lib/graphql/generated/graphql.ts';
+import { ChapterType } from '@/lib/requests/types.ts';
 import { ChapterActionMenuItems } from '@/features/chapter/components/actions/ChapterActionMenuItems.tsx';
 import { Menu } from '@/base/components/menu/Menu.tsx';
 import { Chapters } from '@/features/chapter/services/Chapters.ts';
@@ -79,6 +79,24 @@ export const ChapterCard = memo((props: IProps) => {
     const isSelecting = selected !== null;
 
     const { isDownloaded } = chapter;
+    const chapterName = chapter.name?.trim() ?? '';
+    const hasChapterNumber = chapter.chapterNumber !== null && chapter.chapterNumber !== undefined && chapter.chapterNumber >= 0;
+    const chapterNumberLabel = hasChapterNumber ? `${t('chapter.title_one')} ${chapter.chapterNumber}` : '';
+    const title = showChapterNumber
+        ? chapterNumberLabel
+            ? chapterName
+                ? `${chapterNumberLabel} - ${chapterName}`
+                : chapterNumberLabel
+            : chapterName
+        : chapterName || chapterNumberLabel;
+    const secondaryTextParts = [] as string[];
+    if (!showChapterNumber && chapterNumberLabel) {
+        secondaryTextParts.push(chapterNumberLabel);
+    }
+    if (chapter.scanlator) {
+        secondaryTextParts.push(chapter.scanlator);
+    }
+    const secondaryText = secondaryTextParts.join(' • ');
 
     const handleClick = (event: MouseEvent | TouchEvent) => {
         if (!isSelecting) return;
@@ -135,11 +153,9 @@ export const ChapterCard = memo((props: IProps) => {
                             <ListCardContent>
                                 <ChapterCardMetadata
                                     title={
-                                        showChapterNumber
-                                            ? `${t('chapter.title_one')} ${chapter.chapterNumber}`
-                                            : chapter.name
+                                        title
                                     }
-                                    secondaryText={chapter.scanlator}
+                                    secondaryText={secondaryText || undefined}
                                     ternaryText={`${getDateString(Number(chapter.uploadDate ?? 0), true)}${isDownloaded ? ` • ${t('chapter.status.label.downloaded')}` : ''}`}
                                     infoIcons={
                                         chapter.isBookmarked && (

@@ -22,8 +22,6 @@ import { MultiSelectListPreference } from '@/features/source/configuration/compo
 import { LoadingPlaceholder } from '@/base/components/feedback/LoadingPlaceholder.tsx';
 import { EmptyViewAbsoluteCentered } from '@/base/components/feedback/EmptyViewAbsoluteCentered.tsx';
 import { defaultPromiseErrorHandler } from '@/lib/DefaultPromiseErrorHandler.ts';
-import { GetCategoriesSettingsQueryVariables, GetSourceSettingsQuery } from '@/lib/graphql/generated/graphql.ts';
-import { GET_SOURCE_SETTINGS } from '@/lib/graphql/source/SourceQuery.ts';
 import { makeToast } from '@/base/utils/Toast.ts';
 import { PreferenceProps } from '@/features/source/Source.types.ts';
 import { getErrorMessage } from '@/lib/HelperFunctions.ts';
@@ -52,10 +50,7 @@ export function SourceConfigure() {
     useAppTitle(t('source.configuration.title'));
 
     const { sourceId } = useParams<{ sourceId: string }>();
-    const { data, loading, error, refetch } = requestManager.useGetSource<
-        GetSourceSettingsQuery,
-        GetCategoriesSettingsQueryVariables
-    >(GET_SOURCE_SETTINGS, sourceId, {
+    const { data, loading, error, refetch } = requestManager.useGetSourceSettings(sourceId, {
         notifyOnNetworkStatusChange: true,
     });
     const sourcePreferences = data?.source.preferences ?? [];

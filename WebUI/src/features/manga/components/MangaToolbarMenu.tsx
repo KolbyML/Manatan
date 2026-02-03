@@ -22,7 +22,7 @@ import { useTheme } from '@mui/material/styles';
 import useMediaQuery from '@mui/material/useMediaQuery';
 import { AwaitableComponent } from 'awaitable-component';
 import { CustomTooltip } from '@/base/components/CustomTooltip.tsx';
-import { MangaType } from '@/lib/graphql/generated/graphql.ts';
+import { MangaType } from '@/lib/requests/types.ts';
 import { AppRoutes } from '@/base/AppRoute.constants.ts';
 import { CategorySelect } from '@/features/category/components/CategorySelect.tsx';
 

@@ -11,7 +11,7 @@ import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
 import Button from '@mui/material/Button';
 import Collapse from '@mui/material/Collapse';
-import { Maybe } from '@/lib/graphql/generated/graphql.ts';
+import { Maybe } from '@/lib/requests/types.ts';
 import { addStableIdToHeaders, isDuplicateHeader } from '@/features/settings/ImageProcessing.utils.ts';
 import { Header } from '@/features/settings/components/images/Header.tsx';
 import { TSettingsDownloadConversionHeader } from '@/features/settings/Settings.types.ts';

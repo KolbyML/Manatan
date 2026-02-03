@@ -17,7 +17,7 @@ import { MangaCard } from '@/features/manga/components/cards/MangaCard.tsx';
 import { SelectableCollectionReturnType } from '@/base/collection/hooks/useSelectableCollection.ts';
 import { DEFAULT_FULL_FAB_HEIGHT } from '@/base/components/buttons/StyledFab.tsx';
 import { MangaCardProps } from '@/features/manga/Manga.types.ts';
-import { MangaType } from '@/lib/graphql/generated/graphql.ts';
+import { MangaType } from '@/lib/requests/types.ts';
 import { useResizeObserver } from '@/base/hooks/useResizeObserver.tsx';
 import { useNavBarContext } from '@/features/navigation-bar/NavbarContext.tsx';
 import { GridLayout } from '@/base/Base.types.ts';
@@ -264,22 +264,27 @@ export const MangaGrid: React.FC<IMangaGridProps> = ({
         [],
     );
 
-    useResizeObserver(
-        gridWrapperRef,
-        useCallback(() => {
-            const getDimensions = () => {
-                const gridWidth = gridWrapperRef.current?.offsetWidth;
+    const updateDimensions = useCallback(() => {
+        const gridWidth = gridWrapperRef.current?.offsetWidth;
 
-                if (!gridWidth) {
-                    return document.documentElement.offsetWidth - navBarWidth;
-                }
+        if (!gridWidth) {
+            setDimensions(document.documentElement.offsetWidth - navBarWidth);
+            return;
+        }
 
-                return gridWidth;
-            };
+        setDimensions(gridWidth);
+    }, [navBarWidth]);
 
-            setDimensions(getDimensions());
-        }, [navBarWidth]),
-    );
+    useResizeObserver(gridWrapperRef, updateDimensions);
+
+    useLayoutEffect(() => {
+        updateDimensions();
+        window.addEventListener('resize', updateDimensions, { passive: true });
+
+        return () => {
+            window.removeEventListener('resize', updateDimensions);
+        };
+    }, [updateDimensions]);
 
     useResizeObserver(
         gridRef,

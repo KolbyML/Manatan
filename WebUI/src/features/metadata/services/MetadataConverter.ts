@@ -6,7 +6,7 @@
  * file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
 
-import { MetaType } from '@/lib/graphql/generated/graphql.ts';
+import { MetaType } from '@/lib/requests/types.ts';
 import { AllowedMetadataValueTypes, AppMetadataKeys, Metadata } from '@/features/metadata/Metadata.types.ts';
 import { APP_METADATA } from '@/features/metadata/Metadata.constants.ts';
 

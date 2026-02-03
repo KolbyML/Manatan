@@ -31,7 +31,7 @@ import { makeToast } from '@/base/utils/Toast.ts';
 import { MetadataUpdateSettings } from '@/features/app-updates/AppUpdateChecker.types.ts';
 import { getErrorMessage } from '@/lib/HelperFunctions.ts';
 import { useAppTitle } from '@/features/navigation-bar/hooks/useAppTitle.ts';
-import { AuthMode, CbzMediaType, DatabaseType, SortOrder } from '@/lib/graphql/generated/graphql';
+import { AuthMode, CbzMediaType, DatabaseType, SortOrder } from '@/lib/requests/types.ts';
 import {
     AUTH_MODES_SELECT_VALUES,
     JWT_ACCESS_TOKEN_EXPIRY,
@@ -184,7 +184,7 @@ export const ServerSettings = () => {
                     settingValue={serverSettings.port.toString()}
                     handleUpdate={(port) => updateSetting('port', port)}
                     value={serverSettings.port}
-                    defaultValue={4567}
+                    defaultValue={4568}
                     valueUnit={t('settings.server.address.server.label.port')}
                 />
             </List>

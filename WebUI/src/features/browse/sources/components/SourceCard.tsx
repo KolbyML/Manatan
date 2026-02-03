@@ -19,7 +19,7 @@ import PushPinOutlinedIcon from '@mui/icons-material/PushPinOutlined';
 import IconButton from '@mui/material/IconButton';
 import { requestManager } from '@/lib/requests/RequestManager.ts';
 import { SourceContentType } from '@/features/source/browse/screens/SourceMangas.tsx';
-import { GetSourcesListQuery } from '@/lib/graphql/generated/graphql.ts';
+import { GetSourcesListQuery } from '@/lib/requests/types.ts';
 import { AppRoutes } from '@/base/AppRoute.constants.ts';
 import { MUIUtil } from '@/lib/mui/MUI.util.ts';
 import { Sources } from '@/features/source/services/Sources.ts';
@@ -35,12 +35,13 @@ interface IProps {
     source: GetSourcesListQuery['sources']['nodes'][number];
     showSourceRepo: boolean;
     showLanguage: boolean;
+    onMetaUpdated?: () => void;
 }
 
 export const SourceCard: React.FC<IProps> = (props: IProps) => {
     const { t } = useTranslation();
 
-    const { source, showSourceRepo, showLanguage } = props;
+    const { source, showSourceRepo, showLanguage, onMetaUpdated } = props;
     const {
         id,
         name,
@@ -96,7 +97,7 @@ export const SourceCard: React.FC<IProps> = (props: IProps) => {
                                 </Typography>
                             )}
                         </Typography>
-                        {showSourceRepo && <Typography variant="caption">{repo}</Typography>}
+                        {showSourceRepo && !!repo && <Typography variant="caption">{repo}</Typography>}
                     </Stack>
                     {supportsLatest && (
                         <Button
@@ -117,7 +118,7 @@ export const SourceCard: React.FC<IProps> = (props: IProps) => {
                             {...MUIUtil.preventRippleProp()}
                             onClick={(e) => {
                                 e.preventDefault();
-                                updateSetting('isPinned', !isPinned);
+                                updateSetting('isPinned', !isPinned).then(() => onMetaUpdated?.());
                             }}
                             color={isPinned ? 'primary' : 'inherit'}
                         >

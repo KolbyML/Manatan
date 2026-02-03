@@ -1113,12 +1113,6 @@
             },
             "misc": {
                 "log_level": {
-                    "graphql": {
-                        "label": {
-                            "description": "このログはプライバシーにかかわる情報を含みます",
-                            "title": "Graphql デバッグログを有効にする"
-                        }
-                    },
                     "label": {
                         "server": "デバッグログを有効にする"
                     }
