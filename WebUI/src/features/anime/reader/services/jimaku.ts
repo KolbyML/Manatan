@@ -10,6 +10,12 @@ export type JimakuEntry = {
     };
 };
 
+export type JimakuTitleSuggestion = {
+    entry: JimakuEntry;
+    title: string;
+    score: number;
+};
+
 export type JimakuFileEntry = {
     url: string;
     name: string;
@@ -28,6 +34,13 @@ type JimakuEpisodeOptions = {
     title?: string | null;
     anilistId?: number | null;
     episodeNumber: number;
+};
+
+type JimakuSuggestionOptions = {
+    apiKey: string;
+    title?: string | null;
+    anilistId?: number | null;
+    limit?: number;
 };
 
 const JIMAKU_BASE_URL = 'https://jimaku.cc/api';
@@ -214,11 +227,11 @@ const chooseEntryPool = (entries: JimakuEntry[]) => {
     return entries;
 };
 
-const pickBestEntry = (entries: JimakuEntry[], title?: string | null) => {
+const pickBestEntry = (entries: JimakuEntry[], titleVariants: string[]) => {
     if (!entries.length) {
         return null;
     }
-    if (!title) {
+    if (!titleVariants.length) {
         return entries[0];
     }
 
@@ -226,13 +239,7 @@ const pickBestEntry = (entries: JimakuEntry[], title?: string | null) => {
     let bestScore = -1;
 
     entries.forEach((entry) => {
-        const candidates = [entry.name, entry.english_name, entry.japanese_name].filter(
-            (value): value is string => Boolean(value),
-        );
-        let score = 0;
-        candidates.forEach((candidate) => {
-            score = Math.max(score, similarityScore(candidate, title));
-        });
+        const { score } = pickBestTitleCandidate(entry, titleVariants);
 
         if (score > bestScore) {
             bestScore = score;
@@ -241,6 +248,76 @@ const pickBestEntry = (entries: JimakuEntry[], title?: string | null) => {
     });
 
     return bestEntry ?? entries[0];
+};
+
+const buildTitleVariants = (title: string) => {
+    const trimmed = title.trim();
+    if (!trimmed) {
+        return [];
+    }
+
+    const variants: string[] = [];
+    const pushVariant = (value?: string | null) => {
+        const cleaned = value?.trim();
+        if (!cleaned) {
+            return;
+        }
+        if (!variants.includes(cleaned)) {
+            variants.push(cleaned);
+        }
+    };
+
+    pushVariant(trimmed);
+    pushVariant(trimmed.replace(/[:\-–—]+/g, ' ').replace(/\s+/g, ' ').trim());
+
+    const seasonBase = trimmed.replace(
+        /\s*(?:[:\-–—]?\s*)?(?:season|cour|part)\s*\d+\b.*$/i,
+        '',
+    );
+    pushVariant(seasonBase);
+
+    const ordinalSeasonBase = trimmed.replace(
+        /\s*(?:[:\-–—]?\s*)?\d+(?:st|nd|rd|th)\s*season\b.*$/i,
+        '',
+    );
+    pushVariant(ordinalSeasonBase);
+
+    const colonSplit = trimmed.split(':')[0]?.trim();
+    pushVariant(colonSplit);
+
+    const dashSplit = trimmed.split(/\s[-–—]\s/)[0]?.trim();
+    pushVariant(dashSplit);
+
+    return variants.slice(0, 5);
+};
+
+const pickBestTitleCandidate = (entry: JimakuEntry, titleVariants: string[]) => {
+    const candidates = [entry.name, entry.english_name, entry.japanese_name].filter(
+        (value): value is string => Boolean(value),
+    );
+    let bestTitle = entry.name;
+    let bestScore = -1;
+
+    if (!titleVariants.length) {
+        return {
+            title: bestTitle,
+            score: 0,
+        };
+    }
+
+    candidates.forEach((candidate) => {
+        titleVariants.forEach((variant) => {
+            const score = similarityScore(candidate, variant);
+            if (score > bestScore) {
+                bestScore = score;
+                bestTitle = candidate;
+            }
+        });
+    });
+    return {
+        title: bestTitle,
+        score: bestScore < 0 ? 0 : bestScore,
+    };
 };
 
 const searchJimakuEntries = async ({ apiKey, query, anilistId }: JimakuSearchOptions) => {
@@ -274,7 +351,20 @@ export const loadJimakuEpisodeFiles = async ({ apiKey, title, anilistId, episode
     if (!apiKey) {
         return [];
     }
-    const entries = await searchJimakuEntries({ apiKey, query: title, anilistId });
+    const titleVariants = title ? buildTitleVariants(title) : [];
+    const queryList = titleVariants.length ? titleVariants : [''];
+    const entryMap = new Map<number, JimakuEntry>();
+
+    for (const query of queryList) {
+        const entries = await searchJimakuEntries({ apiKey, query, anilistId });
+        entries.forEach((entry) => entryMap.set(entry.id, entry));
+    }
+
+    let entries = Array.from(entryMap.values());
+    if (!entries.length && anilistId) {
+        entries = await searchJimakuEntries({ apiKey, query: '', anilistId });
+    }
+
     let candidateEntries = entries;
     if (anilistId) {
         const matched = entries.filter((entry) => entry.anilist_id === anilistId);
@@ -283,7 +373,7 @@ export const loadJimakuEpisodeFiles = async ({ apiKey, title, anilistId, episode
         }
     }
     candidateEntries = chooseEntryPool(candidateEntries);
-    const entry = pickBestEntry(candidateEntries, title);
+    const entry = pickBestEntry(candidateEntries, titleVariants);
     if (!entry) {
         return [];
     }
@@ -305,4 +395,56 @@ export const loadJimakuEpisodeFiles = async ({ apiKey, title, anilistId, episode
         return episodeFiles;
     }
     return allFiles;
+};
+
+export const loadJimakuTitleSuggestions = async ({
+    apiKey,
+    title,
+    anilistId,
+    limit = 20,
+}: JimakuSuggestionOptions) => {
+    if (!apiKey) {
+        return [];
+    }
+    const trimmedTitle = title?.trim();
+    const titleVariants = trimmedTitle ? buildTitleVariants(trimmedTitle) : [];
+    const queryList = titleVariants.length ? titleVariants : [''];
+    const entryMap = new Map<number, JimakuEntry>();
+
+    for (const query of queryList) {
+        const entries = await searchJimakuEntries({ apiKey, query, anilistId });
+        entries.forEach((entry) => entryMap.set(entry.id, entry));
+    }
+
+    let entries = Array.from(entryMap.values());
+    if (!entries.length && anilistId) {
+        entries = await searchJimakuEntries({ apiKey, query: '', anilistId });
+    }
+
+    let candidateEntries = entries;
+    if (anilistId) {
+        const matched = entries.filter((entry) => entry.anilist_id === anilistId);
+        if (matched.length) {
+            candidateEntries = matched;
+        }
+    }
+    candidateEntries = chooseEntryPool(candidateEntries);
+    if (!trimmedTitle) {
+        return candidateEntries.slice(0, limit).map((entry) => ({
+            entry,
+            title: entry.name,
+            score: 0,
+        }));
+    }
+    return candidateEntries
+        .map((entry) => ({ entry, ...pickBestTitleCandidate(entry, titleVariants) }))
+        .sort((a, b) => {
+            const scoreDiff = b.score - a.score;
+            if (scoreDiff !== 0) {
+                return scoreDiff;
+            }
+            return a.title.localeCompare(b.title);
+        })
+        .slice(0, limit)
+        .map((suggestion) => suggestion);
 };

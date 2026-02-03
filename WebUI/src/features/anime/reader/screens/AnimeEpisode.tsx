@@ -15,6 +15,7 @@ import DialogTitle from '@mui/material/DialogTitle';
 import DialogContent from '@mui/material/DialogContent';
 import DialogActions from '@mui/material/DialogActions';
 import Button from '@mui/material/Button';
+import MenuItem from '@mui/material/MenuItem';
 import TextField from '@mui/material/TextField';
 import { useTheme } from '@mui/material/styles';
 import useMediaQuery from '@mui/material/useMediaQuery';
@@ -27,7 +28,12 @@ import { AnimeVideoPlayer } from '@/features/anime/reader/components/AnimeVideoP
 import { AppRoutes } from '@/base/AppRoute.constants.ts';
 import { useOCR } from '@/Manatan/context/OCRContext.tsx';
 import { useLocalStorage } from '@/base/hooks/useStorage.tsx';
-import { JimakuFileEntry, loadJimakuEpisodeFiles } from '@/features/anime/reader/services/jimaku.ts';
+import {
+    JimakuFileEntry,
+    loadJimakuEpisodeFiles,
+    loadJimakuTitleSuggestions,
+    JimakuTitleSuggestion,
+} from '@/features/anime/reader/services/jimaku.ts';
 import { makeToast } from '@/base/utils/Toast.ts';
 import { useNavBarContext } from '@/features/navigation-bar/NavbarContext.tsx';
 import { MediaQuery } from '@/base/utils/MediaQuery.tsx';
@@ -95,6 +101,9 @@ export const AnimeEpisode = () => {
     );
     const [isJimakuTitleDialogOpen, setIsJimakuTitleDialogOpen] = useState(false);
     const [jimakuDraftTitle, setJimakuDraftTitle] = useState('');
+    const [jimakuTitleSuggestions, setJimakuTitleSuggestions] = useState<JimakuTitleSuggestion[]>([]);
+    const [jimakuSuggestionsLoading, setJimakuSuggestionsLoading] = useState(false);
+    const [jimakuSuggestionValue, setJimakuSuggestionValue] = useState('');
     const [braveAudioFixMode, setBraveAudioFixMode] = useLocalStorage<'auto' | 'on' | 'off'>(
         `anime-${id ?? 'unknown'}-brave-audio-fix-mode`,
         'auto',
@@ -442,6 +451,7 @@ export const AnimeEpisode = () => {
     const openJimakuTitleDialog = useCallback(() => {
         const currentTitle = jimakuTitleOverride?.trim() || animeTitle || '';
         setJimakuDraftTitle(currentTitle);
+        setJimakuSuggestionValue('');
         setIsJimakuTitleDialogOpen(true);
     }, [animeTitle, jimakuTitleOverride]);
 
@@ -463,9 +473,59 @@ export const AnimeEpisode = () => {
     const handleResetJimakuTitle = useCallback(() => {
         setJimakuTitleOverride(null);
         setJimakuDraftTitle(animeTitle ?? '');
+        setJimakuSuggestionValue('');
         makeToast('Cleared Jimaku title override.', { variant: 'info', autoHideDuration: 1500 });
         setIsJimakuTitleDialogOpen(false);
     }, [animeTitle, setJimakuTitleOverride]);
+
+    const formatJimakuSuggestionLabel = useCallback((suggestion: JimakuTitleSuggestion) => {
+        const baseTitle = suggestion.title;
+        const entryName = suggestion.entry.name;
+        if (!entryName || entryName === baseTitle) {
+            return baseTitle;
+        }
+        return `${baseTitle} (${entryName})`;
+    }, []);
+
+    useEffect(() => {
+        if (!isJimakuTitleDialogOpen) {
+            return;
+        }
+        const apiKey = settings.jimakuApiKey?.trim();
+        const queryTitle = animeTitle?.trim();
+        if (!apiKey || !queryTitle) {
+            setJimakuTitleSuggestions([]);
+            return;
+        }
+        let isActive = true;
+        setJimakuTitleSuggestions([]);
+        setJimakuSuggestionsLoading(true);
+        loadJimakuTitleSuggestions({
+            apiKey,
+            title: queryTitle,
+            anilistId: animeAnilistId,
+            limit: 20,
+        })
+            .then((entries) => {
+                if (isActive) {
+                    setJimakuTitleSuggestions(entries);
+                }
+            })
+            .catch(() => {
+                if (isActive) {
+                    setJimakuTitleSuggestions([]);
+                }
+            })
+            .finally(() => {
+                if (isActive) {
+                    setJimakuSuggestionsLoading(false);
+                }
+            });
+
+        return () => {
+            isActive = false;
+        };
+    }, [isJimakuTitleDialogOpen, settings.jimakuApiKey, animeTitle, animeAnilistId]);
 
     const jimakuSubtitleTracks = useMemo<SubtitleTrack[]>(() => {
         const isSubtitleFile = (name: string) => /\.(srt|vtt|ass|ssa)$/i.test(name);
@@ -599,12 +659,48 @@ export const AnimeEpisode = () => {
                 <DialogTitle>Jimaku title</DialogTitle>
                 <DialogContent>
                     <TextField
+                        margin="dense"
+                        label="Suggested titles"
+                        fullWidth
+                        select
+                        value={jimakuSuggestionValue}
+                        onChange={(event) => {
+                            const value = event.target.value;
+                            setJimakuSuggestionValue(value);
+                            setJimakuDraftTitle(value);
+                        }}
+                        helperText={
+                            jimakuSuggestionsLoading
+                                ? 'Loading suggestions...'
+                                : jimakuTitleSuggestions.length
+                                    ? 'Select a suggestion to fill the title field.'
+                                    : 'No suggestions found for this title.'
+                        }
+                        SelectProps={{
+                            displayEmpty: true,
+                            renderValue: (value) => (value ? String(value) : 'Select a title'),
+                        }}
+                        InputLabelProps={{ shrink: true }}
+                    >
+                        <MenuItem value="" disabled>
+                            Select a title
+                        </MenuItem>
+                        {jimakuTitleSuggestions.map((suggestion) => (
+                            <MenuItem key={suggestion.entry.id} value={suggestion.title}>
+                                {formatJimakuSuggestionLabel(suggestion)}
+                            </MenuItem>
+                        ))}
+                    </TextField>
+                    <TextField
                         autoFocus
                         margin="dense"
                         label="Title"
                         fullWidth
                         value={jimakuDraftTitle}
-                        onChange={(event) => setJimakuDraftTitle(event.target.value)}
+                        onChange={(event) => {
+                            setJimakuDraftTitle(event.target.value);
+                            setJimakuSuggestionValue('');
+                        }}
                     />
                 </DialogContent>
                 <DialogActions>
