@@ -37,7 +37,15 @@ import { useNavBarContext } from '@/features/navigation-bar/NavbarContext.tsx';
 export const AnimeLibrary = () => {
     const { t } = useTranslation();
     const { data, loading, error, refetch } = requestManager.useGetAnimeLibrary({ notifyOnNetworkStatusChange: true });
-    const animes = useMemo(() => data?.animes.nodes ?? [], [data?.animes.nodes]);
+    type AnimeLibraryEntry = {
+        id: number;
+        title: string;
+        thumbnailUrl?: string | null;
+        inLibrary?: boolean;
+        url?: string | null;
+        inLibraryAt?: number | null;
+    };
+    const animes = useMemo<AnimeLibraryEntry[]>(() => data?.animes.nodes ?? [], [data?.animes.nodes]);
     const [query] = useQueryParam(SearchParam.QUERY, StringParam);
     const [sort, setSort] = useLocalStorage('anime-library-sort', 'addedDesc');
     const [menuAnchor, setMenuAnchor] = useState<null | HTMLElement>(null);
@@ -54,10 +62,10 @@ export const AnimeLibrary = () => {
     const filteredAnimes = useMemo(() => {
         const normalizedQuery = query?.trim().toLowerCase() ?? '';
         const result = normalizedQuery
-            ? animes.filter((anime) => anime.title.toLowerCase().includes(normalizedQuery))
+            ? animes.filter((anime: AnimeLibraryEntry) => anime.title.toLowerCase().includes(normalizedQuery))
             : animes;
 
-        return [...result].sort((a, b) => {
+        return [...result].sort((a: AnimeLibraryEntry, b: AnimeLibraryEntry) => {
             switch (sort) {
                 case 'titleAsc':
                     return a.title.localeCompare(b.title);
@@ -86,9 +94,9 @@ export const AnimeLibrary = () => {
     });
 
     const handleSelect = useCallback(
-        (id: number, selected: boolean, _options?: { selectRange?: boolean }) => {
+        (id: number, selected: boolean, isShiftKey?: boolean) => {
             setIsSelectModeActive(!!(selectedItemIds.length + (selected ? 1 : -1)));
-            handleSelection(id, selected);
+            handleSelection(id, selected, { selectRange: isShiftKey });
         },
         [handleSelection, selectedItemIds.length],
     );
@@ -168,15 +176,7 @@ export const AnimeLibrary = () => {
                     gap: 1,
                 }}
             >
-                {filteredAnimes.map(
-                    (anime: {
-                        id: number;
-                        title: string;
-                        thumbnailUrl?: string | null;
-                        inLibrary?: boolean;
-                        url?: string | null;
-                        inLibraryAt?: number | null;
-                    }) => {
+                {filteredAnimes.map((anime: AnimeLibraryEntry) => {
                         const thumbnailSrc = anime.thumbnailUrl
                             ? requestManager.getValidImgUrlFor(`/api/v1/anime/${anime.id}/thumbnail`)
                             : '';

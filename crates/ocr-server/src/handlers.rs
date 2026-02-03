@@ -5,12 +5,16 @@ use axum::{
     extract::{Query, State},
     http::StatusCode,
 };
+use futures::StreamExt;
 use serde::Deserialize;
+use std::collections::HashMap;
+use std::sync::{Arc, Mutex};
 use tracing::{info, warn};
 
 use crate::{
-    jobs, logic,
+    jobs,
     language::OcrLanguage,
+    logic,
     state::{AppState, CacheEntry},
 };
 
@@ -19,6 +23,8 @@ pub struct OcrRequest {
     pub url: String,
     pub user: Option<String>,
     pub pass: Option<String>,
+    #[serde(default, rename = "base_url", alias = "baseUrl")]
+    pub base_url: Option<String>,
     #[serde(default = "default_context")]
     pub context: String,
     pub add_space_on_merge: Option<bool>,
@@ -28,6 +34,7 @@ pub struct OcrRequest {
 fn default_context() -> String {
     "No Context".to_string()
 }
+
 
 // --- Handlers ---
 
@@ -48,11 +55,18 @@ pub async fn ocr_handler(
 ) -> Result<Json<Vec<crate::logic::OcrResult>>, (StatusCode, String)> {
     let language = params.language.unwrap_or_default();
     let cache_key = logic::get_cache_key(&params.url, Some(language));
+    let chapter_key = params
+        .base_url
+        .as_ref()
+        .map(|base| logic::get_cache_key(base, Some(language)));
     info!("OCR Handler: Incoming request for cache_key={}", cache_key);
 
     info!("OCR Handler: Checking cache...");
     if let Some(entry) = state.get_cache_entry(&cache_key) {
         info!("OCR Handler: Cache HIT for cache_key={}", cache_key);
+        if let Some(chapter_key) = chapter_key.as_deref() {
+            state.insert_chapter_cache(chapter_key, &cache_key);
+        }
         state.requests_processed.fetch_add(1, Ordering::Relaxed);
         return Ok(Json(entry.data));
     }
@@ -88,6 +102,10 @@ pub async fn ocr_handler(
             );
             info!("OCR Handler: Cache write complete.");
 
+            if let Some(chapter_key) = chapter_key.as_deref() {
+                state.insert_chapter_cache(chapter_key, &cache_key);
+            }
+
             Ok(Json(data))
         }
         Err(e) => {
@@ -111,10 +129,30 @@ pub struct JobRequest {
     pub language: Option<OcrLanguage>,
 }
 
-pub async fn is_chapter_preprocessed_handler(
-    State(state): State<AppState>,
-    Json(req): Json<JobRequest>,
-) -> Json<serde_json::Value> {
+#[derive(Deserialize)]
+pub struct ChapterStatusQuery {
+    pub base_url: String,
+    pub user: Option<String>,
+    pub pass: Option<String>,
+    pub language: Option<OcrLanguage>,
+}
+
+#[derive(Deserialize)]
+pub struct ChapterStatusBatchItem {
+    pub base_url: String,
+    pub pages: Option<Vec<String>>,
+    pub language: Option<OcrLanguage>,
+}
+
+#[derive(Deserialize)]
+pub struct ChapterStatusBatchRequest {
+    pub chapters: Vec<ChapterStatusBatchItem>,
+    pub user: Option<String>,
+    pub pass: Option<String>,
+    pub language: Option<OcrLanguage>,
+}
+
+async fn chapter_status(state: &AppState, req: JobRequest) -> Json<serde_json::Value> {
     let language = req.language.unwrap_or_default();
     let job_key = logic::get_cache_key(&req.base_url, Some(language));
     let progress = {
@@ -134,38 +172,125 @@ pub async fn is_chapter_preprocessed_handler(
         }));
     }
 
-    let chapter_base_path = job_key;
-
-    let total = state.get_chapter_pages(&chapter_base_path);
-
-    let total = match total {
-        Some(total) => total,
-        None => {
-            match logic::resolve_total_pages_from_graphql(&req.base_url, req.user, req.pass).await {
-                Ok(total) => {
-                    state.set_chapter_pages(&chapter_base_path, total);
-                    total
-                }
-                Err(e) => {
-                    warn!(
-                        "is_chapter_preprocessed_handler: Failed GraphQL fallback: {}",
-                        e
-                    );
-                    return Json(serde_json::json!({ "status": "idle" }));
-                }
+    let mut cached_count = 0usize;
+    let mut total_expected = 0usize;
+    if let Some(page_list) = req.pages.as_ref() {
+        if page_list.is_empty() {
+            return Json(serde_json::json!({
+                "status": "idle",
+                "cached_count": 0,
+                "total_expected": 0
+            }));
+        }
+        let mut cached_keys = Vec::new();
+        for page in page_list {
+            let cache_key = logic::get_cache_key(page, Some(language));
+            if state.has_cache_entry(&cache_key)
+                || state.has_cache_entry_prefix(&format!("{cache_key}?sourceId="))
+                || state.has_cache_entry_prefix(&format!("{cache_key}&sourceId="))
+            {
+                cached_count += 1;
+                cached_keys.push(cache_key);
             }
         }
-    };
-
-    let cached_count = state.count_cached_for_prefix(&chapter_base_path);
-    if cached_count >= total {
-        return Json(
-            serde_json::json!({ "status": "processed", "cached_count": cached_count, "total_expected": total }),
-        );
+        if cached_count > 0 {
+            total_expected = page_list.len();
+            state.set_chapter_pages(&job_key, total_expected);
+            for cache_key in cached_keys {
+                state.insert_chapter_cache(&job_key, &cache_key);
+            }
+        }
+    } else {
+        cached_count = state.count_chapter_cache(&job_key);
+        if cached_count > 0 {
+            if let Some((page_count, _)) = state.get_chapter_progress(&job_key) {
+                total_expected = page_count;
+            } else if let Some(page_count) = state.get_chapter_pages(&job_key) {
+                total_expected = page_count;
+            }
+        }
     }
-    Json(
-        serde_json::json!({ "status": "idle", "cached_count": cached_count, "total_expected": total }),
+
+    if total_expected > 0 && cached_count >= total_expected {
+        return Json(serde_json::json!({
+            "status": "processed",
+            "cached_count": cached_count,
+            "total_expected": total_expected
+        }));
+    }
+
+    Json(serde_json::json!({
+        "status": "idle",
+        "cached_count": cached_count,
+        "total_expected": total_expected
+    }))
+}
+
+pub async fn is_chapter_preprocessed_handler(
+    State(state): State<AppState>,
+    Json(req): Json<JobRequest>,
+) -> Json<serde_json::Value> {
+    chapter_status(&state, req).await
+}
+
+pub async fn is_chapter_preprocessed_get_handler(
+    State(state): State<AppState>,
+    Query(req): Query<ChapterStatusQuery>,
+) -> Json<serde_json::Value> {
+    chapter_status(
+        &state,
+        JobRequest {
+            base_url: req.base_url,
+            user: req.user,
+            pass: req.pass,
+            context: "Check Status".to_string(),
+            pages: None,
+            add_space_on_merge: None,
+            language: req.language,
+        },
     )
+    .await
+}
+
+pub async fn is_chapters_preprocessed_handler(
+    State(state): State<AppState>,
+    Json(req): Json<ChapterStatusBatchRequest>,
+) -> Json<HashMap<String, serde_json::Value>> {
+    let results = Arc::new(Mutex::new(HashMap::new()));
+    let user = req.user.clone();
+    let pass = req.pass.clone();
+    let default_language = req.language;
+
+    let concurrency_limit = 4;
+    futures::stream::iter(req.chapters)
+        .for_each_concurrent(concurrency_limit, |item| {
+            let state = state.clone();
+            let results = results.clone();
+            let user = user.clone();
+            let pass = pass.clone();
+            async move {
+                let language = item.language.or(default_language);
+                let Json(value) = chapter_status(
+                    &state,
+                    JobRequest {
+                        base_url: item.base_url.clone(),
+                        user: user.clone(),
+                        pass: pass.clone(),
+                        context: "Batch Status".to_string(),
+                        pages: item.pages,
+                        add_space_on_merge: None,
+                        language,
+                    },
+                )
+                .await;
+                let mut locked = results.lock().expect("lock poisoned");
+                locked.insert(item.base_url, value);
+            }
+        })
+        .await;
+
+    let out = results.lock().expect("lock poisoned").clone();
+    Json(out)
 }
 
 pub async fn preprocess_handler(
@@ -177,6 +302,7 @@ pub async fn preprocess_handler(
         Some(p) => p,
         None => return Json(serde_json::json!({ "error": "No pages provided" })),
     };
+    let chapter_key = logic::get_cache_key(&req.base_url, Some(language));
 
     let is_processing = {
         state

@@ -18,7 +18,7 @@ import { useEventListener, useMergedRef, useWindowEvent } from '@mantine/hooks';
 import { AwaitableComponent } from 'awaitable-component';
 import { requestManager } from '@/lib/requests/RequestManager.ts';
 import { makeToast } from '@/base/utils/Toast.ts';
-import { BackupRestoreState } from '@/lib/graphql/generated/graphql.ts';
+import { BackupRestoreState } from '@/lib/requests/types.ts';
 import { Progress } from '@/base/components/feedback/Progress.tsx';
 import { TextSetting } from '@/base/components/settings/text/TextSetting.tsx';
 import { NumberSetting } from '@/base/components/settings/NumberSetting.tsx';
@@ -152,9 +152,12 @@ export function Backup() {
 
     const validateBackup = async (file: File) => {
         try {
-            const {
-                data: { validateBackup: validateBackupData },
-            } = await requestManager.validateBackupFile(file, { fetchPolicy: 'network-only' }).response;
+            const response = await requestManager.validateBackupFile(file, { fetchPolicy: 'network-only' }).response;
+            const validateBackupData = response.data?.validateBackup;
+
+            if (!validateBackupData) {
+                throw new Error('Backup validation returned no data');
+            }
 
             if (validateBackupData.missingSources.length || validateBackupData.missingTrackers.length) {
                 try {

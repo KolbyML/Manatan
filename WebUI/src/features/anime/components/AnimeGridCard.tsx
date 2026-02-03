@@ -19,6 +19,7 @@ import { styled } from '@mui/material/styles';
 import PopupState, { bindMenu, bindTrigger } from 'material-ui-popup-state';
 import { useLongPress } from 'use-long-press';
 import { useCallback, useEffect, useRef, useState } from 'react';
+import type { MouseEvent as ReactMouseEvent } from 'react';
 import { useTranslation } from 'react-i18next';
 import { CustomTooltip } from '@/base/components/CustomTooltip.tsx';
 import { SpinnerImage } from '@/base/components/SpinnerImage.tsx';
@@ -221,7 +222,7 @@ export const AnimeGridCard = ({
                                                         <IconButton
                                                             ref={optionButtonRef}
                                                             {...MUIUtil.preventRippleProp(bindTrigger(popupState), {
-                                                                onClick: (event) => {
+                                                                onClick: (event: ReactMouseEvent<HTMLButtonElement>) => {
                                                                     event.stopPropagation();
                                                                     event.preventDefault();
                                                                     popupState.open();

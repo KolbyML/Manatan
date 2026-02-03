@@ -132,13 +132,38 @@ export const filterExtensions = (
     } = {},
 ): TExtension[] => {
     const normalizedSelectedLanguages = toComparableLanguages(toUniqueLanguageCodes(selectedLanguages ?? []));
+    const allLanguage = toComparableLanguage(DefaultLanguage.ALL);
+    const hasAllLanguage = normalizedSelectedLanguages.includes(allLanguage);
+    const otherSelectedLanguages = normalizedSelectedLanguages.filter((language) => language !== allLanguage);
+    const hasOtherSelectedLanguages = otherSelectedLanguages.length > 0;
+
+    const isLanguageAllowed = (extension: TExtension): boolean => {
+        if (!selectedLanguages || selectedLanguages.length === 0) {
+            return true;
+        }
+
+        const extensionLanguage = toComparableLanguage(extension.lang);
+        const isMultiLanguage = extensionLanguage === allLanguage;
+
+        if (isMultiLanguage) {
+            if (!hasAllLanguage) {
+                return false;
+            }
+
+            return true;
+        }
+
+        if (hasAllLanguage && !hasOtherSelectedLanguages) {
+            return true;
+        }
+
+        return otherSelectedLanguages.includes(extensionLanguage);
+    };
 
     return extensions
         .filter(
             (extension) =>
-                !selectedLanguages ||
-                normalizedSelectedLanguages.includes(toComparableLanguage(extension.lang)) ||
-                extension.isInstalled,
+                extension.isInstalled || isLanguageAllowed(extension),
         )
         .filter((extension) => showNsfw === undefined || showNsfw || !extension.isNsfw)
         .filter((extension) => query == null || enhancedCleanup(extension.name).includes(enhancedCleanup(query)));

@@ -274,12 +274,6 @@
         "server": {
             "misc": {
                 "log_level": {
-                    "graphql": {
-                        "label": {
-                            "title": "تمكين سجلات تصحيح graphql",
-                            "description": "يتضمن ذلك سجلات تحتوي على معلومات غير آمنة للخصوصية"
-                        }
-                    },
                     "label": {
                         "server": "تمكين سجلات التصحيح"
                     }

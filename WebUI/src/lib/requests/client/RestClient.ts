@@ -8,17 +8,27 @@
 
 import { BaseClient } from '@/lib/requests/client/BaseClient.ts';
 import { AuthManager } from '@/features/authentication/AuthManager.ts';
-import { UserRefreshMutation } from '@/lib/graphql/generated/graphql.ts';
+import { UserRefreshMutation } from '@/lib/requests/types.ts';
 import { AbortableApolloMutationResponse } from '@/lib/requests/RequestManager.ts';
 
 export enum HttpMethod {
     GET = 'GET',
     POST = 'POST',
+    PUT = 'PUT',
     PATCH = 'PATCH',
     DELETE = 'DELETE',
 }
 
 export interface IRestClient {
+    fetcher(
+        url: string,
+        options?: {
+            data?: any;
+            httpMethod?: HttpMethod;
+            config?: RequestInit;
+            checkResponseIsJson?: boolean;
+        },
+    ): Promise<Response>;
     get(url: string): Promise<Response>;
     delete(url: string): Promise<Response>;
     post(url: string, data?: any): Promise<Response>;
@@ -52,8 +62,14 @@ export class RestClient
     ): Promise<Response> =>
         this.enqueueRequest(async () => {
             const updatedUrl = url.startsWith('http') ? url : `${this.getBaseUrl()}${url}`;
+            console.info('[request] fetch start', { method: httpMethod, url: updatedUrl });
             const isAuthRequired = AuthManager.isAuthRequired();
             const accessToken = AuthManager.getAccessToken();
+            const baseHeaders = {
+                ...(isAuthRequired && accessToken ? { Authorization: `Bearer ${accessToken}` } : {}),
+                ...this.config.headers,
+                ...config?.headers,
+            };
 
             let result: Response;
 
@@ -63,22 +79,27 @@ export class RestClient
                         ...this.config,
                         ...config,
                         method: httpMethod,
-                        headers: {
-                            ...(isAuthRequired && accessToken ? { Authorization: `Bearer ${accessToken}` } : {}),
-                            ...this.config.headers,
-                            ...config?.headers,
-                        },
+                        headers: baseHeaders,
                     });
                     break;
                 case HttpMethod.POST:
+                case HttpMethod.PUT:
                 case HttpMethod.PATCH:
                 case HttpMethod.DELETE:
+                    const isFormData =
+                        typeof FormData !== 'undefined' && data instanceof FormData;
+                    const body =
+                        data === undefined ? undefined : isFormData ? data : JSON.stringify(data);
+                    const headers = {
+                        ...baseHeaders,
+                        ...(!isFormData && data !== undefined ? { 'content-type': 'application/json' } : {}),
+                    };
                     result = await this.client(updatedUrl, {
-                        ...(isAuthRequired && accessToken ? { Authorization: `Bearer ${accessToken}` } : {}),
                         ...this.config,
                         ...config,
                         method: httpMethod,
-                        body: JSON.stringify(data),
+                        body,
+                        headers,
                     });
                     break;
                 default:
@@ -90,16 +111,19 @@ export class RestClient
                 return this.fetcher(url, { data, httpMethod, config, checkResponseIsJson });
             }
 
-            if (result.status !== 200) {
+            if (result.status < 200 || result.status >= 300) {
                 throw new Error(`status ${result.status}: ${result.statusText}`);
             }
 
-            if (checkResponseIsJson && result.headers.get('content-type') !== 'application/json') {
-                throw new Error('Response is not json');
+            if (checkResponseIsJson) {
+                const contentType = result.headers.get('content-type') ?? '';
+                if (contentType && !contentType.includes('application/json')) {
+                    throw new Error('Response is not json');
+                }
             }
 
             return result;
-        });
+        }, `${httpMethod} ${url}`);
 
     constructor(handleRefreshToken: (refreshToken: string) => AbortableApolloMutationResponse<UserRefreshMutation>) {
         super(handleRefreshToken);
@@ -128,7 +152,7 @@ export class RestClient
     }
 
     get put() {
-        return (url: string, data?: any) => this.fetcher(url, { data, httpMethod: HttpMethod.POST });
+        return (url: string, data?: any) => this.fetcher(url, { data, httpMethod: HttpMethod.PUT });
     }
 
     get patch() {

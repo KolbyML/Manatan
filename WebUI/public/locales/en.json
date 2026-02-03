@@ -1534,12 +1534,6 @@
           }
         },
         "log_level": {
-          "graphql": {
-            "label": {
-              "description": "This includes logs with non privacy safe information",
-              "title": "Enable graphql debug logs"
-            }
-          },
           "label": {
             "server": "Enable debug logs"
           }

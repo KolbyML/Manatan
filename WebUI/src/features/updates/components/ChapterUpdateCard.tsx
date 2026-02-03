@@ -12,7 +12,7 @@ import Card from '@mui/material/Card';
 import { Link } from 'react-router-dom';
 import { memo } from 'react';
 import { DownloadStateIndicator } from '@/base/components/downloads/DownloadStateIndicator.tsx';
-import { ChapterUpdateListFieldsFragment } from '@/lib/graphql/generated/graphql.ts';
+import { ChapterUpdateListFieldsFragment } from '@/lib/requests/types.ts';
 import { AppRoutes } from '@/base/AppRoute.constants.ts';
 import { ChapterCardThumbnail } from '@/features/chapter/components/cards/ChapterCardThumbnail.tsx';
 import { ChapterCardMetadata } from '@/features/chapter/components/cards/ChapterCardMetadata.tsx';

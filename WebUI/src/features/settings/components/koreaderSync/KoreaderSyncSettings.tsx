@@ -21,7 +21,7 @@ import {
     KoreaderSyncChecksumMethod,
     KoreaderSyncConflictStrategy,
     KoSyncStatusPayload,
-} from '@/lib/graphql/generated/graphql.ts';
+} from '@/lib/requests/types.ts';
 import {
     KOREADER_SYNC_CHECKSUM_METHOD_SELECT_VALUES,
     KOREADER_SYNC_CONFLICT_STRATEGY_SELECT_VALUES,

@@ -137,7 +137,7 @@ export function AnimeExtensionCard(props: AnimeExtensionCardProps) {
                             </Typography>
                         )}
                     </Typography>
-                    {showSourceRepo && <Typography variant="caption">{repo}</Typography>}
+                    {showSourceRepo && !!repo && <Typography variant="caption">{repo}</Typography>}
                 </Stack>
                 <Button
                     variant="outlined"

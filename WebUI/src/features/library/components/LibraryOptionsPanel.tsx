@@ -16,8 +16,7 @@ import { ThreeStateCheckboxInput } from '@/base/components/inputs/ThreeStateChec
 import { OptionsTabs } from '@/base/components/modals/OptionsTabs.tsx';
 import { requestManager } from '@/lib/requests/RequestManager.ts';
 import { Trackers } from '@/features/tracker/services/Trackers.ts';
-import { GetTrackersSettingsQuery, MangaStatus } from '@/lib/graphql/generated/graphql.ts';
-import { GET_TRACKERS_SETTINGS } from '@/lib/graphql/tracker/TrackerQuery.ts';
+import { MangaStatus } from '@/lib/requests/types.ts';
 import { createUpdateCategoryMetadata, useGetCategoryMetadata } from '@/features/category/services/CategoryMetadata.ts';
 import { makeToast } from '@/base/utils/Toast.ts';
 import {
@@ -58,7 +57,7 @@ export const LibraryOptionsPanel = ({
 }) => {
     const { t } = useTranslation();
 
-    const trackerList = requestManager.useGetTrackerList<GetTrackersSettingsQuery>(GET_TRACKERS_SETTINGS);
+    const trackerList = requestManager.useGetTrackersSettings();
     const loggedInTrackers = Trackers.getLoggedIn(trackerList.data?.trackers.nodes ?? []);
 
     const categoryLibraryOptions = useGetCategoryMetadata(category);

@@ -910,12 +910,6 @@
                 "log_level": {
                     "label": {
                         "server": "Hata ayıklama günlüklerini etkinleşti"
-                    },
-                    "graphql": {
-                        "label": {
-                            "description": "Buna gizlilik açısından güvenli olmayan bilgiler içeren günlükler de dahildir",
-                            "title": "Graphql hata ayıklama günlüklerini etkinleştir"
-                        }
                     }
                 },
                 "log_files": {

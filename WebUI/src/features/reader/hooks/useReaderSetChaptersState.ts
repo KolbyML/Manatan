@@ -10,7 +10,6 @@ import { useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { Chapters } from '@/features/chapter/services/Chapters.ts';
 import { requestManager } from '@/lib/requests/RequestManager.ts';
-import { GetChaptersReaderQuery } from '@/lib/graphql/generated/graphql.ts';
 import {
     IReaderSettings,
     ReaderOpenChapterLocationState,
@@ -25,7 +24,7 @@ import { getReaderChaptersStore } from '@/features/reader/stores/ReaderStore.ts'
 import { READER_DEFAULT_CHAPTERS_STATE } from '@/features/reader/stores/ReaderChaptersStore.ts';
 
 export const useReaderSetChaptersState = (
-    chaptersResponse: ReturnType<typeof requestManager.useGetMangaChapters<GetChaptersReaderQuery>>,
+    chaptersResponse: ReturnType<typeof requestManager.useGetReaderChapters>,
     chapterSourceOrder: number,
     mangaChapters: ReaderStateChapters['mangaChapters'],
     initialChapter: ReaderStateChapters['initialChapter'],
@@ -60,7 +59,9 @@ export const useReaderSetChaptersState = (
                 ? Chapters.removeDuplicates(newChapterForDuplicatesHandling, filteredChapters)
                 : filteredChapters;
 
-            return uniqueChapters.map((chapter) => getReaderChapterFromCache(chapter.id)!);
+            return uniqueChapters
+                .map((chapter) => getReaderChapterFromCache(chapter.id))
+                .filter((chapter): chapter is NonNullable<typeof chapter> => !!chapter);
         })();
         const nextChapter =
             newCurrentChapter &&

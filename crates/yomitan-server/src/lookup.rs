@@ -2,12 +2,14 @@ use std::collections::{HashMap, HashSet};
 
 use tracing::error;
 use wordbase_api::{
-    dict::yomitan::GlossaryTag, DictionaryId, FrequencyValue, Record, RecordEntry, RecordId, Span,
-    Term,
+    DictionaryId, FrequencyValue, Record, RecordEntry, RecordId, Span, Term,
+    dict::yomitan::GlossaryTag,
 };
 
-use crate::deinflector::{Deinflector, Language as DeinflectLanguage};
-use crate::state::{AppState, StoredRecord};
+use crate::{
+    deinflector::{Deinflector, Language as DeinflectLanguage},
+    state::{AppState, StoredRecord},
+};
 
 pub struct LookupService {
     deinflector: Deinflector,

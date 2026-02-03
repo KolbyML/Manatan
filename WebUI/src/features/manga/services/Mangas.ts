@@ -7,23 +7,17 @@
  */
 
 import i18next, { t as translate } from 'i18next';
-import { DocumentNode, Unmasked } from '@apollo/client/core';
 import { requestManager } from '@/lib/requests/RequestManager.ts';
 import {
     ChapterConditionInput,
-    GetMangasBaseQuery,
-    GetMangasBaseQueryVariables,
     GetMangasChapterIdsWithStateQuery,
     GetMangaToMigrateQuery,
     GetMangaToMigrateToFetchMutation,
-    MangaBaseFieldsFragment,
     UpdateMangaCategoriesPatchInput,
-} from '@/lib/graphql/generated/graphql.ts';
+} from '@/lib/requests/types.ts';
 import { Chapters } from '@/features/chapter/services/Chapters.ts';
 import { makeToast } from '@/base/utils/Toast.ts';
 import { getMetadataServerSettings } from '@/features/settings/services/ServerSettingsMetadata.ts';
-import { GET_MANGAS_BASE } from '@/lib/graphql/manga/MangaQuery.ts';
-import { MANGA_BASE_FIELDS } from '@/lib/graphql/manga/MangaFragments.ts';
 import { MetadataMigrationSettings } from '@/features/migration/Migration.types.ts';
 import {
     MangaAction,
@@ -109,21 +103,6 @@ export class Mangas {
         return mangas.map((manga) => manga.id);
     }
 
-    static getFromCache<T = MangaBaseFieldsFragment>(
-        id: MangaIdInfo['id'],
-        fragment: DocumentNode = MANGA_BASE_FIELDS,
-        fragmentName: string = 'MANGA_BASE_FIELDS',
-    ): Unmasked<T> | null {
-        return requestManager.graphQLClient.client.cache.readFragment<T>({
-            id: requestManager.graphQLClient.client.cache.identify({
-                __typename: 'MangaType',
-                id,
-            }),
-            fragment,
-            fragmentName,
-        });
-    }
-
     static isNotDownloaded({ downloadCount }: MangaDownloadInfo): boolean {
         return downloadCount === 0;
     }
@@ -173,18 +152,48 @@ export class Mangas {
     }
 
     static getThumbnailUrl(manga: Partial<MangaThumbnailInfo>): string {
-        const url = UrlUtil.addParams(manga.thumbnailUrl ?? '', {
-            fetchedAt: manga.thumbnailUrlLastFetched,
-            sourceId: manga.sourceId,
-        });
+        const mangaId = (manga as { id?: number | string; mangaId?: number | string; manga_id?: number | string })
+            .id ??
+            (manga as { mangaId?: number | string }).mangaId ??
+            (manga as { manga_id?: number | string }).manga_id;
+        const thumbnailUrl = manga.thumbnailUrl ?? '';
+        const fallbackPath = mangaId != null ? `/api/v1/manga/${mangaId}/thumbnail` : '';
+        const basePath = thumbnailUrl || fallbackPath;
+        if (!basePath) {
+            return '';
+        }
+
+        const params = {
+            fetchedAt: manga.thumbnailUrlLastFetched?.toString(),
+            sourceId: manga.sourceId?.toString(),
+        };
+
+        const isAbsolute =
+            basePath.startsWith('http://') ||
+            basePath.startsWith('https://') ||
+            basePath.startsWith('file://') ||
+            basePath.startsWith('data:');
+        const isLocalPath = basePath.startsWith('/') && !basePath.startsWith('/api/');
+
+        if (isAbsolute || isLocalPath) {
+            const proxyUrl = UrlUtil.addParams('/api/v1/media/image', {
+                url: basePath,
+                ...params,
+            });
+            return requestManager.getValidImgUrlFor(proxyUrl, '');
+        }
+
+        const url = UrlUtil.addParams(basePath, params);
+
+        if (url.startsWith('/api/')) {
+            return requestManager.getValidImgUrlFor(url, '');
+        }
 
         return requestManager.getValidImgUrlFor(url);
     }
 
-    static getDuplicateLibraryMangas(
-        title: string,
-    ): ReturnType<typeof requestManager.getMangas<GetMangasBaseQuery, GetMangasBaseQueryVariables>> {
-        return requestManager.getMangas<GetMangasBaseQuery, GetMangasBaseQueryVariables>(GET_MANGAS_BASE, {
+    static getDuplicateLibraryMangas(title: string): ReturnType<typeof requestManager.getMangasBase> {
+        return requestManager.getMangasBase({
             condition: { inLibrary: true },
             filter: { title: { likeInsensitive: title } },
         });
@@ -195,7 +204,7 @@ export class Mangas {
         state: Pick<ChapterConditionInput, 'isRead' | 'isDownloaded' | 'isBookmarked'>,
     ): Promise<GetMangasChapterIdsWithStateQuery['chapters']['nodes']> {
         const { data } = await requestManager.getMangasChapterIdsWithState(mangaIds, state).response;
-        return data.chapters.nodes;
+        return data?.chapters.nodes ?? [];
     }
 
     static async downloadChapters(
@@ -451,7 +460,7 @@ export class Mangas {
             'migrate',
             1,
             async () => {
-                const [{ data: mangaToMigrateData }, { data: mangaToMigrateToData }, { removeMangaFromCategories }] =
+                const [mangaToMigrateResponse, mangaToMigrateToResponse, { removeMangaFromCategories }] =
                     await Promise.all([
                         requestManager.getMangaToMigrate(mangaId, {
                             migrateChapters,
@@ -463,12 +472,18 @@ export class Mangas {
                             migrateChapters,
                             migrateCategories,
                             migrateTracking,
-                            apolloOptions: { errorPolicy: 'all' },
                         }).response,
                         getMetadataServerSettings(),
                     ]);
+                const mangaToMigrateData = mangaToMigrateResponse.data;
+                const mangaToMigrateToData = mangaToMigrateToResponse.data;
 
-                if (!mangaToMigrateData.manga || !mangaToMigrateToData?.fetchManga?.manga) {
+                if (
+                    !mangaToMigrateData ||
+                    !mangaToMigrateData.manga ||
+                    !mangaToMigrateToData ||
+                    !mangaToMigrateToData.fetchManga?.manga
+                ) {
                     throw new Error('Mangas::migrate: missing manga data');
                 }
 

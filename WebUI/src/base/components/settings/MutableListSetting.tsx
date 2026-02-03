@@ -167,7 +167,9 @@ export const MutableListSetting = ({
                 open={isDialogOpen}
                 onClose={() => closeDialog()}
                 fullWidth
-                onEntered={() => dialogRef.current?.focus()}
+                TransitionProps={{
+                    onEntered: () => dialogRef.current?.focus(),
+                }}
                 PaperProps={{ ref: dialogRef, tabIndex: -1 }}
             >
                 <DialogTitle>{settingName}</DialogTitle>

@@ -72,7 +72,7 @@ export const Thumbnail = ({
                 setDynamicColor({
                     ...palette,
                     average: averageColor,
-                } as TAppThemeContext['dynamicColor']);
+                } as unknown as TAppThemeContext['dynamicColor']);
             });
         };
 

@@ -3,8 +3,10 @@ use std::cmp::Ordering;
 use lazy_static::lazy_static;
 use regex::Regex;
 
-use crate::language::OcrLanguage;
-use crate::logic::{BoundingBox, OcrResult};
+use crate::{
+    language::OcrLanguage,
+    logic::{BoundingBox, OcrResult},
+};
 
 lazy_static! {
     static ref JAPANESE_REGEX: Regex = Regex::new(r"[\p{Hiragana}\p{Katakana}\p{Han}]").unwrap();

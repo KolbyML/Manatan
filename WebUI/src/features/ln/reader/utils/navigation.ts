@@ -4,6 +4,14 @@ export interface NavigationOptions {
     isPaged: boolean;
 }
 
+export interface NavigationState {
+    currentPage: number;
+    totalPages: number;
+    currentChapter: number;
+    totalChapters: number;
+    progress: number;
+}
+
 export interface NavigationCallbacks {
     goNext: () => void;
     goPrev: () => void;
@@ -200,7 +208,7 @@ export function handleTouchEnd(
     options: NavigationOptions,
     callbacks: NavigationCallbacks
 ): 'next' | 'prev' | null {
-    const { isVertical, isRTL } = options;
+    const { isVertical } = options;
 
     const deltaX = event.changedTouches[0].clientX - touchStart.startX;
     const deltaY = event.changedTouches[0].clientY - touchStart.startY;
@@ -235,6 +243,58 @@ export function handleTouchEnd(
     }
 
     return null;
+}
+
+export function calculateTotalPages(container: HTMLElement, options: NavigationOptions): number {
+    const { isVertical } = options;
+    const pageSize = isVertical ? container.clientWidth : container.clientHeight;
+    if (pageSize <= 0) return 1;
+    const scrollSize = isVertical ? container.scrollWidth : container.scrollHeight;
+    return Math.max(1, Math.ceil(scrollSize / pageSize));
+}
+
+export function getCurrentPage(container: HTMLElement, options: NavigationOptions): number {
+    const { isVertical, isRTL } = options;
+    const pageSize = isVertical ? container.clientWidth : container.clientHeight;
+    if (pageSize <= 0) return 0;
+    const maxScroll = isVertical ? container.scrollWidth - container.clientWidth : container.scrollHeight - container.clientHeight;
+    const rawScroll = isVertical ? container.scrollLeft : container.scrollTop;
+    const effectiveScroll = isVertical && isRTL ? Math.max(0, maxScroll - rawScroll) : rawScroll;
+    const totalPages = calculateTotalPages(container, options);
+    const page = Math.floor(effectiveScroll / pageSize);
+    return Math.min(Math.max(page, 0), Math.max(0, totalPages - 1));
+}
+
+export function scrollToPage(container: HTMLElement, page: number, options: NavigationOptions): void {
+    const { isVertical, isRTL } = options;
+    const totalPages = calculateTotalPages(container, options);
+    const maxPage = Math.max(0, totalPages - 1);
+    const targetPage = Math.min(Math.max(page, 0), maxPage);
+    const pageSize = isVertical ? container.clientWidth : container.clientHeight;
+    const target = targetPage * pageSize;
+    if (isVertical) {
+        const maxScroll = container.scrollWidth - container.clientWidth;
+        const left = isRTL ? Math.max(0, maxScroll - target) : target;
+        container.scrollTo({ left, behavior: 'smooth' });
+    } else {
+        container.scrollTo({ top: target, behavior: 'smooth' });
+    }
+}
+
+export function navigateNext(container: HTMLElement, options: NavigationOptions, currentPage: number): void {
+    scrollToPage(container, currentPage + 1, options);
+}
+
+export function navigatePrev(container: HTMLElement, options: NavigationOptions, currentPage: number): void {
+    scrollToPage(container, currentPage - 1, options);
+}
+
+export function navigateToStart(container: HTMLElement, options: NavigationOptions): void {
+    scrollToStart(container, options);
+}
+
+export function navigateToEnd(container: HTMLElement, options: NavigationOptions): void {
+    scrollToEnd(container, options);
 }
 
 /**

@@ -1432,12 +1432,6 @@
                     }
                 },
                 "log_level": {
-                    "graphql": {
-                        "label": {
-                            "description": "Obejmuje to dzienniki zawierające informacje niezabezpieczające prywatności",
-                            "title": "Włącz dzienniki debugowania graphql"
-                        }
-                    },
                     "label": {
                         "server": "Włącz dzienniki debugowania"
                     }

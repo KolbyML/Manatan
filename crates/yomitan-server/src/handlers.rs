@@ -1,20 +1,20 @@
-use crate::{ServerState, import};
+use std::collections::HashMap;
+
 use axum::{
     Json,
     extract::{Multipart, Query, State},
     http::StatusCode,
 };
-use reqwest::Client;
 use regex::Regex;
+use reqwest::Client;
 use scraper::{Html, Selector};
-use sha2::{Digest, Sha256};
 use serde::{Deserialize, Serialize};
 use serde_json::{Value, Value as JsonValue, json};
-use std::collections::HashMap;
+use sha2::{Digest, Sha256};
 use tracing::{error, info};
 use wordbase_api::{DictionaryId, Record, Term, dict::yomitan::GlossaryTag};
 
-use crate::state::AppState;
+use crate::{ServerState, import, state::AppState};
 
 #[cfg(target_os = "ios")]
 unsafe extern "C" {
@@ -298,58 +298,227 @@ struct AudioLanguageSummary {
 
 fn get_audio_language_summary(language: DictionaryLanguage) -> AudioLanguageSummary {
     match language {
-        DictionaryLanguage::Japanese => AudioLanguageSummary { iso: "ja", iso639_3: "jpn", pod101_name: Some("Japanese") },
-        DictionaryLanguage::English => AudioLanguageSummary { iso: "en", iso639_3: "eng", pod101_name: Some("English") },
-        DictionaryLanguage::Chinese => AudioLanguageSummary { iso: "zh", iso639_3: "zho", pod101_name: Some("Chinese") },
-        DictionaryLanguage::Korean => AudioLanguageSummary { iso: "ko", iso639_3: "kor", pod101_name: Some("Korean") },
-        DictionaryLanguage::Arabic => AudioLanguageSummary { iso: "ar", iso639_3: "ara", pod101_name: Some("Arabic") },
-        DictionaryLanguage::Spanish => AudioLanguageSummary { iso: "es", iso639_3: "spa", pod101_name: Some("Spanish") },
-        DictionaryLanguage::French => AudioLanguageSummary { iso: "fr", iso639_3: "fra", pod101_name: Some("French") },
-        DictionaryLanguage::German => AudioLanguageSummary { iso: "de", iso639_3: "deu", pod101_name: Some("German") },
-        DictionaryLanguage::Portuguese => AudioLanguageSummary { iso: "pt", iso639_3: "por", pod101_name: Some("Portuguese") },
-        DictionaryLanguage::Bulgarian => AudioLanguageSummary { iso: "bg", iso639_3: "bul", pod101_name: Some("Bulgarian") },
-        DictionaryLanguage::Czech => AudioLanguageSummary { iso: "cs", iso639_3: "ces", pod101_name: Some("Czech") },
-        DictionaryLanguage::Danish => AudioLanguageSummary { iso: "da", iso639_3: "dan", pod101_name: Some("Danish") },
-        DictionaryLanguage::Greek => AudioLanguageSummary { iso: "el", iso639_3: "ell", pod101_name: Some("Greek") },
-        DictionaryLanguage::Estonian => AudioLanguageSummary { iso: "et", iso639_3: "est", pod101_name: None },
-        DictionaryLanguage::Persian => AudioLanguageSummary { iso: "fa", iso639_3: "fas", pod101_name: Some("Persian") },
-        DictionaryLanguage::Finnish => AudioLanguageSummary { iso: "fi", iso639_3: "fin", pod101_name: Some("Finnish") },
-        DictionaryLanguage::Hebrew => AudioLanguageSummary { iso: "he", iso639_3: "heb", pod101_name: Some("Hebrew") },
-        DictionaryLanguage::Hindi => AudioLanguageSummary { iso: "hi", iso639_3: "hin", pod101_name: Some("Hindi") },
-        DictionaryLanguage::Hungarian => AudioLanguageSummary { iso: "hu", iso639_3: "hun", pod101_name: Some("Hungarian") },
-        DictionaryLanguage::Indonesian => AudioLanguageSummary { iso: "id", iso639_3: "ind", pod101_name: Some("Indonesian") },
-        DictionaryLanguage::Italian => AudioLanguageSummary { iso: "it", iso639_3: "ita", pod101_name: Some("Italian") },
-        DictionaryLanguage::Latin => AudioLanguageSummary { iso: "la", iso639_3: "lat", pod101_name: None },
-        DictionaryLanguage::Lao => AudioLanguageSummary { iso: "lo", iso639_3: "lao", pod101_name: None },
-        DictionaryLanguage::Latvian => AudioLanguageSummary { iso: "lv", iso639_3: "lav", pod101_name: None },
-        DictionaryLanguage::Georgian => AudioLanguageSummary { iso: "ka", iso639_3: "kat", pod101_name: None },
-        DictionaryLanguage::Kannada => AudioLanguageSummary { iso: "kn", iso639_3: "kan", pod101_name: None },
-        DictionaryLanguage::Khmer => AudioLanguageSummary { iso: "km", iso639_3: "khm", pod101_name: None },
-        DictionaryLanguage::Mongolian => AudioLanguageSummary { iso: "mn", iso639_3: "mon", pod101_name: None },
-        DictionaryLanguage::Maltese => AudioLanguageSummary { iso: "mt", iso639_3: "mlt", pod101_name: None },
-        DictionaryLanguage::Dutch => AudioLanguageSummary { iso: "nl", iso639_3: "nld", pod101_name: Some("Dutch") },
-        DictionaryLanguage::Norwegian => AudioLanguageSummary { iso: "no", iso639_3: "nor", pod101_name: Some("Norwegian") },
-        DictionaryLanguage::Polish => AudioLanguageSummary { iso: "pl", iso639_3: "pol", pod101_name: Some("Polish") },
-        DictionaryLanguage::Romanian => AudioLanguageSummary { iso: "ro", iso639_3: "ron", pod101_name: Some("Romanian") },
-        DictionaryLanguage::Russian => AudioLanguageSummary { iso: "ru", iso639_3: "rus", pod101_name: Some("Russian") },
-        DictionaryLanguage::Swedish => AudioLanguageSummary { iso: "sv", iso639_3: "swe", pod101_name: Some("Swedish") },
-        DictionaryLanguage::Thai => AudioLanguageSummary { iso: "th", iso639_3: "tha", pod101_name: Some("Thai") },
-        DictionaryLanguage::Tagalog => AudioLanguageSummary { iso: "tl", iso639_3: "tgl", pod101_name: Some("Filipino") },
-        DictionaryLanguage::Turkish => AudioLanguageSummary { iso: "tr", iso639_3: "tur", pod101_name: Some("Turkish") },
-        DictionaryLanguage::Ukrainian => AudioLanguageSummary { iso: "uk", iso639_3: "ukr", pod101_name: None },
-        DictionaryLanguage::Vietnamese => AudioLanguageSummary { iso: "vi", iso639_3: "vie", pod101_name: Some("Vietnamese") },
-        DictionaryLanguage::Welsh => AudioLanguageSummary { iso: "cy", iso639_3: "cym", pod101_name: None },
-        DictionaryLanguage::Cantonese => AudioLanguageSummary { iso: "yue", iso639_3: "yue", pod101_name: Some("Cantonese") },
+        DictionaryLanguage::Japanese => AudioLanguageSummary {
+            iso: "ja",
+            iso639_3: "jpn",
+            pod101_name: Some("Japanese"),
+        },
+        DictionaryLanguage::English => AudioLanguageSummary {
+            iso: "en",
+            iso639_3: "eng",
+            pod101_name: Some("English"),
+        },
+        DictionaryLanguage::Chinese => AudioLanguageSummary {
+            iso: "zh",
+            iso639_3: "zho",
+            pod101_name: Some("Chinese"),
+        },
+        DictionaryLanguage::Korean => AudioLanguageSummary {
+            iso: "ko",
+            iso639_3: "kor",
+            pod101_name: Some("Korean"),
+        },
+        DictionaryLanguage::Arabic => AudioLanguageSummary {
+            iso: "ar",
+            iso639_3: "ara",
+            pod101_name: Some("Arabic"),
+        },
+        DictionaryLanguage::Spanish => AudioLanguageSummary {
+            iso: "es",
+            iso639_3: "spa",
+            pod101_name: Some("Spanish"),
+        },
+        DictionaryLanguage::French => AudioLanguageSummary {
+            iso: "fr",
+            iso639_3: "fra",
+            pod101_name: Some("French"),
+        },
+        DictionaryLanguage::German => AudioLanguageSummary {
+            iso: "de",
+            iso639_3: "deu",
+            pod101_name: Some("German"),
+        },
+        DictionaryLanguage::Portuguese => AudioLanguageSummary {
+            iso: "pt",
+            iso639_3: "por",
+            pod101_name: Some("Portuguese"),
+        },
+        DictionaryLanguage::Bulgarian => AudioLanguageSummary {
+            iso: "bg",
+            iso639_3: "bul",
+            pod101_name: Some("Bulgarian"),
+        },
+        DictionaryLanguage::Czech => AudioLanguageSummary {
+            iso: "cs",
+            iso639_3: "ces",
+            pod101_name: Some("Czech"),
+        },
+        DictionaryLanguage::Danish => AudioLanguageSummary {
+            iso: "da",
+            iso639_3: "dan",
+            pod101_name: Some("Danish"),
+        },
+        DictionaryLanguage::Greek => AudioLanguageSummary {
+            iso: "el",
+            iso639_3: "ell",
+            pod101_name: Some("Greek"),
+        },
+        DictionaryLanguage::Estonian => AudioLanguageSummary {
+            iso: "et",
+            iso639_3: "est",
+            pod101_name: None,
+        },
+        DictionaryLanguage::Persian => AudioLanguageSummary {
+            iso: "fa",
+            iso639_3: "fas",
+            pod101_name: Some("Persian"),
+        },
+        DictionaryLanguage::Finnish => AudioLanguageSummary {
+            iso: "fi",
+            iso639_3: "fin",
+            pod101_name: Some("Finnish"),
+        },
+        DictionaryLanguage::Hebrew => AudioLanguageSummary {
+            iso: "he",
+            iso639_3: "heb",
+            pod101_name: Some("Hebrew"),
+        },
+        DictionaryLanguage::Hindi => AudioLanguageSummary {
+            iso: "hi",
+            iso639_3: "hin",
+            pod101_name: Some("Hindi"),
+        },
+        DictionaryLanguage::Hungarian => AudioLanguageSummary {
+            iso: "hu",
+            iso639_3: "hun",
+            pod101_name: Some("Hungarian"),
+        },
+        DictionaryLanguage::Indonesian => AudioLanguageSummary {
+            iso: "id",
+            iso639_3: "ind",
+            pod101_name: Some("Indonesian"),
+        },
+        DictionaryLanguage::Italian => AudioLanguageSummary {
+            iso: "it",
+            iso639_3: "ita",
+            pod101_name: Some("Italian"),
+        },
+        DictionaryLanguage::Latin => AudioLanguageSummary {
+            iso: "la",
+            iso639_3: "lat",
+            pod101_name: None,
+        },
+        DictionaryLanguage::Lao => AudioLanguageSummary {
+            iso: "lo",
+            iso639_3: "lao",
+            pod101_name: None,
+        },
+        DictionaryLanguage::Latvian => AudioLanguageSummary {
+            iso: "lv",
+            iso639_3: "lav",
+            pod101_name: None,
+        },
+        DictionaryLanguage::Georgian => AudioLanguageSummary {
+            iso: "ka",
+            iso639_3: "kat",
+            pod101_name: None,
+        },
+        DictionaryLanguage::Kannada => AudioLanguageSummary {
+            iso: "kn",
+            iso639_3: "kan",
+            pod101_name: None,
+        },
+        DictionaryLanguage::Khmer => AudioLanguageSummary {
+            iso: "km",
+            iso639_3: "khm",
+            pod101_name: None,
+        },
+        DictionaryLanguage::Mongolian => AudioLanguageSummary {
+            iso: "mn",
+            iso639_3: "mon",
+            pod101_name: None,
+        },
+        DictionaryLanguage::Maltese => AudioLanguageSummary {
+            iso: "mt",
+            iso639_3: "mlt",
+            pod101_name: None,
+        },
+        DictionaryLanguage::Dutch => AudioLanguageSummary {
+            iso: "nl",
+            iso639_3: "nld",
+            pod101_name: Some("Dutch"),
+        },
+        DictionaryLanguage::Norwegian => AudioLanguageSummary {
+            iso: "no",
+            iso639_3: "nor",
+            pod101_name: Some("Norwegian"),
+        },
+        DictionaryLanguage::Polish => AudioLanguageSummary {
+            iso: "pl",
+            iso639_3: "pol",
+            pod101_name: Some("Polish"),
+        },
+        DictionaryLanguage::Romanian => AudioLanguageSummary {
+            iso: "ro",
+            iso639_3: "ron",
+            pod101_name: Some("Romanian"),
+        },
+        DictionaryLanguage::Russian => AudioLanguageSummary {
+            iso: "ru",
+            iso639_3: "rus",
+            pod101_name: Some("Russian"),
+        },
+        DictionaryLanguage::Swedish => AudioLanguageSummary {
+            iso: "sv",
+            iso639_3: "swe",
+            pod101_name: Some("Swedish"),
+        },
+        DictionaryLanguage::Thai => AudioLanguageSummary {
+            iso: "th",
+            iso639_3: "tha",
+            pod101_name: Some("Thai"),
+        },
+        DictionaryLanguage::Tagalog => AudioLanguageSummary {
+            iso: "tl",
+            iso639_3: "tgl",
+            pod101_name: Some("Filipino"),
+        },
+        DictionaryLanguage::Turkish => AudioLanguageSummary {
+            iso: "tr",
+            iso639_3: "tur",
+            pod101_name: Some("Turkish"),
+        },
+        DictionaryLanguage::Ukrainian => AudioLanguageSummary {
+            iso: "uk",
+            iso639_3: "ukr",
+            pod101_name: None,
+        },
+        DictionaryLanguage::Vietnamese => AudioLanguageSummary {
+            iso: "vi",
+            iso639_3: "vie",
+            pod101_name: Some("Vietnamese"),
+        },
+        DictionaryLanguage::Welsh => AudioLanguageSummary {
+            iso: "cy",
+            iso639_3: "cym",
+            pod101_name: None,
+        },
+        DictionaryLanguage::Cantonese => AudioLanguageSummary {
+            iso: "yue",
+            iso639_3: "yue",
+            pod101_name: Some("Cantonese"),
+        },
     }
 }
 
 fn get_language_pod101_fetch_url(language: &str) -> Result<String, anyhow::Error> {
     let pod_or_class = match language {
-        "Afrikaans" | "Arabic" | "Bulgarian" | "Dutch" | "Filipino" | "Finnish" | "French" | "German" | "Greek"
-        | "Hebrew" | "Hindi" | "Hungarian" | "Indonesian" | "Italian" | "Japanese" | "Persian" | "Polish"
-        | "Portuguese" | "Romanian" | "Russian" | "Spanish" | "Swahili" | "Swedish" | "Thai" | "Urdu"
-        | "Vietnamese" => "pod",
-        "Cantonese" | "Chinese" | "Czech" | "Danish" | "English" | "Korean" | "Norwegian" | "Turkish" => "class",
+        "Afrikaans" | "Arabic" | "Bulgarian" | "Dutch" | "Filipino" | "Finnish" | "French"
+        | "German" | "Greek" | "Hebrew" | "Hindi" | "Hungarian" | "Indonesian" | "Italian"
+        | "Japanese" | "Persian" | "Polish" | "Portuguese" | "Romanian" | "Russian" | "Spanish"
+        | "Swahili" | "Swedish" | "Thai" | "Urdu" | "Vietnamese" => "pod",
+        "Cantonese" | "Chinese" | "Czech" | "Danish" | "English" | "Korean" | "Norwegian"
+        | "Turkish" => "class",
         _ => return Err(anyhow::anyhow!("Invalid language for LanguagePod101")),
     };
     let lower = language.to_lowercase();
@@ -476,7 +645,11 @@ async fn fetch_wikimedia_audio_urls<F>(
 where
     F: Fn(&str, &str) -> bool,
 {
-    let response = client.get(search_url).header("User-Agent", "Mozilla/5.0").send().await?;
+    let response = client
+        .get(search_url)
+        .header("User-Agent", "Mozilla/5.0")
+        .send()
+        .await?;
     if !response.status().is_success() {
         return Ok(Vec::new());
     }
@@ -498,17 +671,29 @@ where
             "https://commons.wikimedia.org/w/api.php?action=query&format=json&titles={}&prop=imageinfo&iiprop=user|url&origin=*",
             urlencoding::encode(title)
         );
-        let response2 = client.get(&file_info_url).header("User-Agent", "Mozilla/5.0").send().await?;
+        let response2 = client
+            .get(&file_info_url)
+            .header("User-Agent", "Mozilla/5.0")
+            .send()
+            .await?;
         if !response2.status().is_success() {
             continue;
         }
         let file_response: Value = response2.json().await?;
-        let pages = match file_response.get("query").and_then(|q| q.get("pages")).and_then(|p| p.as_object()) {
+        let pages = match file_response
+            .get("query")
+            .and_then(|q| q.get("pages"))
+            .and_then(|p| p.as_object())
+        {
             Some(value) => value,
             None => continue,
         };
         for page in pages.values() {
-            let image_info = match page.get("imageinfo").and_then(|info| info.as_array()).and_then(|arr| arr.get(0)) {
+            let image_info = match page
+                .get("imageinfo")
+                .and_then(|info| info.as_array())
+                .and_then(|arr| arr.get(0))
+            {
                 Some(value) => value,
                 None => continue,
             };
@@ -533,12 +718,14 @@ async fn fetch_lingua_libre_audio_url(
     term: &str,
     summary: &AudioLanguageSummary,
 ) -> Result<Option<String>, anyhow::Error> {
-    let search_category = format!("incategory:\"Lingua_Libre_pronunciation-{}\"", summary.iso639_3);
+    let search_category = format!(
+        "incategory:\"Lingua_Libre_pronunciation-{}\"",
+        summary.iso639_3
+    );
     let search_string = format!("-{}.wav", term);
     let search_url = format!(
         "https://commons.wikimedia.org/w/api.php?action=query&format=json&list=search&srsearch=intitle:/{}/i+{}&srnamespace=6&origin=*",
-        search_string,
-        search_category
+        search_string, search_category
     );
     let urls = fetch_wikimedia_audio_urls(client, &search_url, |filename, file_user| {
         let pattern = format!(
@@ -547,7 +734,9 @@ async fn fetch_lingua_libre_audio_url(
             regex::escape(file_user),
             regex::escape(term)
         );
-        Regex::new(&pattern).map(|re| re.is_match(filename)).unwrap_or(false)
+        Regex::new(&pattern)
+            .map(|re| re.is_match(filename))
+            .unwrap_or(false)
     })
     .await?;
     Ok(urls.into_iter().next())
@@ -564,14 +753,24 @@ async fn fetch_wiktionary_audio_url(
         search_string
     );
     let urls = fetch_wikimedia_audio_urls(client, &search_url, |filename, _file_user| {
-        let pattern = format!(r"^File:{}(-\w\w)?-{}\d*\.ogg$", summary.iso, regex::escape(term));
-        Regex::new(&pattern).map(|re| re.is_match(filename)).unwrap_or(false)
+        let pattern = format!(
+            r"^File:{}(-\w\w)?-{}\d*\.ogg$",
+            summary.iso,
+            regex::escape(term)
+        );
+        Regex::new(&pattern)
+            .map(|re| re.is_match(filename))
+            .unwrap_or(false)
     })
     .await?;
     Ok(urls.into_iter().next())
 }
 
-async fn fetch_jpod101_audio_url(client: &Client, term: &str, reading: &str) -> Result<Option<String>, anyhow::Error> {
+async fn fetch_jpod101_audio_url(
+    client: &Client,
+    term: &str,
+    reading: &str,
+) -> Result<Option<String>, anyhow::Error> {
     let mut final_term = term.to_string();
     let mut final_reading = reading.to_string();
     if final_reading.is_empty() && is_string_entirely_kana(term) {
@@ -613,7 +812,11 @@ async fn fetch_jpod101_audio_url(client: &Client, term: &str, reading: &str) -> 
     Ok(Some(url))
 }
 
-async fn fetch_jisho_audio_url(client: &Client, term: &str, reading: &str) -> Result<Option<String>, anyhow::Error> {
+async fn fetch_jisho_audio_url(
+    client: &Client,
+    term: &str,
+    reading: &str,
+) -> Result<Option<String>, anyhow::Error> {
     let fetch_url = format!("https://jisho.org/search/{}", urlencoding::encode(term));
     let response = client
         .get(&fetch_url)
@@ -624,7 +827,8 @@ async fn fetch_jisho_audio_url(client: &Client, term: &str, reading: &str) -> Re
         return Ok(None);
     }
     let response_text = response.text().await?;
-    let audio_re = Regex::new(r#"(?s)<audio[^>]*id=\"([^\"]+)\"[^>]*>.*?<source[^>]*src=\"([^\"]+)\""#)?;
+    let audio_re =
+        Regex::new(r#"(?s)<audio[^>]*id=\"([^\"]+)\"[^>]*>.*?<source[^>]*src=\"([^\"]+)\""#)?;
     let mut candidates: Vec<(String, String)> = Vec::new();
     for cap in audio_re.captures_iter(&response_text) {
         let id = cap.get(1).map(|m| m.as_str()).unwrap_or("").to_string();
@@ -643,15 +847,24 @@ async fn fetch_jisho_audio_url(client: &Client, term: &str, reading: &str) -> Re
     let mut resolved: Option<(String, String)> = None;
     if !reading_key.is_empty() {
         let suffix = format!(":{}", reading_key);
-        resolved = candidates.iter().find(|(id, _)| id.ends_with(&suffix)).cloned();
+        resolved = candidates
+            .iter()
+            .find(|(id, _)| id.ends_with(&suffix))
+            .cloned();
     }
     if resolved.is_none() && !term_key.is_empty() && term_key != reading_key {
         let suffix = format!(":{}", term_key);
-        resolved = candidates.iter().find(|(id, _)| id.ends_with(&suffix)).cloned();
+        resolved = candidates
+            .iter()
+            .find(|(id, _)| id.ends_with(&suffix))
+            .cloned();
     }
     if resolved.is_none() && !term_key.is_empty() {
         let prefix = format!("audio_{}:", term_key);
-        resolved = candidates.iter().find(|(id, _)| id.starts_with(&prefix)).cloned();
+        resolved = candidates
+            .iter()
+            .find(|(id, _)| id.starts_with(&prefix))
+            .cloned();
     }
     if resolved.is_none() && candidates.len() == 1 {
         resolved = candidates.first().cloned();
@@ -1156,9 +1369,12 @@ pub async fn lookup_handler(
         ));
     }
 
-    let raw_results = state
-        .lookup
-        .search(&state.app, &params.text, cursor_idx, language.to_deinflect_language());
+    let raw_results = state.lookup.search(
+        &state.app,
+        &params.text,
+        cursor_idx,
+        language.to_deinflect_language(),
+    );
 
     let dict_meta: std::collections::HashMap<DictionaryId, String> = {
         let dicts = state.app.dictionaries.read().expect("lock");

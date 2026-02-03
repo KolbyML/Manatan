@@ -7,7 +7,7 @@
  */
 
 import { useMemo } from 'react';
-import { ChapterType } from '@/lib/graphql/generated/graphql.ts';
+import { ChapterType } from '@/lib/requests/types.ts';
 import {
     ChapterBookmarkInfo,
     ChapterDownloadInfo,

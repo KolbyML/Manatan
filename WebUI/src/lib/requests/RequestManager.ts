@@ -6,35 +6,16 @@
  * file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
 
-import {
-    ApolloError,
-    ApolloQueryResult,
-    DocumentNode,
-    FetchResult,
-    MutationHookOptions as ApolloMutationHookOptions,
-    MutationOptions as ApolloMutationOptions,
-    MutationResult,
-    MutationTuple,
-    QueryHookOptions as ApolloQueryHookOptions,
-    QueryOptions as ApolloQueryOptions,
-    QueryResult,
-    SubscriptionHookOptions as ApolloSubscriptionHookOptions,
-    SubscriptionResult,
-    TypedDocumentNode,
-    useMutation,
-    useQuery,
-    useSubscription,
-} from '@apollo/client';
-import { MaybeMasked, OperationVariables, Reference } from '@apollo/client/core';
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { RequestError } from '@/lib/requests/RequestError.ts';
+import { DefaultLanguage } from '@/base/utils/Languages.ts';
+import { UrlUtil } from '@/lib/UrlUtil.ts';
+import { NetworkStatus } from '@/lib/requests/RequestStatus.ts';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { d } from 'koration';
-import { IRestClient, RestClient } from '@/lib/requests/client/RestClient.ts';
-import { GraphQLClient } from '@/lib/requests/client/GraphQLClient.ts';
+import { HttpMethod, IRestClient, RestClient } from '@/lib/requests/client/RestClient.ts';
 import { BaseClient } from '@/lib/requests/client/BaseClient.ts';
 import {
-    CategoryOrderBy,
     ChapterConditionInput,
-    ChapterOrderBy,
     CheckForServerUpdatesQuery,
     CheckForServerUpdatesQueryVariables,
     ClearCachedImagesInput,
@@ -67,7 +48,6 @@ import {
     DequeueChapterDownloadsMutationVariables,
     DownloadStatusSubscription,
     DownloadStatusSubscriptionVariables,
-    DownloadUpdateType,
     EnqueueChapterDownloadMutation,
     EnqueueChapterDownloadMutationVariables,
     EnqueueChapterDownloadsMutation,
@@ -77,10 +57,12 @@ import {
     FilterChangeInput,
     GetAboutQuery,
     GetAboutQueryVariables,
+    GetCategoriesBaseQuery,
+    GetCategoriesBaseQueryVariables,
+    GetCategoriesLibraryQuery,
+    GetCategoriesLibraryQueryVariables,
     GetCategoriesSettingsQuery,
     GetCategoriesSettingsQueryVariables,
-    GetCategoryMangasQuery,
-    GetCategoryMangasQueryVariables,
     GetChapterPagesFetchMutation,
     GetChapterPagesFetchMutationVariables,
     GetChaptersMangaQuery,
@@ -97,20 +79,26 @@ import {
     GetExtensionsQueryVariables,
     GetGlobalMetadatasQuery,
     GetGlobalMetadatasQueryVariables,
+    GetLibraryMangaCountQuery,
+    GetLibraryMangaCountQueryVariables,
     GetLastUpdateTimestampQuery,
     GetLastUpdateTimestampQueryVariables,
     GetMangaChaptersFetchMutation,
     GetMangaChaptersFetchMutationVariables,
     GetMangaFetchMutation,
     GetMangaFetchMutationVariables,
+    GetMangaCategoriesQuery,
+    GetMangaCategoriesQueryVariables,
+    GetMangasDuplicatesQuery,
+    GetMangasDuplicatesQueryVariables,
     GetMangasChapterIdsWithStateQuery,
     GetMangasChapterIdsWithStateQueryVariables,
+    GetMangasBaseQuery,
+    GetMangasBaseQueryVariables,
     GetMangasLibraryQuery,
     GetMangasLibraryQueryVariables,
     GetMangaToMigrateQuery,
-    GetMangaToMigrateQueryVariables,
     GetMangaToMigrateToFetchMutation,
-    GetMangaToMigrateToFetchMutationVariables,
     GetMigratableSourceMangasQuery,
     GetMigratableSourceMangasQueryVariables,
     GetMigratableSourcesQuery,
@@ -141,8 +129,6 @@ import {
     SetMangaMetadataMutationVariables,
     SetSourceMetadataMutation,
     SetSourceMetadataMutationVariables,
-    SettingsType,
-    SortOrder,
     SourcePreferenceChangeInput,
     StartDownloaderMutation,
     StartDownloaderMutationVariables,
@@ -202,9 +188,26 @@ import {
     ValidateBackupQueryVariables,
     UpdateLibraryMutation,
     UpdateLibraryMutationVariables,
+    GetChaptersReaderQuery,
+    GetChaptersReaderQueryVariables,
     GetExtensionQuery,
     GetExtensionQueryVariables,
-    DownloaderState,
+    GetMangaReaderQuery,
+    GetMangaReaderQueryVariables,
+    GetMangaScreenQuery,
+    GetMangaScreenQueryVariables,
+    GetMangaTrackRecordsQuery,
+    GetMangaTrackRecordsQueryVariables,
+    GetSourceBrowseQuery,
+    GetSourceBrowseQueryVariables,
+    GetSourceMigratableQuery,
+    GetSourceMigratableQueryVariables,
+    GetSourceSettingsQuery,
+    GetSourceSettingsQueryVariables,
+    GetTrackersBindQuery,
+    GetTrackersBindQueryVariables,
+    GetTrackersSettingsQuery,
+    GetTrackersSettingsQueryVariables,
     UserLoginMutation,
     UserLoginMutationVariables,
     UserRefreshMutation,
@@ -219,182 +222,124 @@ import {
     KoSyncLogoutMutationVariables,
     GetKoSyncStatusQuery,
     GetKoSyncStatusQueryVariables,
-} from '@/lib/graphql/generated/graphql.ts';
-import { GET_GLOBAL_METADATAS } from '@/lib/graphql/metadata/GlobalMetadataQuery.ts';
-import { DELETE_GLOBAL_METADATA, SET_GLOBAL_METADATA } from '@/lib/graphql/metadata/GlobalMetadataMutation.ts';
-import {
-    CHECK_FOR_SERVER_UPDATES,
-    GET_ABOUT,
-} from '@/lib/graphql/server/ServerInfoQuery.ts';
-import { GET_EXTENSION, GET_EXTENSIONS } from '@/lib/graphql/extension/ExtensionQuery.ts';
-import { GET_ANIME_EXTENSIONS } from '@/lib/graphql/extension/AnimeExtensionQuery.ts';
-import { GET_ANIME_SOURCE_BROWSE, GET_ANIME_SOURCES_LIST } from '@/lib/graphql/anime/AnimeSourceQuery.ts';
-import { GET_ANIME_LIBRARY } from '@/lib/graphql/anime/AnimeQuery.ts';
-import {
-    GET_EXTENSIONS_FETCH,
-    INSTALL_EXTERNAL_EXTENSION,
-    UPDATE_EXTENSION,
-    UPDATE_EXTENSIONS,
-} from '@/lib/graphql/extension/ExtensionMutation.ts';
-import {
-    GET_ANIME_EXTENSIONS_FETCH,
-    UPDATE_ANIME_EXTENSION,
-    UPDATE_ANIME_EXTENSIONS,
-} from '@/lib/graphql/extension/AnimeExtensionMutation.ts';
-import { UPDATE_ANIME, UPDATE_ANIMES } from '@/lib/graphql/anime/AnimeMutation.ts';
-import { GET_SOURCE_ANIMES_FETCH } from '@/lib/graphql/anime/AnimeSourceMutation.ts';
-import { GET_MIGRATABLE_SOURCES, GET_SOURCES_LIST } from '@/lib/graphql/source/SourceQuery.ts';
-import {
-    DELETE_MANGA_METADATA,
-    GET_MANGA_FETCH,
-    GET_MANGA_TO_MIGRATE_TO_FETCH,
-    SET_MANGA_METADATA,
-    UPDATE_MANGA,
-    UPDATE_MANGA_CATEGORIES,
-    UPDATE_MANGAS,
-    UPDATE_MANGAS_CATEGORIES,
-} from '@/lib/graphql/manga/MangaMutation.ts';
-import {
-    GET_MANGA_TO_MIGRATE,
-    GET_MANGA_TRACK_RECORDS,
-    GET_MANGAS_LIBRARY,
-    GET_MIGRATABLE_SOURCE_MANGAS,
-} from '@/lib/graphql/manga/MangaQuery.ts';
-import {
-    GET_CATEGORIES_BASE,
-    GET_CATEGORIES_LIBRARY,
-    GET_CATEGORIES_SETTINGS,
-    GET_CATEGORY_MANGAS,
-} from '@/lib/graphql/category/CategoryQuery.ts';
-import {
-    DELETE_SOURCE_METADATA,
-    GET_SOURCE_MANGAS_FETCH,
-    SET_SOURCE_METADATA,
-    UPDATE_SOURCE_PREFERENCES,
-} from '@/lib/graphql/source/SourceMutation.ts';
-import {
-    CLEAR_DOWNLOADER,
-    DELETE_DOWNLOADED_CHAPTER,
-    DELETE_DOWNLOADED_CHAPTERS,
-    DEQUEUE_CHAPTER_DOWNLOAD,
-    DEQUEUE_CHAPTER_DOWNLOADS,
-    ENQUEUE_CHAPTER_DOWNLOAD,
-    ENQUEUE_CHAPTER_DOWNLOADS,
-    REORDER_CHAPTER_DOWNLOAD,
-    START_DOWNLOADER,
-    STOP_DOWNLOADER,
-} from '@/lib/graphql/download/DownloaderMutation.ts';
-import {
-    GET_CHAPTERS_HISTORY,
-    GET_CHAPTERS_MANGA,
-    GET_CHAPTERS_UPDATES,
-    GET_MANGAS_CHAPTER_IDS_WITH_STATE,
-} from '@/lib/graphql/chapter/ChapterQuery.ts';
-import {
-    DELETE_CHAPTER_METADATA,
-    GET_CHAPTER_PAGES_FETCH,
-    GET_MANGA_CHAPTERS_FETCH,
-    SET_CHAPTER_METADATA,
-    UPDATE_CHAPTER,
-    UPDATE_CHAPTERS,
-} from '@/lib/graphql/chapter/ChapterMutation.ts';
-import {
-    CREATE_CATEGORY,
-    DELETE_CATEGORY,
-    DELETE_CATEGORY_METADATA,
-    SET_CATEGORY_METADATA,
-    UPDATE_CATEGORY,
-    UPDATE_CATEGORY_ORDER,
-} from '@/lib/graphql/category/CategoryMutation.ts';
-import { STOP_UPDATER, UPDATE_LIBRARY } from '@/lib/graphql/updater/UpdaterMutation.ts';
-import { GET_LAST_UPDATE_TIMESTAMP, GET_UPDATE_STATUS } from '@/lib/graphql/updater/UpdaterQuery.ts';
+} from '@/lib/requests/types.ts';
 import { CustomCache } from '@/lib/storage/CustomCache.ts';
-import { CREATE_BACKUP, RESTORE_BACKUP } from '@/lib/graphql/backup/BackupMutation.ts';
-import { GET_RESTORE_STATUS, VALIDATE_BACKUP } from '@/lib/graphql/backup/BackupQuery.ts';
-import { DOWNLOAD_STATUS_SUBSCRIPTION } from '@/lib/graphql/download/DownloaderSubscription.ts';
-import { UPDATER_SUBSCRIPTION } from '@/lib/graphql/updater/UpdaterSubscription.ts';
-import { GET_SERVER_SETTINGS } from '@/lib/graphql/settings/SettingsQuery.ts';
-import { UPDATE_SERVER_SETTINGS } from '@/lib/graphql/settings/SettingsMutation.ts';
-import { CLEAR_SERVER_CACHE } from '@/lib/graphql/image/ImageMutation.ts';
-import { GET_DOWNLOAD_STATUS } from '@/lib/graphql/download/DownloaderQuery.ts';
 import { defaultPromiseErrorHandler } from '@/lib/DefaultPromiseErrorHandler.ts';
 import { QueuePriority } from '@/lib/Queue.ts';
 import { SourceAwareQueue } from '@/lib/SourceAwareQueue.ts';
-import { TRACKER_SEARCH } from '@/lib/graphql/tracker/TrackerQuery.ts';
-import {
-    TRACKER_BIND,
-    TRACKER_FETCH_BIND,
-    TRACKER_LOGIN_CREDENTIALS,
-    TRACKER_LOGIN_OAUTH,
-    TRACKER_LOGOUT,
-    TRACKER_UNBIND,
-    TRACKER_UPDATE_BIND,
-} from '@/lib/graphql/tracker/TrackerMutation.ts';
 import { ControlledPromise } from '@/lib/ControlledPromise.ts';
-import { DOWNLOAD_STATUS_FIELDS } from '@/lib/graphql/download/DownloadFragments.ts';
-import { EXTENSION_LIST_FIELDS } from '@/lib/graphql/extension/ExtensionFragments.ts';
-import { MANGA_BASE_FIELDS, MANGA_META_FIELDS } from '@/lib/graphql/manga/MangaFragments.ts';
-import { GLOBAL_METADATA } from '@/lib/graphql/common/Fragments.ts';
-import { CATEGORY_META_FIELDS } from '@/lib/graphql/category/CategoryFragments.ts';
-import { SOURCE_META_FIELDS } from '@/lib/graphql/source/SourceFragments.ts';
-import { CHAPTER_META_FIELDS } from '@/lib/graphql/chapter/ChapterFragments.ts';
 import { MetadataMigrationSettings } from '@/features/migration/Migration.types.ts';
 import { MangaIdInfo } from '@/features/manga/Manga.types.ts';
-import { updateMetadataList } from '@/features/metadata/services/MetadataApolloCacheHandler.ts';
-import { USER_LOGIN, USER_REFRESH } from '@/lib/graphql/user/UserMutation.ts';
 import { AuthManager } from '@/features/authentication/AuthManager.ts';
+import {
+    applyDownloadStatusUpdate,
+    setDownloadStatusSnapshot,
+} from '@/features/downloads/services/DownloadStatusStore.ts';
 import { useLocalStorage } from '@/base/hooks/useStorage.tsx';
-import { KO_SYNC_LOGIN, KO_SYNC_LOGOUT } from '@/lib/graphql/koreader/KoreaderSyncMutation.ts';
-import { GET_KO_SYNC_STATUS } from '@/lib/graphql/koreader/KoreaderSyncQuery.ts';
 import { ImageCache } from '@/lib/service-worker/ImageCache.ts';
 import { Sources } from '@/features/source/services/Sources.ts';
 
-enum GQLMethod {
-    QUERY = 'QUERY',
-    USE_QUERY = 'USE_QUERY',
-    USE_MUTATION = 'USE_MUTATION',
-    MUTATION = 'MUTATION',
-    USE_SUBSCRIPTION = 'USE_SUBSCRIPTION',
-}
+type OperationVariables = Record<string, any>;
+type MaybeMasked<T> = T;
 
-type CustomApolloOptions = {
+type FetchResult<Data = any> = {
+    data?: Data;
+    errors?: unknown;
+};
+
+type ApolloQueryResult<Data = any> = {
+    data?: Data;
+    loading?: boolean;
+    networkStatus?: NetworkStatus;
+    error?: RequestError;
+};
+
+type QueryResult<Data = any, Variables extends OperationVariables = OperationVariables> = {
+    client?: unknown;
+    data?: Data;
+    error?: RequestError;
+    loading: boolean;
+    networkStatus: NetworkStatus;
+    refetch: () => Promise<ApolloQueryResult<Data>>;
+    called: boolean;
+    variables?: Variables;
+    fetchMore: (...args: unknown[]) => Promise<ApolloQueryResult<Data>>;
+    subscribeToMore: (...args: unknown[]) => () => void;
+    startPolling: (interval?: number) => void;
+    stopPolling: () => void;
+    updateQuery: (...args: unknown[]) => void;
+    reobserve: () => Promise<ApolloQueryResult<Data>>;
+    reobserveCacheFirst: () => Promise<ApolloQueryResult<Data>>;
+    observable?: unknown;
+    previousData?: Data;
+};
+
+type MutationResult<Data = any> = {
+    client?: unknown;
+    data?: Data;
+    error?: RequestError;
+    loading: boolean;
+    called: boolean;
+    reset?: () => void;
+};
+
+type MutationTuple<Data = any, Variables extends OperationVariables = OperationVariables> = [
+    (options?: MutationOptions<Data, Variables>) => Promise<FetchResult<Data>>,
+    MutationResult<Data>,
+];
+
+type SubscriptionResult<Data = any, Variables extends OperationVariables = OperationVariables> = {
+    data?: Data;
+    error?: RequestError;
+    loading: boolean;
+    variables?: Variables;
+};
+
+type CustomRequestOptions = {
     /**
-     * This is a workaround for an apollo bug (?).
-     *
-     * A new abort signal gets passed on every hook call.
-     * This causes the passed arguments to change (due to updating the "context" option, which is only relevant for the actual request),
-     * which - I assume - results in apollo to handle this as a completely new hook call.
-     * Due to this, when e.g. calling "fetchMore", "loading" and "networkStatus" do not get updated when enabling "notifyOnNetworkStatusChange".
-     *
-     * It also causes apollo to spam requests in case of request failures on every rerender.
-     *
-     * Instead of adding the abort signal by default, it has to be added manually which will cause these stated issues (and potentially more?)
+     * When enabled, an abort signal is included in the request context.
+     * Avoid enabling by default to prevent argument churn and request spam on rerenders.
      */
     addAbortSignal?: boolean;
 };
+type RequestContext = { fetchOptions?: { signal?: AbortSignal } };
+type RequestBaseOptions<Data = any, Variables extends OperationVariables = OperationVariables> = {
+    variables?: Variables;
+    skip?: boolean;
+    notifyOnNetworkStatusChange?: boolean;
+    onCompleted?: (data: Data) => void;
+    onError?: (error: RequestError) => void;
+    context?: RequestContext;
+    refetchQueries?: unknown;
+    awaitRefetchQueries?: boolean;
+    fetchPolicy?: string;
+    nextFetchPolicy?: string;
+    errorPolicy?: string;
+    pollInterval?: number;
+};
 type QueryOptions<Variables extends OperationVariables = OperationVariables, Data = any> = Partial<
-    ApolloQueryOptions<Variables, Data>
+    RequestBaseOptions<Data, Variables>
 > &
-    CustomApolloOptions;
+    CustomRequestOptions;
 type QueryHookOptions<Data = any, Variables extends OperationVariables = OperationVariables> = Partial<
-    ApolloQueryHookOptions<Data, Variables>
+    RequestBaseOptions<Data, Variables>
 > &
-    CustomApolloOptions;
+    CustomRequestOptions;
 type MutationHookOptions<Data = any, Variables extends OperationVariables = OperationVariables> = Partial<
-    ApolloMutationHookOptions<Data, Variables>
+    RequestBaseOptions<Data, Variables>
 > &
-    CustomApolloOptions;
+    CustomRequestOptions;
 type MutationOptions<Data = any, Variables extends OperationVariables = OperationVariables> = Partial<
-    ApolloMutationOptions<Data, Variables>
+    RequestBaseOptions<Data, Variables>
 > &
-    CustomApolloOptions;
+    CustomRequestOptions;
 type ApolloPaginatedMutationOptions<Data = any, Variables extends OperationVariables = OperationVariables> = Partial<
     MutationHookOptions<Data, Variables>
 > & { skipRequest?: boolean };
 type SubscriptionHookOptions<Data = any, Variables extends OperationVariables = OperationVariables> = Partial<
-    ApolloSubscriptionHookOptions<Data, Variables>
+    RequestBaseOptions<Data, Variables>
 > &
-    Omit<CustomApolloOptions, 'addAbortSignal'> & { addAbortSignal?: never };
+    Omit<CustomRequestOptions, 'addAbortSignal'> & { addAbortSignal?: never };
 
 type AbortableRequest = { abortRequest: AbortController['abort'] };
 
@@ -463,13 +408,19 @@ export const SPECIAL_ED_SOURCES = {
 export class RequestManager {
     public static readonly API_VERSION = '/api/v1/';
 
-    public readonly graphQLClient = new GraphQLClient(this.refreshUser.bind(this));
-
     private readonly restClient: RestClient = new RestClient(this.refreshUser.bind(this));
 
     private readonly cache = new CustomCache();
 
     private readonly imageQueue: SourceAwareQueue;
+
+    private serverSettingsSnapshot?: GetServerSettingsQuery;
+
+    private readonly serverSettingsListeners = new Set<(settings?: GetServerSettingsQuery) => void>();
+
+    private globalMetaSnapshot?: GetGlobalMetadatasQuery;
+
+    private readonly globalMetaListeners = new Set<(meta?: GetGlobalMetadatasQuery) => void>();
 
     constructor() {
         const isHttps = typeof window !== 'undefined' && window.location.protocol === 'https:';
@@ -498,7 +449,6 @@ export class RequestManager {
 
     public updateClient(config: RequestInit): void {
         this.restClient.updateConfig(config);
-        this.graphQLClient.updateConfig();
     }
 
     public reset(): void {
@@ -506,15 +456,15 @@ export class RequestManager {
         AuthManager.setAuthInitialized(false);
         AuthManager.removeTokens();
 
-        this.graphQLClient.reset();
         this.restClient.reset();
 
         this.cache.clear();
         this.imageQueue.clear();
+        this.setServerSettingsSnapshot(undefined);
+        this.setGlobalMetaSnapshot(undefined);
     }
 
     public processQueues(): void {
-        this.graphQLClient.processQueue();
         this.restClient.processQueue();
     }
 
@@ -522,11 +472,69 @@ export class RequestManager {
         return this.restClient.getBaseUrl();
     }
 
+    private setServerSettingsSnapshot(settings?: GetServerSettingsQuery): void {
+        this.serverSettingsSnapshot = settings;
+        this.serverSettingsListeners.forEach((listener) => listener(settings));
+    }
+
+    private subscribeServerSettings(listener: (settings?: GetServerSettingsQuery) => void): () => void {
+        this.serverSettingsListeners.add(listener);
+        return () => this.serverSettingsListeners.delete(listener);
+    }
+
+    private buildGlobalMetaSnapshot(
+        nodes: NonNullable<GetGlobalMetadatasQuery['metas']>['nodes'],
+    ): GetGlobalMetadatasQuery {
+        return {
+            metas: {
+                nodes,
+                totalCount: nodes.length,
+                pageInfo: {
+                    endCursor: null,
+                    hasNextPage: false,
+                    hasPreviousPage: false,
+                    startCursor: null,
+                },
+            },
+        } as GetGlobalMetadatasQuery;
+    }
+
+    private setGlobalMetaSnapshot(meta?: GetGlobalMetadatasQuery): void {
+        this.globalMetaSnapshot = meta;
+        this.globalMetaListeners.forEach((listener) => listener(meta));
+    }
+
+    private subscribeGlobalMeta(listener: (meta?: GetGlobalMetadatasQuery) => void): () => void {
+        this.globalMetaListeners.add(listener);
+        return () => this.globalMetaListeners.delete(listener);
+    }
+
+    private upsertGlobalMetaSnapshot(key: string, value: string): void {
+        const currentNodes = this.globalMetaSnapshot?.metas?.nodes ?? [];
+        const filteredNodes = currentNodes.filter((node) => node.key !== key);
+        const nodes = [...filteredNodes, { key, value }].sort((a, b) => a.key.localeCompare(b.key));
+        this.setGlobalMetaSnapshot(this.buildGlobalMetaSnapshot(nodes));
+    }
+
+    private removeGlobalMetaSnapshot(key: string): void {
+        const currentNodes = this.globalMetaSnapshot?.metas?.nodes ?? [];
+        const nodes = currentNodes.filter((node) => node.key !== key);
+        this.setGlobalMetaSnapshot(this.buildGlobalMetaSnapshot(nodes));
+    }
+
     public useBaseUrl() {
         return useLocalStorage(BaseClient.BASE_URL_KEY, () => this.getBaseUrl());
     }
 
     public getValidUrlFor(endpoint: string, apiVersion: string = RequestManager.API_VERSION): string {
+        if (
+            endpoint.startsWith('http://') ||
+            endpoint.startsWith('https://') ||
+            endpoint.startsWith('data:') ||
+            endpoint.startsWith('blob:')
+        ) {
+            return endpoint;
+        }
         return `${this.getBaseUrl()}${apiVersion}${endpoint}`;
     }
 
@@ -546,6 +554,10 @@ export class RequestManager {
         this.cache.clearFor(this.cache.getKeyFor(EXTENSION_LIST_CACHE_KEY, undefined));
     }
 
+    public clearAnimeExtensionCache() {
+        this.cache.clearFor(this.cache.getKeyFor(ANIME_EXTENSION_LIST_CACHE_KEY, undefined));
+    }
+
     private createAbortController(): { signal: AbortSignal } & AbortableRequest {
         const abortController = new AbortController();
         const abortRequest = (reason?: any): void => {
@@ -557,6 +569,700 @@ export class RequestManager {
         return { signal: abortController.signal, abortRequest };
     }
 
+    private buildPageInfo() {
+        return {
+            endCursor: null,
+            hasNextPage: false,
+            hasPreviousPage: false,
+            startCursor: null,
+        };
+    }
+
+    private normalizeMangaPayload(manga: any) {
+        if (!manga) {
+            return manga;
+        }
+
+        const chaptersTotalCount =
+            manga?.chapters?.totalCount ?? manga?.chapterCount ?? manga?.chapters?.nodes?.length ?? 0;
+        const trackRecords = manga?.trackRecords ?? { totalCount: 0, nodes: [] };
+        const meta = Array.isArray(manga?.meta)
+            ? manga.meta
+            : manga?.meta && typeof manga.meta === 'object'
+              ? Object.entries(manga.meta).map(([key, value]) => ({ key, value: `${value ?? ''}` }))
+              : [];
+        const genre = Array.isArray(manga?.genre)
+            ? manga.genre
+            : manga?.genre
+              ? [manga.genre]
+              : [];
+        const chaptersField = manga?.chapters;
+        const chapters = chaptersField && !Array.isArray(chaptersField)
+            ? chaptersField
+            : { totalCount: chaptersTotalCount };
+
+        return {
+            ...manga,
+            genre,
+            meta,
+            chapters,
+            unreadCount: manga?.unreadCount ?? 0,
+            downloadCount: manga?.downloadCount ?? 0,
+            bookmarkCount: manga?.bookmarkCount ?? 0,
+            hasDuplicateChapters: manga?.hasDuplicateChapters ?? false,
+            firstUnreadChapter: manga?.firstUnreadChapter ?? null,
+            lastReadChapter: manga?.lastReadChapter ?? null,
+            latestReadChapter: manga?.latestReadChapter ?? null,
+            latestFetchedChapter: manga?.latestFetchedChapter ?? null,
+            latestUploadedChapter: manga?.latestUploadedChapter ?? null,
+            trackRecords,
+        };
+    }
+
+    private normalizeSourcePayload(source: any) {
+        if (!source) {
+            return source;
+        }
+
+        const meta = Array.isArray(source?.meta)
+            ? source.meta
+            : source?.meta && typeof source.meta === 'object'
+              ? Object.entries(source.meta).map(([key, value]) => ({ key, value: `${value ?? ''}` }))
+              : [];
+        const extensionPkgName =
+            source?.extension?.pkgName ?? source?.extensionPkgName ?? source?.extension_pkg_name ?? '';
+        const extensionRepo = source?.extension?.repo ?? source?.extensionRepo ?? source?.extension_repo ?? '';
+        const extension = { pkgName: extensionPkgName, repo: extensionRepo };
+        const filters = Array.isArray(source?.filters) ? source.filters : [];
+        const preferences = Array.isArray(source?.preferences) ? source.preferences : [];
+
+        return {
+            ...source,
+            meta,
+            extension,
+            filters,
+            preferences,
+            displayName: source?.displayName ?? source?.name,
+        };
+    }
+
+    private normalizeExtensionPayload(extension: any) {
+        if (!extension) {
+            return extension;
+        }
+
+        const pkgName = extension?.pkgName ?? extension?.pkg_name ?? extension?.package_name ?? '';
+        const name = extension?.name ?? '';
+        let lang = extension?.lang ?? extension?.language ?? '';
+        if (!lang) {
+            lang = DefaultLanguage.ALL;
+        }
+        const versionCode = Number(extension?.versionCode ?? extension?.version_code ?? 0);
+        const versionName = extension?.versionName ?? extension?.version_name ?? '';
+        const repo = extension?.repo ?? extension?.repository ?? null;
+        const isNsfw = extension?.isNsfw ?? extension?.is_nsfw ?? false;
+        const isInstalled = extension?.isInstalled ?? extension?.installed ?? extension?.is_installed ?? false;
+        const isObsolete = extension?.isObsolete ?? extension?.obsolete ?? extension?.is_obsolete ?? false;
+        const hasUpdate = extension?.hasUpdate ?? extension?.has_update ?? false;
+        const apkName = extension?.apkName ?? extension?.apk_name ?? '';
+        let iconUrl = extension?.iconUrl ?? extension?.icon_url ?? '';
+        if (!iconUrl && apkName) {
+            iconUrl = this.getExtensionIconUrl(apkName);
+        }
+
+        return {
+            ...extension,
+            pkgName,
+            name,
+            lang,
+            versionCode,
+            versionName,
+            iconUrl,
+            repo,
+            isNsfw,
+            isInstalled,
+            isObsolete,
+            hasUpdate,
+            installed: extension?.installed ?? isInstalled,
+            obsolete: extension?.obsolete ?? isObsolete,
+            apkName,
+        };
+    }
+
+    private normalizeExtensionsPayload(payload: any) {
+        const items = Array.isArray(payload)
+            ? payload
+            : payload?.extensions?.nodes ??
+              payload?.extensions ??
+              payload?.fetchExtensions?.extensions ??
+              payload?.fetchAnimeExtensions?.extensions ??
+              [];
+        return items.map((extension: any) => this.normalizeExtensionPayload(extension));
+    }
+
+    private normalizeSourceMangaPayload(manga: any, sourceId?: string) {
+        if (!manga) {
+            return manga;
+        }
+
+        const id = Number(manga?.id ?? manga?.mangaId ?? 0);
+        const title = manga?.title ?? manga?.name ?? '';
+        const thumbnailUrl = manga?.thumbnailUrl ?? manga?.thumbnail_url ?? manga?.coverUrl ?? '';
+        const thumbnailUrlLastFetched =
+            manga?.thumbnailUrlLastFetched ?? manga?.thumbnail_url_last_fetched ?? null;
+        const inLibrary = manga?.inLibrary ?? manga?.in_library ?? false;
+        const initialized = manga?.initialized ?? manga?.inLibraryAt != null;
+        const resolvedSourceId = manga?.sourceId ?? manga?.source_id ?? sourceId ?? '';
+
+        return {
+            ...manga,
+            id,
+            title,
+            thumbnailUrl,
+            thumbnailUrlLastFetched,
+            inLibrary,
+            initialized,
+            sourceId: resolvedSourceId,
+        };
+    }
+
+    private normalizeSourceAnimePayload(anime: any, sourceId?: string) {
+        if (!anime) {
+            return anime;
+        }
+
+        const id = Number(anime?.id ?? anime?.animeId ?? 0);
+        const title = anime?.title ?? anime?.name ?? '';
+        const thumbnailUrl = anime?.thumbnailUrl ?? anime?.thumbnail_url ?? anime?.coverUrl ?? '';
+        const resolvedSourceId = anime?.sourceId ?? anime?.source_id ?? sourceId ?? '';
+        const url = anime?.url ?? anime?.webUrl ?? anime?.web_url ?? null;
+        const inLibrary = anime?.inLibrary ?? anime?.in_library ?? false;
+
+        return {
+            ...anime,
+            id,
+            title,
+            thumbnailUrl,
+            sourceId: resolvedSourceId,
+            url,
+            inLibrary,
+        };
+    }
+
+    private async fetchSourceMangasRest(input: FetchSourceMangaInput, signal: AbortSignal) {
+        const sourceId = input.source ?? (input as { sourceId?: string }).sourceId ?? '';
+        const page = input.page ?? 1;
+        const params = new URLSearchParams();
+        params.set('page', String(page));
+        if (input.query) {
+            params.set('query', input.query);
+        }
+        const endpointBase = `/api/v1/source/${sourceId}`;
+        const endpoint =
+            input.type === FetchSourceMangaType.Popular
+                ? `${endpointBase}/popular`
+                : input.type === FetchSourceMangaType.Latest
+                  ? `${endpointBase}/latest`
+                  : `${endpointBase}/search`;
+
+        if (input.filters?.length) {
+            await this.restClient.fetcher(`${endpointBase}/filters`, {
+                httpMethod: HttpMethod.POST,
+                data: { filters: input.filters },
+                config: { signal },
+            });
+        }
+
+        const response = await this.restClient.fetcher(`${endpoint}?${params.toString()}`, {
+            config: { signal, cache: 'no-store' },
+        });
+        const payload = await response.json();
+        const rawList =
+            payload?.mangaList ?? payload?.mangas ?? payload?.nodes ?? payload?.results ?? payload ?? [];
+        const mangas = Array.isArray(rawList) ? rawList : rawList?.nodes ?? [];
+        const hasNextPage = payload?.hasNextPage ?? payload?.has_next_page ?? false;
+        const rawSourceIds = mangas
+            .map((manga: any) =>
+                manga?.sourceId ??
+                manga?.source_id ??
+                manga?.source ??
+                manga?.source?.id ??
+                manga?.source?.sourceId ??
+                manga?.source?.source_id ??
+                manga?.manga?.sourceId ??
+                manga?.manga?.source_id ??
+                manga?.manga?.source ??
+                manga?.manga?.source?.id ??
+                manga?.manga?.source?.sourceId ??
+                manga?.manga?.source?.source_id,
+            )
+            .filter((value: any) => value != null)
+            .map((value: any) => `${value}`);
+        const uniqueSourceIds = [...new Set(rawSourceIds)];
+        if (uniqueSourceIds.length > 1 || (uniqueSourceIds[0] && uniqueSourceIds[0] !== `${sourceId}`)) {
+            console.info('[source] mixed sourceIds', {
+                sourceId,
+                page,
+                uniqueSourceIds,
+                sample: rawSourceIds.slice(0, 10),
+            });
+        }
+        const expectedSourceId = `${sourceId}`;
+        const normalized = mangas
+            .map((manga: any) => {
+                const rawSourceId =
+                    manga?.sourceId ??
+                    manga?.source_id ??
+                    manga?.source ??
+                    manga?.source?.id ??
+                    manga?.source?.sourceId ??
+                    manga?.source?.source_id ??
+                    manga?.manga?.sourceId ??
+                    manga?.manga?.source_id ??
+                    manga?.manga?.source ??
+                    manga?.manga?.source?.id ??
+                    manga?.manga?.source?.sourceId ??
+                    manga?.manga?.source?.source_id;
+                return {
+                    rawSourceId,
+                    normalized: this.normalizeSourceMangaPayload(manga, sourceId),
+                };
+            })
+            .filter(({ rawSourceId }) => rawSourceId != null && `${rawSourceId}` === expectedSourceId)
+            .map(({ normalized }) => normalized);
+        return {
+            fetchSourceManga: {
+                mangas: normalized,
+                hasNextPage,
+            },
+        } as GetSourceMangasFetchMutation;
+    }
+
+    private async fetchSourceAnimesRest(input: any, signal: AbortSignal) {
+        const sourceId = input?.source ?? input?.sourceId ?? '';
+        const page = input?.page ?? 1;
+        const params = new URLSearchParams();
+        params.set('page', String(page));
+        if (input?.query) {
+            params.set('query', input.query);
+        }
+        const endpointBase = `/api/v1/anime/source/${sourceId}`;
+        const endpoint =
+            input?.type === 'POPULAR'
+                ? `${endpointBase}/popular`
+                : input?.type === 'LATEST'
+                  ? `${endpointBase}/latest`
+                  : `${endpointBase}/search`;
+        const response = await this.restClient.fetcher(`${endpoint}?${params.toString()}`, {
+            config: { signal },
+        });
+        const payload = await response.json();
+        const rawList =
+            payload?.animeList ?? payload?.animes ?? payload?.nodes ?? payload?.results ?? payload ?? [];
+        const animes = Array.isArray(rawList) ? rawList : rawList?.nodes ?? [];
+        const hasNextPage = payload?.hasNextPage ?? payload?.has_next_page ?? false;
+        const expectedSourceId = `${sourceId}`;
+        const normalized = animes
+            .map((anime: any) => {
+                const rawSourceId =
+                    anime?.sourceId ??
+                    anime?.source_id ??
+                    anime?.source ??
+                    anime?.source?.id ??
+                    anime?.source?.sourceId ??
+                    anime?.source?.source_id ??
+                    anime?.anime?.sourceId ??
+                    anime?.anime?.source_id ??
+                    anime?.anime?.source ??
+                    anime?.anime?.source?.id ??
+                    anime?.anime?.source?.sourceId ??
+                    anime?.anime?.source?.source_id;
+                return {
+                    rawSourceId,
+                    normalized: this.normalizeSourceAnimePayload(anime, sourceId),
+                };
+            })
+            .filter(({ rawSourceId }) => rawSourceId != null && `${rawSourceId}` === expectedSourceId)
+            .map(({ normalized }) => normalized);
+        return {
+            fetchSourceAnime: {
+                animes: normalized,
+                hasNextPage,
+            },
+        };
+    }
+
+    private async refreshExtensionListCache(
+        signal: AbortSignal,
+        { refresh = true, anime = false }: { refresh?: boolean; anime?: boolean } = {},
+    ) {
+        const endpoint = anime ? '/api/v1/anime/extension/list' : '/api/v1/extension/list';
+        const url = refresh ? `${endpoint}?refresh=true` : endpoint;
+        const response = await this.restClient.fetcher(url, { config: { signal } });
+        const payload = await response.json();
+        const extensions = this.normalizeExtensionsPayload(payload);
+        const cacheKey = anime ? ANIME_EXTENSION_LIST_CACHE_KEY : EXTENSION_LIST_CACHE_KEY;
+        const data = anime
+            ? { fetchAnimeExtensions: { extensions } }
+            : { fetchExtensions: { extensions } };
+        this.cache.cacheResponse(cacheKey, undefined, {
+            data,
+            loading: false,
+            called: true,
+        });
+        return extensions;
+    }
+
+    private normalizeTrackerPayload(tracker: any) {
+        if (!tracker) {
+            return tracker;
+        }
+
+        const id = tracker?.id ?? tracker?.trackerId ?? tracker?.tracker_id ?? 0;
+        const name = tracker?.name ?? tracker?.trackerName ?? tracker?.tracker_name ?? '';
+        const icon = tracker?.icon ?? tracker?.iconUrl ?? tracker?.icon_url ?? '';
+        const authUrl = tracker?.authUrl ?? tracker?.auth_url ?? '';
+        const isLoggedIn = tracker?.isLoggedIn ?? tracker?.is_logged_in ?? false;
+        const isTokenExpired = tracker?.isTokenExpired ?? tracker?.is_token_expired ?? false;
+        const supportsTrackDeletion =
+            tracker?.supportsTrackDeletion ?? tracker?.supports_track_deletion ?? false;
+        const supportsPrivateTracking =
+            tracker?.supportsPrivateTracking ?? tracker?.supports_private_tracking ?? false;
+        const scores = Array.isArray(tracker?.scores) ? tracker.scores : [];
+        const statuses = Array.isArray(tracker?.statuses) ? tracker.statuses : [];
+
+        return {
+            ...tracker,
+            id,
+            name,
+            icon,
+            authUrl,
+            isLoggedIn,
+            isTokenExpired,
+            supportsTrackDeletion,
+            supportsPrivateTracking,
+            scores,
+            statuses,
+        };
+    }
+
+    private normalizeTrackerSearchPayload(trackSearch: any) {
+        if (!trackSearch) {
+            return trackSearch;
+        }
+
+        const id = trackSearch?.id ?? trackSearch?.remoteId ?? trackSearch?.remote_id ?? 0;
+        const remoteId = `${trackSearch?.remoteId ?? trackSearch?.remote_id ?? trackSearch?.id ?? ''}`;
+        const title = trackSearch?.title ?? trackSearch?.name ?? '';
+        const summary = trackSearch?.summary ?? trackSearch?.description ?? '';
+        const coverUrl = trackSearch?.coverUrl ?? trackSearch?.cover_url ?? '';
+        const trackingUrl = trackSearch?.trackingUrl ?? trackSearch?.tracking_url ?? trackSearch?.url ?? '';
+        const publishingType = trackSearch?.publishingType ?? trackSearch?.publishing_type ?? '';
+        const publishingStatus = trackSearch?.publishingStatus ?? trackSearch?.publishing_status ?? '';
+        const startDate = trackSearch?.startDate ?? trackSearch?.start_date ?? '';
+        const score = Number(trackSearch?.score ?? 0);
+        const totalChapters = Number(trackSearch?.totalChapters ?? trackSearch?.total_chapters ?? 0);
+
+        return {
+            ...trackSearch,
+            id,
+            remoteId,
+            title,
+            summary,
+            coverUrl,
+            trackingUrl,
+            publishingType,
+            publishingStatus,
+            startDate,
+            score,
+            totalChapters,
+        };
+    }
+
+    private normalizeTrackRecordPayload(
+        trackRecord: any,
+        fallback?: { mangaId?: number; trackerId?: number; remoteId?: string },
+    ) {
+        if (!trackRecord) {
+            trackRecord = {};
+        }
+
+        const id = trackRecord?.id ?? trackRecord?.recordId ?? trackRecord?.record_id ?? 0;
+        const trackerId = trackRecord?.trackerId ?? trackRecord?.tracker_id ?? fallback?.trackerId ?? 0;
+        const remoteId = `${trackRecord?.remoteId ?? trackRecord?.remote_id ?? fallback?.remoteId ?? ''}`;
+        const remoteUrl = trackRecord?.remoteUrl ?? trackRecord?.remote_url ?? trackRecord?.url ?? '';
+        const title = trackRecord?.title ?? trackRecord?.name ?? '';
+        const status = Number(trackRecord?.status ?? 0);
+        const lastChapterRead = Number(trackRecord?.lastChapterRead ?? trackRecord?.last_chapter_read ?? 0);
+        const totalChapters = Number(trackRecord?.totalChapters ?? trackRecord?.total_chapters ?? 0);
+        const score = Number(trackRecord?.score ?? 0);
+        const displayScore = trackRecord?.displayScore ?? trackRecord?.display_score ?? `${score}`;
+        const startDate = trackRecord?.startDate ?? trackRecord?.start_date ?? '';
+        const finishDate = trackRecord?.finishDate ?? trackRecord?.finish_date ?? '';
+        const isPrivate = trackRecord?.private ?? trackRecord?.is_private ?? false;
+
+        const mangaId =
+            trackRecord?.manga?.id ?? trackRecord?.mangaId ?? trackRecord?.manga_id ?? fallback?.mangaId ?? 0;
+        const trackRecordNodes =
+            trackRecord?.manga?.trackRecords?.nodes ?? trackRecord?.manga?.track_records?.nodes ?? [];
+        const normalizedNodes = Array.isArray(trackRecordNodes)
+            ? trackRecordNodes.map((node: any) => ({
+                  id: node?.id ?? 0,
+                  trackerId: node?.trackerId ?? node?.tracker_id ?? 0,
+              }))
+            : [];
+        const totalCount =
+            trackRecord?.manga?.trackRecords?.totalCount ??
+            trackRecord?.manga?.track_records?.totalCount ??
+            normalizedNodes.length;
+        const hasMangaInfo = mangaId !== 0 || !!trackRecord?.manga || fallback?.mangaId != null;
+
+        return {
+            ...trackRecord,
+            id,
+            trackerId,
+            remoteId,
+            remoteUrl,
+            title,
+            status,
+            lastChapterRead,
+            totalChapters,
+            score,
+            displayScore,
+            startDate,
+            finishDate,
+            private: isPrivate,
+            ...(hasMangaInfo
+                ? {
+                      manga: {
+                          id: mangaId,
+                          trackRecords: {
+                              totalCount,
+                              nodes: normalizedNodes,
+                          },
+                      },
+                  }
+                : {}),
+        };
+    }
+
+    private async parseJsonSafe(response: Response) {
+        try {
+            return await response.json();
+        } catch {
+            return undefined;
+        }
+    }
+
+    private useRestQuery<Data, Variables extends OperationVariables = OperationVariables>(
+        fetcher: (signal: AbortSignal) => Promise<Data>,
+        deps: unknown[],
+        options?: QueryHookOptions<Data, Variables>,
+    ): AbortableApolloUseQueryResponse<Data, Variables> {
+        const skip = options?.skip ?? false;
+        const [data, setData] = useState<Data | undefined>(undefined);
+        const [error, setError] = useState<RequestError | undefined>(undefined);
+        const [loading, setLoading] = useState<boolean>(!skip);
+        const [networkStatus, setNetworkStatus] = useState<number>(
+            skip ? NetworkStatus.ready : NetworkStatus.loading,
+        );
+        const abortRef = useRef<AbortController | null>(null);
+        const isMountedRef = useRef(true);
+
+        useEffect(() => {
+            isMountedRef.current = true;
+            return () => {
+                isMountedRef.current = false;
+                abortRef.current?.abort();
+            };
+        }, []);
+
+        const execute = useCallback(
+            async (isRefetch: boolean) => {
+                abortRef.current?.abort();
+                const controller = new AbortController();
+                abortRef.current = controller;
+
+                setLoading(true);
+                setError(undefined);
+                setNetworkStatus(isRefetch ? NetworkStatus.refetch : NetworkStatus.loading);
+
+                try {
+                    const result = await fetcher(controller.signal);
+                    if (!isMountedRef.current || controller.signal.aborted) {
+                        return result;
+                    }
+                    setData(result);
+                    setLoading(false);
+                    setNetworkStatus(NetworkStatus.ready);
+                    options?.onCompleted?.(result);
+                    return result;
+                } catch (caught: any) {
+                    if (controller.signal.aborted) {
+                        return undefined;
+                    }
+                    const requestError =
+                        caught instanceof RequestError
+                            ? caught
+                            : new RequestError(caught?.message ?? caught?.toString?.() ?? 'Request failed', caught);
+                    if (isMountedRef.current) {
+                        setError(requestError);
+                        setLoading(false);
+                        setNetworkStatus(NetworkStatus.error);
+                    }
+                    options?.onError?.(requestError);
+                    throw requestError;
+                }
+            },
+            [...deps, options?.onCompleted, options?.onError],
+        );
+
+        useEffect(() => {
+            if (skip) {
+                setLoading(false);
+                setNetworkStatus(NetworkStatus.ready);
+                return;
+            }
+            execute(false).catch(defaultPromiseErrorHandler('RequestManager::useRestQuery'));
+        }, [skip, execute]);
+
+        useEffect(() => {
+            if (skip || !options?.pollInterval) {
+                return undefined;
+            }
+
+            const intervalId = setInterval(() => {
+                execute(true).catch(defaultPromiseErrorHandler('RequestManager::useRestQuery::poll'));
+            }, options.pollInterval);
+
+            return () => {
+                clearInterval(intervalId);
+            };
+        }, [skip, options?.pollInterval, execute]);
+
+        const refetch = async () => {
+            const refetched = await execute(true);
+            return {
+                data: (refetched ?? data) as Data,
+                loading: false,
+                networkStatus: NetworkStatus.ready,
+            } as ApolloQueryResult<MaybeMasked<Data>>;
+        };
+
+        const abortRequest = (reason?: any): void => {
+            abortRef.current?.abort(reason);
+        };
+
+        const clientStub = undefined as unknown as QueryResult<MaybeMasked<Data>, Variables>['client'];
+
+        return {
+            client: clientStub,
+            data: data as MaybeMasked<Data>,
+            error,
+            loading,
+            networkStatus,
+            refetch,
+            called: !skip,
+            variables: undefined as unknown as Variables,
+            fetchMore: async () =>
+                ({
+                    data: data as MaybeMasked<Data>,
+                    loading: false,
+                    networkStatus: NetworkStatus.ready,
+                }) as ApolloQueryResult<MaybeMasked<Data>>,
+            subscribeToMore: () => () => {},
+            startPolling: () => {},
+            stopPolling: () => {},
+            updateQuery: () => {},
+            reobserve: () => Promise.resolve({} as ApolloQueryResult<MaybeMasked<Data>>),
+            reobserveCacheFirst: () => Promise.resolve({} as ApolloQueryResult<MaybeMasked<Data>>),
+            observable: undefined as unknown as QueryResult<MaybeMasked<Data>, Variables>['observable'],
+            previousData: undefined,
+            abortRequest,
+        } as AbortableApolloUseQueryResponse<Data, Variables>;
+    }
+
+    private useRestMutation<Data, Variables extends OperationVariables>(
+        fetcher: (variables: Variables | undefined, signal: AbortSignal) => Promise<Data>,
+    ): AbortableApolloUseMutationResponse<Data, Variables> {
+        const clientStub = undefined as unknown as MutationResult<Data>['client'];
+        const [result, setResult] = useState<MutationResult<Data>>({
+            loading: false,
+            called: false,
+            client: clientStub,
+        } as MutationResult<Data>);
+        const abortRef = useRef<AbortController | null>(null);
+
+        const reset = () => {
+            setResult({
+                loading: false,
+                called: false,
+                client: clientStub,
+            } as MutationResult<Data>);
+        };
+
+        const mutate = async (mutateOptions?: MutationOptions<Data, Variables>) => {
+            abortRef.current?.abort();
+            const controller = new AbortController();
+            abortRef.current = controller;
+
+            setResult((prev) => ({ ...prev, loading: true, called: true, error: undefined }));
+
+            try {
+                const data = await fetcher(mutateOptions?.variables, controller.signal);
+                if (controller.signal.aborted) {
+                    return { data: undefined } as FetchResult<MaybeMasked<Data>>;
+                }
+                setResult((prev) => ({ ...prev, loading: false, data, called: true }));
+                mutateOptions?.onCompleted?.(data);
+                return { data: data as MaybeMasked<Data> } as FetchResult<MaybeMasked<Data>>;
+            } catch (caught: any) {
+                if (controller.signal.aborted) {
+                    return { data: undefined } as FetchResult<MaybeMasked<Data>>;
+                }
+                const requestError =
+                    caught instanceof RequestError
+                        ? caught
+                        : new RequestError(caught?.message ?? caught?.toString?.() ?? 'Request failed', caught);
+                setResult((prev) => ({ ...prev, loading: false, error: requestError, called: true }));
+                mutateOptions?.onError?.(requestError);
+                throw requestError;
+            }
+        };
+
+        const abortRequest = (reason?: any): void => {
+            abortRef.current?.abort(reason);
+        };
+
+        return [mutate, { ...result, abortRequest, reset }] as AbortableApolloUseMutationResponse<Data, Variables>;
+    }
+
+    private doRestMutation<Data>(
+        request: (signal: AbortSignal) => Promise<Data>,
+    ): AbortableApolloMutationResponse<Data> {
+        const { signal, abortRequest } = this.createAbortController();
+        return {
+            abortRequest,
+            response: request(signal).then((data) => ({
+                data: data as MaybeMasked<Data>,
+            })) as Promise<FetchResult<MaybeMasked<Data>>>,
+        };
+    }
+
+    private doRestQuery<Data>(
+        request: (signal: AbortSignal) => Promise<Data>,
+    ): AbortabaleApolloQueryResponse<Data> {
+        const { signal, abortRequest } = this.createAbortController();
+        return {
+            abortRequest,
+            response: request(signal).then((data) => ({
+                data: data as MaybeMasked<Data>,
+                loading: false,
+                networkStatus: NetworkStatus.ready,
+            })) as Promise<ApolloQueryResult<MaybeMasked<Data>>>,
+        };
+    }
+
     private createPaginatedResult<Result extends AbortableApolloUseMutationPaginatedResponse[1][number]>(
         result: Partial<Result> | undefined | null,
         defaultPage: number,
@@ -565,7 +1271,7 @@ export class RequestManager {
         const isLoading = !result?.error && (result?.isLoading || !result?.called);
         const size = page ?? result?.size ?? defaultPage;
         return {
-            client: this.graphQLClient.client,
+            client: undefined as unknown as Result['client'],
             abortRequest: () => {},
             reset: () => {},
             called: false,
@@ -584,7 +1290,6 @@ export class RequestManager {
         cacheResultsKey: string,
         cachePagesKey: string,
         getVariablesFor: (page: number) => Variables,
-        options: ApolloPaginatedMutationOptions<Data, Variables> | undefined,
         checkIfCachedPageIsInvalid: (
             cachedResult: AbortableApolloUseMutationPaginatedResponse<Data, Variables>[1][number] | undefined,
             revalidatedResult: FetchResult<MaybeMasked<Data>>,
@@ -607,17 +1312,10 @@ export class RequestManager {
             return;
         }
 
-        const { response: revalidationRequest } = this.doRequest(
-            GQLMethod.MUTATION,
-            GET_SOURCE_MANGAS_FETCH,
-            getVariablesFor(pageToRevalidate),
-            {
-                ...options,
-                context: { fetchOptions: { signal } },
-            },
-        );
-
-        const revalidationResponse = await revalidationRequest;
+        const variables = getVariablesFor(pageToRevalidate);
+        const revalidationResponse = {
+            data: await this.fetchSourceMangasRest((variables as any).input, signal),
+        } as FetchResult<MaybeMasked<Data>>;
         const cachedPageData = this.cache.getResponseFor<
             AbortableApolloUseMutationPaginatedResponse<Data, Variables>[1][number]
         >(cacheResultsKey, getVariablesFor(pageToRevalidate));
@@ -651,7 +1349,6 @@ export class RequestManager {
                 cacheResultsKey,
                 cachePagesKey,
                 getVariablesFor,
-                options,
                 checkIfCachedPageIsInvalid,
                 hasNextPage,
                 pageToRevalidate + 1,
@@ -725,8 +1422,6 @@ export class RequestManager {
             abortRequest: AbortableRequest['abortRequest'],
             signal: AbortSignal,
         ) => Promise<void>,
-        options: ApolloPaginatedMutationOptions<Data, Variables> | undefined,
-        documentNode: DocumentNode,
         cachePagesKey: string,
         cacheResultsKey: string,
         cachedPages: Set<number>,
@@ -763,26 +1458,18 @@ export class RequestManager {
                 await revalidate(newPage, abortRequest, signal);
             }
 
-            const { response: request } = this.doRequest<Data, Variables>(
-                GQLMethod.MUTATION,
-                documentNode,
-                getVariablesFor(newPage),
-                { ...options, context: { fetchOptions: { signal } } },
-            );
-
-            response = await request;
+            const variables = getVariablesFor(newPage);
+            response = {
+                data: (await this.fetchSourceMangasRest((variables as any).input, signal)) as any,
+            } as FetchResult<MaybeMasked<Data>>;
 
             basePaginatedResult.data = response.data;
         } catch (error: any) {
             defaultPromiseErrorHandler('RequestManager::fetchPaginatedMutationPage')(error);
-            if (error instanceof ApolloError) {
-                basePaginatedResult.error = error;
-            } else {
-                basePaginatedResult.error = new ApolloError({
-                    errorMessage: error?.message ?? error.toString(),
-                    extraInfo: error,
-                });
-            }
+            basePaginatedResult.error =
+                error instanceof RequestError
+                    ? error
+                    : new RequestError(error?.message ?? error.toString(), error);
         }
 
         const fetchPaginatedResult = {
@@ -1122,6 +1809,18 @@ export class RequestManager {
         url: string,
         options: ImageRequestOptions & { useFetchApi?: boolean } = {},
     ): Promise<ImageRequest> {
+        const baseUrl = this.getBaseUrl();
+        if (
+            url.startsWith('http://') ||
+            url.startsWith('https://')
+        ) {
+            const isSameOrigin = url.startsWith(baseUrl);
+            const isMediaProxy = url.includes('/api/v1/media/image');
+            if (!isSameOrigin && !isMediaProxy) {
+                const proxy = UrlUtil.addParams('/api/v1/media/image', { url });
+                url = this.getValidImgUrlFor(proxy, '');
+            }
+        }
         const finalOptions = {
             useFetchApi: AuthManager.isAuthRequired(),
             shouldDecode: false,
@@ -1142,149 +1841,48 @@ export class RequestManager {
         return this.fetchImageViaTag(url, { ...finalOptions, shouldDecode });
     }
 
-    private doRequest<Data, Variables extends OperationVariables = OperationVariables>(
-        method: GQLMethod.QUERY,
-        operation: DocumentNode | TypedDocumentNode<Data, Variables>,
-        variables: Variables | undefined,
-        options?: QueryOptions<Variables, Data>,
-    ): AbortabaleApolloQueryResponse<Data>;
-
-    private doRequest<Data, Variables extends OperationVariables = OperationVariables>(
-        method: GQLMethod.USE_QUERY,
-        operation: DocumentNode | TypedDocumentNode<Data, Variables>,
-        variables: Variables | undefined,
-        options?: QueryHookOptions<Data, Variables>,
-    ): AbortableApolloUseQueryResponse<Data, Variables>;
-
-    private doRequest<Data, Variables extends OperationVariables = OperationVariables>(
-        method: GQLMethod.USE_MUTATION,
-        operation: DocumentNode | TypedDocumentNode<Data, Variables>,
-        variables: Variables | undefined,
-        options?: MutationHookOptions<Data, Variables>,
-    ): AbortableApolloUseMutationResponse<Data, Variables>;
-
-    private doRequest<Data, Variables extends OperationVariables = OperationVariables>(
-        method: GQLMethod.MUTATION,
-        operation: DocumentNode | TypedDocumentNode<Data, Variables>,
-        variables: Variables | undefined,
-        options?: MutationOptions<Data, Variables>,
-    ): AbortableApolloMutationResponse<Data>;
-
-    private doRequest<Data, Variables extends OperationVariables = OperationVariables>(
-        method: GQLMethod.USE_SUBSCRIPTION,
-        operation: DocumentNode | TypedDocumentNode<Data, Variables>,
-        variables: Variables | undefined,
-        options?: SubscriptionHookOptions<Data, Variables>,
-    ): SubscriptionResult<Data, Variables>;
-
-    private doRequest<Data, Variables extends OperationVariables = OperationVariables>(
-        method: GQLMethod,
-        operation: DocumentNode | TypedDocumentNode<Data, Variables>,
-        variables: Variables | undefined,
-        options?:
-            | QueryOptions<Variables, Data>
-            | QueryHookOptions<Data, Variables>
-            | MutationHookOptions<Data, Variables>
-            | MutationOptions<Data, Variables>
-            | SubscriptionHookOptions<Data, Variables>,
-    ):
-        | AbortabaleApolloQueryResponse<Data>
-        | AbortableApolloUseQueryResponse<Data, Variables>
-        | AbortableApolloUseMutationResponse<Data, Variables>
-        | AbortableApolloMutationResponse<Data>
-        | SubscriptionResult<Data, Variables> {
-        const { signal, abortRequest } = this.createAbortController();
-        switch (method) {
-            case GQLMethod.QUERY:
-                return {
-                    response: this.graphQLClient.client.query<Data, Variables>({
-                        query: operation,
-                        variables,
-                        ...(options as QueryOptions<Variables, Data>),
-                        context: {
-                            ...options?.context,
-                            fetchOptions: {
-                                signal: options?.addAbortSignal ? signal : undefined,
-                                ...options?.context?.fetchOptions,
-                            },
-                        },
-                    }),
-                    abortRequest,
-                };
-            case GQLMethod.USE_QUERY:
-                return {
-                    ...useQuery<Data, Variables>(operation, {
-                        variables,
-                        client: this.graphQLClient.client,
-                        ...options,
-                        context: {
-                            ...options?.context,
-                            fetchOptions: {
-                                signal: options?.addAbortSignal ? signal : undefined,
-                                ...options?.context?.fetchOptions,
-                            },
-                        },
-                    }),
-                    abortRequest,
-                };
-            case GQLMethod.USE_MUTATION:
-                // eslint-disable-next-line no-case-declarations
-                const mutationResult = useMutation<Data, Variables>(operation, {
-                    variables,
-                    client: this.graphQLClient.client,
-                    ...(options as MutationHookOptions<Data, Variables>),
-                    context: {
-                        ...options?.context,
-                        fetchOptions: {
-                            signal: options?.addAbortSignal ? signal : undefined,
-                            ...options?.context?.fetchOptions,
-                        },
-                    },
-                });
-
-                return [mutationResult[0], { ...mutationResult[1], abortRequest }];
-            case GQLMethod.MUTATION:
-                return {
-                    response: this.graphQLClient.client.mutate<Data, Variables>({
-                        mutation: operation,
-                        variables,
-                        ...(options as MutationOptions<Data, Variables>),
-                        context: {
-                            ...options?.context,
-                            fetchOptions: {
-                                signal: options?.addAbortSignal ? signal : undefined,
-                                ...options?.context?.fetchOptions,
-                            },
-                        },
-                    }),
-                    abortRequest,
-                };
-            case GQLMethod.USE_SUBSCRIPTION:
-                // eslint-disable-next-line no-case-declarations
-                const subscription = useSubscription<Data, Variables>(operation, {
-                    client: this.graphQLClient.client,
-                    variables,
-                    ...(options as SubscriptionHookOptions<Data, Variables>),
-                });
-
-                this.graphQLClient.useRestartSubscription(subscription.restart);
-
-                return subscription;
-            default:
-                throw new Error(`unexpected GQLRequest type "${method}"`);
-        }
-    }
-
     public getGlobalMeta(
         options?: QueryOptions<GetGlobalMetadatasQueryVariables, GetGlobalMetadatasQuery>,
     ): AbortabaleApolloQueryResponse<GetGlobalMetadatasQuery> {
-        return this.doRequest(GQLMethod.QUERY, GET_GLOBAL_METADATAS, {}, options);
+        return this.doRestQuery(async (signal) => {
+            const response = await this.restClient.fetcher('/api/v1/meta/global', { config: { signal } });
+            const payload = (await response.json()) as GetGlobalMetadatasQuery;
+            this.setGlobalMetaSnapshot(payload);
+            return payload;
+        });
     }
 
     public useGetGlobalMeta(
         options?: QueryHookOptions<GetGlobalMetadatasQuery, GetGlobalMetadatasQueryVariables>,
     ): AbortableApolloUseQueryResponse<GetGlobalMetadatasQuery, GetGlobalMetadatasQueryVariables> {
-        return this.doRequest(GQLMethod.USE_QUERY, GET_GLOBAL_METADATAS, {}, options);
+        const [snapshot, setSnapshot] = useState(this.globalMetaSnapshot);
+
+        const handleCompleted = useCallback(
+            (result: GetGlobalMetadatasQuery) => {
+                this.setGlobalMetaSnapshot(result);
+                options?.onCompleted?.(result);
+            },
+            [options?.onCompleted],
+        );
+
+        useEffect(() => this.subscribeGlobalMeta(setSnapshot), []);
+
+        const request = this.useRestQuery(
+            async (signal) => {
+                const response = await this.restClient.fetcher('/api/v1/meta/global', { config: { signal } });
+                return (await response.json()) as GetGlobalMetadatasQuery;
+            },
+            [options?.skip],
+            {
+                ...options,
+                onCompleted: handleCompleted,
+            },
+        );
+
+        return {
+            ...request,
+            data: (snapshot ?? request.data) as MaybeMasked<GetGlobalMetadatasQuery>,
+        } as AbortableApolloUseQueryResponse<GetGlobalMetadatasQuery, GetGlobalMetadatasQueryVariables>;
     }
 
     public setGlobalMetadata(
@@ -1292,121 +1890,136 @@ export class RequestManager {
         value: any,
         options?: MutationOptions<SetGlobalMetadataMutation, SetGlobalMetadataMutationVariables>,
     ): AbortableApolloMutationResponse<SetGlobalMetadataMutation> {
-        return this.doRequest<SetGlobalMetadataMutation, SetGlobalMetadataMutationVariables>(
-            GQLMethod.MUTATION,
-            SET_GLOBAL_METADATA,
-            { input: { meta: { key, value: `${value}` } } },
-            {
-                optimisticResponse: {
-                    __typename: 'Mutation',
-                    setGlobalMeta: {
-                        __typename: 'SetGlobalMetaPayload',
-                        meta: {
-                            __typename: 'GlobalMetaType',
-                            key,
-                            value: `${value}`,
-                        },
-                    },
+        return this.doRestMutation(async (signal) => {
+            const response = await this.restClient.fetcher(`/api/v1/meta/global/${key}`, {
+                httpMethod: HttpMethod.POST,
+                data: { value: `${value}` },
+                config: { signal },
+            });
+            const payload = await response.json();
+            const meta = payload?.meta ?? { key, value: `${value}` };
+            if (meta?.key) {
+                this.upsertGlobalMetaSnapshot(meta.key, `${meta.value ?? ''}`);
+            }
+            return {
+                setGlobalMeta: {
+                    meta,
                 },
-                update(cache, { data }) {
-                    cache.modify({
-                        fields: {
-                            metas(existingMetas, { readField }) {
-                                if (!existingMetas) {
-                                    return existingMetas;
-                                }
-
-                                if (!data?.setGlobalMeta) {
-                                    return existingMetas;
-                                }
-
-                                const exists = existingMetas.nodes.some(
-                                    (meta: Reference) => readField('key', meta) === key,
-                                );
-                                if (exists) {
-                                    return existingMetas;
-                                }
-
-                                const newMetaRef = cache.writeFragment({
-                                    data: data!.setGlobalMeta.meta,
-                                    fragment: GLOBAL_METADATA,
-                                });
-
-                                return {
-                                    ...existingMetas,
-                                    nodes: [...existingMetas.nodes, newMetaRef],
-                                };
-                            },
-                        },
-                    });
-                },
-                ...options,
-            },
-        );
+            } as SetGlobalMetadataMutation;
+        });
     }
 
     public deleteGlobalMeta(
         key: string,
         options?: MutationOptions<DeleteGlobalMetadataMutation, DeleteGlobalMetadataMutationVariables>,
     ): AbortableApolloMutationResponse<DeleteGlobalMetadataMutation> {
-        return this.doRequest(
-            GQLMethod.MUTATION,
-            DELETE_GLOBAL_METADATA,
-            { input: { key } },
-            {
-                optimisticResponse: {
-                    __typename: 'Mutation',
-                    deleteGlobalMeta: {
-                        __typename: 'DeleteGlobalMetaPayload',
-                        meta: {
-                            __typename: 'GlobalMetaType',
-                            key,
-                            value: '',
-                        },
-                    },
+        return this.doRestMutation(async (signal) => {
+            const response = await this.restClient.fetcher(`/api/v1/meta/global/${key}`, {
+                httpMethod: HttpMethod.DELETE,
+                config: { signal },
+            });
+            const payload = await this.parseJsonSafe(response);
+            const meta = payload?.meta ?? { key, value: '' };
+            const metaKey = meta?.key ?? key;
+            if (metaKey) {
+                this.removeGlobalMetaSnapshot(metaKey);
+            }
+            return {
+                deleteGlobalMeta: {
+                    meta,
                 },
-                update(cache) {
-                    cache.evict({ id: cache.identify({ __typename: 'GlobalMetaType', key }) });
-                },
-                ...options,
-            },
-        );
+            } as DeleteGlobalMetadataMutation;
+        });
     }
 
     public useGetAbout(
         options?: QueryHookOptions<GetAboutQuery, GetAboutQueryVariables>,
     ): AbortableApolloUseQueryResponse<GetAboutQuery, GetAboutQueryVariables> {
-        return this.doRequest(GQLMethod.USE_QUERY, GET_ABOUT, {}, options);
+        return this.useRestQuery(
+            async (signal) => {
+                console.info('[request] GET /api/v1/about start', {
+                    baseUrl: this.getBaseUrl(),
+                });
+                const response = await this.restClient.fetcher('/api/v1/about', { config: { signal } });
+                console.info('[request] GET /api/v1/about response', {
+                    status: response.status,
+                    ok: response.ok,
+                });
+                return (await response.json()) as GetAboutQuery;
+            },
+            [options?.skip],
+            options,
+        );
     }
 
     public useCheckForServerUpdate(
         options?: QueryHookOptions<CheckForServerUpdatesQuery, CheckForServerUpdatesQueryVariables>,
     ): AbortableApolloUseQueryResponse<CheckForServerUpdatesQuery, CheckForServerUpdatesQueryVariables> {
-        return this.doRequest(GQLMethod.USE_QUERY, CHECK_FOR_SERVER_UPDATES, {}, options);
+        return this.useRestQuery(
+            async (_signal) => ({ checkForServerUpdates: [] } as CheckForServerUpdatesQuery),
+            [options?.skip],
+            options,
+        );
     }
 
     public useGetExtension(
         pkgName: string,
         options?: QueryHookOptions<GetExtensionQuery, GetExtensionQueryVariables>,
     ): AbortableApolloUseQueryResponse<GetExtensionQuery, GetExtensionQueryVariables> {
-        return this.doRequest(GQLMethod.USE_QUERY, GET_EXTENSION, { pkgName }, options);
+        const skip = options?.skip ?? false;
+        return this.useRestQuery(
+            async (signal) => {
+                const response = await this.restClient.fetcher(`/api/v1/extension/${pkgName}`, {
+                    config: { signal },
+                });
+                const payload = await response.json();
+                const extension = this.normalizeExtensionPayload(payload?.extension ?? payload);
+                return { extension } as GetExtensionQuery;
+            },
+            [pkgName, skip],
+            { ...options, skip },
+        );
     }
 
     public useGetExtensionList(
         options?: QueryHookOptions<GetExtensionsQuery, GetExtensionsQueryVariables>,
     ): AbortableApolloUseQueryResponse<GetExtensionsQuery, GetExtensionsQueryVariables> {
-        return this.doRequest(GQLMethod.USE_QUERY, GET_EXTENSIONS, {}, options);
+        const skip = options?.skip ?? false;
+        return this.useRestQuery(
+            async (signal) => {
+                const response = await this.restClient.fetcher('/api/v1/extension/list', {
+                    config: { signal },
+                });
+                const payload = await response.json();
+                const nodes = this.normalizeExtensionsPayload(payload);
+                return {
+                    extensions: {
+                        nodes,
+                        pageInfo: this.buildPageInfo(),
+                        totalCount: nodes.length,
+                    },
+                } as GetExtensionsQuery;
+            },
+            [skip],
+            { ...options, skip },
+        );
     }
 
     public useExtensionListFetch(
-        options?: MutationHookOptions<GetExtensionsFetchMutation, GetExtensionsFetchMutationVariables>,
+        _options?: MutationHookOptions<GetExtensionsFetchMutation, GetExtensionsFetchMutationVariables>,
     ): AbortableApolloUseMutationResponse<GetExtensionsFetchMutation, GetExtensionsFetchMutationVariables> {
-        const [mutate, result] = this.doRequest(
-            GQLMethod.USE_MUTATION,
-            GET_EXTENSIONS_FETCH,
-            {},
-            { refetchQueries: [GET_EXTENSIONS], ...options },
-        );
+        const [mutate, result] = this.useRestMutation(async (_variables, signal) => {
+            const response = await this.restClient.fetcher('/api/v1/extension/list?refresh=true', {
+                config: { signal },
+            });
+            const payload = await response.json();
+            const extensions = this.normalizeExtensionsPayload(payload);
+            return {
+                fetchExtensions: {
+                    extensions,
+                },
+            } as GetExtensionsFetchMutation;
+        });
         const [, setUpdatedCache] = useState({});
 
         useEffect(() => {
@@ -1428,31 +2041,7 @@ export class RequestManager {
             d(1).minutes.inWholeMilliseconds,
         );
         const normalizedCachedResult = useMemo(
-            () =>
-                !cachedResult
-                    ? result
-                    : {
-                          ...cachedResult,
-                          data: !cachedResult?.data?.fetchExtensions?.extensions
-                              ? cachedResult?.data
-                              : {
-                                    ...cachedResult.data,
-                                    fetchExtensions: {
-                                        ...cachedResult.data.fetchExtensions,
-                                        extensions: cachedResult.data.fetchExtensions.extensions.map(
-                                            (extension) =>
-                                                this.graphQLClient.client.cache.readFragment<
-                                                    NonNullable<
-                                                        GetExtensionsFetchMutation['fetchExtensions']
-                                                    >['extensions'][0]
-                                                >({
-                                                    id: this.graphQLClient.client.cache.identify(extension),
-                                                    fragment: EXTENSION_LIST_FIELDS,
-                                                }) ?? extension,
-                                        ),
-                                    },
-                                },
-                      },
+            () => (!cachedResult ? result : cachedResult),
             [this.cache.getFetchTimestampFor(EXTENSION_LIST_CACHE_KEY, undefined), result.loading],
         );
 
@@ -1468,14 +2057,20 @@ export class RequestManager {
     }
 
     public useAnimeExtensionListFetch(
-        options?: MutationHookOptions<any, any>,
+        _options?: MutationHookOptions<any, any>,
     ): AbortableApolloUseMutationResponse<any, any> {
-        const [mutate, result] = this.doRequest(
-            GQLMethod.USE_MUTATION,
-            GET_ANIME_EXTENSIONS_FETCH,
-            {},
-            { refetchQueries: [GET_ANIME_EXTENSIONS], ...options },
-        );
+        const [mutate, result] = this.useRestMutation(async (_variables, signal) => {
+            const response = await this.restClient.fetcher('/api/v1/anime/extension/list?refresh=true', {
+                config: { signal },
+            });
+            const payload = await response.json();
+            const extensions = this.normalizeExtensionsPayload(payload);
+            return {
+                fetchAnimeExtensions: {
+                    extensions,
+                },
+            };
+        });
         const [, setUpdatedCache] = useState({});
 
         useEffect(() => {
@@ -1516,249 +2111,147 @@ export class RequestManager {
     public useGetAnimeExtensionList(
         options?: QueryHookOptions<any, any>,
     ): AbortableApolloUseQueryResponse<any, any> {
-        return this.doRequest(GQLMethod.USE_QUERY, GET_ANIME_EXTENSIONS, {}, options);
+        const skip = options?.skip ?? false;
+        return this.useRestQuery(
+            async (signal) => {
+                const response = await this.restClient.fetcher('/api/v1/anime/extension/list', {
+                    config: { signal },
+                });
+                const payload = await response.json();
+                const nodes = this.normalizeExtensionsPayload(payload);
+                return {
+                    animeExtensions: {
+                        nodes,
+                        pageInfo: this.buildPageInfo(),
+                        totalCount: nodes.length,
+                    },
+                } as any;
+            },
+            [skip],
+            { ...options, skip },
+        );
     }
 
     public installExternalExtension(
         extensionFile: File,
-        options?: MutationOptions<InstallExternalExtensionMutation, InstallExternalExtensionMutationVariables>,
+        _options?: MutationOptions<InstallExternalExtensionMutation, InstallExternalExtensionMutationVariables>,
     ): AbortableApolloMutationResponse<InstallExternalExtensionMutation> {
-        const result = this.doRequest<InstallExternalExtensionMutation, InstallExternalExtensionMutationVariables>(
-            GQLMethod.MUTATION,
-            INSTALL_EXTERNAL_EXTENSION,
-            { file: extensionFile },
-            { refetchQueries: [GET_EXTENSIONS], ...options },
-        );
-
-        result.response.then((response) => {
-            if (!response.data?.installExternalExtension?.extension) {
-                return;
-            }
-
-            this.graphQLClient.client.cache.evict({ fieldName: 'sources' });
-            const cachedExtensions = this.cache.getResponseFor<MutationResult<GetExtensionsFetchMutation>>(
-                EXTENSION_LIST_CACHE_KEY,
-                undefined,
-            );
-
-            const installedExtension = response.data?.installExternalExtension.extension;
-
-            if (!cachedExtensions || !cachedExtensions.data) {
-                this.cache.cacheResponse(EXTENSION_LIST_CACHE_KEY, undefined, {
-                    data: {
-                        fetchExtensions: {
-                            extensions: [installedExtension],
-                        },
-                    },
+        return this.doRestMutation(async (signal) => {
+            const formData = new FormData();
+            formData.append('file', extensionFile);
+            await this.restClient.fetcher('/api/v1/extension/install', {
+                httpMethod: HttpMethod.POST,
+                data: formData,
+                config: { signal },
+            });
+            const extensions = await this.refreshExtensionListCache(signal, { refresh: true });
+            const installedExtension =
+                extensions.find((extension: any) => extension.apkName === extensionFile.name) ??
+                extensions[0] ??
+                this.normalizeExtensionPayload({
+                    pkgName: '',
+                    name: '',
+                    lang: '',
+                    versionCode: 0,
+                    versionName: '',
+                    iconUrl: '',
+                    repo: null,
+                    isNsfw: false,
+                    isInstalled: true,
+                    isObsolete: false,
+                    hasUpdate: false,
                 });
-                return;
-            }
-
-            const isExtensionCached = !!cachedExtensions.data.fetchExtensions?.extensions.find(
-                (extension) => installedExtension?.pkgName === extension.pkgName,
-            );
-
-            const updatedCachedExtensions: MutationResult<GetExtensionsFetchMutation> = {
-                ...cachedExtensions,
-                data: {
-                    ...cachedExtensions.data,
-                    fetchExtensions: {
-                        ...cachedExtensions.data.fetchExtensions,
-                        extensions: isExtensionCached
-                            ? cachedExtensions.data.fetchExtensions!.extensions.map((extension) => {
-                                  const isUpdatedExtension = installedExtension?.pkgName === extension.pkgName;
-                                  if (!isUpdatedExtension) {
-                                      return extension;
-                                  }
-
-                                  return {
-                                      ...extension,
-                                      ...installedExtension,
-                                      hasUpdate: installedExtension?.versionCode < extension.versionCode,
-                                  };
-                              })
-                            : [
-                                  ...(cachedExtensions.data.fetchExtensions?.extensions ?? []),
-                                  installedExtension as NonNullable<
-                                      GetExtensionsFetchMutation['fetchExtensions']
-                                  >['extensions'][number],
-                              ],
-                    },
+            return {
+                installExternalExtension: {
+                    extension: installedExtension,
                 },
-            };
-
-            this.cache.cacheResponse(EXTENSION_LIST_CACHE_KEY, undefined, updatedCachedExtensions);
+            } as InstallExternalExtensionMutation;
         });
-
-        return result;
     }
 
     public updateExtension(
         id: string,
-        { isObsolete = false, ...patch }: UpdateExtensionPatchInput & { isObsolete?: boolean },
-        options?: MutationOptions<UpdateExtensionMutation, UpdateExtensionMutationVariables>,
+        { isObsolete: _isObsolete = false, ...patch }: UpdateExtensionPatchInput & { isObsolete?: boolean },
+        _options?: MutationOptions<UpdateExtensionMutation, UpdateExtensionMutationVariables>,
     ): AbortableApolloMutationResponse<UpdateExtensionMutation> {
-        const result = this.doRequest<UpdateExtensionMutation, UpdateExtensionMutationVariables>(
-            GQLMethod.MUTATION,
-            UPDATE_EXTENSION,
-            { input: { id, patch } },
-            options,
-        );
-
-        result.response.then((response) => {
-            if (response.errors) {
-                return;
-            }
-
-            this.graphQLClient.client.cache.evict({ fieldName: 'sources' });
-            const cachedExtensions = this.cache.getResponseFor<MutationResult<GetExtensionsFetchMutation>>(
-                EXTENSION_LIST_CACHE_KEY,
-                undefined,
-            );
-
-            if (!cachedExtensions || !cachedExtensions.data) {
-                return;
-            }
-
-            const updatedCachedExtensions: MutationResult<GetExtensionsFetchMutation> = {
-                ...cachedExtensions,
-                data: {
-                    ...cachedExtensions.data,
-                    fetchExtensions: {
-                        ...cachedExtensions.data.fetchExtensions,
-                        extensions:
-                            cachedExtensions.data.fetchExtensions?.extensions
-                                .filter((extension) => {
-                                    if (!isObsolete) {
-                                        return true;
-                                    }
-
-                                    const isUpdatedExtension = id === extension.pkgName;
-                                    return !isUpdatedExtension;
-                                })
-                                .map((extension) => {
-                                    const isUpdatedExtension = id === extension.pkgName;
-                                    if (!isUpdatedExtension) {
-                                        return extension;
-                                    }
-
-                                    return {
-                                        ...extension,
-                                        ...(response.data?.updateExtension?.extension ?? []),
-                                    };
-                                }) ?? [],
+        return this.doRestMutation(async (signal) => {
+            const action = patch.install ? 'install' : patch.update ? 'update' : patch.uninstall ? 'uninstall' : null;
+            if (!action) {
+                return {
+                    updateExtension: {
+                        extension: null,
                     },
+                } as UpdateExtensionMutation;
+            }
+            await this.restClient.fetcher(`/api/v1/extension/${action}/${id}`, {
+                config: { signal },
+            });
+            const extensions = await this.refreshExtensionListCache(signal, { refresh: true });
+            const extension = extensions.find((item: any) => item.pkgName === id) ?? null;
+            return {
+                updateExtension: {
+                    extension,
                 },
-            };
-
-            this.cache.cacheResponse(EXTENSION_LIST_CACHE_KEY, undefined, updatedCachedExtensions);
+            } as UpdateExtensionMutation;
         });
-
-        return result;
     }
 
     public updateAnimeExtension(
         id: string,
         patch: any,
-        options?: MutationOptions<any, any>,
+        _options?: MutationOptions<any, any>,
     ): AbortableApolloMutationResponse<any> {
-        const result = this.doRequest<any, any>(
-            GQLMethod.MUTATION,
-            UPDATE_ANIME_EXTENSION,
-            { input: { id, patch } },
-            options,
-        );
-
-        result.response.then(() => {
-            this.cache.clearFor(this.cache.getKeyFor(ANIME_EXTENSION_LIST_CACHE_KEY, undefined));
+        return this.doRestMutation(async (signal) => {
+            const action = patch.install ? 'install' : patch.update ? 'update' : patch.uninstall ? 'uninstall' : null;
+            if (action) {
+                await this.restClient.fetcher(`/api/v1/anime/extension/${action}/${id}`, {
+                    config: { signal },
+                });
+            }
+            await this.refreshExtensionListCache(signal, { refresh: true, anime: true });
+            return { updateAnimeExtension: { ok: true } };
         });
-
-        return result;
     }
 
     public updateAnimeExtensions(
         ids: string[],
         patch: any,
-        options?: MutationOptions<any, any>,
+        _options?: MutationOptions<any, any>,
     ): AbortableApolloMutationResponse<any> {
-        const result = this.doRequest<any, any>(
-            GQLMethod.MUTATION,
-            UPDATE_ANIME_EXTENSIONS,
-            { input: { ids, patch } },
-            options,
-        );
-
-        result.response.then(() => {
-            this.cache.clearFor(this.cache.getKeyFor(ANIME_EXTENSION_LIST_CACHE_KEY, undefined));
+        return this.doRestMutation(async (signal) => {
+            const action = patch.install ? 'install' : patch.update ? 'update' : patch.uninstall ? 'uninstall' : null;
+            if (action) {
+                await Promise.all(
+                    ids.map((id) =>
+                        this.restClient.fetcher(`/api/v1/anime/extension/${action}/${id}`, { config: { signal } }),
+                    ),
+                );
+            }
+            await this.refreshExtensionListCache(signal, { refresh: true, anime: true });
+            return { updateAnimeExtensions: { ok: true } };
         });
-
-        return result;
     }
 
     public updateExtensions(
         ids: string[],
-        { isObsolete = false, ...patch }: UpdateExtensionPatchInput & { isObsolete?: boolean },
-        options?: MutationOptions<UpdateExtensionsMutation, UpdateExtensionsMutationVariables>,
+        { isObsolete: _isObsolete = false, ...patch }: UpdateExtensionPatchInput & { isObsolete?: boolean },
+        _options?: MutationOptions<UpdateExtensionsMutation, UpdateExtensionsMutationVariables>,
     ): AbortableApolloMutationResponse<UpdateExtensionsMutation> {
-        const result = this.doRequest<UpdateExtensionsMutation, UpdateExtensionsMutationVariables>(
-            GQLMethod.MUTATION,
-            UPDATE_EXTENSIONS,
-            { input: { ids, patch } },
-            options,
-        );
-
-        result.response.then((response) => {
-            if (response.errors) {
-                return;
+        return this.doRestMutation(async (signal) => {
+            const action = patch.install ? 'install' : patch.update ? 'update' : patch.uninstall ? 'uninstall' : null;
+            if (action) {
+                await Promise.all(
+                    ids.map((id) => this.restClient.fetcher(`/api/v1/extension/${action}/${id}`, { config: { signal } })),
+                );
             }
-
-            this.graphQLClient.client.cache.evict({ fieldName: 'sources' });
-            const cachedExtensions = this.cache.getResponseFor<MutationResult<GetExtensionsFetchMutation>>(
-                EXTENSION_LIST_CACHE_KEY,
-                undefined,
-            );
-
-            if (!cachedExtensions || !cachedExtensions.data) {
-                return;
-            }
-
-            const updatedCachedExtensions: MutationResult<GetExtensionsFetchMutation> = {
-                ...cachedExtensions,
-                data: {
-                    ...cachedExtensions.data,
-                    fetchExtensions: {
-                        ...cachedExtensions.data.fetchExtensions,
-                        extensions:
-                            cachedExtensions.data.fetchExtensions?.extensions
-                                .filter((extension) => {
-                                    if (!isObsolete) {
-                                        return true;
-                                    }
-
-                                    const isUpdatedExtension = ids.includes(extension.pkgName);
-                                    return !isUpdatedExtension;
-                                })
-                                .map((extension) => {
-                                    const isUpdatedExtension = ids.includes(extension.pkgName);
-                                    if (!isUpdatedExtension) {
-                                        return extension;
-                                    }
-
-                                    return {
-                                        ...extension,
-                                        ...(response.data?.updateExtensions?.extensions.find(
-                                            (updatedExtension) => updatedExtension.pkgName === extension.pkgName,
-                                        ) ?? []),
-                                    };
-                                }) ?? [],
-                    },
+            const extensions = await this.refreshExtensionListCache(signal, { refresh: true });
+            const updatedExtensions = extensions.filter((extension: any) => ids.includes(extension.pkgName));
+            return {
+                updateExtensions: {
+                    extensions: updatedExtensions,
                 },
-            };
-
-            this.cache.cacheResponse(EXTENSION_LIST_CACHE_KEY, undefined, updatedCachedExtensions);
+            } as UpdateExtensionsMutation;
         });
-
-        return result;
     }
 
     public getExtensionIconUrl(extension: string): string {
@@ -1768,30 +2261,139 @@ export class RequestManager {
     public useGetSourceList(
         options?: QueryHookOptions<GetSourcesListQuery, GetSourcesListQueryVariables>,
     ): AbortableApolloUseQueryResponse<GetSourcesListQuery, GetSourcesListQueryVariables> {
-        return this.doRequest(GQLMethod.USE_QUERY, GET_SOURCES_LIST, {}, options);
+        return this.useRestQuery(
+            async (signal) => {
+                const response = await this.restClient.fetcher('/api/v1/source/list', { config: { signal } });
+                const payload = await response.json();
+                const rawNodes = Array.isArray(payload) ? payload : payload?.sources ?? payload?.nodes ?? [];
+                const nodes = Array.isArray(rawNodes)
+                    ? rawNodes.filter((node: any) => node && typeof node === 'object' && node.id != null)
+                    : [];
+                return {
+                    sources: {
+                        nodes: nodes.map((source: any) => this.normalizeSourcePayload(source)),
+                    },
+                } as GetSourcesListQuery;
+            },
+            [options?.skip],
+            options,
+        );
     }
 
     public useGetAnimeSourceList(options?: QueryHookOptions<any, any>): AbortableApolloUseQueryResponse<any, any> {
-        return this.doRequest(GQLMethod.USE_QUERY, GET_ANIME_SOURCES_LIST, {}, options);
+        return this.useRestQuery(
+            async (signal) => {
+                const response = await this.restClient.fetcher('/api/v1/anime/source/list', { config: { signal } });
+                const payload = await response.json();
+                const rawNodes = Array.isArray(payload) ? payload : payload?.sources ?? payload?.nodes ?? [];
+                const nodes = Array.isArray(rawNodes)
+                    ? rawNodes.filter((node: any) => node && typeof node === 'object' && node.id != null)
+                    : [];
+                return {
+                    animeSources: {
+                        nodes: nodes.map((source: any) => this.normalizeSourcePayload(source)),
+                    },
+                };
+            },
+            [options?.skip],
+            options,
+        );
     }
 
     public useGetAnimeLibrary(options?: QueryHookOptions<any, any>): AbortableApolloUseQueryResponse<any, any> {
-        return this.doRequest(GQLMethod.USE_QUERY, GET_ANIME_LIBRARY, {}, options);
+        return this.useRestQuery(
+            async (signal) => {
+                const response = await this.restClient.fetcher('/api/v1/anime/library', { config: { signal } });
+                const payload = await response.json();
+                const rawNodes = Array.isArray(payload) ? payload : payload?.animes?.nodes ?? payload?.nodes ?? [];
+                const nodes = Array.isArray(rawNodes) ? rawNodes : [];
+                return {
+                    animes: {
+                        nodes: nodes.map((anime: any) => this.normalizeSourceAnimePayload(anime)),
+                        totalCount: nodes.length,
+                    },
+                };
+            },
+            [options?.skip],
+            options,
+        );
     }
 
     public useGetAnimeSourceBrowse(
         id: string,
         options?: QueryHookOptions<any, any>,
     ): AbortableApolloUseQueryResponse<any, any> {
-        return this.doRequest(GQLMethod.USE_QUERY, GET_ANIME_SOURCE_BROWSE, { id }, options);
+        return this.useRestQuery(
+            async (signal) => {
+                const response = await this.restClient.fetcher(`/api/v1/anime/source/${id}`, {
+                    config: { signal },
+                });
+                const payload = await response.json();
+                const source = payload?.source ?? payload;
+                return {
+                    animeSource: this.normalizeSourcePayload(source),
+                };
+            },
+            [id, options?.skip],
+            options,
+        );
     }
 
-    public useGetSource<Data, Variables extends OperationVariables>(
-        document: DocumentNode | TypedDocumentNode<Data, Variables>,
+    public useGetSourceBrowse(
         id: string,
-        options?: QueryHookOptions<Data, Variables>,
-    ): AbortableApolloUseQueryResponse<Data, Variables> {
-        return this.doRequest(GQLMethod.USE_QUERY, document, { id } as unknown as Variables, options);
+        options?: QueryHookOptions<GetSourceBrowseQuery, GetSourceBrowseQueryVariables>,
+    ): AbortableApolloUseQueryResponse<GetSourceBrowseQuery, GetSourceBrowseQueryVariables> {
+        const skip = options?.skip ?? false;
+        return this.useRestQuery(
+            async (signal) => {
+                const response = await this.restClient.fetcher(`/api/v1/source/${id}`, { config: { signal } });
+                const payload = await response.json();
+                const source = payload?.source ?? payload;
+                return {
+                    source: this.normalizeSourcePayload(source),
+                } as GetSourceBrowseQuery;
+            },
+            [id, skip],
+            { ...options, skip },
+        );
+    }
+
+    public useGetSourceSettings(
+        id: string,
+        options?: QueryHookOptions<GetSourceSettingsQuery, GetSourceSettingsQueryVariables>,
+    ): AbortableApolloUseQueryResponse<GetSourceSettingsQuery, GetSourceSettingsQueryVariables> {
+        const skip = options?.skip ?? false;
+        return this.useRestQuery(
+            async (signal) => {
+                const response = await this.restClient.fetcher(`/api/v1/source/${id}`, { config: { signal } });
+                const payload = await response.json();
+                const source = payload?.source ?? payload;
+                return {
+                    source: this.normalizeSourcePayload(source),
+                } as GetSourceSettingsQuery;
+            },
+            [id, skip],
+            { ...options, skip },
+        );
+    }
+
+    public useGetSourceMigratable(
+        id: string,
+        options?: QueryHookOptions<GetSourceMigratableQuery, GetSourceMigratableQueryVariables>,
+    ): AbortableApolloUseQueryResponse<GetSourceMigratableQuery, GetSourceMigratableQueryVariables> {
+        const skip = options?.skip ?? false;
+        return this.useRestQuery(
+            async (signal) => {
+                const response = await this.restClient.fetcher(`/api/v1/source/${id}`, { config: { signal } });
+                const payload = await response.json();
+                const source = payload?.source ?? payload;
+                return {
+                    source: this.normalizeSourcePayload(source),
+                } as GetSourceMigratableQuery;
+            },
+            [id, skip],
+            { ...options, skip },
+        );
     }
 
     public setSourceMeta(
@@ -1800,43 +2402,18 @@ export class RequestManager {
         value: any,
         options?: MutationOptions<SetSourceMetadataMutation, SetSourceMetadataMutationVariables>,
     ): AbortableApolloMutationResponse<SetSourceMetadataMutation> {
-        return this.doRequest(
-            GQLMethod.MUTATION,
-            SET_SOURCE_METADATA,
-            {
-                input: { meta: { sourceId, key, value: `${value}` } },
-            },
-            {
-                optimisticResponse: {
-                    __typename: 'Mutation',
-                    setSourceMeta: {
-                        __typename: 'SetSourceMetaPayload',
-                        meta: {
-                            __typename: 'SourceMetaType',
-                            sourceId,
-                            key,
-                            value: `${value}`,
-                        },
-                    },
+        return this.doRestMutation(async (signal) => {
+            await this.restClient.fetcher(`/api/v1/meta/source/${sourceId}`, {
+                httpMethod: HttpMethod.POST,
+                data: { key, value: `${value}` },
+                config: { signal },
+            });
+            return {
+                setSourceMeta: {
+                    meta: { sourceId, key, value: `${value}` },
                 },
-                update(cache, { data }) {
-                    cache.modify({
-                        id: cache.identify({ __typename: 'SourceType', id: sourceId }),
-                        fields: {
-                            meta(existingMetas, { readField }) {
-                                return updateMetadataList(key, existingMetas, readField, () =>
-                                    cache.writeFragment({
-                                        data: data!.setSourceMeta!.meta,
-                                        fragment: SOURCE_META_FIELDS,
-                                    }),
-                                );
-                            },
-                        },
-                    });
-                },
-                ...options,
-            },
-        );
+            } as SetSourceMetadataMutation;
+        });
     }
 
     public deleteSourceMeta(
@@ -1844,29 +2421,18 @@ export class RequestManager {
         key: string,
         options?: MutationOptions<DeleteSourceMetadataMutation, DeleteSourceMetadataMutationVariables>,
     ): AbortableApolloMutationResponse<DeleteSourceMetadataMutation> {
-        return this.doRequest(
-            GQLMethod.MUTATION,
-            DELETE_SOURCE_METADATA,
-            { input: { sourceId, key } },
-            {
-                optimisticResponse: {
-                    __typename: 'Mutation',
-                    deleteSourceMeta: {
-                        __typename: 'DeleteSourceMetaPayload',
-                        meta: {
-                            __typename: 'SourceMetaType',
-                            sourceId,
-                            key,
-                            value: '',
-                        },
-                    },
+        return this.doRestMutation(async (signal) => {
+            await this.restClient.fetcher(`/api/v1/meta/source/${sourceId}`, {
+                httpMethod: HttpMethod.DELETE,
+                data: { key, value: null },
+                config: { signal },
+            });
+            return {
+                deleteSourceMeta: {
+                    meta: { sourceId, key, value: '' },
                 },
-                update(cache) {
-                    cache.evict({ id: cache.identify({ __typename: 'SourceMetaType', sourceId, key }) });
-                },
-                ...options,
-            },
-        );
+            } as DeleteSourceMetadataMutation;
+        });
     }
 
     public useGetSourceMangas(
@@ -1949,12 +2515,12 @@ export class RequestManager {
                 CACHE_RESULTS_KEY,
                 CACHE_PAGES_KEY,
                 getVariablesFor,
-                options,
                 (cachedResult, revalidatedResult) =>
                     !cachedResult ||
                     !cachedResult.data?.fetchSourceManga?.mangas.length ||
                     cachedResult.data.fetchSourceManga.mangas.some(
-                        (manga, index) => manga.id !== revalidatedResult.data?.fetchSourceManga?.mangas[index]?.id,
+                        (manga: { id?: number }, index: number) =>
+                            manga.id !== revalidatedResult.data?.fetchSourceManga?.mangas[index]?.id,
                     ),
                 (revalidatedResult) => !!revalidatedResult.data?.fetchSourceManga?.hasNextPage,
                 pageToRevalidate,
@@ -2000,8 +2566,6 @@ export class RequestManager {
                 createPaginatedResult,
                 setResult,
                 revalidate,
-                options,
-                GET_SOURCE_MANGAS_FETCH,
                 CACHE_PAGES_KEY,
                 CACHE_RESULTS_KEY,
                 cachedPages,
@@ -2046,13 +2610,8 @@ export class RequestManager {
                     ...cachedResult.data,
                     fetchSourceManga: {
                         ...cachedResult.data?.fetchSourceManga,
-                        mangas: cachedResult.data?.fetchSourceManga?.mangas.map(
-                            (manga) =>
-                                this.graphQLClient.client.cache.readFragment<typeof manga>({
-                                    id: this.graphQLClient.client.cache.identify(manga),
-                                    fragment: MANGA_BASE_FIELDS,
-                                    fragmentName: 'MANGA_BASE_FIELDS',
-                                }) ?? manga,
+                        mangas: cachedResult.data?.fetchSourceManga?.mangas.map((manga) =>
+                            this.normalizeMangaPayload(manga),
                         ),
                     },
                 },
@@ -2105,7 +2664,18 @@ export class RequestManager {
         change: SourcePreferenceChangeInput,
         options?: MutationOptions<UpdateSourcePreferencesMutation, UpdateSourcePreferencesMutationVariables>,
     ): AbortableApolloMutationResponse<UpdateSourcePreferencesMutation> {
-        return this.doRequest(GQLMethod.MUTATION, UPDATE_SOURCE_PREFERENCES, { input: { source, change } }, options);
+        return this.doRestMutation(async (signal) => {
+            await this.restClient.fetcher(`/api/v1/source/${source}/preferences`, {
+                httpMethod: HttpMethod.POST,
+                data: { change },
+                config: { signal },
+            });
+            return {
+                updateSourcePreference: {
+                    source: { id: source, preferences: [] },
+                },
+            } as unknown as UpdateSourcePreferencesMutation;
+        });
     }
 
     public useSourceSearch(
@@ -2128,23 +2698,94 @@ export class RequestManager {
     public useGetSourceAnimes(
         options?: MutationHookOptions<any, any>,
     ): AbortableApolloUseMutationResponse<any, any> {
-        return this.doRequest(GQLMethod.USE_MUTATION, GET_SOURCE_ANIMES_FETCH, {}, options);
+        return this.useRestMutation(async (variables, signal) => {
+            const input = variables?.input ?? variables;
+            const payload = await this.fetchSourceAnimesRest(input, signal);
+            return payload;
+        });
     }
 
-    public useGetManga<Data, Variables extends OperationVariables = OperationVariables>(
-        document: DocumentNode | TypedDocumentNode<Data, Variables>,
+    public useGetMangaScreen(
         mangaId: number | string,
-        options?: QueryHookOptions<Data, Variables>,
-    ): AbortableApolloUseQueryResponse<Data, Variables> {
-        return this.doRequest(GQLMethod.USE_QUERY, document, { id: Number(mangaId) } as unknown as Variables, options);
+        options?: QueryHookOptions<GetMangaScreenQuery, GetMangaScreenQueryVariables>,
+    ): AbortableApolloUseQueryResponse<GetMangaScreenQuery, GetMangaScreenQueryVariables> {
+        const skip = options?.skip ?? false;
+        const id = Number(mangaId);
+        return this.useRestQuery(
+            async (signal) => {
+                const response = await this.restClient.fetcher(`/api/v1/manga/${id}`, { config: { signal } });
+                const payload = await response.json();
+                const manga = this.normalizeMangaPayload(payload?.manga ?? payload);
+                return { manga } as GetMangaScreenQuery;
+            },
+            [id, skip],
+            { ...options, skip },
+        );
     }
 
-    public getManga<Data, Variables extends OperationVariables = OperationVariables>(
-        document: DocumentNode | TypedDocumentNode<Data, Variables>,
+    public getMangaScreen(
         mangaId: number | string,
-        options?: QueryOptions<Variables, Data>,
-    ): AbortabaleApolloQueryResponse<Data> {
-        return this.doRequest(GQLMethod.QUERY, document, { id: Number(mangaId) } as unknown as Variables, options);
+        options?: QueryOptions<GetMangaScreenQueryVariables, GetMangaScreenQuery>,
+    ): AbortabaleApolloQueryResponse<GetMangaScreenQuery> {
+        const id = Number(mangaId);
+        return this.doRestQuery(async (signal) => {
+            const response = await this.restClient.fetcher(`/api/v1/manga/${id}`, { config: { signal } });
+            const payload = await response.json();
+            const manga = this.normalizeMangaPayload(payload?.manga ?? payload);
+            return { manga } as GetMangaScreenQuery;
+        });
+    }
+
+    public useGetMangaReader(
+        mangaId: number | string,
+        options?: QueryHookOptions<GetMangaReaderQuery, GetMangaReaderQueryVariables>,
+    ): AbortableApolloUseQueryResponse<GetMangaReaderQuery, GetMangaReaderQueryVariables> {
+        const skip = options?.skip ?? false;
+        const id = Number(mangaId);
+        return this.useRestQuery(
+            async (signal) => {
+                const response = await this.restClient.fetcher(`/api/v1/manga/${id}`, { config: { signal } });
+                const payload = await response.json();
+                const manga = this.normalizeMangaPayload(payload?.manga ?? payload);
+                return { manga } as GetMangaReaderQuery;
+            },
+            [id, skip],
+            { ...options, skip },
+        );
+    }
+
+    public useGetMangaTrackRecords(
+        mangaId: number | string,
+        options?: QueryHookOptions<GetMangaTrackRecordsQuery, GetMangaTrackRecordsQueryVariables>,
+    ): AbortableApolloUseQueryResponse<GetMangaTrackRecordsQuery, GetMangaTrackRecordsQueryVariables> {
+        const skip = options?.skip ?? false;
+        const id = Number(mangaId);
+        return this.useRestQuery(
+            async (signal) => {
+                const response = await this.restClient.fetcher(`/api/v1/manga/${id}/track-records`, {
+                    config: { signal },
+                });
+                return (await response.json()) as GetMangaTrackRecordsQuery;
+            },
+            [id, skip],
+            { ...options, skip },
+        );
+    }
+
+    public useGetMangaCategories(
+        mangaId: number | string,
+        options?: QueryHookOptions<GetMangaCategoriesQuery, GetMangaCategoriesQueryVariables>,
+    ): AbortableApolloUseQueryResponse<GetMangaCategoriesQuery, GetMangaCategoriesQueryVariables> {
+        const skip = options?.skip ?? false;
+        const id = Number(mangaId);
+        return this.useRestQuery(
+            async (signal) => {
+                const response = await this.restClient.fetcher(`/api/v1/manga/${id}/categories`, { config: { signal } });
+                return (await response.json()) as GetMangaCategoriesQuery;
+            },
+            [id, skip],
+            { ...options, skip },
+        );
     }
 
     public getMangaToMigrate(
@@ -2154,38 +2795,40 @@ export class RequestManager {
             migrateCategories = false,
             migrateTracking = false,
             deleteChapters = false,
-            apolloOptions: options,
-        }: Partial<MetadataMigrationSettings> & {
-            apolloOptions?: QueryOptions<GetMangaToMigrateQueryVariables, GetMangaToMigrateQuery>;
-        } = {},
+        }: Partial<MetadataMigrationSettings> = {},
     ): AbortabaleApolloQueryResponse<GetMangaToMigrateQuery> {
-        return this.doRequest(
-            GQLMethod.QUERY,
-            GET_MANGA_TO_MIGRATE,
-            {
-                id: Number(mangaId),
-                getChapterData: migrateChapters || deleteChapters,
-                migrateCategories,
-                migrateTracking,
-            },
-            options,
-        );
+        return this.doRestQuery(async (signal) => {
+            const params = new URLSearchParams();
+            if (migrateChapters || deleteChapters) {
+                params.set('migrateChapters', 'true');
+            }
+            if (migrateCategories) {
+                params.set('migrateCategories', 'true');
+            }
+            if (migrateTracking) {
+                params.set('migrateTracking', 'true');
+            }
+            if (deleteChapters) {
+                params.set('deleteChapters', 'true');
+            }
+            const suffix = params.toString() ? `?${params.toString()}` : '';
+            const response = await this.restClient.fetcher(`/api/v1/manga/${Number(mangaId)}/migration${suffix}`, {
+                config: { signal },
+            });
+            return (await response.json()) as GetMangaToMigrateQuery;
+        });
     }
 
     public getMangaFetch(
         mangaId: number | string,
         options?: MutationOptions<GetMangaFetchMutation, GetMangaFetchMutationVariables>,
     ): AbortableApolloMutationResponse<GetMangaFetchMutation> {
-        return this.doRequest<GetMangaFetchMutation, GetMangaFetchMutationVariables>(
-            GQLMethod.MUTATION,
-            GET_MANGA_FETCH,
-            {
-                input: {
-                    id: Number(mangaId),
-                },
-            },
-            options,
-        );
+        return this.doRestMutation(async (signal) => {
+            const response = await this.restClient.fetcher(`/api/v1/manga/${Number(mangaId)}/fetch`, {
+                config: { signal },
+            });
+            return (await response.json()) as GetMangaFetchMutation;
+        });
     }
 
     public getMangaToMigrateToFetch(
@@ -2194,65 +2837,150 @@ export class RequestManager {
             migrateChapters = false,
             migrateCategories = false,
             migrateTracking = false,
-            apolloOptions: options,
-        }: Partial<Omit<MetadataMigrationSettings, 'deleteChapters'>> & {
-            apolloOptions?: MutationOptions<
-                GetMangaToMigrateToFetchMutation,
-                GetMangaToMigrateToFetchMutationVariables
-            >;
-        } = {},
+        }: Partial<Omit<MetadataMigrationSettings, 'deleteChapters'>> = {},
     ): AbortableApolloMutationResponse<GetMangaToMigrateToFetchMutation> {
-        return this.doRequest<GetMangaToMigrateToFetchMutation, GetMangaToMigrateToFetchMutationVariables>(
-            GQLMethod.MUTATION,
-            GET_MANGA_TO_MIGRATE_TO_FETCH,
-            {
-                id: Number(mangaId),
-                migrateChapters,
-                migrateCategories,
-                migrateTracking,
+        return this.doRestMutation(async (signal) => {
+            const params = new URLSearchParams();
+            if (migrateChapters) {
+                params.set('migrateChapters', 'true');
+            }
+            if (migrateCategories) {
+                params.set('migrateCategories', 'true');
+            }
+            if (migrateTracking) {
+                params.set('migrateTracking', 'true');
+            }
+            const suffix = params.toString() ? `?${params.toString()}` : '';
+            const response = await this.restClient.fetcher(`/api/v1/manga/${Number(mangaId)}/fetch${suffix}`, {
+                config: { signal },
+            });
+            return (await response.json()) as GetMangaToMigrateToFetchMutation;
+        });
+    }
+
+    public useGetLibraryMangaCount(
+        options?: QueryHookOptions<GetLibraryMangaCountQuery, GetLibraryMangaCountQueryVariables>,
+    ): AbortableApolloUseQueryResponse<GetLibraryMangaCountQuery, GetLibraryMangaCountQueryVariables> {
+        const skip = options?.skip ?? false;
+        return this.useRestQuery(
+            async (signal) => {
+                const response = await this.restClient.fetcher('/api/v1/manga/library/count', { config: { signal } });
+                return (await response.json()) as GetLibraryMangaCountQuery;
             },
-            options,
+            [skip],
+            { ...options, skip },
         );
     }
 
-    public useGetMangas<Data, Variables extends OperationVariables = OperationVariables>(
-        document: DocumentNode | TypedDocumentNode<Data, Variables>,
-        variables: Variables,
-        options?: QueryHookOptions<Data, Variables>,
-    ): AbortableApolloUseQueryResponse<Data, Variables> {
-        return this.doRequest(GQLMethod.USE_QUERY, document, variables, options);
+    public useGetMangasDuplicates(
+        options?: QueryHookOptions<GetMangasDuplicatesQuery, GetMangasDuplicatesQueryVariables>,
+    ): AbortableApolloUseQueryResponse<GetMangasDuplicatesQuery, GetMangasDuplicatesQueryVariables> {
+        const skip = options?.skip ?? false;
+        return this.useRestQuery(
+            async (signal) => {
+                const response = await this.restClient.fetcher('/api/v1/categories/0/mangas', { config: { signal } });
+                const payload = await response.json();
+                const mangas = payload?.category?.mangas ?? payload?.mangas ?? payload;
+                const nodes = Array.isArray(mangas?.nodes) ? mangas.nodes : [];
+                return {
+                    mangas: {
+                        ...mangas,
+                        nodes: nodes.map((manga: any) => this.normalizeMangaPayload(manga)),
+                    },
+                } as GetMangasDuplicatesQuery;
+            },
+            [skip],
+            { ...options, skip },
+        );
     }
 
-    public getMangas<Data, Variables extends OperationVariables = OperationVariables>(
-        document: DocumentNode | TypedDocumentNode<Data, Variables>,
-        variables: Variables,
-        options?: QueryOptions<Variables, Data>,
-    ): AbortabaleApolloQueryResponse<Data> {
-        return this.doRequest(GQLMethod.QUERY, document, variables, options);
+    public getMangasBase(
+        variables?: GetMangasBaseQueryVariables,
+        options?: QueryOptions<GetMangasBaseQueryVariables, GetMangasBaseQuery>,
+    ): AbortabaleApolloQueryResponse<GetMangasBaseQuery> {
+        return this.doRestQuery(async (signal) => {
+            const inLibrary =
+                (variables as any)?.condition?.inLibrary ??
+                (variables as any)?.filter?.inLibrary?.equalTo ??
+                (variables as any)?.filter?.inLibrary?.equals;
+            const title =
+                (variables as any)?.filter?.title?.likeInsensitive ??
+                (variables as any)?.filter?.title?.includesInsensitive ??
+                (variables as any)?.filter?.title?.like ??
+                (variables as any)?.filter?.title?.includes ??
+                (variables as any)?.condition?.title;
+            const params = new URLSearchParams();
+            if (inLibrary != null) {
+                params.set('inLibrary', String(inLibrary));
+            }
+            if (title) {
+                params.set('title', String(title));
+            }
+            const suffix = params.toString() ? `?${params.toString()}` : '';
+            const response = await this.restClient.fetcher(`/api/v1/manga/library/search${suffix}`, {
+                config: { signal },
+            });
+            const payload = await response.json();
+            const nodes = Array.isArray(payload?.mangas?.nodes) ? payload.mangas.nodes : [];
+            return {
+                mangas: {
+                    ...payload.mangas,
+                    nodes: nodes.map((manga: any) => this.normalizeMangaPayload(manga)),
+                },
+            } as GetMangasBaseQuery;
+        });
     }
 
     public useGetMigratableSourceMangas(
         sourceId: string,
         options?: QueryHookOptions<GetMigratableSourceMangasQuery, GetMigratableSourceMangasQueryVariables>,
     ): AbortableApolloUseQueryResponse<GetMigratableSourceMangasQuery, GetMigratableSourceMangasQueryVariables> {
-        return this.doRequest(GQLMethod.USE_QUERY, GET_MIGRATABLE_SOURCE_MANGAS, { sourceId }, options);
+        return this.useRestQuery(
+            async (signal) => {
+                const response = await this.restClient.fetcher('/api/v1/manga/library/search?inLibrary=true', {
+                    config: { signal },
+                });
+                const payload = await response.json();
+                const nodes = Array.isArray(payload?.mangas?.nodes) ? payload.mangas.nodes : [];
+                const filtered = nodes
+                    .filter((manga: any) => `${manga?.sourceId ?? manga?.source_id ?? ''}` === `${sourceId}`)
+                    .map((manga: any) => ({
+                        ...this.normalizeMangaPayload(manga),
+                        categories: { nodes: [] },
+                    }));
+                return {
+                    mangas: {
+                        nodes: filtered,
+                    },
+                } as GetMigratableSourceMangasQuery;
+            },
+            [sourceId, options?.skip],
+            options,
+        );
     }
 
     public useUpdateMangaCategories(
         options?: MutationHookOptions<UpdateMangaCategoriesMutation, UpdateMangaCategoriesMutationVariables>,
     ): AbortableApolloUseMutationResponse<UpdateMangaCategoriesMutation, UpdateMangaCategoriesMutationVariables> {
-        const [mutate, result] = this.doRequest(GQLMethod.USE_MUTATION, UPDATE_MANGA_CATEGORIES, undefined, options);
-
-        const wrappedMutate = (mutateOptions: Parameters<typeof mutate>[0]) =>
-            mutate({
-                onCompleted: () => {
-                    this.graphQLClient.client.cache.evict({ broadcast: true, fieldName: 'categories' });
-                    this.graphQLClient.client.cache.evict({ broadcast: true, fieldName: 'mangas' });
-                },
-                ...mutateOptions,
+        return this.useRestMutation(async (variables, signal) => {
+            const input = variables?.input;
+            if (!input) {
+                throw new Error('useUpdateMangaCategories: no variables passed');
+            }
+            await this.restClient.fetcher('/api/v1/categories/mangas/update', {
+                httpMethod: HttpMethod.POST,
+                data: { ids: [input.id], patch: input.patch },
+                config: { signal },
             });
-
-        return [wrappedMutate, result];
+            return {
+                updateMangaCategories: {
+                    manga: {
+                        id: input.id,
+                        categories: { totalCount: 0, nodes: [] },
+                    },
+                },
+            } as UpdateMangaCategoriesMutation;
+        });
     }
 
     public updateMangasCategories(
@@ -2260,19 +2988,18 @@ export class RequestManager {
         patch: UpdateMangaCategoriesPatchInput,
         options?: MutationOptions<UpdateMangasCategoriesMutation, UpdateMangasCategoriesMutationVariables>,
     ): AbortableApolloMutationResponse<UpdateMangasCategoriesMutation> {
-        const response = this.doRequest(
-            GQLMethod.MUTATION,
-            UPDATE_MANGAS_CATEGORIES,
-            { input: { ids: mangaIds, patch } },
-            options,
-        );
-
-        response.response.then(() => {
-            this.graphQLClient.client.cache.evict({ broadcast: true, fieldName: 'categories' });
-            this.graphQLClient.client.cache.evict({ broadcast: true, fieldName: 'mangas' });
+        return this.doRestMutation(async (signal) => {
+            await this.restClient.fetcher('/api/v1/categories/mangas/update', {
+                httpMethod: HttpMethod.POST,
+                data: { ids: mangaIds, patch },
+                config: { signal },
+            });
+            return {
+                updateMangasCategories: {
+                    mangas: mangaIds.map((id) => ({ id, categories: { totalCount: 0, nodes: [] } })),
+                },
+            } as UpdateMangasCategoriesMutation;
         });
-
-        return response;
     }
 
     public updateManga(
@@ -2280,23 +3007,39 @@ export class RequestManager {
         patch: { updateManga: UpdateMangaPatchInput; updateMangaCategories?: UpdateMangaCategoriesPatchInput },
         options?: MutationOptions<UpdateMangaMutation, UpdateMangaMutationVariables>,
     ): AbortableApolloMutationResponse<UpdateMangaMutation> {
-        const result = this.doRequest<UpdateMangaMutation, UpdateMangaMutationVariables>(
-            GQLMethod.MUTATION,
-            UPDATE_MANGA,
-            {
-                input: { id, patch: patch.updateManga },
-                updateCategoryInput: { id, patch: patch.updateMangaCategories ?? {} },
-                updateCategories: !!patch.updateMangaCategories,
-            },
-            options,
-        );
-
-        result.response.then(() => {
-            this.graphQLClient.client.cache.evict({ broadcast: true, fieldName: 'categories' });
-            this.graphQLClient.client.cache.evict({ broadcast: true, fieldName: 'mangas' });
+        return this.doRestMutation(async (signal) => {
+            if (patch.updateManga?.inLibrary != null) {
+                await this.restClient.fetcher('/api/v1/manga/library/update', {
+                    httpMethod: HttpMethod.POST,
+                    data: { ids: [id], inLibrary: patch.updateManga.inLibrary },
+                    config: { signal },
+                });
+            }
+            if (patch.updateMangaCategories) {
+                await this.restClient.fetcher('/api/v1/categories/mangas/update', {
+                    httpMethod: HttpMethod.POST,
+                    data: { ids: [id], patch: patch.updateMangaCategories },
+                    config: { signal },
+                });
+            }
+            return {
+                updateManga: {
+                    manga: {
+                        id,
+                        inLibrary: patch.updateManga?.inLibrary ?? false,
+                        inLibraryAt: '',
+                    },
+                },
+                updateMangaCategories: patch.updateMangaCategories
+                    ? {
+                          manga: {
+                              id,
+                              categories: { totalCount: 0, nodes: [] },
+                          },
+                      }
+                    : null,
+            } as UpdateMangaMutation;
         });
-
-        return result;
     }
 
     public updateAnime(
@@ -2304,18 +3047,16 @@ export class RequestManager {
         patch: { inLibrary?: boolean },
         options?: MutationOptions<any, any>,
     ): AbortableApolloMutationResponse<any> {
-        const result = this.doRequest<any, any>(
-            GQLMethod.MUTATION,
-            UPDATE_ANIME,
-            { input: { id, patch } },
-            options,
-        );
-
-        result.response.then(() => {
-            this.graphQLClient.client.cache.evict({ broadcast: true, fieldName: 'animes' });
+        return this.doRestMutation(async (signal) => {
+            if (patch.inLibrary != null) {
+                await this.restClient.fetcher('/api/v1/anime/library/update', {
+                    httpMethod: HttpMethod.POST,
+                    data: { ids: [id], inLibrary: patch.inLibrary },
+                    config: { signal },
+                });
+            }
+            return { updateAnime: { ok: true, anime: { id, inLibrary: patch.inLibrary ?? false } } };
         });
-
-        return result;
     }
 
     public updateAnimes(
@@ -2323,18 +3064,16 @@ export class RequestManager {
         patch: { inLibrary?: boolean },
         options?: MutationOptions<any, any>,
     ): AbortableApolloMutationResponse<any> {
-        const result = this.doRequest<any, any>(
-            GQLMethod.MUTATION,
-            UPDATE_ANIMES,
-            { input: { ids, patch } },
-            options,
-        );
-
-        result.response.then(() => {
-            this.graphQLClient.client.cache.evict({ broadcast: true, fieldName: 'animes' });
+        return this.doRestMutation(async (signal) => {
+            if (patch.inLibrary != null) {
+                await this.restClient.fetcher('/api/v1/anime/library/update', {
+                    httpMethod: HttpMethod.POST,
+                    data: { ids, inLibrary: patch.inLibrary },
+                    config: { signal },
+                });
+            }
+            return { updateAnimes: { ok: true } };
         });
-
-        return result;
     }
 
     public updateMangas(
@@ -2342,24 +3081,40 @@ export class RequestManager {
         patch: { updateMangas: UpdateMangaPatchInput; updateMangasCategories?: UpdateMangaCategoriesPatchInput },
         options?: MutationOptions<UpdateMangasMutation, UpdateMangasMutationVariables>,
     ): AbortableApolloMutationResponse<UpdateMangasMutation> {
-        const result = this.doRequest<UpdateMangasMutation, UpdateMangasMutationVariables>(
-            GQLMethod.MUTATION,
-            UPDATE_MANGAS,
-            {
-                input: { ids, patch: patch.updateMangas },
-                updateCategoryInput: { ids, patch: patch.updateMangasCategories ?? {} },
-                updateCategories: !!patch.updateMangasCategories,
-            },
-            options,
-        );
-
-        result.response.then(() => {
-            this.graphQLClient.client.cache.evict({ fieldName: 'categories' });
-            this.graphQLClient.client.cache.evict({ fieldName: 'category' });
-            this.graphQLClient.client.cache.evict({ fieldName: 'mangas' });
+        return this.doRestMutation(async (signal) => {
+            if (patch.updateMangas?.inLibrary != null) {
+                await this.restClient.fetcher('/api/v1/manga/library/update', {
+                    httpMethod: HttpMethod.POST,
+                    data: { ids, inLibrary: patch.updateMangas.inLibrary },
+                    config: { signal },
+                });
+            }
+            if (patch.updateMangasCategories) {
+                await this.restClient.fetcher('/api/v1/categories/mangas/update', {
+                    httpMethod: HttpMethod.POST,
+                    data: { ids, patch: patch.updateMangasCategories },
+                    config: { signal },
+                });
+            }
+            return {
+                updateMangas: {
+                    mangas: ids.map((id) => ({
+                        id,
+                        inLibrary: patch.updateMangas?.inLibrary ?? false,
+                        inLibraryAt: '',
+                        categories: { totalCount: 0, nodes: [] },
+                    })),
+                },
+                updateMangasCategories: patch.updateMangasCategories
+                    ? {
+                          mangas: ids.map((id) => ({
+                              id,
+                              categories: { totalCount: 0, nodes: [] },
+                          })),
+                      }
+                    : null,
+            } as UpdateMangasMutation;
         });
-
-        return result;
     }
 
     public setMangaMeta(
@@ -2368,43 +3123,18 @@ export class RequestManager {
         value: any,
         options?: MutationOptions<SetMangaMetadataMutation, SetMangaMetadataMutationVariables>,
     ): AbortableApolloMutationResponse<SetMangaMetadataMutation> {
-        return this.doRequest(
-            GQLMethod.MUTATION,
-            SET_MANGA_METADATA,
-            {
-                input: { meta: { mangaId, key, value: `${value}` } },
-            },
-            {
-                optimisticResponse: {
-                    __typename: 'Mutation',
-                    setMangaMeta: {
-                        __typename: 'SetMangaMetaPayload',
-                        meta: {
-                            __typename: 'MangaMetaType',
-                            mangaId,
-                            key,
-                            value: `${value}`,
-                        },
-                    },
+        return this.doRestMutation(async (signal) => {
+            await this.restClient.fetcher(`/api/v1/meta/manga/${mangaId}`, {
+                httpMethod: HttpMethod.POST,
+                data: { key, value: `${value}` },
+                config: { signal },
+            });
+            return {
+                setMangaMeta: {
+                    meta: { mangaId, key, value: `${value}` },
                 },
-                update(cache, { data }) {
-                    cache.modify({
-                        id: cache.identify({ __typename: 'MangaType', id: mangaId }),
-                        fields: {
-                            meta(existingMetas, { readField }) {
-                                return updateMetadataList(key, existingMetas, readField, () =>
-                                    cache.writeFragment({
-                                        data: data!.setMangaMeta!.meta,
-                                        fragment: MANGA_META_FIELDS,
-                                    }),
-                                );
-                            },
-                        },
-                    });
-                },
-                ...options,
-            },
-        );
+            } as SetMangaMetadataMutation;
+        });
     }
 
     public deleteMangaMeta(
@@ -2412,60 +3142,105 @@ export class RequestManager {
         key: string,
         options?: MutationOptions<DeleteMangaMetadataMutation, DeleteMangaMetadataMutationVariables>,
     ): AbortableApolloMutationResponse<DeleteMangaMetadataMutation> {
-        return this.doRequest(
-            GQLMethod.MUTATION,
-            DELETE_MANGA_METADATA,
-            { input: { mangaId, key } },
-            {
-                optimisticResponse: {
-                    __typename: 'Mutation',
-                    deleteMangaMeta: {
-                        __typename: 'DeleteMangaMetaPayload',
-                        meta: {
-                            __typename: 'MangaMetaType',
-                            mangaId,
-                            key,
-                            value: '',
-                        },
-                    },
+        return this.doRestMutation(async (signal) => {
+            await this.restClient.fetcher(`/api/v1/meta/manga/${mangaId}`, {
+                httpMethod: HttpMethod.DELETE,
+                data: { key, value: null },
+                config: { signal },
+            });
+            return {
+                deleteMangaMeta: {
+                    meta: { mangaId, key, value: '' },
                 },
-                update(cache) {
-                    cache.evict({ id: cache.identify({ __typename: 'MangaMetaType', mangaId, key }) });
-                },
-                ...options,
-            },
-        );
+            } as DeleteMangaMetadataMutation;
+        });
     }
 
-    public useGetChapters<Data, Variables extends OperationVariables>(
-        document: DocumentNode | TypedDocumentNode<Data, Variables>,
-        variables: Variables,
-        options?: QueryHookOptions<Data, Variables>,
-    ): AbortableApolloUseQueryResponse<Data, Variables> {
-        return this.doRequest(GQLMethod.USE_QUERY, document, variables, options);
-    }
-
-    public getChapters<Data, Variables extends OperationVariables>(
-        document: DocumentNode | TypedDocumentNode<Data, Variables>,
-        variables: Variables,
-        options?: QueryOptions<Variables, Data>,
-    ): AbortabaleApolloQueryResponse<Data> {
-        return this.doRequest(GQLMethod.QUERY, document, variables, options);
-    }
-
-    public useGetMangaChapters<Data, Variables extends OperationVariables = OperationVariables>(
-        document: DocumentNode | TypedDocumentNode<Data, Variables>,
+    public useGetReaderChapters(
         mangaId: number | string,
-        options?: QueryHookOptions<Data, Variables>,
-    ): AbortableApolloUseQueryResponse<Data, Variables> {
-        return this.useGetChapters(
-            document,
-            {
-                condition: { mangaId: Number(mangaId) },
-                order: [{ by: ChapterOrderBy.SourceOrder, byType: SortOrder.Desc }],
-            } satisfies GetChaptersMangaQueryVariables as unknown as Variables,
-            options,
+        options?: QueryHookOptions<GetChaptersReaderQuery, GetChaptersReaderQueryVariables>,
+    ): AbortableApolloUseQueryResponse<GetChaptersReaderQuery, GetChaptersReaderQueryVariables> {
+        const skip = options?.skip ?? false;
+        const id = Number(mangaId);
+        return this.useRestQuery(
+            async (signal) => {
+                const response = await this.restClient.fetcher(`/api/v1/manga/${id}/chapters`, { config: { signal } });
+                const payload = await response.json();
+                const rawNodes = Array.isArray(payload) ? payload : payload?.chapters ?? payload?.nodes ?? [];
+                const nodes = Array.isArray(rawNodes) ? rawNodes : [];
+                const sorted = [...nodes].sort((a: any, b: any) => {
+                    const aOrder = Number(a?.sourceOrder ?? a?.index ?? 0);
+                    const bOrder = Number(b?.sourceOrder ?? b?.index ?? 0);
+                    return bOrder - aOrder;
+                });
+                return {
+                    chapters: {
+                        nodes: sorted,
+                        totalCount: sorted.length,
+                        pageInfo: this.buildPageInfo(),
+                    },
+                } as GetChaptersReaderQuery;
+            },
+            [id, skip],
+            { ...options, skip },
         );
+    }
+
+    public useGetMangaChaptersList(
+        mangaId: number | string,
+        options?: QueryHookOptions<GetChaptersMangaQuery, GetChaptersMangaQueryVariables>,
+    ): AbortableApolloUseQueryResponse<GetChaptersMangaQuery, GetChaptersMangaQueryVariables> {
+        const skip = options?.skip ?? false;
+        const id = Number(mangaId);
+        return this.useRestQuery(
+            async (signal) => {
+                const response = await this.restClient.fetcher(`/api/v1/manga/${id}/chapters`, { config: { signal } });
+                const payload = await response.json();
+                const rawNodes = Array.isArray(payload) ? payload : payload?.chapters ?? payload?.nodes ?? [];
+                const nodes = Array.isArray(rawNodes) ? rawNodes : [];
+                const sorted = [...nodes].sort((a: any, b: any) => {
+                    const aOrder = Number(a?.sourceOrder ?? a?.index ?? 0);
+                    const bOrder = Number(b?.sourceOrder ?? b?.index ?? 0);
+                    return bOrder - aOrder;
+                });
+                return {
+                    chapters: {
+                        nodes: sorted,
+                        totalCount: sorted.length,
+                        pageInfo: this.buildPageInfo(),
+                    },
+                } as GetChaptersMangaQuery;
+            },
+            [id, skip],
+            { ...options, skip },
+        );
+    }
+
+    public getMangaChaptersList(
+        mangaId: number | string,
+        options?: QueryOptions<GetChaptersMangaQueryVariables, GetChaptersMangaQuery>,
+    ): AbortabaleApolloQueryResponse<GetChaptersMangaQuery> {
+        const id = Number(mangaId);
+        return this.doRestQuery(async (signal) => {
+            const response = await this.restClient.fetcher(`/api/v1/manga/${id}/chapters`, { config: { signal } });
+            const payload = await response.json();
+            const rawNodes = Array.isArray(payload) ? payload : payload?.chapters ?? payload?.nodes ?? [];
+            const nodes = Array.isArray(rawNodes)
+                ? rawNodes.filter((node: any) => node && typeof node === 'object' && node.id != null)
+                : [];
+            const sorted = [...nodes].sort((a: any, b: any) => {
+                const aOrder = Number(a?.sourceOrder ?? a?.index ?? 0);
+                const bOrder = Number(b?.sourceOrder ?? b?.index ?? 0);
+                return bOrder - aOrder;
+            });
+            return {
+                chapters: {
+                    nodes: sorted,
+                    totalCount: sorted.length,
+                    pageInfo: this.buildPageInfo(),
+                },
+            } as GetChaptersMangaQuery;
+        });
     }
 
     public getMangasChapterIdsWithState(
@@ -2473,27 +3248,39 @@ export class RequestManager {
         states: Pick<ChapterConditionInput, 'isRead' | 'isDownloaded' | 'isBookmarked'>,
         options?: QueryOptions<GetMangasChapterIdsWithStateQueryVariables, GetMangasChapterIdsWithStateQuery>,
     ): AbortabaleApolloQueryResponse<GetMangasChapterIdsWithStateQuery> {
-        return this.doRequest(
-            GQLMethod.QUERY,
-            GET_MANGAS_CHAPTER_IDS_WITH_STATE,
-            { mangaIds, ...states },
-            {
-                fetchPolicy: 'no-cache',
-                ...options,
-            },
-        );
+        return this.doRestQuery(async (signal) => {
+            const response = await this.restClient.fetcher('/api/v1/chapters/state', {
+                httpMethod: HttpMethod.POST,
+                data: {
+                    manga_ids: mangaIds,
+                    isRead: states.isRead,
+                    isDownloaded: states.isDownloaded,
+                    isBookmarked: states.isBookmarked,
+                },
+                config: { signal },
+            });
+            return (await response.json()) as GetMangasChapterIdsWithStateQuery;
+        });
     }
 
     public getMangaChaptersFetch(
         mangaId: number | string,
         options?: MutationOptions<GetMangaChaptersFetchMutation, GetMangaChaptersFetchMutationVariables>,
     ): AbortableApolloMutationResponse<GetMangaChaptersFetchMutation> {
-        return this.doRequest<GetMangaChaptersFetchMutation, GetMangaChaptersFetchMutationVariables>(
-            GQLMethod.MUTATION,
-            GET_MANGA_CHAPTERS_FETCH,
-            { input: { mangaId: Number(mangaId) } },
-            { refetchQueries: [GET_CHAPTERS_MANGA], ...options },
-        );
+        return this.doRestMutation(async (signal) => {
+            const response = await this.restClient.fetcher(
+                `/api/v1/manga/${Number(mangaId)}/chapters?onlineFetch=true`,
+                { config: { signal } },
+            );
+            const payload = await response.json();
+            const rawNodes = Array.isArray(payload) ? payload : payload?.chapters ?? payload?.nodes ?? [];
+            const nodes = Array.isArray(rawNodes) ? rawNodes : [];
+            return {
+                fetchChapters: {
+                    chapters: nodes,
+                },
+            } as GetMangaChaptersFetchMutation;
+        });
     }
 
     public useGetMangaChapter(
@@ -2509,60 +3296,91 @@ export class RequestManager {
             GetChaptersMangaQueryVariables
         >;
 
-        const chapterResponse = this.useGetChapters<GetChaptersMangaQuery, GetChaptersMangaQueryVariables>(
-            GET_CHAPTERS_MANGA,
-            { condition: { mangaId: Number(mangaId), sourceOrder: Number(chapterIndex) } },
-            options,
-        );
+        const chapterResponse = this.useGetMangaChaptersList(mangaId, options);
 
         if (!chapterResponse.data) {
             return chapterResponse as unknown as Response;
         }
 
+        const resolvedChapterIndex = Number(chapterIndex);
+        const chapter =
+            chapterResponse.data.chapters.nodes.find(
+                (node) => Number((node as any)?.sourceOrder ?? (node as any)?.index ?? -1) === resolvedChapterIndex,
+            ) ?? chapterResponse.data.chapters.nodes[0];
         return {
             ...chapterResponse,
             data: {
-                chapter: chapterResponse.data.chapters.nodes[0],
+                chapter,
             },
         } as unknown as Response;
     }
 
     public useGetChapterPagesFetch(
-        chapterId: string | number,
-        options?: MutationHookOptions<GetChapterPagesFetchMutation, GetChapterPagesFetchMutationVariables>,
+        mangaId: string | number,
+        chapterIndex: string | number,
+        chapterId?: string | number,
+        _options?: MutationHookOptions<GetChapterPagesFetchMutation, GetChapterPagesFetchMutationVariables>,
     ): AbortableApolloUseMutationResponse<GetChapterPagesFetchMutation, GetChapterPagesFetchMutationVariables> {
-        return this.doRequest(
-            GQLMethod.USE_MUTATION,
-            GET_CHAPTER_PAGES_FETCH,
-            {
-                input: { chapterId: Number(chapterId) },
-            },
-            options,
-        );
+        return this.useRestMutation(async (variables, signal) => {
+            const resolvedMangaId = Number(mangaId);
+            const resolvedChapterIndex = Number(chapterIndex);
+            const resolvedChapterId = Number(variables?.input?.chapterId ?? chapterId ?? -1);
+            const response = await this.restClient.fetcher(
+                `/api/v1/manga/${resolvedMangaId}/chapter/${resolvedChapterIndex}/pages`,
+                { config: { signal } },
+            );
+            const payload = await response.json();
+            const pages = payload?.pages ?? [];
+            return {
+                fetchChapterPages: {
+                    pages,
+                    chapter: {
+                        id: resolvedChapterId,
+                        pageCount: pages.length,
+                    },
+                },
+            } as GetChapterPagesFetchMutation;
+        });
     }
 
     public deleteDownloadedChapter(
         id: number,
         options?: MutationOptions<DeleteDownloadedChapterMutation, DeleteDownloadedChapterMutationVariables>,
     ): AbortableApolloMutationResponse<DeleteDownloadedChapterMutation> {
-        return this.doRequest<DeleteDownloadedChapterMutation, DeleteDownloadedChapterMutationVariables>(
-            GQLMethod.MUTATION,
-            DELETE_DOWNLOADED_CHAPTER,
-            { input: { id } },
-            options,
-        );
+        return this.doRestMutation(async (signal) => {
+            await this.restClient.fetcher('/api/v1/chapters/update', {
+                httpMethod: HttpMethod.POST,
+                data: { ids: [id], isDownloaded: false },
+                config: { signal },
+            });
+            return {
+                deleteDownloadedChapter: {
+                    chapters: {
+                        id,
+                        isDownloaded: false,
+                        manga: { id: 0, downloadCount: 0 },
+                    },
+                },
+            } as DeleteDownloadedChapterMutation;
+        });
     }
 
     public deleteDownloadedChapters(
         ids: number[],
         options?: MutationOptions<DeleteDownloadedChaptersMutation, DeleteDownloadedChaptersMutationVariables>,
     ): AbortableApolloMutationResponse<DeleteDownloadedChaptersMutation> {
-        return this.doRequest<DeleteDownloadedChaptersMutation, DeleteDownloadedChaptersMutationVariables>(
-            GQLMethod.MUTATION,
-            DELETE_DOWNLOADED_CHAPTERS,
-            { input: { ids } },
-            options,
-        );
+        return this.doRestMutation(async (signal) => {
+            await this.restClient.fetcher('/api/v1/chapters/update', {
+                httpMethod: HttpMethod.POST,
+                data: { ids, isDownloaded: false },
+                config: { signal },
+            });
+            return {
+                deleteDownloadedChapters: {
+                    chapters: ids.map((id) => ({ id, isDownloaded: false, manga: { id: 0, downloadCount: 0 } })),
+                },
+            } as DeleteDownloadedChaptersMutation;
+        });
     }
 
     public updateChapter(
@@ -2570,26 +3388,43 @@ export class RequestManager {
         patch: UpdateChapterPatchInput & {
             chapterIdToDelete?: number;
             trackProgressMangaId?: number;
+            isDownloaded?: boolean;
         },
         options?: MutationOptions<UpdateChapterMutation, UpdateChapterMutationVariables>,
     ): AbortableApolloMutationResponse<UpdateChapterMutation> {
         const { chapterIdToDelete = -1, trackProgressMangaId = -1, ...updatePatch } = patch;
-
-        return this.doRequest<UpdateChapterMutation, UpdateChapterMutationVariables>(
-            GQLMethod.MUTATION,
-            UPDATE_CHAPTER,
-            {
-                input: { id, patch: updatePatch },
-                getBookmarked: patch.isBookmarked != null,
-                getRead: patch.isRead != null,
-                getLastPageRead: patch.lastPageRead != null,
-                chapterIdToDelete,
-                deleteChapter: chapterIdToDelete >= 0,
-                mangaId: trackProgressMangaId,
-                trackProgress: trackProgressMangaId >= 0,
-            },
-            options,
-        );
+        const trackProgressMangaIdPayload = trackProgressMangaId !== -1 ? trackProgressMangaId : undefined;
+        return this.doRestMutation(async (signal) => {
+            await this.restClient.fetcher('/api/v1/chapters/update', {
+                httpMethod: HttpMethod.POST,
+                data: {
+                    ids: [id],
+                    isRead: updatePatch.isRead ?? undefined,
+                    isBookmarked: updatePatch.isBookmarked ?? undefined,
+                    lastPageRead: updatePatch.lastPageRead ?? undefined,
+                    isDownloaded: updatePatch.isDownloaded ?? undefined,
+                    trackProgressMangaId: trackProgressMangaIdPayload,
+                },
+                config: { signal },
+            });
+            if (chapterIdToDelete !== -1) {
+                await this.restClient.fetcher('/api/v1/chapters/update', {
+                    httpMethod: HttpMethod.POST,
+                    data: { ids: [chapterIdToDelete], isDownloaded: false },
+                    config: { signal },
+                });
+            }
+            return {
+                updateChapter: {
+                    chapter: {
+                        id,
+                        isBookmarked: updatePatch.isBookmarked ?? false,
+                        isRead: updatePatch.isRead ?? false,
+                        lastPageRead: updatePatch.lastPageRead ?? 0,
+                    },
+                },
+            } as UpdateChapterMutation;
+        });
     }
 
     public setChapterMeta(
@@ -2598,41 +3433,18 @@ export class RequestManager {
         value: any,
         options?: MutationOptions<SetChapterMetadataMutation, SetChapterMetadataMutationVariables>,
     ): AbortableApolloMutationResponse<SetChapterMetadataMutation> {
-        return this.doRequest<SetChapterMetadataMutation, SetChapterMetadataMutationVariables>(
-            GQLMethod.MUTATION,
-            SET_CHAPTER_METADATA,
-            { input: { meta: { chapterId, key, value: `${value}` } } },
-            {
-                optimisticResponse: {
-                    __typename: 'Mutation',
-                    setChapterMeta: {
-                        __typename: 'SetChapterMetaPayload',
-                        meta: {
-                            __typename: 'ChapterMetaType',
-                            chapterId,
-                            key,
-                            value: `${value}`,
-                        },
-                    },
+        return this.doRestMutation(async (signal) => {
+            await this.restClient.fetcher(`/api/v1/meta/chapter/${chapterId}`, {
+                httpMethod: HttpMethod.POST,
+                data: { key, value: `${value}` },
+                config: { signal },
+            });
+            return {
+                setChapterMeta: {
+                    meta: { chapterId, key, value: `${value}` },
                 },
-                update(cache, { data }) {
-                    cache.modify({
-                        id: cache.identify({ __typename: 'ChapterType', id: chapterId }),
-                        fields: {
-                            meta(existingMetas, { readField }) {
-                                return updateMetadataList(key, existingMetas, readField, () =>
-                                    cache.writeFragment({
-                                        data: data!.setChapterMeta!.meta,
-                                        fragment: CHAPTER_META_FIELDS,
-                                    }),
-                                );
-                            },
-                        },
-                    });
-                },
-                ...options,
-            },
-        );
+            } as SetChapterMetadataMutation;
+        });
     }
 
     public deleteChapterMeta(
@@ -2640,29 +3452,18 @@ export class RequestManager {
         key: string,
         options?: MutationOptions<DeleteChapterMetadataMutation, DeleteChapterMetadataMutationVariables>,
     ): AbortableApolloMutationResponse<DeleteChapterMetadataMutation> {
-        return this.doRequest(
-            GQLMethod.MUTATION,
-            DELETE_CHAPTER_METADATA,
-            { input: { chapterId, key } },
-            {
-                optimisticResponse: {
-                    __typename: 'Mutation',
-                    deleteChapterMeta: {
-                        __typename: 'DeleteChapterMetaPayload',
-                        meta: {
-                            __typename: 'ChapterMetaType',
-                            chapterId,
-                            key,
-                            value: '',
-                        },
-                    },
+        return this.doRestMutation(async (signal) => {
+            await this.restClient.fetcher(`/api/v1/meta/chapter/${chapterId}`, {
+                httpMethod: HttpMethod.DELETE,
+                data: { key, value: null },
+                config: { signal },
+            });
+            return {
+                deleteChapterMeta: {
+                    meta: { chapterId, key, value: '' },
                 },
-                update(cache) {
-                    cache.evict({ id: cache.identify({ __typename: 'ChapterMetaType', chapterId, key }) });
-                },
-                ...options,
-            },
-        );
+            } as DeleteChapterMetadataMutation;
+        });
     }
 
     public getChapterPageUrl(mangaId: number | string, chapterIndex: number | string, page: number): string {
@@ -2674,182 +3475,186 @@ export class RequestManager {
 
     public updateChapters(
         ids: number[],
-        patch: UpdateChapterPatchInput & { chapterIdsToDelete?: number[]; trackProgressMangaId?: MangaIdInfo['id'] },
+        patch: UpdateChapterPatchInput & {
+            chapterIdsToDelete?: number[];
+            trackProgressMangaId?: MangaIdInfo['id'];
+            isDownloaded?: boolean;
+        },
         options?: MutationOptions<UpdateChaptersMutation, UpdateChaptersMutationVariables>,
     ): AbortableApolloMutationResponse<UpdateChaptersMutation> {
         const { chapterIdsToDelete = [], trackProgressMangaId = -1, ...updatePatch } = patch;
+        const trackProgressMangaIdPayload = trackProgressMangaId !== -1 ? trackProgressMangaId : undefined;
 
-        return this.doRequest<UpdateChaptersMutation, UpdateChaptersMutationVariables>(
-            GQLMethod.MUTATION,
-            UPDATE_CHAPTERS,
-            {
-                input: { ids, patch: updatePatch },
-                getBookmarked: patch.isBookmarked != null,
-                getRead: patch.isRead != null,
-                getLastPageRead: patch.lastPageRead != null,
-                chapterIdsToDelete,
-                deleteChapters: !!chapterIdsToDelete.length,
-                mangaId: trackProgressMangaId,
-                trackProgress: trackProgressMangaId >= 0,
+        return this.doRestMutation(async (signal) => {
+            await this.restClient.fetcher('/api/v1/chapters/update', {
+                httpMethod: HttpMethod.POST,
+                data: {
+                    ids,
+                    isRead: updatePatch.isRead ?? undefined,
+                    isBookmarked: updatePatch.isBookmarked ?? undefined,
+                    lastPageRead: updatePatch.lastPageRead ?? undefined,
+                    isDownloaded: updatePatch.isDownloaded ?? undefined,
+                    trackProgressMangaId: trackProgressMangaIdPayload,
+                },
+                config: { signal },
+            });
+            if (chapterIdsToDelete.length) {
+                await this.restClient.fetcher('/api/v1/chapters/update', {
+                    httpMethod: HttpMethod.POST,
+                    data: { ids: chapterIdsToDelete, isDownloaded: false },
+                    config: { signal },
+                });
+            }
+            return {
+                updateChapters: {
+                    chapters: ids.map((id) => ({
+                        id,
+                        isBookmarked: updatePatch.isBookmarked ?? false,
+                        isRead: updatePatch.isRead ?? false,
+                        lastPageRead: updatePatch.lastPageRead ?? 0,
+                        manga: { id: 0, unreadCount: 0, bookmarkCount: 0 },
+                    })),
+                },
+            } as UpdateChaptersMutation;
+        });
+    }
+
+    public useGetCategoriesBase(
+        options?: QueryHookOptions<GetCategoriesBaseQuery, GetCategoriesBaseQueryVariables>,
+    ): AbortableApolloUseQueryResponse<GetCategoriesBaseQuery, GetCategoriesBaseQueryVariables> {
+        const skip = options?.skip ?? false;
+        return this.useRestQuery(
+            async (signal) => {
+                const response = await this.restClient.fetcher('/api/v1/categories', { config: { signal } });
+                return (await response.json()) as GetCategoriesBaseQuery;
             },
-            options,
+            [skip],
+            { ...options, skip },
         );
     }
 
-    public useGetCategories<Data, Variables extends OperationVariables>(
-        document: DocumentNode | TypedDocumentNode<Data, Variables>,
-        options?: QueryHookOptions<Data, Variables>,
-    ): AbortableApolloUseQueryResponse<Data, Variables> {
-        return this.doRequest<Data, Variables>(
-            GQLMethod.USE_QUERY,
-            document,
-            {
-                order: [{ by: CategoryOrderBy.Order }],
-            } satisfies GetCategoriesSettingsQueryVariables as unknown as Variables,
-            options,
+    public useGetCategoriesLibrary(
+        options?: QueryHookOptions<GetCategoriesLibraryQuery, GetCategoriesLibraryQueryVariables>,
+    ): AbortableApolloUseQueryResponse<GetCategoriesLibraryQuery, GetCategoriesLibraryQueryVariables> {
+        const skip = options?.skip ?? false;
+        return this.useRestQuery(
+            async (signal) => {
+                const response = await this.restClient.fetcher('/api/v1/categories', { config: { signal } });
+                return (await response.json()) as GetCategoriesLibraryQuery;
+            },
+            [skip],
+            { ...options, skip },
         );
     }
 
-    public getCategories<Data, Variables extends OperationVariables>(
-        document: DocumentNode | TypedDocumentNode<Data, Variables>,
-        options?: QueryOptions<Variables, Data>,
-    ): AbortabaleApolloQueryResponse<Data> {
-        return this.doRequest<Data, Variables>(
-            GQLMethod.QUERY,
-            document,
-            {
-                order: [{ by: CategoryOrderBy.Order }],
-            } satisfies GetCategoriesSettingsQueryVariables as unknown as Variables,
-            options,
+    public useGetCategoriesSettings(
+        options?: QueryHookOptions<GetCategoriesSettingsQuery, GetCategoriesSettingsQueryVariables>,
+    ): AbortableApolloUseQueryResponse<GetCategoriesSettingsQuery, GetCategoriesSettingsQueryVariables> {
+        const skip = options?.skip ?? false;
+        return this.useRestQuery(
+            async (signal) => {
+                const response = await this.restClient.fetcher('/api/v1/categories', { config: { signal } });
+                return (await response.json()) as GetCategoriesSettingsQuery;
+            },
+            [skip],
+            { ...options, skip },
         );
+    }
+
+    public getCategoriesBase(
+        options?: QueryOptions<GetCategoriesBaseQueryVariables, GetCategoriesBaseQuery>,
+    ): AbortabaleApolloQueryResponse<GetCategoriesBaseQuery> {
+        return this.doRestQuery(async (signal) => {
+            const response = await this.restClient.fetcher('/api/v1/categories', { config: { signal } });
+            return (await response.json()) as GetCategoriesBaseQuery;
+        });
     }
 
     public createCategory(
         input: CreateCategoryInput,
         options?: MutationOptions<CreateCategoryMutation, CreateCategoryMutationVariables>,
     ): AbortableApolloMutationResponse<CreateCategoryMutation> {
-        return this.doRequest<CreateCategoryMutation, CreateCategoryMutationVariables>(
-            GQLMethod.MUTATION,
-            CREATE_CATEGORY,
-            { input },
-            { refetchQueries: [GET_CATEGORIES_BASE, GET_CATEGORIES_LIBRARY, GET_CATEGORIES_SETTINGS], ...options },
-        );
+        return this.doRestMutation(async (signal) => {
+            await this.restClient.fetcher('/api/v1/categories/create', {
+                httpMethod: HttpMethod.POST,
+                data: { name: input.name, default: input.default },
+                config: { signal },
+            });
+            return {
+                createCategory: {
+                    category: {
+                        id: 0,
+                        name: input.name,
+                    },
+                },
+            } as CreateCategoryMutation;
+        });
     }
 
     public useReorderCategory(
         options?: MutationHookOptions<UpdateCategoryOrderMutation, UpdateCategoryOrderMutationVariables>,
     ): AbortableApolloUseMutationResponse<UpdateCategoryOrderMutation, UpdateCategoryOrderMutationVariables> {
-        const [mutate, result] = this.doRequest<UpdateCategoryOrderMutation, UpdateCategoryOrderMutationVariables>(
-            GQLMethod.USE_MUTATION,
-            UPDATE_CATEGORY_ORDER,
-            undefined,
-            { refetchQueries: [GET_CATEGORIES_BASE, GET_CATEGORIES_LIBRARY], ...options },
-        );
-
-        const wrappedMutate = (mutateOptions: Parameters<typeof mutate>[0]) => {
-            const variables = mutateOptions?.variables?.input;
-            const cachedCategories = this.graphQLClient.client.readQuery<
-                GetCategoriesSettingsQuery,
-                GetCategoriesSettingsQueryVariables
-            >({
-                query: GET_CATEGORIES_SETTINGS,
-                variables: { order: [{ by: CategoryOrderBy.Order }] },
-            })?.categories.nodes;
-
-            if (!variables) {
+        return this.useRestMutation(async (variables, signal) => {
+            const input = variables?.input;
+            if (!input) {
                 throw new Error('useReorderCategory: no variables passed');
             }
-
-            if (!cachedCategories) {
-                throw new Error('useReorderCategory: there are no cached results');
-            }
-
-            const movedIndex = cachedCategories.findIndex((category) => category.id === variables.id);
-            const newData = [...cachedCategories.map((category) => ({ ...category }))];
-            const [removed] = newData.splice(movedIndex, 1);
-            newData.splice(variables.position, 0, removed);
-            removed.order = variables.position;
-            newData[movedIndex].order = movedIndex;
-
-            return mutate({
-                update: (cache) => {
-                    cache.updateQuery<GetCategoriesSettingsQuery, GetCategoriesSettingsQueryVariables>(
-                        {
-                            id: cache.identify({ __typename: 'CategoryNodeList' }),
-                            query: GET_CATEGORIES_SETTINGS,
-                            variables: { order: [{ by: CategoryOrderBy.Order }] },
-                        },
-                        (data) => ({
-                            ...data!,
-                            categories: {
-                                ...data!.categories,
-                                nodes: newData,
-                            },
-                        }),
-                    );
-                },
-                optimisticResponse: {
-                    __typename: 'Mutation',
-                    updateCategoryOrder: {
-                        __typename: 'UpdateCategoryOrderPayload',
-                        categories: newData,
-                    },
-                },
-                ...mutateOptions,
+            await this.restClient.fetcher('/api/v1/categories/order', {
+                httpMethod: HttpMethod.POST,
+                data: { id: input.id, position: input.position },
+                config: { signal },
             });
-        };
-
-        return [wrappedMutate, result];
+            return {
+                updateCategoryOrder: {
+                    categories: [],
+                },
+            } as UpdateCategoryOrderMutation;
+        });
     }
 
     public useGetCategoryMangas(
         id: number,
         options?: QueryHookOptions<GetMangasLibraryQuery, GetMangasLibraryQueryVariables>,
     ): AbortableApolloUseQueryResponse<GetMangasLibraryQuery, GetMangasLibraryQueryVariables> {
-        const isDefaultCategory = id === 0;
-        if (isDefaultCategory) {
-            // hacky way of loading the default category mangas - some stuff won't work but since that is not used anyway, it won't be a problem
-            // can't be loaded via "useGetMangas" because mangas are not actually mapped to the default category in the database
-            const { data, ...result } = this.doRequest<GetCategoryMangasQuery, GetCategoryMangasQueryVariables>(
-                GQLMethod.USE_QUERY,
-                GET_CATEGORY_MANGAS,
-                { id },
-                options as QueryHookOptions<GetCategoryMangasQuery, GetCategoryMangasQueryVariables>,
-            );
-
-            return {
-                ...result,
-                data: data
-                    ? {
-                          ...data?.category,
-                          __typename: 'Query',
-                      }
-                    : undefined,
-            } as unknown as AbortableApolloUseQueryResponse<GetMangasLibraryQuery, GetMangasLibraryQueryVariables>;
-        }
-
-        return this.useGetMangas(GET_MANGAS_LIBRARY, { condition: { inLibrary: true, categoryIds: [id] } }, options);
+        const skip = options?.skip ?? false;
+        return this.useRestQuery(
+            async (signal) => {
+                const response = await this.restClient.fetcher(`/api/v1/categories/${id}/mangas`, {
+                    config: { signal },
+                });
+                const payload = await response.json();
+                const mangas = payload?.category?.mangas ?? payload?.mangas ?? payload;
+                const nodes = Array.isArray(mangas?.nodes) ? mangas.nodes : [];
+                return {
+                    mangas: {
+                        ...mangas,
+                        nodes: nodes.map((manga: any) => this.normalizeMangaPayload(manga)),
+                    },
+                } as GetMangasLibraryQuery;
+            },
+            [id, skip],
+            { ...options, skip },
+        );
     }
 
     public deleteCategory(
         categoryId: number,
         options?: MutationOptions<DeleteCategoryMutation, DeleteCategoryMutationVariables>,
     ): AbortableApolloMutationResponse<DeleteCategoryMutation> {
-        const result = this.doRequest<DeleteCategoryMutation, DeleteCategoryMutationVariables>(
-            GQLMethod.MUTATION,
-            DELETE_CATEGORY,
-            { input: { categoryId } },
-            {
-                refetchQueries: [GET_CATEGORIES_BASE, GET_CATEGORIES_LIBRARY, GET_CATEGORIES_SETTINGS],
-                ...options,
-            },
-        );
-
-        result.response.then(() => {
-            this.graphQLClient.client.cache.evict({ fieldName: 'category', id: categoryId.toString() });
+        return this.doRestMutation(async (signal) => {
+            await this.restClient.fetcher('/api/v1/categories/delete', {
+                httpMethod: HttpMethod.POST,
+                data: { category_id: categoryId },
+                config: { signal },
+            });
+            return {
+                deleteCategory: {
+                    category: {
+                        id: categoryId,
+                    },
+                },
+            } as DeleteCategoryMutation;
         });
-
-        return result;
     }
 
     public updateCategory(
@@ -2857,18 +3662,20 @@ export class RequestManager {
         patch: UpdateCategoryPatchInput,
         options?: MutationOptions<UpdateCategoryMutation, UpdateCategoryMutationVariables>,
     ): AbortableApolloMutationResponse<UpdateCategoryMutation> {
-        return this.doRequest<UpdateCategoryMutation, UpdateCategoryMutationVariables>(
-            GQLMethod.MUTATION,
-            UPDATE_CATEGORY,
-            {
-                input: { id, patch },
-                getIncludeInUpdate: patch.includeInUpdate != null,
-                getIncludeInDownload: patch.includeInDownload != null,
-                getDefault: patch.default != null,
-                getName: patch.name != null,
-            },
-            options,
-        );
+        return this.doRestMutation(async (signal) => {
+            await this.restClient.fetcher('/api/v1/categories/update', {
+                httpMethod: HttpMethod.POST,
+                data: { id, patch },
+                config: { signal },
+            });
+            return {
+                updateCategory: {
+                    category: {
+                        id,
+                    },
+                },
+            } as UpdateCategoryMutation;
+        });
     }
 
     public setCategoryMeta(
@@ -2877,41 +3684,22 @@ export class RequestManager {
         value: any,
         options?: MutationOptions<SetCategoryMetadataMutation, SetCategoryMetadataMutationVariables>,
     ): AbortableApolloMutationResponse<SetCategoryMetadataMutation> {
-        return this.doRequest<SetCategoryMetadataMutation, SetCategoryMetadataMutationVariables>(
-            GQLMethod.MUTATION,
-            SET_CATEGORY_METADATA,
-            { input: { meta: { categoryId, key, value: `${value}` } } },
-            {
-                optimisticResponse: {
-                    __typename: 'Mutation',
-                    setCategoryMeta: {
-                        __typename: 'SetCategoryMetaPayload',
-                        meta: {
-                            __typename: 'CategoryMetaType',
-                            categoryId,
-                            key,
-                            value: `${value}`,
-                        },
+        return this.doRestMutation(async (signal) => {
+            await this.restClient.fetcher('/api/v1/categories/meta', {
+                httpMethod: HttpMethod.POST,
+                data: { category_id: categoryId, key, value: `${value}` },
+                config: { signal },
+            });
+            return {
+                setCategoryMeta: {
+                    meta: {
+                        categoryId,
+                        key,
+                        value: `${value}`,
                     },
                 },
-                update(cache, { data }) {
-                    cache.modify({
-                        id: cache.identify({ __typename: 'CategoryType', id: categoryId }),
-                        fields: {
-                            meta(existingMetas, { readField }) {
-                                return updateMetadataList(key, existingMetas, readField, () =>
-                                    cache.writeFragment({
-                                        data: data!.setCategoryMeta!.meta,
-                                        fragment: CATEGORY_META_FIELDS,
-                                    }),
-                                );
-                            },
-                        },
-                    });
-                },
-                ...options,
-            },
-        );
+            } as SetCategoryMetadataMutation;
+        });
     }
 
     public deleteCategoryMeta(
@@ -2919,493 +3707,773 @@ export class RequestManager {
         key: string,
         options?: MutationOptions<DeleteCategoryMetadataMutation, DeleteCategoryMetadataMutationVariables>,
     ): AbortableApolloMutationResponse<DeleteCategoryMetadataMutation> {
-        return this.doRequest(
-            GQLMethod.MUTATION,
-            DELETE_CATEGORY_METADATA,
-            { input: { categoryId, key } },
-            {
-                optimisticResponse: {
-                    __typename: 'Mutation',
-                    deleteCategoryMeta: {
-                        __typename: 'DeleteCategoryMetaPayload',
-                        meta: {
-                            __typename: 'CategoryMetaType',
-                            categoryId,
-                            key,
-                            value: '',
-                        },
+        return this.doRestMutation(async (signal) => {
+            await this.restClient.fetcher('/api/v1/categories/meta', {
+                httpMethod: HttpMethod.POST,
+                data: { category_id: categoryId, key, value: null },
+                config: { signal },
+            });
+            return {
+                deleteCategoryMeta: {
+                    meta: {
+                        categoryId,
+                        key,
+                        value: '',
                     },
                 },
-                update(cache) {
-                    cache.evict({ id: cache.identify({ __typename: 'CategoryMetaType', categoryId, key }) });
-                },
-                ...options,
-            },
-        );
+            } as DeleteCategoryMetadataMutation;
+        });
     }
 
     public createBackupFile(
         input: CreateBackupInput,
         options?: MutationOptions<CreateBackupMutation, CreateBackupMutationVariables>,
     ): AbortableApolloMutationResponse<CreateBackupMutation> {
-        return this.doRequest<CreateBackupMutation, CreateBackupMutationVariables>(
-            GQLMethod.MUTATION,
-            CREATE_BACKUP,
-            { input },
-            {
-                ...options,
-            },
-        );
+        return this.doRestMutation(async (signal) => {
+            const response = await this.restClient.fetcher('/api/v1/backup/create', {
+                httpMethod: HttpMethod.POST,
+                data: input,
+                config: { signal },
+            });
+            const payload = await this.parseJsonSafe(response);
+            const url = payload?.url ?? payload?.createBackup?.url ?? '';
+            return {
+                createBackup: {
+                    url,
+                },
+            } as CreateBackupMutation;
+        });
     }
 
     public restoreBackupFile(
         input: RestoreBackupInput,
         options?: MutationOptions<RestoreBackupMutation, RestoreBackupMutationVariables>,
     ): AbortableApolloMutationResponse<RestoreBackupMutation> {
-        return this.doRequest<RestoreBackupMutation, RestoreBackupMutationVariables>(
-            GQLMethod.MUTATION,
-            RESTORE_BACKUP,
-            input,
-            {
-                ...options,
-            },
-        );
+        return this.doRestMutation(async (signal) => {
+            const response = await this.restClient.fetcher('/api/v1/backup/restore', {
+                httpMethod: HttpMethod.POST,
+                data: { id: input.backup?.name ?? undefined, flags: input.flags ?? undefined },
+                config: { signal },
+            });
+            const payload = await this.parseJsonSafe(response);
+            return {
+                restoreBackup: {
+                    id: payload?.id ?? 'restore',
+                    status: payload?.status ?? 'IDLE',
+                },
+            } as RestoreBackupMutation;
+        });
     }
 
     public validateBackupFile(
         file: File,
         options?: QueryOptions<ValidateBackupQueryVariables, ValidateBackupQuery>,
     ): AbortabaleApolloQueryResponse<ValidateBackupQuery> {
-        return this.doRequest(GQLMethod.QUERY, VALIDATE_BACKUP, { backup: file }, options);
+        return this.doRestQuery(async (signal) => {
+            await this.restClient.fetcher('/api/v1/backup/validate', {
+                httpMethod: HttpMethod.POST,
+                data: { name: file.name },
+                config: { signal },
+            });
+            return {
+                validateBackup: {
+                    missingSources: [],
+                    missingTrackers: [],
+                },
+            } as ValidateBackupQuery;
+        });
     }
 
     public useGetBackupRestoreStatus(
         id: string,
         options?: QueryHookOptions<GetRestoreStatusQuery, GetRestoreStatusQueryVariables>,
     ): AbortableApolloUseQueryResponse<GetRestoreStatusQuery, GetRestoreStatusQueryVariables> {
-        return this.doRequest(GQLMethod.USE_QUERY, GET_RESTORE_STATUS, { id }, options);
+        return this.useRestQuery(
+            async (signal) => {
+                const response = await this.restClient.fetcher(`/api/v1/backup/restore/${id}`, {
+                    config: { signal },
+                });
+                const payload = await this.parseJsonSafe(response);
+                return {
+                    restoreStatus: {
+                        mangaProgress: 0,
+                        totalManga: 0,
+                        state: payload?.status ?? 'IDLE',
+                    },
+                } as GetRestoreStatusQuery;
+            },
+            [id, options?.skip],
+            options,
+        );
     }
 
     public startDownloads(
         options?: MutationOptions<StartDownloaderMutation, StartDownloaderMutationVariables>,
     ): AbortableApolloMutationResponse<StartDownloaderMutation> {
-        return this.doRequest<StartDownloaderMutation, StartDownloaderMutationVariables>(
-            GQLMethod.MUTATION,
-            START_DOWNLOADER,
-            {},
-            options,
-        );
+        return this.doRestMutation(async (signal) => {
+            await this.restClient.fetcher('/api/v1/downloads/start', {
+                httpMethod: HttpMethod.POST,
+                config: { signal },
+            });
+            return {
+                startDownloader: {
+                    downloadStatus: { state: 'STOPPED', queue: [] },
+                },
+            } as StartDownloaderMutation;
+        });
     }
 
     public stopDownloads(
         options?: MutationOptions<StopDownloaderMutation, StopDownloaderMutationVariables>,
     ): AbortableApolloMutationResponse<StopDownloaderMutation> {
-        return this.doRequest<StopDownloaderMutation, StopDownloaderMutationVariables>(
-            GQLMethod.MUTATION,
-            STOP_DOWNLOADER,
-            {},
-            options,
-        );
+        return this.doRestMutation(async (signal) => {
+            await this.restClient.fetcher('/api/v1/downloads/stop', {
+                httpMethod: HttpMethod.POST,
+                config: { signal },
+            });
+            return {
+                stopDownloader: {
+                    downloadStatus: { state: 'STOPPED', queue: [] },
+                },
+            } as StopDownloaderMutation;
+        });
     }
 
     public clearDownloads(
         options?: MutationOptions<ClearDownloaderMutation, ClearDownloaderMutationVariables>,
     ): AbortableApolloMutationResponse<ClearDownloaderMutation> {
-        return this.doRequest<ClearDownloaderMutation, ClearDownloaderMutationVariables>(
-            GQLMethod.MUTATION,
-            CLEAR_DOWNLOADER,
-            {},
-            options,
-        );
+        return this.doRestMutation(async (signal) => {
+            await this.restClient.fetcher('/api/v1/downloads/clear', {
+                httpMethod: HttpMethod.POST,
+                config: { signal },
+            });
+            return {
+                clearDownloader: {
+                    downloadStatus: { state: 'STOPPED', queue: [] },
+                },
+            } as ClearDownloaderMutation;
+        });
     }
 
     public addChapterToDownloadQueue(
         id: number,
         options?: MutationOptions<EnqueueChapterDownloadMutation, EnqueueChapterDownloadMutationVariables>,
     ): AbortableApolloMutationResponse<EnqueueChapterDownloadMutation> {
-        return this.doRequest<EnqueueChapterDownloadMutation, EnqueueChapterDownloadMutationVariables>(
-            GQLMethod.MUTATION,
-            ENQUEUE_CHAPTER_DOWNLOAD,
-            { input: { id } },
-            options,
-        );
+        return this.doRestMutation(async (signal) => {
+            await this.restClient.fetcher('/api/v1/downloads/enqueue', {
+                httpMethod: HttpMethod.POST,
+                data: { id },
+                config: { signal },
+            });
+            return {
+                enqueueChapterDownload: {
+                    downloadStatus: { state: 'STOPPED', queue: [] },
+                },
+            } as EnqueueChapterDownloadMutation;
+        });
     }
 
     public removeChapterFromDownloadQueue(
         id: number,
         options?: MutationOptions<DequeueChapterDownloadMutation, DequeueChapterDownloadMutationVariables>,
     ): AbortableApolloMutationResponse<DequeueChapterDownloadMutation> {
-        return this.doRequest<DequeueChapterDownloadMutation, DequeueChapterDownloadMutationVariables>(
-            GQLMethod.MUTATION,
-            DEQUEUE_CHAPTER_DOWNLOAD,
-            { input: { id } },
-            options,
-        );
+        return this.doRestMutation(async (signal) => {
+            await this.restClient.fetcher('/api/v1/downloads/dequeue', {
+                httpMethod: HttpMethod.POST,
+                data: { id },
+                config: { signal },
+            });
+            return {
+                dequeueChapterDownload: {
+                    downloadStatus: { state: 'STOPPED', queue: [] },
+                },
+            } as DequeueChapterDownloadMutation;
+        });
     }
 
     public useReorderChapterInDownloadQueue(
         options?: MutationHookOptions<ReorderChapterDownloadMutation, ReorderChapterDownloadMutationVariables>,
     ): AbortableApolloUseMutationResponse<ReorderChapterDownloadMutation, ReorderChapterDownloadMutationVariables> {
-        const [mutate, result] = this.doRequest(GQLMethod.USE_MUTATION, REORDER_CHAPTER_DOWNLOAD, undefined, options);
-
-        const wrappedMutate = (mutationOptions: Parameters<typeof mutate>[0]) => {
-            const variables = mutationOptions?.variables?.input;
-            const cachedDownloadStatus = this.graphQLClient.client.readFragment<
-                GetDownloadStatusQuery['downloadStatus']
-            >({
-                id: 'DownloadStatus:{}',
-                fragment: DOWNLOAD_STATUS_FIELDS,
-                fragmentName: 'DOWNLOAD_STATUS_FIELDS',
-            });
-
-            if (!variables) {
+        return this.useRestMutation(async (variables, signal) => {
+            const input = variables?.input;
+            if (!input) {
                 throw new Error('useReorderChapterInDownloadQueue: no variables passed');
             }
-
-            if (!cachedDownloadStatus) {
-                throw new Error('useReorderChapterInDownloadQueue: there are no cached results');
-            }
-
-            const movedIndex = cachedDownloadStatus.queue.findIndex(
-                ({ chapter }) => chapter.id === variables.chapterId,
-            );
-            const chapterDownload = cachedDownloadStatus.queue[movedIndex];
-            const queueWithoutChapterDownload = cachedDownloadStatus.queue.toSpliced(movedIndex, 1);
-            const updatedQueue = queueWithoutChapterDownload.toSpliced(variables.to, 0, chapterDownload);
-
-            return mutate({
-                optimisticResponse: {
-                    __typename: 'Mutation',
-                    reorderChapterDownload: {
-                        __typename: 'ReorderChapterDownloadPayload',
-                        downloadStatus: {
-                            ...cachedDownloadStatus,
-                            queue: updatedQueue,
-                        },
-                    },
-                },
-                ...mutationOptions,
+            await this.restClient.fetcher('/api/v1/downloads/reorder', {
+                httpMethod: HttpMethod.POST,
+                data: { chapter_id: input.chapterId, to: input.to },
+                config: { signal },
             });
-        };
-
-        return [wrappedMutate, result];
+            return {
+                reorderChapterDownload: {
+                    downloadStatus: { state: 'STOPPED', queue: [] },
+                },
+            } as ReorderChapterDownloadMutation;
+        });
     }
 
     public addChaptersToDownloadQueue(
         ids: number[],
         options?: MutationOptions<EnqueueChapterDownloadsMutation, EnqueueChapterDownloadsMutationVariables>,
     ): AbortableApolloMutationResponse<EnqueueChapterDownloadsMutation> {
-        return this.doRequest<EnqueueChapterDownloadsMutation, EnqueueChapterDownloadsMutationVariables>(
-            GQLMethod.MUTATION,
-            ENQUEUE_CHAPTER_DOWNLOADS,
-            { input: { ids } },
-            options,
-        );
+        return this.doRestMutation(async (signal) => {
+            await this.restClient.fetcher('/api/v1/downloads/enqueue-many', {
+                httpMethod: HttpMethod.POST,
+                data: { ids },
+                config: { signal },
+            });
+            return {
+                enqueueChapterDownloads: {
+                    downloadStatus: { state: 'STOPPED', queue: [] },
+                },
+            } as EnqueueChapterDownloadsMutation;
+        });
     }
 
     public removeChaptersFromDownloadQueue(
         ids: number[],
         options?: MutationOptions<DequeueChapterDownloadsMutation, DequeueChapterDownloadsMutationVariables>,
     ): AbortableApolloMutationResponse<DequeueChapterDownloadsMutation> {
-        return this.doRequest<DequeueChapterDownloadsMutation, DequeueChapterDownloadsMutationVariables>(
-            GQLMethod.MUTATION,
-            DEQUEUE_CHAPTER_DOWNLOADS,
-            { input: { ids } },
-            options,
-        );
+        return this.doRestMutation(async (signal) => {
+            await this.restClient.fetcher('/api/v1/downloads/dequeue-many', {
+                httpMethod: HttpMethod.POST,
+                data: { ids },
+                config: { signal },
+            });
+            return {
+                dequeueChapterDownloads: {
+                    downloadStatus: { state: 'STOPPED', queue: [] },
+                },
+            } as DequeueChapterDownloadsMutation;
+        });
     }
 
     public useGetRecentlyUpdatedChapters(
         initialPages: number = 1,
         options?: QueryHookOptions<GetChaptersUpdatesQuery, GetChaptersUpdatesQueryVariables>,
     ): AbortableApolloUseQueryResponse<GetChaptersUpdatesQuery, GetChaptersUpdatesQueryVariables> {
-        const PAGE_SIZE = 50;
-        const CACHE_KEY = 'useGetRecentlyUpdatedChapters';
-
-        const offset = this.cache.getResponseFor<number>(CACHE_KEY, undefined) ?? 0;
-        const [lastOffset] = useState(offset);
-
-        const result = this.useGetChapters<GetChaptersUpdatesQuery, GetChaptersUpdatesQueryVariables>(
-            GET_CHAPTERS_UPDATES,
-            {
-                filter: { inLibrary: { equalTo: true } },
-                order: [
-                    { by: ChapterOrderBy.FetchedAt, byType: SortOrder.Desc },
-                    { by: ChapterOrderBy.SourceOrder, byType: SortOrder.Desc },
-                ],
-                first: initialPages * PAGE_SIZE + lastOffset,
+        const skip = options?.skip ?? false;
+        return this.useRestQuery(
+            async (signal) => {
+                const response = await this.restClient.fetcher('/api/v1/chapters/updates', { config: { signal } });
+                return (await response.json()) as GetChaptersUpdatesQuery;
             },
-            options,
+            [initialPages, skip],
+            { ...options, skip },
         );
-
-        return {
-            ...result,
-            fetchMore: (...args: Parameters<(typeof result)['fetchMore']>) => {
-                const fetchMoreOptions = args[0] ?? {};
-                this.cache.cacheResponse(CACHE_KEY, undefined, fetchMoreOptions.variables?.offset);
-                return result.fetchMore({
-                    ...fetchMoreOptions,
-                    variables: { first: PAGE_SIZE, ...fetchMoreOptions.variables },
-                });
-            },
-        } as typeof result;
     }
 
     public useGetRecentlyReadChapters(
         initialPages: number = 1,
         options?: QueryHookOptions<GetChaptersHistoryQuery, GetChaptersHistoryQueryVariables>,
     ): AbortableApolloUseQueryResponse<GetChaptersHistoryQuery, GetChaptersHistoryQueryVariables> {
-        const PAGE_SIZE = 50;
-        const CACHE_KEY = 'useGetRecentlyReadChapters';
-
-        const offset = this.cache.getResponseFor<number>(CACHE_KEY, undefined) ?? 0;
-        const [lastOffset] = useState(offset);
-
-        const result = this.useGetChapters<GetChaptersHistoryQuery, GetChaptersHistoryQueryVariables>(
-            GET_CHAPTERS_HISTORY,
-            {
-                filter: { lastReadAt: { isNull: false, notEqualToAll: ['0'] } },
-                order: [
-                    { by: ChapterOrderBy.LastReadAt, byType: SortOrder.Desc },
-                    { by: ChapterOrderBy.SourceOrder, byType: SortOrder.Desc },
-                ],
-                first: initialPages * PAGE_SIZE + lastOffset,
+        const skip = options?.skip ?? false;
+        return this.useRestQuery(
+            async (signal) => {
+                const response = await this.restClient.fetcher('/api/v1/chapters/history', { config: { signal } });
+                return (await response.json()) as GetChaptersHistoryQuery;
             },
-            options,
+            [initialPages, skip],
+            { ...options, skip },
         );
-
-        return {
-            ...result,
-            fetchMore: (...args: Parameters<(typeof result)['fetchMore']>) => {
-                const fetchMoreOptions = args[0] ?? {};
-                this.cache.cacheResponse(CACHE_KEY, undefined, fetchMoreOptions.variables?.offset);
-                return result.fetchMore({
-                    ...fetchMoreOptions,
-                    variables: { first: PAGE_SIZE, ...fetchMoreOptions.variables },
-                });
-            },
-        } as typeof result;
     }
 
     public startGlobalUpdate(
         categories?: number[],
         options?: MutationOptions<UpdateLibraryMutation, UpdateLibraryMutationVariables>,
     ): AbortableApolloMutationResponse<UpdateLibraryMutation> {
-        return this.doRequest(GQLMethod.MUTATION, UPDATE_LIBRARY, { input: { categories } }, options);
+        return this.doRestMutation(async (signal) => {
+            await this.restClient.fetcher('/api/v1/updates/start', {
+                httpMethod: HttpMethod.POST,
+                data: { categories },
+                config: { signal },
+            });
+            return {
+                updateLibrary: {
+                    updateStatus: {
+                        jobsInfo: {
+                            isRunning: false,
+                            totalJobs: 0,
+                            finishedJobs: 0,
+                            skippedCategoriesCount: 0,
+                            skippedMangasCount: 0,
+                        },
+                        categoryUpdates: [],
+                        mangaUpdates: [],
+                    },
+                },
+            } as UpdateLibraryMutation;
+        });
     }
 
     public resetGlobalUpdate(
         options?: MutationOptions<StopUpdaterMutation, StopUpdaterMutationVariables>,
     ): AbortableApolloMutationResponse<StopUpdaterMutation> {
-        return this.doRequest<StopUpdaterMutation, StopUpdaterMutationVariables>(
-            GQLMethod.MUTATION,
-            STOP_UPDATER,
-            {},
-            options,
-        );
+        return this.doRestMutation(async (signal) => {
+            await this.restClient.fetcher('/api/v1/updates/stop', {
+                httpMethod: HttpMethod.POST,
+                config: { signal },
+            });
+            return {
+                updateStop: {
+                    clientMutationId: null,
+                },
+            } as StopUpdaterMutation;
+        });
     }
 
     public useGetGlobalUpdateSummary(
         options?: QueryHookOptions<GetUpdateStatusQuery, GetUpdateStatusQueryVariables>,
     ): AbortableApolloUseQueryResponse<GetUpdateStatusQuery, GetUpdateStatusQueryVariables> {
-        return this.doRequest(GQLMethod.USE_QUERY, GET_UPDATE_STATUS, {}, options);
+        return this.useRestQuery(
+            async (signal) => {
+                const response = await this.restClient.fetcher('/api/v1/updates/status', { config: { signal } });
+                return (await response.json()) as GetUpdateStatusQuery;
+            },
+            [options?.skip],
+            options,
+        );
+    }
+
+    public getDownloadStatus(
+        options?: QueryOptions<GetDownloadStatusQueryVariables, GetDownloadStatusQuery>,
+    ): AbortabaleApolloQueryResponse<GetDownloadStatusQuery> {
+        return this.doRestQuery(async (signal) => {
+            const response = await this.restClient.fetcher('/api/v1/downloads/status', { config: { signal } });
+            const payload = await response.json();
+            const downloadStatus = payload?.downloadStatus ?? payload?.download_status ?? payload;
+            const normalized = { downloadStatus } as GetDownloadStatusQuery;
+            setDownloadStatusSnapshot(normalized.downloadStatus);
+            return normalized;
+        });
     }
 
     public useGetDownloadStatus(
         options?: QueryHookOptions<GetDownloadStatusQuery, GetDownloadStatusQueryVariables>,
     ): AbortableApolloUseQueryResponse<GetDownloadStatusQuery, GetDownloadStatusQueryVariables> {
-        return this.doRequest(GQLMethod.USE_QUERY, GET_DOWNLOAD_STATUS, {}, options);
+        return this.useRestQuery(
+            async (signal) => {
+                const response = await this.restClient.fetcher('/api/v1/downloads/status', { config: { signal } });
+                const payload = await response.json();
+                const downloadStatus = payload?.downloadStatus ?? payload?.download_status ?? payload;
+                const normalized = { downloadStatus } as GetDownloadStatusQuery;
+                setDownloadStatusSnapshot(normalized.downloadStatus);
+                return normalized;
+            },
+            [options?.skip],
+            options,
+        );
     }
 
     public useDownloadSubscription(
         options?: SubscriptionHookOptions<DownloadStatusSubscription, DownloadStatusSubscriptionVariables>,
     ): SubscriptionResult<DownloadStatusSubscription, DownloadStatusSubscriptionVariables> {
-        return this.doRequest(
-            GQLMethod.USE_SUBSCRIPTION,
-            DOWNLOAD_STATUS_SUBSCRIPTION,
-            { input: { maxUpdates: 30 } },
-            {
-                ...options,
-                onData: (onDataOptions) => {
-                    const downloadChanged = onDataOptions.data.data?.downloadStatusChanged;
+        const skip = options?.skip ?? false;
+        const [data, setData] = useState<DownloadStatusSubscription | undefined>(undefined);
+        const [error, setError] = useState<RequestError | undefined>(undefined);
+        const [loading, setLoading] = useState(!skip);
 
-                    const { cache } = this.graphQLClient.client;
+        useEffect(() => {
+            if (skip) {
+                console.info('[downloads] subscription skipped');
+                setLoading(false);
+                return undefined;
+            }
 
-                    if (downloadChanged?.omittedUpdates) {
-                        cache.gc();
-                        cache.evict({ broadcast: true, id: 'DownloadStatus:{}' });
-                        cache.evict({ broadcast: true, fieldName: 'downloadStatus' });
-                        return;
+            const baseUrl = this.getValidUrlFor('downloads/stream');
+            const wsUrl = baseUrl.replace(/^http/, 'ws');
+            const socket = new WebSocket(wsUrl);
+
+            socket.onopen = () => {
+                console.info('[downloads] subscription opened');
+                setLoading(false);
+            };
+
+            socket.onmessage = (event) => {
+                try {
+                    const payload = JSON.parse(event.data) as DownloadStatusSubscription;
+                    setData(payload);
+                    const changed = (payload as any).downloadStatusChanged;
+                    if (changed?.omittedUpdates) {
+                        this.getDownloadStatus().response.catch(() => undefined);
+                    } else {
+                        applyDownloadStatusUpdate(changed);
                     }
+                } catch (caught: any) {
+                    setError(new RequestError(caught?.message ?? 'Download subscription error', caught));
+                }
+            };
 
-                    if (downloadChanged?.state) {
-                        cache.modify({
-                            id: 'DownloadStatus:{}',
-                            fields: {
-                                state() {
-                                    return downloadChanged.state;
-                                },
-                            },
-                        });
-                    }
+            socket.onerror = () => {
+                console.warn('[downloads] subscription error');
+                setError(new RequestError('Download subscription error'));
+            };
 
-                    const downloadStatusQueryCache = cache.readQuery<GetDownloadStatusQuery>({
-                        query: GET_DOWNLOAD_STATUS,
-                    });
+            socket.onclose = (event) => {
+                console.info('[downloads] subscription closed', {
+                    code: event.code,
+                    reason: event.reason,
+                });
+            };
 
-                    const downloadsToAdd = downloadChanged?.updates.filter((update) => {
-                        const removeDownload = [DownloadUpdateType.Dequeued, DownloadUpdateType.Finished].includes(
-                            update.type,
-                        );
-                        if (removeDownload) {
-                            return false;
-                        }
+            return () => {
+                socket.close();
+            };
+        }, [skip, this.getBaseUrl()]);
 
-                        const isAlreadyKnown = downloadStatusQueryCache?.downloadStatus.queue.some(
-                            (download) => download.chapter.id === update.download.chapter.id,
-                        );
-
-                        return !isAlreadyKnown;
-                    });
-
-                    if (downloadsToAdd?.length) {
-                        cache.writeQuery<GetDownloadStatusQuery>({
-                            query: GET_DOWNLOAD_STATUS,
-                            data: {
-                                ...downloadStatusQueryCache,
-                                downloadStatus: {
-                                    __typename: 'DownloadStatus',
-                                    state:
-                                        downloadChanged?.state ??
-                                        downloadStatusQueryCache?.downloadStatus.state ??
-                                        DownloaderState.Stopped,
-                                    queue: [
-                                        ...(downloadStatusQueryCache?.downloadStatus?.queue ?? []),
-                                        ...(downloadsToAdd?.map((update) => update.download) ?? []),
-                                    ],
-                                },
-                            },
-                        });
-                    }
-
-                    downloadChanged?.updates.forEach((update) => {
-                        const removeDownload = [DownloadUpdateType.Dequeued, DownloadUpdateType.Finished].includes(
-                            update.type,
-                        );
-                        if (!removeDownload) {
-                            return;
-                        }
-
-                        cache.evict({
-                            id: cache.identify({
-                                __typename: 'DownloadType',
-                                chapter: {
-                                    __ref: cache.identify({
-                                        __typename: 'ChapterType',
-                                        id: update.download.chapter.id,
-                                    }),
-                                },
-                            }),
-                        });
-                    });
-                },
-            },
-        );
+        return {
+            data,
+            error,
+            loading,
+        } as SubscriptionResult<DownloadStatusSubscription, DownloadStatusSubscriptionVariables>;
     }
 
     public useUpdaterSubscription(
         options?: SubscriptionHookOptions<UpdaterSubscription, UpdaterSubscriptionVariables>,
     ): SubscriptionResult<UpdaterSubscription, UpdaterSubscriptionVariables> {
-        return this.doRequest(
-            GQLMethod.USE_SUBSCRIPTION,
-            UPDATER_SUBSCRIPTION,
-            { input: { maxUpdates: 30 } },
-            {
-                ...options,
-                onData: (onDataOptions) => {
-                    const updatesChanged = onDataOptions.data.data?.libraryUpdateStatusChanged;
+        const skip = options?.skip ?? false;
+        const [data, setData] = useState<UpdaterSubscription | undefined>(undefined);
+        const [error, setError] = useState<RequestError | undefined>(undefined);
+        const [loading, setLoading] = useState(!skip);
 
-                    if (!updatesChanged?.omittedUpdates) {
-                        return;
-                    }
+        useEffect(() => {
+            if (skip) {
+                console.info('[updates] subscription skipped');
+                setLoading(false);
+                return undefined;
+            }
 
-                    const { cache } = this.graphQLClient.client;
+            const baseUrl = this.getValidUrlFor('updates/stream');
+            const wsUrl = baseUrl.replace(/^http/, 'ws');
+            const socket = new WebSocket(wsUrl);
 
-                    cache.gc();
-                    cache.evict({ broadcast: true, id: 'LibraryUpdateStatus' });
-                    cache.evict({ broadcast: true, fieldName: 'libraryUpdateStatus' });
-                },
-            },
-        );
+            socket.onopen = () => {
+                console.info('[updates] subscription opened');
+                setLoading(false);
+            };
+
+            socket.onmessage = (event) => {
+                try {
+                    const payload = JSON.parse(event.data) as UpdaterSubscription;
+                    setData(payload);
+                } catch (caught: any) {
+                    setError(new RequestError(caught?.message ?? 'Update subscription error', caught));
+                }
+            };
+
+            socket.onerror = () => {
+                console.warn('[updates] subscription error');
+                setError(new RequestError('Update subscription error'));
+            };
+
+            socket.onclose = (event) => {
+                console.info('[updates] subscription closed', {
+                    code: event.code,
+                    reason: event.reason,
+                });
+            };
+
+            return () => {
+                socket.close();
+            };
+        }, [skip, this.getBaseUrl()]);
+
+        return {
+            data,
+            error,
+            loading,
+        } as SubscriptionResult<UpdaterSubscription, UpdaterSubscriptionVariables>;
+    }
+
+    public useServerSettingsSubscription(
+        options?: SubscriptionHookOptions<GetServerSettingsQuery, GetServerSettingsQueryVariables>,
+    ): SubscriptionResult<GetServerSettingsQuery, GetServerSettingsQueryVariables> {
+        const skip = options?.skip ?? false;
+        const [data, setData] = useState<GetServerSettingsQuery | undefined>(undefined);
+        const [error, setError] = useState<RequestError | undefined>(undefined);
+        const [loading, setLoading] = useState(!skip);
+
+        useEffect(() => {
+            if (skip) {
+                console.info('[settings] subscription skipped');
+                setLoading(false);
+                return undefined;
+            }
+
+            const baseUrl = this.getValidUrlFor('settings/stream');
+            const wsUrl = baseUrl.replace(/^http/, 'ws');
+            const socket = new WebSocket(wsUrl);
+
+            socket.onopen = () => {
+                console.info('[settings] subscription opened');
+                setLoading(false);
+            };
+
+            socket.onmessage = (event) => {
+                try {
+                    const payload = JSON.parse(event.data) as GetServerSettingsQuery;
+                    setData(payload);
+                    this.setServerSettingsSnapshot(payload);
+                } catch (caught: any) {
+                    setError(new RequestError(caught?.message ?? 'Settings subscription error', caught));
+                }
+            };
+
+            socket.onerror = () => {
+                console.warn('[settings] subscription error');
+                setError(new RequestError('Settings subscription error'));
+            };
+
+            socket.onclose = (event) => {
+                console.info('[settings] subscription closed', {
+                    code: event.code,
+                    reason: event.reason,
+                });
+            };
+
+            return () => {
+                socket.close();
+            };
+        }, [skip, this.getBaseUrl()]);
+
+        return {
+            data,
+            error,
+            loading,
+        } as SubscriptionResult<GetServerSettingsQuery, GetServerSettingsQueryVariables>;
+    }
+
+    public useGlobalMetaSubscription(
+        options?: SubscriptionHookOptions<GetGlobalMetadatasQuery, GetGlobalMetadatasQueryVariables>,
+    ): SubscriptionResult<GetGlobalMetadatasQuery, GetGlobalMetadatasQueryVariables> {
+        const skip = options?.skip ?? false;
+        const [data, setData] = useState<GetGlobalMetadatasQuery | undefined>(undefined);
+        const [error, setError] = useState<RequestError | undefined>(undefined);
+        const [loading, setLoading] = useState(!skip);
+
+        useEffect(() => {
+            if (skip) {
+                console.info('[meta] subscription skipped');
+                setLoading(false);
+                return undefined;
+            }
+
+            const baseUrl = this.getValidUrlFor('meta/global/stream');
+            const wsUrl = baseUrl.replace(/^http/, 'ws');
+            const socket = new WebSocket(wsUrl);
+
+            socket.onopen = () => {
+                console.info('[meta] subscription opened');
+                setLoading(false);
+            };
+
+            socket.onmessage = (event) => {
+                try {
+                    const payload = JSON.parse(event.data) as GetGlobalMetadatasQuery;
+                    setData(payload);
+                    this.setGlobalMetaSnapshot(payload);
+                } catch (caught: any) {
+                    setError(new RequestError(caught?.message ?? 'Meta subscription error', caught));
+                }
+            };
+
+            socket.onerror = () => {
+                console.warn('[meta] subscription error');
+                setError(new RequestError('Meta subscription error'));
+            };
+
+            socket.onclose = (event) => {
+                console.info('[meta] subscription closed', {
+                    code: event.code,
+                    reason: event.reason,
+                });
+            };
+
+            return () => {
+                socket.close();
+            };
+        }, [skip, this.getBaseUrl()]);
+
+        return {
+            data,
+            error,
+            loading,
+        } as SubscriptionResult<GetGlobalMetadatasQuery, GetGlobalMetadatasQueryVariables>;
     }
 
     public useGetServerSettings(
         options?: QueryHookOptions<GetServerSettingsQuery, GetServerSettingsQueryVariables>,
     ): AbortableApolloUseQueryResponse<GetServerSettingsQuery, GetServerSettingsQueryVariables> {
-        return this.doRequest(GQLMethod.USE_QUERY, GET_SERVER_SETTINGS, undefined, options);
+        const [snapshot, setSnapshot] = useState(this.serverSettingsSnapshot);
+
+        const handleCompleted = useCallback(
+            (result: GetServerSettingsQuery) => {
+                this.setServerSettingsSnapshot(result);
+                options?.onCompleted?.(result);
+            },
+            [options?.onCompleted],
+        );
+
+        useEffect(() => this.subscribeServerSettings(setSnapshot), []);
+
+        const request = this.useRestQuery(
+            async (signal) => {
+                const response = await this.restClient.fetcher('/api/v1/settings', { config: { signal } });
+                return (await response.json()) as GetServerSettingsQuery;
+            },
+            [options?.skip],
+            {
+                ...options,
+                onCompleted: handleCompleted,
+            },
+        );
+
+        return {
+            ...request,
+            data: (snapshot ?? request.data) as MaybeMasked<GetServerSettingsQuery>,
+        } as AbortableApolloUseQueryResponse<GetServerSettingsQuery, GetServerSettingsQueryVariables>;
     }
 
     public useUpdateServerSettings(
         options?: MutationHookOptions<UpdateServerSettingsMutation, UpdateServerSettingsMutationVariables>,
     ): AbortableApolloUseMutationResponse<UpdateServerSettingsMutation, UpdateServerSettingsMutationVariables> {
-        const [mutate, result] = this.doRequest(GQLMethod.USE_MUTATION, UPDATE_SERVER_SETTINGS, undefined, options);
-
-        const wrappedMutate = async (mutateOptions: Parameters<typeof mutate>[0]) => {
-            const cachedSettings =
-                this.graphQLClient.client.readQuery<GetServerSettingsQuery>({
-                    query: GET_SERVER_SETTINGS,
-                })?.settings ?? {};
-
-            return mutate({
-                optimisticResponse: {
-                    __typename: 'Mutation',
-                    setSettings: {
-                        __typename: 'SetSettingsPayload',
-                        settings: {
-                            __typename: 'SettingsType',
-                            ...cachedSettings,
-                            ...(mutateOptions?.variables?.input.settings ?? {}),
-                        } as SettingsType,
-                    },
-                },
-                ...mutateOptions,
+        const [mutate, result] = this.useRestMutation<
+            UpdateServerSettingsMutation,
+            UpdateServerSettingsMutationVariables
+        >(async (variables, signal) => {
+            const settings = variables?.input?.settings ?? {};
+            const response = await this.restClient.fetcher('/api/v1/settings', {
+                httpMethod: HttpMethod.POST,
+                data: { settings },
+                config: { signal },
             });
-        };
+            const payload = await response.json();
+            const nextSettings = payload?.settings ?? settings;
+            this.setServerSettingsSnapshot({ settings: nextSettings } as GetServerSettingsQuery);
+            return {
+                setSettings: {
+                    settings: nextSettings,
+                },
+            } as UpdateServerSettingsMutation;
+        });
 
-        return [wrappedMutate, result];
+        return [mutate, result];
     }
 
     public useGetLastGlobalUpdateTimestamp(
         options?: QueryHookOptions<GetLastUpdateTimestampQuery, GetLastUpdateTimestampQueryVariables>,
     ): AbortableApolloUseQueryResponse<GetLastUpdateTimestampQuery, GetLastUpdateTimestampQueryVariables> {
-        return this.doRequest(GQLMethod.USE_QUERY, GET_LAST_UPDATE_TIMESTAMP, {}, options);
+        return this.useRestQuery(
+            async (signal) => {
+                const response = await this.restClient.fetcher('/api/v1/updates/last-timestamp', {
+                    config: { signal },
+                });
+                return (await response.json()) as GetLastUpdateTimestampQuery;
+            },
+            [options?.skip],
+            options,
+        );
     }
 
     public useClearServerCache(
         input: ClearCachedImagesInput = { cachedPages: true, cachedThumbnails: true },
         options?: MutationHookOptions<ClearServerCacheMutation, ClearServerCacheMutationVariables>,
     ): AbortableApolloUseMutationResponse<ClearServerCacheMutation, ClearServerCacheMutationVariables> {
-        return this.doRequest(GQLMethod.USE_MUTATION, CLEAR_SERVER_CACHE, { input }, options);
+        return this.useRestMutation(async (_variables, signal) => {
+            await this.restClient.fetcher('/api/v1/cache/clear', {
+                httpMethod: HttpMethod.POST,
+                data: input,
+                config: { signal },
+            });
+            return { clearCachedImages: { ok: true } } as ClearServerCacheMutation;
+        });
     }
 
     public useGetMigratableSources(
         options?: QueryHookOptions<GetMigratableSourcesQuery, GetMigratableSourcesQueryVariables>,
     ): AbortableApolloUseQueryResponse<GetMigratableSourcesQuery, GetMigratableSourcesQueryVariables> {
-        return this.doRequest(GQLMethod.USE_QUERY, GET_MIGRATABLE_SOURCES, undefined, options);
+        return this.useRestQuery(
+            async (signal) => {
+                const response = await this.restClient.fetcher('/api/v1/migration/sources', { config: { signal } });
+                return (await response.json()) as GetMigratableSourcesQuery;
+            },
+            [options?.skip],
+            options,
+        );
     }
 
-    public useGetTrackerList<Data, Variables extends OperationVariables = never>(
-        document: DocumentNode | TypedDocumentNode<Data, Variables>,
-        options?: QueryHookOptions<Data, Variables>,
-    ): AbortableApolloUseQueryResponse<Data, Variables> {
-        return this.doRequest(GQLMethod.USE_QUERY, document, undefined, options);
+    public useGetTrackersSettings(
+        options?: QueryHookOptions<GetTrackersSettingsQuery, GetTrackersSettingsQueryVariables>,
+    ): AbortableApolloUseQueryResponse<GetTrackersSettingsQuery, GetTrackersSettingsQueryVariables> {
+        return this.useRestQuery(
+            async (signal) => {
+                const response = await this.restClient.fetcher('/api/v1/track/list', { config: { signal } });
+                const payload = await response.json();
+                const nodes = Array.isArray(payload) ? payload : payload?.trackers?.nodes ?? [];
+                const normalizedNodes = nodes.map((tracker: any) => this.normalizeTrackerPayload(tracker));
+                return {
+                    trackers: {
+                        nodes: normalizedNodes,
+                        pageInfo: this.buildPageInfo(),
+                        totalCount: normalizedNodes.length,
+                    },
+                } as GetTrackersSettingsQuery;
+            },
+            [options?.skip],
+            options,
+        );
+    }
+
+    public useGetTrackersBind(
+        options?: QueryHookOptions<GetTrackersBindQuery, GetTrackersBindQueryVariables>,
+    ): AbortableApolloUseQueryResponse<GetTrackersBindQuery, GetTrackersBindQueryVariables> {
+        return this.useRestQuery(
+            async (signal) => {
+                const response = await this.restClient.fetcher('/api/v1/track/list', { config: { signal } });
+                const payload = await response.json();
+                const nodes = Array.isArray(payload) ? payload : payload?.trackers?.nodes ?? [];
+                const normalizedNodes = nodes.map((tracker: any) => this.normalizeTrackerPayload(tracker));
+                return {
+                    trackers: {
+                        nodes: normalizedNodes,
+                        pageInfo: this.buildPageInfo(),
+                        totalCount: normalizedNodes.length,
+                    },
+                } as GetTrackersBindQuery;
+            },
+            [options?.skip],
+            options,
+        );
     }
 
     public logoutFromTracker(
         trackerId: TrackerLogoutMutationVariables['trackerId'],
         options?: MutationOptions<TrackerLogoutMutation, TrackerLogoutMutationVariables>,
     ): AbortableApolloMutationResponse<TrackerLogoutMutation> {
-        return this.doRequest(GQLMethod.MUTATION, TRACKER_LOGOUT, { trackerId }, options);
+        return this.doRestMutation(async (signal) => {
+            const response = await this.restClient.fetcher('/api/v1/track/logout', {
+                httpMethod: HttpMethod.POST,
+                data: { tracker_id: trackerId },
+                config: { signal },
+            });
+            const payload = await this.parseJsonSafe(response);
+            const trackerPayload =
+                payload?.tracker ??
+                payload?.logoutTracker?.tracker ??
+                payload?.logout_tracker?.tracker ??
+                payload;
+            const tracker = this.normalizeTrackerPayload(
+                trackerPayload ?? {
+                    id: trackerId,
+                    name: '',
+                    icon: '',
+                    isLoggedIn: false,
+                    isTokenExpired: false,
+                    authUrl: '',
+                },
+            );
+            return { logoutTracker: { tracker } } as TrackerLogoutMutation;
+        });
     }
 
     public loginToTrackerOauth(
@@ -3413,7 +4481,31 @@ export class RequestManager {
         callbackUrl: string,
         options?: MutationOptions<TrackerLoginOauthMutation, TrackerLoginOauthMutationVariables>,
     ): AbortableApolloMutationResponse<TrackerLoginOauthMutation> {
-        return this.doRequest(GQLMethod.MUTATION, TRACKER_LOGIN_OAUTH, { input: { trackerId, callbackUrl } }, options);
+        return this.doRestMutation(async (signal) => {
+            const response = await this.restClient.fetcher('/api/v1/track/login', {
+                httpMethod: HttpMethod.POST,
+                data: { tracker_id: trackerId, callback_url: callbackUrl },
+                config: { signal },
+            });
+            const payload = await this.parseJsonSafe(response);
+            const trackerPayload =
+                payload?.tracker ??
+                payload?.loginTrackerOAuth?.tracker ??
+                payload?.login_tracker_oauth?.tracker ??
+                payload;
+            const tracker = this.normalizeTrackerPayload(
+                trackerPayload ?? {
+                    id: trackerId,
+                    name: '',
+                    icon: '',
+                    isLoggedIn: true,
+                    isTokenExpired: false,
+                    authUrl: '',
+                },
+            );
+            const isLoggedIn = payload?.isLoggedIn ?? payload?.is_logged_in ?? tracker.isLoggedIn ?? true;
+            return { loginTrackerOAuth: { isLoggedIn, tracker } } as TrackerLoginOauthMutation;
+        });
     }
 
     public loginTrackerCredentials(
@@ -3422,12 +4514,31 @@ export class RequestManager {
         password: string,
         options?: MutationOptions<TrackerLoginCredentialsMutation, TrackerLoginCredentialsMutationVariables>,
     ): AbortableApolloMutationResponse<TrackerLoginCredentialsMutation> {
-        return this.doRequest(
-            GQLMethod.MUTATION,
-            TRACKER_LOGIN_CREDENTIALS,
-            { input: { trackerId, username, password } },
-            options,
-        );
+        return this.doRestMutation(async (signal) => {
+            const response = await this.restClient.fetcher('/api/v1/track/login', {
+                httpMethod: HttpMethod.POST,
+                data: { tracker_id: trackerId, username, password },
+                config: { signal },
+            });
+            const payload = await this.parseJsonSafe(response);
+            const trackerPayload =
+                payload?.tracker ??
+                payload?.loginTrackerCredentials?.tracker ??
+                payload?.login_tracker_credentials?.tracker ??
+                payload;
+            const tracker = this.normalizeTrackerPayload(
+                trackerPayload ?? {
+                    id: trackerId,
+                    name: '',
+                    icon: '',
+                    isLoggedIn: true,
+                    isTokenExpired: false,
+                    authUrl: '',
+                },
+            );
+            const isLoggedIn = payload?.isLoggedIn ?? payload?.is_logged_in ?? tracker.isLoggedIn ?? true;
+            return { loginTrackerCredentials: { isLoggedIn, tracker } } as TrackerLoginCredentialsMutation;
+        });
     }
 
     public useTrackerSearch(
@@ -3435,13 +4546,63 @@ export class RequestManager {
         query: string,
         options?: QueryHookOptions<TrackerSearchQuery, TrackerSearchQueryVariables>,
     ): AbortableApolloUseQueryResponse<TrackerSearchQuery, TrackerSearchQueryVariables> {
-        return this.doRequest(GQLMethod.USE_QUERY, TRACKER_SEARCH, { trackerId, query }, options);
+        return this.useRestQuery(
+            async (signal) => {
+                const response = await this.restClient.fetcher('/api/v1/track/search', {
+                    httpMethod: HttpMethod.POST,
+                    data: { tracker_id: trackerId, query },
+                    config: { signal },
+                });
+                const payload = await response.json();
+                const nodes = payload?.trackSearch?.nodes ?? payload?.trackSearches ?? payload?.nodes ?? payload ?? [];
+                const normalizedNodes = Array.isArray(nodes)
+                    ? nodes.map((item: any) => this.normalizeTrackerSearchPayload(item))
+                    : [];
+                return {
+                    searchTracker: {
+                        trackSearches: normalizedNodes,
+                    },
+                } as TrackerSearchQuery;
+            },
+            [trackerId, query, options?.skip],
+            options,
+        );
     }
 
     public useBindTracker(
         options?: MutationHookOptions<TrackerBindMutation, TrackerBindMutationVariables>,
     ): AbortableApolloUseMutationResponse<TrackerBindMutation, TrackerBindMutationVariables> {
-        return this.doRequest(GQLMethod.USE_MUTATION, TRACKER_BIND, undefined, options);
+        return this.useRestMutation(async (variables, signal) => {
+            const input = variables?.input;
+            if (!input) {
+                throw new Error('useBindTracker: no variables passed');
+            }
+            const recordId = Number(input.remoteId);
+            const response = await this.restClient.fetcher('/api/v1/track/bind', {
+                httpMethod: HttpMethod.POST,
+                data: {
+                    tracker_id: input.trackerId,
+                    manga_id: input.mangaId,
+                    record_id: Number.isNaN(recordId) ? null : recordId,
+                    remote_id: input.remoteId,
+                    private: !!input.private,
+                },
+                config: { signal },
+            });
+            const payload = await this.parseJsonSafe(response);
+            const trackRecordPayload =
+                payload?.trackRecord ??
+                payload?.track_record ??
+                payload?.bindTrack?.trackRecord ??
+                payload?.bind_track?.track_record ??
+                payload;
+            const trackRecord = this.normalizeTrackRecordPayload(trackRecordPayload, {
+                mangaId: input.mangaId,
+                trackerId: input.trackerId,
+                remoteId: input.remoteId,
+            });
+            return { bindTrack: { trackRecord } } as TrackerBindMutation;
+        });
     }
 
     public bindTracker(
@@ -3451,12 +4612,33 @@ export class RequestManager {
         asPrivate: boolean,
         options?: MutationOptions<TrackerBindMutation, TrackerBindMutationVariables>,
     ): AbortableApolloMutationResponse<TrackerBindMutation> {
-        return this.doRequest(
-            GQLMethod.MUTATION,
-            TRACKER_BIND,
-            { input: { mangaId, remoteId, trackerId, private: asPrivate } },
-            options,
-        );
+        return this.doRestMutation(async (signal) => {
+            const recordId = Number(remoteId);
+            const response = await this.restClient.fetcher('/api/v1/track/bind', {
+                httpMethod: HttpMethod.POST,
+                data: {
+                    tracker_id: trackerId,
+                    manga_id: mangaId,
+                    record_id: Number.isNaN(recordId) ? null : recordId,
+                    remote_id: remoteId,
+                    private: !!asPrivate,
+                },
+                config: { signal },
+            });
+            const payload = await this.parseJsonSafe(response);
+            const trackRecordPayload =
+                payload?.trackRecord ??
+                payload?.track_record ??
+                payload?.bindTrack?.trackRecord ??
+                payload?.bind_track?.track_record ??
+                payload;
+            const trackRecord = this.normalizeTrackRecordPayload(trackRecordPayload, {
+                mangaId,
+                trackerId,
+                remoteId,
+            });
+            return { bindTrack: { trackRecord } } as TrackerBindMutation;
+        });
     }
 
     public unbindTracker(
@@ -3464,44 +4646,127 @@ export class RequestManager {
         deleteRemoteTrack?: boolean,
         options?: MutationHookOptions<TrackerUnbindMutation, TrackerUnbindMutationVariables>,
     ): AbortableApolloMutationResponse<TrackerUnbindMutation> {
-        return this.doRequest<TrackerUnbindMutation, TrackerUnbindMutationVariables>(
-            GQLMethod.MUTATION,
-            TRACKER_UNBIND,
-            { input: { recordId, deleteRemoteTrack } },
-            { refetchQueries: [GET_MANGA_TRACK_RECORDS], ...options },
-        );
+        return this.doRestMutation(async (signal) => {
+            const response = await this.restClient.fetcher('/api/v1/track/unbind', {
+                httpMethod: HttpMethod.POST,
+                data: { tracker_id: 0, record_id: recordId, delete_remote: !!deleteRemoteTrack },
+                config: { signal },
+            });
+            const payload = await this.parseJsonSafe(response);
+            const trackRecordPayload =
+                payload?.trackRecord ??
+                payload?.track_record ??
+                payload?.unbindTrack?.trackRecord ??
+                payload?.unbind_track?.track_record ??
+                payload;
+            const trackRecord = this.normalizeTrackRecordPayload(trackRecordPayload ?? { id: recordId });
+            return { unbindTrack: { trackRecord } } as TrackerUnbindMutation;
+        });
     }
 
     public updateTrackerBind(
         id: number,
-        patch: Omit<UpdateTrackInput, 'clientMutationId' | 'recordId'>,
+        patch: Omit<UpdateTrackInput, 'clientMutationId' | 'recordId'> & {
+            trackerId?: number;
+            totalChapters?: number;
+            score?: number;
+        },
         options?: MutationOptions<TrackerUpdateBindMutation, TrackerUpdateBindMutationVariables>,
     ): AbortableApolloMutationResponse<TrackerUpdateBindMutation> {
-        return this.doRequest(GQLMethod.MUTATION, TRACKER_UPDATE_BIND, { input: { ...patch, recordId: id } }, options);
+        return this.doRestMutation(async (signal) => {
+            const response = await this.restClient.fetcher('/api/v1/track/update', {
+                httpMethod: HttpMethod.POST,
+                data: {
+                    tracker_id: patch.trackerId ?? 0,
+                    record_id: id,
+                    status: patch.status ?? undefined,
+                    score: patch.score ?? undefined,
+                    last_chapter_read: patch.lastChapterRead ?? undefined,
+                    total_chapters: patch.totalChapters ?? undefined,
+                    start_date: patch.startDate ?? undefined,
+                    finish_date: patch.finishDate ?? undefined,
+                    private: patch.private ?? undefined,
+                },
+                config: { signal },
+            });
+            const payload = await this.parseJsonSafe(response);
+            const trackRecordPayload =
+                payload?.trackRecord ??
+                payload?.track_record ??
+                payload?.updateTrack?.trackRecord ??
+                payload?.update_track?.track_record ??
+                payload;
+            const fallbackRecord = {
+                id,
+                trackerId: patch.trackerId ?? 0,
+                status: patch.status ?? 0,
+                lastChapterRead: patch.lastChapterRead ?? 0,
+                totalChapters: patch.totalChapters ?? 0,
+                score: patch.score ?? 0,
+                startDate: patch.startDate ?? '',
+                finishDate: patch.finishDate ?? '',
+                private: patch.private ?? false,
+            };
+            const trackRecord = this.normalizeTrackRecordPayload(trackRecordPayload ?? fallbackRecord, {
+                trackerId: patch.trackerId,
+            });
+            return { updateTrack: { trackRecord } } as TrackerUpdateBindMutation;
+        });
     }
 
     public fetchTrackBind(
         recordId: number,
         options?: MutationOptions<TrackerFetchBindMutation, TrackerFetchBindMutationVariables>,
     ): AbortableApolloMutationResponse<TrackerFetchBindMutation> {
-        return this.doRequest<TrackerFetchBindMutation, TrackerFetchBindMutationVariables>(
-            GQLMethod.MUTATION,
-            TRACKER_FETCH_BIND,
-            { recordId },
-            options,
-        );
+        return this.doRestMutation(async (signal) => {
+            const response = await this.restClient.fetcher('/api/v1/track/update', {
+                httpMethod: HttpMethod.POST,
+                data: { tracker_id: 0, record_id: recordId },
+                config: { signal },
+            });
+            const payload = await this.parseJsonSafe(response);
+            const trackRecordPayload =
+                payload?.trackRecord ??
+                payload?.track_record ??
+                payload?.fetchTrack?.trackRecord ??
+                payload?.fetch_track?.track_record ??
+                payload;
+            const trackRecord = this.normalizeTrackRecordPayload(trackRecordPayload ?? { id: recordId });
+            return { fetchTrack: { trackRecord } } as TrackerFetchBindMutation;
+        });
     }
 
     public useLoginUser(
         options?: MutationHookOptions<UserLoginMutation, UserLoginMutationVariables>,
     ): AbortableApolloUseMutationResponse<UserLoginMutation, UserLoginMutationVariables> {
-        return this.doRequest(GQLMethod.USE_MUTATION, USER_LOGIN, undefined, options);
+        return this.useRestMutation(async (variables, signal) => {
+            const response = await this.restClient.fetcher('/api/v1/auth/login', {
+                httpMethod: HttpMethod.POST,
+                data: { username: variables?.username, password: variables?.password },
+                config: { signal },
+            });
+            const payload = await this.parseJsonSafe(response);
+            const token = payload?.token ?? '';
+            return {
+                login: {
+                    accessToken: token,
+                    refreshToken: token,
+                },
+            } as UserLoginMutation;
+        });
     }
 
     public useKoSyncStatus(
         options?: QueryHookOptions<GetKoSyncStatusQuery, GetKoSyncStatusQueryVariables>,
     ): AbortableApolloUseQueryResponse<GetKoSyncStatusQuery, GetKoSyncStatusQueryVariables> {
-        return this.doRequest(GQLMethod.USE_QUERY, GET_KO_SYNC_STATUS, undefined, options);
+        return this.useRestQuery(
+            async (signal) => {
+                const response = await this.restClient.fetcher('/api/v1/kosync/status', { config: { signal } });
+                return (await response.json()) as GetKoSyncStatusQuery;
+            },
+            [options?.skip],
+            options,
+        );
     }
 
     public koSyncLogin(
@@ -3510,34 +4775,55 @@ export class RequestManager {
         password: string,
         options?: MutationOptions<KoSyncLoginMutation, KoSyncLoginMutationVariables>,
     ): AbortableApolloMutationResponse<KoSyncLoginMutation> {
-        return this.doRequest(
-            GQLMethod.MUTATION,
-            KO_SYNC_LOGIN,
-            {
-                serverAddress,
-                username,
-                password,
-            },
-            options,
-        );
+        return this.doRestMutation(async (signal) => {
+            await this.restClient.fetcher('/api/v1/kosync/login', {
+                httpMethod: HttpMethod.POST,
+                data: { server_address: serverAddress, username, password },
+                config: { signal },
+            });
+            return {
+                connectKoSyncAccount: {
+                    message: null,
+                    status: { isLoggedIn: true, serverAddress, username },
+                },
+            } as KoSyncLoginMutation;
+        });
     }
 
     public koSyncLogout(
         options?: MutationOptions<KoSyncLogoutMutation, KoSyncLogoutMutationVariables>,
     ): AbortableApolloMutationResponse<KoSyncLogoutMutation> {
-        return this.doRequest(GQLMethod.MUTATION, KO_SYNC_LOGOUT, undefined, options);
+        return this.doRestMutation(async (signal) => {
+            await this.restClient.fetcher('/api/v1/kosync/logout', {
+                httpMethod: HttpMethod.POST,
+                config: { signal },
+            });
+            return {
+                logoutKoSyncAccount: {
+                    status: { isLoggedIn: false, serverAddress: null, username: null },
+                },
+            } as KoSyncLogoutMutation;
+        });
     }
 
     public refreshUser(
         refreshToken: string,
         options?: MutationOptions<UserRefreshMutation, UserRefreshMutationVariables>,
     ): AbortableApolloMutationResponse<UserRefreshMutation> {
-        return this.doRequest<UserRefreshMutation, UserRefreshMutationVariables>(
-            GQLMethod.MUTATION,
-            USER_REFRESH,
-            { refreshToken: refreshToken ?? undefined },
-            options,
-        );
+        return this.doRestMutation(async (signal) => {
+            const response = await this.restClient.fetcher('/api/v1/auth/refresh', {
+                httpMethod: HttpMethod.POST,
+                data: { refreshToken: refreshToken ?? undefined },
+                config: { signal },
+            });
+            const payload = await this.parseJsonSafe(response);
+            const token = payload?.token ?? '';
+            return {
+                refreshToken: {
+                    accessToken: token,
+                },
+            } as UserRefreshMutation;
+        });
     }
 }
 

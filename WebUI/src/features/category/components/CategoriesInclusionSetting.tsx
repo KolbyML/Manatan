@@ -19,7 +19,7 @@ import Button from '@mui/material/Button';
 import { t as translate } from 'i18next';
 import { ThreeStateCheckboxInput } from '@/base/components/inputs/ThreeStateCheckboxInput.tsx';
 import { makeToast } from '@/base/utils/Toast.ts';
-import { IncludeOrExclude } from '@/lib/graphql/generated/graphql.ts';
+import { IncludeOrExclude } from '@/lib/requests/types.ts';
 import { requestManager } from '@/lib/requests/RequestManager.ts';
 import { CheckboxContainer } from '@/base/components/inputs/CheckboxContainer.ts';
 import {

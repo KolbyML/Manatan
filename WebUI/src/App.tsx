@@ -9,7 +9,6 @@
 import CssBaseline from '@mui/material/CssBaseline';
 import React, { useEffect, useLayoutEffect } from 'react';
 import { Navigate, Outlet, Route, Routes, useLocation, useNavigate } from 'react-router-dom';
-import { loadErrorMessages, loadDevMessages } from '@apollo/client/dev';
 import { loadable } from 'react-lazily/loadable';
 import Box from '@mui/material/Box';
 import { AwaitableComponent } from 'awaitable-component';
@@ -105,8 +104,6 @@ const { Dictionary } = loadable(() => import('@/features/dictionary/Dictionary.t
 
 if (import.meta.env.DEV) {
     // Adds messages only in a dev environment
-    loadDevMessages();
-    loadErrorMessages();
 }
 
 const ScrollToTop = () => {
@@ -147,6 +144,8 @@ const BackgroundSubscriptions = () => {
 
     requestManager.useDownloadSubscription({ skip: skipConnection });
     requestManager.useUpdaterSubscription({ skip: skipConnection });
+    requestManager.useServerSettingsSubscription({ skip: skipConnection });
+    requestManager.useGlobalMetaSubscription({ skip: skipConnection });
 
     return null;
 };

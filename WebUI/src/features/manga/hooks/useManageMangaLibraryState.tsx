@@ -8,7 +8,6 @@
 
 import { useCallback, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import gql from 'graphql-tag';
 import { AwaitableComponent } from 'awaitable-component';
 import { requestManager } from '@/lib/requests/RequestManager.ts';
 import { makeToast } from '@/base/utils/Toast.ts';
@@ -16,8 +15,7 @@ import { getMetadataServerSettings } from '@/features/settings/services/ServerSe
 import { Categories } from '@/features/category/services/Categories.ts';
 import { defaultPromiseErrorHandler } from '@/lib/DefaultPromiseErrorHandler.ts';
 import { Mangas } from '@/features/manga/services/Mangas.ts';
-import { GetCategoriesBaseQuery, GetCategoriesBaseQueryVariables, MangaType } from '@/lib/graphql/generated/graphql.ts';
-import { GET_CATEGORIES_BASE } from '@/lib/graphql/category/CategoryQuery.ts';
+import { MangaType } from '@/lib/requests/types.ts';
 import { AppRoutes } from '@/base/AppRoute.constants.ts';
 import { getErrorMessage } from '@/lib/HelperFunctions.ts';
 import { CategorySelect } from '@/features/category/components/CategorySelect';
@@ -87,21 +85,14 @@ export const useManageMangaLibraryState = (
                 return;
             }
 
-            let categories: Awaited<
-                ReturnType<
-                    typeof requestManager.getCategories<GetCategoriesBaseQuery, GetCategoriesBaseQueryVariables>
-                >['response']
-            >;
+            let categories: Awaited<ReturnType<typeof requestManager.getCategoriesBase>['response']>;
             try {
-                categories = await requestManager.getCategories<
-                    GetCategoriesBaseQuery,
-                    GetCategoriesBaseQueryVariables
-                >(GET_CATEGORIES_BASE).response;
+                categories = await requestManager.getCategoriesBase().response;
             } catch (e) {
                 makeToast(t('category.error.label.request_failure'), 'error', getErrorMessage(e));
                 return;
             }
-            const userCreatedCategories = Categories.getUserCreated(categories.data.categories.nodes);
+            const userCreatedCategories = Categories.getUserCreated(categories.data?.categories.nodes ?? []);
 
             let duplicatedLibraryMangas:
                 | Awaited<ReturnType<typeof Mangas.getDuplicateLibraryMangas>['response']>
@@ -128,7 +119,8 @@ export const useManageMangaLibraryState = (
                 );
             }
 
-            const doDuplicatesExist = duplicatedLibraryMangas?.data.mangas.totalCount;
+            const doDuplicatesExist = (duplicatedLibraryMangas?.data?.mangas?.totalCount ?? 0) > 0;
+            const duplicateMangaId = duplicatedLibraryMangas?.data?.mangas?.nodes?.[0]?.id;
             if (doDuplicatesExist) {
                 await Confirmation.show(
                     {
@@ -136,10 +128,10 @@ export const useManageMangaLibraryState = (
                         message: t('manga.action.library.add.dialog.duplicate.label.info'),
                         actions: {
                             extra: {
-                                show: true,
+                                show: duplicateMangaId != null,
                                 title: t('migrate.dialog.action.button.show_entry'),
                                 contain: true,
-                                link: AppRoutes.manga.path(duplicatedLibraryMangas!.data.mangas.nodes[0].id),
+                                link: duplicateMangaId != null ? AppRoutes.manga.path(duplicateMangaId) : undefined,
                             },
                             confirm: { title: t('global.button.add') },
                         },
@@ -151,7 +143,7 @@ export const useManageMangaLibraryState = (
 
             const showCategorySelectDialog = showAddToLibraryCategorySelectDialog && !!userCreatedCategories.length;
             if (!showCategorySelectDialog) {
-                addToLibrary(Categories.getIds(Categories.getDefaults(userCreatedCategories!)));
+                addToLibrary(Categories.getIds(Categories.getDefaults(userCreatedCategories)));
                 return;
             }
 
@@ -179,15 +171,6 @@ export const useManageMangaLibraryState = (
          *
          * To work around this issue, the currently known in library state gets returned here
          */
-        isInLibrary:
-            Mangas.getFromCache(
-                manga.id,
-                gql`
-                    fragment MangaInLibraryState on MangaType {
-                        inLibrary
-                    }
-                `,
-                'MangaInLibraryState',
-            )?.inLibrary ?? isInLibrary,
+        isInLibrary,
     };
 };

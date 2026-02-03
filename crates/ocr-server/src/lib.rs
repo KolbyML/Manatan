@@ -26,7 +26,12 @@ pub fn create_router(cache_dir: PathBuf) -> Router {
         .route("/ocr", get(handlers::ocr_handler))
         .route(
             "/is-chapter-preprocessed",
-            post(handlers::is_chapter_preprocessed_handler),
+            get(handlers::is_chapter_preprocessed_get_handler)
+                .post(handlers::is_chapter_preprocessed_handler),
+        )
+        .route(
+            "/is-chapters-preprocessed",
+            post(handlers::is_chapters_preprocessed_handler),
         )
         .route("/preprocess-chapter", post(handlers::preprocess_handler))
         .route("/purge-cache", post(handlers::purge_cache_handler))

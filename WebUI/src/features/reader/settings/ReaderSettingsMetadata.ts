@@ -13,7 +13,7 @@ import {
     requestUpdateMangaMetadata,
     requestUpdateServerMetadata,
 } from '@/features/metadata/services/MetadataUpdater.ts';
-import { MangaType } from '@/lib/graphql/generated/graphql.ts';
+import { MangaType } from '@/lib/requests/types.ts';
 import { IReaderSettings, IReaderSettingsWithDefaultFlag, ReadingMode } from '@/features/reader/Reader.types.ts';
 import { convertFromGqlMeta } from '@/features/metadata/services/MetadataConverter.ts';
 import { getMetadataFrom } from '@/features/metadata/services/MetadataReader.ts';

@@ -29,12 +29,7 @@ import { SourceGridLayout } from '@/features/source/components/SourceGridLayout.
 import { AppbarSearch } from '@/base/components/AppbarSearch.tsx';
 import { SourceOptions } from '@/features/source/browse/components/SourceOptions.tsx';
 import { BaseMangaGrid } from '@/features/manga/components/BaseMangaGrid.tsx';
-import {
-    GetSourceBrowseQuery,
-    GetSourceBrowseQueryVariables,
-    GetSourceMangasFetchMutation,
-    GetSourceMangasFetchMutationVariables,
-} from '@/lib/graphql/generated/graphql.ts';
+import { GetSourceMangasFetchMutation, GetSourceMangasFetchMutationVariables } from '@/lib/requests/types.ts';
 import {
     updateMetadataServerSettings,
     useMetadataServerSettings,
@@ -43,7 +38,6 @@ import { useLocalStorage, useSessionStorage } from '@/base/hooks/useStorage.tsx'
 import { MANGA_GRID_SNAPSHOT_KEY } from '@/features/manga/components/MangaGrid.tsx';
 import { createUpdateSourceMetadata, useGetSourceMetadata } from '@/features/source/services/SourceMetadata.ts';
 import { makeToast } from '@/base/utils/Toast.ts';
-import { GET_SOURCE_BROWSE } from '@/lib/graphql/source/SourceQuery.ts';
 import { IPos, SourceIdInfo } from '@/features/source/Source.types.ts';
 import { defaultPromiseErrorHandler } from '@/lib/DefaultPromiseErrorHandler.ts';
 import { EmptyView } from '@/base/components/feedback/EmptyView.tsx';
@@ -282,7 +276,7 @@ export function SourceMangas() {
         setLocationContentType(newContentType);
     };
 
-    const gridKey = `${contentType}${JSON.stringify(filtersToApply)}${query}`;
+    const gridKey = `${sourceId}:${contentType}:${JSON.stringify(filtersToApply)}:${query ?? ''}`;
 
     const [
         loadPage,
@@ -292,10 +286,7 @@ export function SourceMangas() {
     const mangas = data?.fetchSourceManga?.mangas ?? [];
     const hasNextPage = !!data?.fetchSourceManga?.hasNextPage;
     const isLoading = loading || (filteredOutAllItemsOfFetchedPage && hasNextPage);
-    const { data: sourceData } = requestManager.useGetSource<GetSourceBrowseQuery, GetSourceBrowseQueryVariables>(
-        GET_SOURCE_BROWSE,
-        sourceId,
-    );
+    const { data: sourceData } = requestManager.useGetSourceBrowse(sourceId);
     const source = sourceData?.source;
 
     const filters = source?.filters ?? [];
@@ -400,6 +391,10 @@ export function SourceMangas() {
     }, [filteredOutAllItemsOfFetchedPage, loading]);
 
     useEffect(() => {
+        requestManager.clearBrowseCacheFor(sourceId);
+    }, [sourceId]);
+
+    useEffect(() => {
         if (!clearCache) {
             return;
         }
@@ -410,7 +405,7 @@ export function SourceMangas() {
         }
 
         requestManager.clearBrowseCacheFor(sourceId);
-    }, [clearCache]);
+    }, [clearCache, sourceId]);
 
     useAppTitleAndAction(
         source?.displayName ?? t('source.title_one'),

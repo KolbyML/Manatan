@@ -28,11 +28,9 @@ import { ServerSettings as GqlServerSettings } from '@/features/settings/Setting
 import { getErrorMessage } from '@/lib/HelperFunctions.ts';
 import { useAppTitle } from '@/features/navigation-bar/hooks/useAppTitle.ts';
 
-type ExtensionsSettings = Pick<
-    GqlServerSettings,
-    'maxSourcesInParallel' | 'localSourcePath' | 'localAnimeSourcePath' | 'extensionRepos'
-> & {
-    animeExtensionRepos: string[];
+type ExtensionsSettings = GqlServerSettings & {
+    localAnimeSourcePath?: string;
+    animeExtensionRepos?: string[];
 };
 
 export const BrowseSettings = () => {
@@ -77,6 +75,20 @@ export const BrowseSettings = () => {
     }
 
     const serverSettings = data!.settings as ExtensionsSettings;
+    const animeExtensionRepos = serverSettings.animeExtensionRepos ?? [];
+    const localAnimeSourcePath = serverSettings.localAnimeSourcePath ?? '';
+
+    const isValidExtensionRepo = (repo: string) => {
+        const trimmed = repo.trim();
+        if (!trimmed) {
+            return false;
+        }
+
+        const githubPattern =
+            /https:\/\/(www\.|raw\.)?(github|githubusercontent)\.com\/([^/]+)\/([^/]+)((\/tree|\/blob)?\/([^/\n]*))?(\/([^/\n]*\.json)?)?/g;
+        const urlPattern = /^https?:\/\/.+/i;
+        return !!trimmed.match(githubPattern) || urlPattern.test(trimmed);
+    };
 
     return (
         <List sx={{ pt: 0 }}>
@@ -133,11 +145,7 @@ export const BrowseSettings = () => {
                 valueInfos={serverSettings.extensionRepos.map((extensionRepo) => [extensionRepo])}
                 addItemButtonTitle={t('extension.settings.repositories.custom.dialog.action.button.add')}
                 placeholder="https://github.com/MY_ACCOUNT/MY_REPO/tree/repo"
-                validateItem={(repo) =>
-                    !!repo.match(
-                        /https:\/\/(www\.|raw\.)?(github|githubusercontent)\.com\/([^/]+)\/([^/]+)((\/tree|\/blob)?\/([^/\n]*))?(\/([^/\n]*\.json)?)?/g,
-                    )
-                }
+                validateItem={isValidExtensionRepo}
                 invalidItemError={t('extension.settings.repositories.custom.error.label.invalid_url')}
             />
             <MutableListSetting
@@ -154,18 +162,15 @@ export const BrowseSettings = () => {
                 }
                 handleChange={(repos) => {
                     updateSetting('animeExtensionRepos', repos);
+                    requestManager.clearAnimeExtensionCache();
                 }}
-                valueInfos={(serverSettings.animeExtensionRepos ?? []).map((extensionRepo) => [extensionRepo])}
+                valueInfos={animeExtensionRepos.map((extensionRepo) => [extensionRepo])}
                 addItemButtonTitle={t('extension.settings.repositories.custom.dialog.action.button.add')}
                 placeholder="https://github.com/MY_ACCOUNT/MY_REPO/tree/repo"
-                validateItem={(repo) =>
-                    !!repo.match(
-                        /https:\/\/(www\.|raw\.)?(github|githubusercontent)\.com\/([^/]+)\/([^/]+)((\/tree|\/blob)?\/([^/\n]*))?(\/([^/\n]*\.json)?)?/g,
-                    )
-                }
+                validateItem={isValidExtensionRepo}
                 invalidItemError={t('extension.settings.repositories.custom.error.label.invalid_url')}
             />
-            <TextSetting
+            <MutableListSetting
                 settingName={t('settings.server.local_source.path.label.title')}
                 dialogDescription={t('settings.server.local_source.path.label.description')}
                 value={serverSettings.localSourcePath}
@@ -177,10 +182,10 @@ export const BrowseSettings = () => {
             <TextSetting
                 settingName={t('settings.server.local_anime_source.path.label.title')}
                 dialogDescription={t('settings.server.local_anime_source.path.label.description')}
-                value={serverSettings.localAnimeSourcePath}
+                value={localAnimeSourcePath}
                 settingDescription={
-                    serverSettings.localAnimeSourcePath.length
-                        ? serverSettings.localAnimeSourcePath
+                    localAnimeSourcePath.length
+                        ? localAnimeSourcePath
                         : t('global.label.default')
                 }
                 handleChange={(path) => updateSetting('localAnimeSourcePath', path)}

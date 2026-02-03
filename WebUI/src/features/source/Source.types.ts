@@ -13,7 +13,7 @@ import {
     SourceMetaFieldsFragment,
     SourcePreferenceChangeInput,
     SourceType,
-} from '@/lib/graphql/generated/graphql.ts';
+} from '@/lib/requests/types.ts';
 
 export interface IPos {
     type: 'selectState' | 'textState' | 'checkBoxState' | 'triState' | 'sortState';

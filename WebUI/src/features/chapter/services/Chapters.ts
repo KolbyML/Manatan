@@ -7,23 +7,16 @@
  */
 
 import { t as translate } from 'i18next';
-import { DocumentNode, MaybeMasked, Unmasked, useFragment } from '@apollo/client';
+import { useMemo } from 'react';
 import { makeToast } from '@/base/utils/Toast.ts';
 import { requestManager } from '@/lib/requests/RequestManager.ts';
 import { getMetadataServerSettings } from '@/features/settings/services/ServerSettingsMetadata.ts';
-import {
-    ChapterListFieldsFragment,
-    ChapterType,
-    DownloadState,
-    DownloadTypeFieldsFragment,
-} from '@/lib/graphql/generated/graphql.ts';
-import { CHAPTER_LIST_FIELDS } from '@/lib/graphql/chapter/ChapterFragments.ts';
+import { ChapterType, DownloadState, DownloadTypeFieldsFragment } from '@/lib/requests/types.ts';
 
 import { MangaIdInfo } from '@/features/manga/Manga.types.ts';
 import { ReaderOpenChapterLocationState, ReaderResumeMode } from '@/features/reader/Reader.types.ts';
 import { AppRoutes } from '@/base/AppRoute.constants.ts';
 import { getErrorMessage } from '@/lib/HelperFunctions.ts';
-import { DOWNLOAD_TYPE_FIELDS } from '@/lib/graphql/download/DownloadFragments.ts';
 import { epochToDate, getDateString } from '@/base/utils/DateHelper.ts';
 import {
     CHAPTER_ACTION_TO_CONFIRMATION_REQUIRED,
@@ -43,66 +36,28 @@ import {
 import { assertIsDefined } from '@/base/Asserts.ts';
 import { DirectionOffset } from '@/base/Base.types.ts';
 import { Confirmation } from '@/base/AppAwaitableComponent.ts';
+import {
+    getDownloadStatusSnapshot,
+    useDownloadStatusSnapshot,
+} from '@/features/downloads/services/DownloadStatusStore.ts';
 
 export class Chapters {
     static getIds(chapters: { id: number }[]): number[] {
         return chapters.map((chapter) => chapter.id);
     }
 
-    static getFromCache<T = ChapterListFieldsFragment>(
-        id: number,
-        fragment: DocumentNode = CHAPTER_LIST_FIELDS,
-        fragmentName: string = 'CHAPTER_LIST_FIELDS',
-    ): Unmasked<T> | null {
-        return requestManager.graphQLClient.client.cache.readFragment<T>({
-            id: requestManager.graphQLClient.client.cache.identify({
-                __typename: 'ChapterType',
-                id,
-            }),
-            fragment,
-            fragmentName,
-        });
+    static getDownloadStatusFromCache<T = DownloadTypeFieldsFragment>(id: number): T | null {
+        const snapshot = getDownloadStatusSnapshot();
+        const download = snapshot?.queue.find((entry) => entry.chapter.id === id) ?? null;
+        return download as T | null;
     }
 
-    static getDownloadStatusFromCache<T = DownloadTypeFieldsFragment>(
-        id: number,
-        fragment: DocumentNode = DOWNLOAD_TYPE_FIELDS,
-        fragmentName: string = 'DOWNLOAD_TYPE_FIELDS',
-    ): Unmasked<T> | null {
-        return requestManager.graphQLClient.client.cache.readFragment<T>({
-            id: requestManager.graphQLClient.client.cache.identify({
-                __typename: 'DownloadType',
-                chapter: {
-                    __ref: requestManager.graphQLClient.client.cache.identify({ __typename: 'ChapterType', id }),
-                },
-            }),
-            fragment,
-            fragmentName,
-        });
-    }
-
-    static useDownloadStatusFromCache<T = DownloadTypeFieldsFragment>(
-        id: number,
-        fragment: DocumentNode = DOWNLOAD_TYPE_FIELDS,
-        fragmentName: string = 'DOWNLOAD_TYPE_FIELDS',
-    ): MaybeMasked<T> | null {
-        const downloadStatus = useFragment<T>({
-            from: {
-                __typename: 'DownloadType',
-                chapter: {
-                    __ref: requestManager.graphQLClient.client.cache.identify({ __typename: 'ChapterType', id }),
-                },
-            },
-            fragment,
-            fragmentName,
-            client: requestManager.graphQLClient.client,
-        });
-
-        if (!downloadStatus.complete || !Object.keys(downloadStatus.data ?? {}).length) {
-            return null;
-        }
-
-        return downloadStatus.data;
+    static useDownloadStatusFromCache<T = DownloadTypeFieldsFragment>(id: number): T | null {
+        const snapshot = useDownloadStatusSnapshot();
+        return useMemo(
+            () => (snapshot?.queue.find((entry) => entry.chapter.id === id) ?? null) as T | null,
+            [snapshot?.queue, id],
+        );
     }
 
     static getReaderUrl<Chapter extends ChapterMangaInfo & ChapterSourceOrderInfo>(chapter: Chapter): string {

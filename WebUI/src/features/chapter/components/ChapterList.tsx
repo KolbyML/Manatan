@@ -10,7 +10,7 @@ import Box from '@mui/material/Box';
 import Stack from '@mui/material/Stack';
 import { styled } from '@mui/material/styles';
 import Typography from '@mui/material/Typography';
-import { ComponentProps, useCallback, useMemo, useState } from 'react';
+import { ComponentProps, useCallback, useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { requestManager } from '@/lib/requests/RequestManager.ts';
 import { ResumeFab } from '@/features/manga/components/ResumeFAB.tsx';
@@ -23,19 +23,13 @@ import { EmptyViewAbsoluteCentered } from '@/base/components/feedback/EmptyViewA
 import { ChaptersToolbarMenu } from '@/features/chapter/components/ChaptersToolbarMenu.tsx';
 import { SelectionFAB } from '@/base/collection/components/SelectionFAB.tsx';
 import { DEFAULT_FULL_FAB_HEIGHT } from '@/base/components/buttons/StyledFab.tsx';
-import {
-    ChapterListFieldsFragment,
-    GetChaptersMangaQuery,
-    GetChaptersMangaQueryVariables,
-    MangaScreenFieldsFragment,
-} from '@/lib/graphql/generated/graphql.ts';
+import { ChapterListFieldsFragment, MangaScreenFieldsFragment } from '@/lib/requests/types.ts';
 import { useSelectableCollection } from '@/base/collection/hooks/useSelectableCollection.ts';
 import { SelectableCollectionSelectAll } from '@/base/collection/components/SelectableCollectionSelectAll.tsx';
 import { Chapters } from '@/features/chapter/services/Chapters.ts';
 import { ChapterActionMenuItems } from '@/features/chapter/components/actions/ChapterActionMenuItems.tsx';
 import { defaultPromiseErrorHandler } from '@/lib/DefaultPromiseErrorHandler.ts';
 import { LoadingPlaceholder } from '@/base/components/feedback/LoadingPlaceholder.tsx';
-import { GET_CHAPTERS_MANGA } from '@/lib/graphql/chapter/ChapterQuery.ts';
 import { useNavBarContext } from '@/features/navigation-bar/NavbarContext.tsx';
 import { useResizeObserver } from '@/base/hooks/useResizeObserver.tsx';
 import { MediaQuery } from '@/base/utils/MediaQuery.tsx';
@@ -125,22 +119,31 @@ export const ChapterList = ({
     const scrollbarWidth = MediaQuery.useGetScrollbarSize('width');
 
     const options = useChapterListOptions(manga);
-    const updateOption = updateChapterListOptions(manga, (e) =>
+    const [localOptions, setLocalOptions] = useState(options);
+    const updateOptionRemote = updateChapterListOptions(manga, (e) =>
         makeToast(t('global.error.label.failed_to_save_changes'), 'error', getErrorMessage(e)),
+    );
+    const updateOption = useCallback(
+        (key: Parameters<typeof updateOptionRemote>[0], value: Parameters<typeof updateOptionRemote>[1]) => {
+            setLocalOptions((prev) => ({ ...prev, [key]: value }));
+            return updateOptionRemote(key, value);
+        },
+        [updateOptionRemote],
     );
     const {
         data: chaptersData,
         loading: isLoading,
         error,
         refetch,
-    } = requestManager.useGetMangaChapters<GetChaptersMangaQuery, GetChaptersMangaQueryVariables>(
-        GET_CHAPTERS_MANGA,
-        manga.id,
-        { notifyOnNetworkStatusChange: true },
-    );
+    } = requestManager.useGetMangaChaptersList(manga.id, { notifyOnNetworkStatusChange: true });
     const chapters = useMemo(() => chaptersData?.chapters.nodes ?? [], [chaptersData?.chapters.nodes]);
 
-    const visibleChapters = useMemo(() => filterAndSortChapters(chapters, options), [chapters, options]);
+    useEffect(() => setLocalOptions(options), [options]);
+
+    const visibleChapters = useMemo(
+        () => filterAndSortChapters(chapters, localOptions),
+        [chapters, localOptions],
+    );
     const visibleChapterIds = useMemo(() => Chapters.getIds(visibleChapters), [visibleChapters]);
     const missingChapterCount = useMemo(() => Chapters.getMissingCount(visibleChapters), [visibleChapters]);
 
@@ -208,11 +211,11 @@ export const ChapterList = ({
                         {areNoItemsSelected && (
                             <ChaptersToolbarMenu
                                 mangaId={manga.id}
-                                options={options}
+                                options={localOptions}
                                 updateOption={updateOption}
                                 chapters={visibleChapters}
                                 scanlators={Chapters.getScanlators(chapters)}
-                                excludeScanlators={options.excludedScanlators}
+                                excludeScanlators={localOptions.excludedScanlators}
                             />
                         )}
                         {!!visibleChapterIds.length && (
@@ -243,10 +246,10 @@ export const ChapterList = ({
                     itemContent={(index: number) => (
                         <ChapterListCard
                             index={index}
-                            isSortDesc={options.reverse}
+                            isSortDesc={localOptions.reverse}
                             chapters={visibleChapters}
                             selected={!areNoItemsSelected ? selectedItemIds.includes(visibleChapters[index].id) : null}
-                            showChapterNumber={options.showChapterNumber}
+                            showChapterNumber={localOptions.showChapterNumber}
                             onSelect={onSelect}
                         />
                     )}

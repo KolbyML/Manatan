@@ -2,12 +2,18 @@ import React, { useEffect, useRef } from 'react';
 import { createRoot } from 'react-dom/client';
 import { ChapterProcessButton } from './ChapterProcessButton';
 import { useOCR } from '@/Manatan/context/OCRContext';
-import { AuthCredentials } from '@/Manatan/utils/api';
+import { AuthCredentials, ChapterStatus, buildChapterBaseUrl, checkChaptersStatus } from '@/Manatan/utils/api';
 
 export const ChapterListInjector: React.FC = () => {
     const { serverSettings, settings } = useOCR();
     
     const credsRef = useRef<AuthCredentials | undefined>(undefined);
+    const languageRef = useRef(settings.yomitanLanguage);
+    const statusCacheRef = useRef<Map<string, ChapterStatus>>(new Map());
+    const rootsRef = useRef<Map<string, ReturnType<typeof createRoot>>>(new Map());
+    const pendingRef = useRef<Set<string>>(new Set());
+    const fetchTimerRef = useRef<number | null>(null);
+    const inFlightRef = useRef(false);
 
     // Keep the ref updated whenever serverSettings changes
     useEffect(() => {
@@ -20,6 +26,10 @@ export const ChapterListInjector: React.FC = () => {
             credsRef.current = undefined;
         }
     }, [serverSettings]);
+
+    useEffect(() => {
+        languageRef.current = settings.yomitanLanguage;
+    }, [settings.yomitanLanguage]);
 
     useEffect(() => {
         const observer = new MutationObserver((mutations) => {
@@ -38,6 +48,49 @@ export const ChapterListInjector: React.FC = () => {
 
         return () => observer.disconnect();
     }, []);
+
+    const scheduleBatchFetch = () => {
+        if (fetchTimerRef.current) {
+            clearTimeout(fetchTimerRef.current);
+        }
+        fetchTimerRef.current = window.setTimeout(async () => {
+            if (inFlightRef.current) return;
+            const pending = Array.from(pendingRef.current);
+            pendingRef.current.clear();
+            if (!pending.length) return;
+
+            inFlightRef.current = true;
+            try {
+                const baseUrls = pending.map(buildChapterBaseUrl);
+                const statuses = await checkChaptersStatus(
+                    baseUrls,
+                    credsRef.current,
+                    languageRef.current,
+                );
+                pending.forEach((path, index) => {
+                    const baseUrl = baseUrls[index];
+                    const status = statuses[baseUrl] || { status: 'idle', cached: 0, total: 0 };
+                    statusCacheRef.current.set(path, status);
+                    const root = rootsRef.current.get(path);
+                    if (root) {
+                        root.render(
+                            <ChapterProcessButton 
+                                chapterPath={path} 
+                                creds={credsRef.current} 
+                                language={languageRef.current}
+                                initialStatus={status}
+                            />
+                        );
+                    }
+                });
+            } finally {
+                inFlightRef.current = false;
+                if (pendingRef.current.size > 0) {
+                    scheduleBatchFetch();
+                }
+            }
+        }, 0);
+    };
 
     const checkForChapters = (root: HTMLElement) => {
         const links = root.querySelectorAll('a[href*="/manga/"][href*="/chapter/"]');
@@ -74,14 +127,35 @@ export const ChapterListInjector: React.FC = () => {
         const root = createRoot(wrapper);
         const urlPath = new URL(link.href).pathname;
 
-            root.render(
+        rootsRef.current.set(urlPath, root);
+        const initialStatus = statusCacheRef.current.get(urlPath);
+
+        root.render(
             <ChapterProcessButton 
                 chapterPath={urlPath} 
                 creds={credsRef.current} 
-                language={settings.yomitanLanguage}
+                language={languageRef.current}
+                initialStatus={initialStatus}
             />
         );
+
+        if (!statusCacheRef.current.has(urlPath)) {
+            pendingRef.current.add(urlPath);
+            scheduleBatchFetch();
+        }
     };
+
+    useEffect(() => {
+        statusCacheRef.current.clear();
+        const pending = new Set<string>();
+        rootsRef.current.forEach((_root, path) => {
+            pending.add(path);
+        });
+        pendingRef.current = pending;
+        if (pendingRef.current.size > 0) {
+            scheduleBatchFetch();
+        }
+    }, [settings.yomitanLanguage]);
 
     return null;
 };

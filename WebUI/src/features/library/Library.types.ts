@@ -6,7 +6,7 @@
  * file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
 
-import { MangaStatus, MangaType, TrackerType } from '@/lib/graphql/generated/graphql.ts';
+import { MangaStatus, MangaType, TrackerType } from '@/lib/requests/types.ts';
 import { GridLayout } from '@/base/Base.types.ts';
 
 export type MetadataLibrarySettings = {

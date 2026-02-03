@@ -31,19 +31,8 @@ import { MangaActionMenuItems } from '@/features/manga/components/MangaActionMen
 import { TabsMenu } from '@/base/components/tabs/TabsMenu.tsx';
 import { TabsWrapper } from '@/base/components/tabs/TabsWrapper.tsx';
 import { defaultPromiseErrorHandler } from '@/lib/DefaultPromiseErrorHandler.ts';
-import {
-    GetCategoriesLibraryQuery,
-    GetCategoriesLibraryQueryVariables,
-    GetLibraryMangaCountQuery,
-    GetLibraryMangaCountQueryVariables,
-    MangaChapterStatFieldsFragment,
-    MangaType,
-} from '@/lib/graphql/generated/graphql.ts';
-import { GET_CATEGORIES_LIBRARY } from '@/lib/graphql/category/CategoryQuery.ts';
-import { Mangas } from '@/features/manga/services/Mangas.ts';
-import { MANGA_CHAPTER_STAT_FIELDS } from '@/lib/graphql/manga/MangaFragments.ts';
+import { MangaType } from '@/lib/requests/types.ts';
 import { useMetadataServerSettings } from '@/features/settings/services/ServerSettingsMetadata.ts';
-import { GET_LIBRARY_MANGA_COUNT } from '@/lib/graphql/manga/MangaQuery.ts';
 import { useAppTitle } from '@/features/navigation-bar/hooks/useAppTitle.ts';
 import { useAppAction } from '@/features/navigation-bar/hooks/useAppAction.ts';
 import { AppRoutes } from '@/base/AppRoute.constants.ts';
@@ -70,21 +59,20 @@ export function Library() {
         error: tabsError,
         loading: areCategoriesLoading,
         refetch: refetchCategories,
-    } = requestManager.useGetCategories<GetCategoriesLibraryQuery, GetCategoriesLibraryQueryVariables>(
-        GET_CATEGORIES_LIBRARY,
-        {
-            notifyOnNetworkStatusChange: true,
-        },
-    );
-    const tabsData = categoriesResponse?.categories.nodes.filter(
-        (category) => category.id !== 0 || (category.id === 0 && category.mangas.totalCount),
-    );
-    const tabs = tabsData ?? [];
+    } = requestManager.useGetCategoriesLibrary({ notifyOnNetworkStatusChange: true });
+    const categories = categoriesResponse?.categories.nodes ?? [];
+    const hasCustomCategories = categories.some((category) => category.id !== 0);
+    const tabs = categories.filter((category) => {
+        if (category.id !== 0) {
+            return true;
+        }
+        if (hasCustomCategories) {
+            return false;
+        }
+        return category.mangas.totalCount > 0;
+    });
 
-    const librarySizeResponse = requestManager.useGetMangas<
-        GetLibraryMangaCountQuery,
-        GetLibraryMangaCountQueryVariables
-    >(GET_LIBRARY_MANGA_COUNT, {});
+    const librarySizeResponse = requestManager.useGetLibraryMangaCount();
 
     const librarySize = librarySizeResponse.data?.mangas.totalCount ?? 0;
 
@@ -137,14 +125,8 @@ export function Library() {
     const selectedMangas = useMemo(
         () =>
             selectedItemIds
-                .map((id) =>
-                    Mangas.getFromCache<MangaChapterStatFieldsFragment>(
-                        id,
-                        MANGA_CHAPTER_STAT_FIELDS,
-                        'MANGA_CHAPTER_STAT_FIELDS',
-                    ),
-                )
-                .filter((manga) => !!manga),
+                .map((id) => mangas.find((manga) => manga.id === id))
+                .filter((manga): manga is (typeof mangas)[number] => !!manga),
         [selectedItemIds.length, mangas],
     );
 

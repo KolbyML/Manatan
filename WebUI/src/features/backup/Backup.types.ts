@@ -6,7 +6,7 @@
  * file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
 
-import { PartialBackupFlagsInput } from '@/lib/graphql/generated/graphql.ts';
+import { PartialBackupFlagsInput } from '@/lib/requests/types.ts';
 import { ServerSettings } from '@/features/settings/Settings.types.ts';
 
 export enum BackupFlagGroup {

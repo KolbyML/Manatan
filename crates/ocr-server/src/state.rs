@@ -76,9 +76,20 @@ impl AppState {
              CREATE INDEX IF NOT EXISTS idx_ocr_cache_accessed
                 ON ocr_cache(last_accessed_at);
 
+             CREATE TABLE IF NOT EXISTS chapter_cache (
+                chapter_key TEXT NOT NULL,
+                cache_key TEXT NOT NULL,
+                created_at INTEGER NOT NULL,
+                PRIMARY KEY (chapter_key, cache_key)
+             );
+
+             CREATE INDEX IF NOT EXISTS idx_chapter_cache_chapter
+                ON chapter_cache(chapter_key);
+
              CREATE TABLE IF NOT EXISTS chapter_pages (
                 chapter_key TEXT PRIMARY KEY,
                 page_count INTEGER NOT NULL,
+                processed_count INTEGER NOT NULL DEFAULT 0,
                 created_at INTEGER NOT NULL,
                 last_accessed_at INTEGER NOT NULL
              );
@@ -87,6 +98,11 @@ impl AppState {
                 ON chapter_pages(last_accessed_at);",
         )
         .expect("Failed to initialize OCR cache database");
+
+        let _ = conn.execute(
+            "ALTER TABLE chapter_pages ADD COLUMN processed_count INTEGER NOT NULL DEFAULT 0",
+            [],
+        );
 
         migrate_legacy_cache(&mut conn, &cache_dir);
 
@@ -126,6 +142,48 @@ impl AppState {
         .optional()
         .map(|v| v.is_some())
         .unwrap_or(false)
+    }
+
+    pub fn has_cache_entry_prefix(&self, prefix: &str) -> bool {
+        let Ok(conn) = self.pool.get() else {
+            warn!("Failed to get DB connection for has_cache_entry_prefix");
+            return false;
+        };
+        let like_pattern = format!("{}%", prefix);
+        conn.query_row(
+            "SELECT 1 FROM ocr_cache WHERE cache_key LIKE ? LIMIT 1",
+            params![like_pattern],
+            |_| Ok(()),
+        )
+        .optional()
+        .map(|v| v.is_some())
+        .unwrap_or(false)
+    }
+
+    pub fn insert_chapter_cache(&self, chapter_key: &str, cache_key: &str) {
+        let Ok(conn) = self.pool.get() else {
+            warn!("Failed to get DB connection for insert_chapter_cache");
+            return;
+        };
+        let now = now_unix();
+        let _ = conn.execute(
+            "INSERT OR IGNORE INTO chapter_cache (chapter_key, cache_key, created_at) VALUES (?, ?, ?)",
+            params![chapter_key, cache_key, now],
+        );
+    }
+
+    pub fn count_chapter_cache(&self, chapter_key: &str) -> usize {
+        let Ok(conn) = self.pool.get() else {
+            warn!("Failed to get DB connection for count_chapter_cache");
+            return 0;
+        };
+        conn.query_row(
+            "SELECT COUNT(*) FROM chapter_cache WHERE chapter_key = ?",
+            params![chapter_key],
+            |row| row.get::<_, i64>(0),
+        )
+        .map(|count| count as usize)
+        .unwrap_or(0)
     }
 
     pub fn get_cache_entry(&self, cache_key: &str) -> Option<CacheEntry> {
@@ -190,27 +248,14 @@ impl AppState {
         );
     }
 
-    pub fn count_cached_for_prefix(&self, prefix: &str) -> usize {
-        let Ok(conn) = self.pool.get() else {
-            warn!("Failed to get DB connection for count_cached_for_prefix");
-            return 0;
-        };
-        let like_pattern = format!("{}%", prefix);
-        conn.query_row(
-            "SELECT COUNT(*) FROM ocr_cache WHERE cache_key LIKE ?",
-            params![like_pattern],
-            |row| row.get::<_, i64>(0),
-        )
-        .map(|count| count as usize)
-        .unwrap_or(0)
-    }
-
     pub fn clear_cache(&self) {
         let Ok(conn) = self.pool.get() else {
             warn!("Failed to get DB connection for clear_cache");
             return;
         };
         let _ = conn.execute("DELETE FROM ocr_cache", []);
+        let _ = conn.execute("DELETE FROM chapter_cache", []);
+        let _ = conn.execute("DELETE FROM chapter_pages", []);
     }
 
     pub fn export_cache(&self) -> HashMap<String, CacheEntry> {
@@ -299,6 +344,36 @@ impl AppState {
         count.map(|val| val as usize)
     }
 
+    pub fn get_chapter_progress(&self, chapter_key: &str) -> Option<(usize, usize)> {
+        let Ok(conn) = self.pool.get() else {
+            warn!("Failed to get DB connection for get_chapter_progress");
+            return None;
+        };
+        let progress = conn
+            .query_row(
+                "SELECT page_count, processed_count FROM chapter_pages WHERE chapter_key = ?",
+                params![chapter_key],
+                |row| {
+                    let page_count: i64 = row.get(0)?;
+                    let processed_count: i64 = row.get(1)?;
+                    Ok((page_count, processed_count))
+                },
+            )
+            .optional()
+            .unwrap_or(None);
+
+        if progress.is_some() {
+            let now = now_unix();
+            let _ = conn.execute(
+                "UPDATE chapter_pages SET last_accessed_at = ? WHERE chapter_key = ?",
+                params![now, chapter_key],
+            );
+        }
+
+        progress
+            .map(|(page_count, processed_count)| (page_count as usize, processed_count as usize))
+    }
+
     pub fn set_chapter_pages(&self, chapter_key: &str, page_count: usize) {
         let Ok(conn) = self.pool.get() else {
             warn!("Failed to get DB connection for set_chapter_pages");
@@ -306,12 +381,34 @@ impl AppState {
         };
         let now = now_unix();
         let _ = conn.execute(
-            "INSERT INTO chapter_pages (chapter_key, page_count, created_at, last_accessed_at)
-             VALUES (?, ?, ?, ?)
+            "INSERT INTO chapter_pages (chapter_key, page_count, processed_count, created_at, last_accessed_at)
+             VALUES (?, ?, 0, ?, ?)
              ON CONFLICT(chapter_key) DO UPDATE SET
                 page_count = excluded.page_count,
                 last_accessed_at = excluded.last_accessed_at",
             params![chapter_key, page_count as i64, now, now],
+        );
+    }
+
+    pub fn set_chapter_progress(
+        &self,
+        chapter_key: &str,
+        page_count: usize,
+        processed_count: usize,
+    ) {
+        let Ok(conn) = self.pool.get() else {
+            warn!("Failed to get DB connection for set_chapter_progress");
+            return;
+        };
+        let now = now_unix();
+        let _ = conn.execute(
+            "INSERT INTO chapter_pages (chapter_key, page_count, processed_count, created_at, last_accessed_at)
+             VALUES (?, ?, ?, ?, ?)
+             ON CONFLICT(chapter_key) DO UPDATE SET
+                page_count = excluded.page_count,
+                processed_count = excluded.processed_count,
+                last_accessed_at = excluded.last_accessed_at",
+            params![chapter_key, page_count as i64, processed_count as i64, now, now],
         );
     }
 }

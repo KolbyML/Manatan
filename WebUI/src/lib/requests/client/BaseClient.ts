@@ -7,7 +7,7 @@
  */
 
 import { AppStorage } from '@/lib/storage/AppStorage.ts';
-import { UserRefreshMutation } from '@/lib/graphql/generated/graphql.ts';
+import { UserRefreshMutation } from '@/lib/requests/types.ts';
 import { AuthManager } from '@/features/authentication/AuthManager.ts';
 import { AbortableApolloMutationResponse } from '@/lib/requests/RequestManager.ts';
 import { SubpathUtil } from '@/lib/utils/SubpathUtil.ts';
@@ -105,7 +105,19 @@ export abstract class BaseClient<Client, ClientConfig, Fetcher> {
 
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     protected shouldQueueRequest(operationName?: string): boolean {
-        return AuthManager.shouldQueueRequests();
+        if (operationName?.includes('/api/v1/about')) {
+            return false;
+        }
+        const shouldQueue = AuthManager.shouldQueueRequests();
+        if (shouldQueue) {
+            console.info('[request] queueing request', {
+                operation: operationName,
+                authInitialized: AuthManager.isAuthInitialized(),
+                authRequired: AuthManager.isAuthRequired(),
+                refreshingToken: AuthManager.isRefreshingToken(),
+            });
+        }
+        return shouldQueue;
     }
 
     protected enqueueRequest<T>(executor: () => Promise<T>, operationName?: string): Promise<T> {
@@ -125,6 +137,8 @@ export abstract class BaseClient<Client, ClientConfig, Fetcher> {
             reject,
         });
 
+        console.info('[request] queued request count', { count: this.requestQueue.length });
+
         return queuedRequest.promise;
     }
 
@@ -132,6 +146,9 @@ export abstract class BaseClient<Client, ClientConfig, Fetcher> {
         const queue = [...this.requestQueue];
         this.requestQueue = [];
 
+        if (queue.length) {
+            console.info('[request] processing queued requests', { count: queue.length });
+        }
         queue.forEach((request) => {
             request.execute();
         });

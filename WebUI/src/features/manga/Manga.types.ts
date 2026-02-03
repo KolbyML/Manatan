@@ -18,7 +18,7 @@ import {
     Maybe,
     SourceType,
     TrackRecordType,
-} from '@/lib/graphql/generated/graphql.ts';
+} from '@/lib/requests/types.ts';
 import { SingleModeProps } from '@/features/manga/components/MangaActionMenuItems.tsx';
 import { GridLayout } from '@/base/Base.types.ts';
 import { ChapterListOptions } from '@/features/chapter/Chapter.types.ts';
@@ -36,7 +36,7 @@ export type MangaChapterCountInfo = { chapters: Pick<MangaTypeGql['chapters'], '
 export type MangaInLibraryInfo = Pick<MangaTypeGql, 'inLibrary'>;
 export type MangaDownloadInfo = Pick<MangaTypeGql, 'downloadCount'> & MangaChapterCountInfo;
 export type MangaUnreadInfo = Pick<MangaTypeGql, 'unreadCount'> & MangaChapterCountInfo;
-export type MangaThumbnailInfo = Pick<MangaTypeGql, 'thumbnailUrl' | 'thumbnailUrlLastFetched' | 'sourceId'>;
+export type MangaThumbnailInfo = Pick<MangaTypeGql, 'id' | 'thumbnailUrl' | 'thumbnailUrlLastFetched' | 'sourceId'>;
 export type MangaTrackRecordInfo = MangaIdInfo & {
     trackRecords: { nodes: Pick<TrackRecordType, 'id' | 'trackerId'>[] };
 };

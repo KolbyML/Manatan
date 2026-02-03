@@ -13,10 +13,10 @@ import {
     ReaderStatePages,
     ReadingMode,
 } from '@/features/reader/Reader.types.ts';
-import { UpdateChapterPatchInput } from '@/lib/graphql/generated/graphql.ts';
+import { UpdateChapterPatchInput } from '@/lib/requests/types.ts';
 import { ChapterIdInfo, TChapterReader } from '@/features/chapter/Chapter.types.ts';
 import { Chapters } from '@/features/chapter/services/Chapters.ts';
-import { CHAPTER_READER_FIELDS } from '@/lib/graphql/chapter/ChapterFragments.ts';
+import { getReaderChaptersStore } from '@/features/reader/stores/ReaderStore.ts';
 import { isPageOfOutdatedPageLoadStates, isSpreadPage } from '@/features/reader/viewer/pager/ReaderPager.utils.tsx';
 import { coerceIn } from '@/lib/HelperFunctions.ts';
 
@@ -38,8 +38,10 @@ export const getInitialReaderPageIndex = (
     return coerceIn(lastReadPageIndex, 0, lastPageIndex);
 };
 
-export const getReaderChapterFromCache = (id: ChapterIdInfo['id']): TChapterReader | null =>
-    Chapters.getFromCache<TChapterReader>(id, CHAPTER_READER_FIELDS, 'CHAPTER_READER_FIELDS')!;
+export const getReaderChapterFromCache = (id: ChapterIdInfo['id']): TChapterReader | null => {
+    const { mangaChapters, chapters } = getReaderChaptersStore();
+    return mangaChapters?.find((chapter) => chapter.id === id) ?? chapters.find((chapter) => chapter.id === id) ?? null;
+};
 
 export const getChapterIdsToDeleteForChapterUpdate = (
     chapter: TChapterReader,

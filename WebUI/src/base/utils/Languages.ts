@@ -42,17 +42,51 @@ function getISOLanguageFor(code: string, orgCode: string = code, isoCode: string
 }
 
 function getISOLanguage(code: string): LanguageObject | null {
-    return (
+    const direct =
         getISOLanguageFor(code) ??
         getISOLanguageFor(code.toLowerCase(), code) ??
         getISOLanguageFor(code.replace('-', '_'), code) ??
         getISOLanguageFor(code.replace('_', '-'), code) ??
         getISOLanguageFor(code.split('-')[0], code) ??
-        getISOLanguageFor(code.split('_')[0], code)
-    );
+        getISOLanguageFor(code.split('_')[0], code);
+    if (direct) {
+        return direct;
+    }
+
+    const normalized = code.trim();
+    if (!normalized) {
+        return null;
+    }
+
+    const normalizedLower = normalized.toLowerCase();
+    const matched = Object.entries(IsoLanguages).find(([, language]) => {
+        const nativeName = language.nativeName?.toLowerCase() ?? '';
+        const name = language.name?.toLowerCase() ?? '';
+        return nativeName === normalizedLower || name === normalizedLower;
+    });
+
+    if (!matched) {
+        return null;
+    }
+
+    const [isoCode, language] = matched;
+    return {
+        ...language,
+        orgCode: normalized,
+        isoCode,
+    };
 }
 
 export function getLanguage(code: string): LanguageObject {
+    if (code === 'multi') {
+        const label = t(DEFAULT_LANGUAGE_TO_TRANSLATION[DefaultLanguage.ALL]);
+        return {
+            orgCode: code,
+            isoCode: DefaultLanguage.ALL,
+            name: label,
+            nativeName: label,
+        };
+    }
     const isoLanguage = getISOLanguage(code);
 
     if (isoLanguage) {

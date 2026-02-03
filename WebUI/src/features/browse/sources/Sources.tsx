@@ -45,6 +45,10 @@ export function Sources({ tabsMenuHeight }: { tabsMenuHeight: number }) {
         error,
         refetch,
     } = requestManager.useGetSourceList({ notifyOnNetworkStatusChange: true });
+    const refreshSources = useCallback(
+        () => refetch().catch(defaultPromiseErrorHandler('Sources::refetch')),
+        [refetch],
+    );
     const sources = data?.sources.nodes;
     const filteredSources = useMemo(
         () =>
@@ -54,7 +58,15 @@ export function Sources({ tabsMenuHeight }: { tabsMenuHeight: number }) {
                 keepLocalSource: true,
                 enabled: true,
             }),
-        [sources, shownLangs],
+        [sources, shownLangs, showNsfw],
+    );
+    const sourcesForLanguageSelect = useMemo(
+        () =>
+            SourceService.filter(sources ?? [], {
+                showNsfw,
+                keepLocalSource: true,
+            }),
+        [sources, showNsfw],
     );
     const sourcesByLanguage = useMemo(() => {
         const lastUsedSource = SourceService.getLastUsedSource(lastUsedSourceId, filteredSources);
@@ -70,7 +82,10 @@ export function Sources({ tabsMenuHeight }: { tabsMenuHeight: number }) {
         return groupedByLanguageTuple;
     }, [filteredSources]);
 
-    const sourceLanguages = useMemo(() => SourceService.getLanguages(sources ?? []), [sources]);
+    const sourceLanguages = useMemo(
+        () => SourceService.getLanguages(sourcesForLanguageSelect),
+        [sourcesForLanguageSelect],
+    );
     const areSourcesFromDifferentRepos = useMemo(
         () => SourceService.areFromMultipleRepos(filteredSources),
         [filteredSources],
@@ -107,11 +122,11 @@ export function Sources({ tabsMenuHeight }: { tabsMenuHeight: number }) {
                     selectedLanguages={shownLangs}
                     setSelectedLanguages={setShownLangs}
                     languages={sourceLanguages}
-                    sources={sources ?? []}
+                    sources={sourcesForLanguageSelect}
                 />
             </>
         ),
-        [t, navigate, shownLangs, sourceLanguages, sources],
+        [t, navigate, shownLangs, sourceLanguages, sourcesForLanguageSelect],
     );
 
     useAppAction(appAction, [appAction]);
@@ -158,8 +173,9 @@ export function Sources({ tabsMenuHeight }: { tabsMenuHeight: number }) {
                     <StyledGroupItemWrapper>
                         <SourceCard
                             source={source}
-                            showSourceRepo={areSourcesFromDifferentRepos}
+                            showSourceRepo={true}
                             showLanguage={isPinnedOrLastUsedSource(language)}
+                            onMetaUpdated={refreshSources}
                         />
                     </StyledGroupItemWrapper>
                 );

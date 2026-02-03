@@ -20,7 +20,13 @@ import { TTrackerSearch } from '@/features/tracker/Tracker.types.ts';
 import { AvatarSpinner } from '@/base/components/AvatarSpinner.tsx';
 import { CredentialsLogin } from '@/base/components/modals/LoginDialog.tsx';
 
-export const SettingsTrackerCard = ({ tracker }: { tracker: TTrackerSearch }) => {
+export const SettingsTrackerCard = ({
+    tracker,
+    onAuthChange,
+}: {
+    tracker: TTrackerSearch;
+    onAuthChange?: () => void;
+}) => {
     const { t } = useTranslation();
 
     const isOAuthLogin = !tracker.isLoggedIn && !!tracker.authUrl;
@@ -28,6 +34,7 @@ export const SettingsTrackerCard = ({ tracker }: { tracker: TTrackerSearch }) =>
     const handleLogout = async () => {
         try {
             await requestManager.logoutFromTracker(tracker.id).response;
+            onAuthChange?.();
         } catch (e) {
             makeToast(t('tracking.action.logout.label.failure', { name: tracker.name }), 'error', getErrorMessage(e));
         }
@@ -48,6 +55,7 @@ export const SettingsTrackerCard = ({ tracker }: { tracker: TTrackerSearch }) =>
 
         try {
             await requestManager.loginTrackerCredentials(tracker.id, username, password).response;
+            onAuthChange?.();
         } catch (e) {
             makeToast(t('tracking.action.login.label.failure', { name: tracker.name }), 'error', getErrorMessage(e));
         }

@@ -8,14 +8,12 @@
 
 // adopted from: https://github.com/tachiyomiorg/tachiyomi/blob/master/app/src/main/java/eu/kanade/tachiyomi/widget/EmptyView.kt
 
-import { type JSX, useMemo, useState } from 'react';
+import { type JSX, useMemo } from 'react';
 import Typography from '@mui/material/Typography';
 import { SxProps, Theme } from '@mui/material/styles';
-import { useTranslation } from 'react-i18next';
 import Button from '@mui/material/Button';
 import Stack from '@mui/material/Stack';
-import Collapse from '@mui/material/Collapse';
-import { extractGraphqlExceptionInfo } from '@/lib/HelperFunctions.ts';
+import { useTranslation } from 'react-i18next';
 
 const ERROR_FACES = ['(･o･;)', 'Σ(ಠ_ಠ)', 'ಥ_ಥ', '(˘･_･˘)', '(；￣Д￣)', '(･Д･。'];
 
@@ -33,55 +31,18 @@ export interface EmptyViewProps {
 }
 
 const ExtraMessage = ({ messageExtra }: Pick<EmptyViewProps, 'messageExtra'>) => {
-    const { t } = useTranslation();
-
-    const [showFullError, setShowFullError] = useState(false);
-
-    const { isGraphqlException, graphqlError, graphqlStackTrace } = extractGraphqlExceptionInfo(messageExtra);
-
-    if (!isGraphqlException) {
-        return (
-            <Typography
-                variant="body1"
-                sx={{ wordBreak: 'break-word', whiteSpace: 'pre-line', pointerEvents: 'all' }}
-                color="textSecondary"
-            >
-                {messageExtra}
-            </Typography>
-        );
+    if (!messageExtra) {
+        return null;
     }
 
     return (
-        <>
-            <Stack
-                sx={{
-                    flexDirection: 'row',
-                    flexWrap: 'wrap',
-                    gap: 1,
-                    justifyContent: 'center',
-                    alignItems: 'center',
-                }}
-            >
-                <Typography
-                    variant="body1"
-                    sx={{ wordBreak: 'break-word', whiteSpace: 'pre-line', pointerEvents: 'all' }}
-                >
-                    {graphqlError}…
-                </Typography>
-                <Button variant="text" onClick={() => setShowFullError(!showFullError)} sx={{ pointerEvents: 'all' }}>
-                    {t(showFullError ? 'global.button.show_less' : 'global.button.show_more')}
-                </Button>
-            </Stack>
-            <Collapse in={showFullError}>
-                <Typography
-                    variant="body1"
-                    color="textSecondary"
-                    sx={{ wordBreak: 'break-word', whiteSpace: 'pre-line', pointerEvents: 'all' }}
-                >
-                    {graphqlStackTrace}
-                </Typography>
-            </Collapse>
-        </>
+        <Typography
+            variant="body1"
+            sx={{ wordBreak: 'break-word', whiteSpace: 'pre-line', pointerEvents: 'all' }}
+            color="textSecondary"
+        >
+            {messageExtra}
+        </Typography>
     );
 };
 

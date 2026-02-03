@@ -306,7 +306,7 @@ export function Extensions({ tabsMenuHeight }: { tabsMenuHeight: number }) {
                         <ExtensionCard
                             extension={item}
                             handleUpdate={handleExtensionUpdate}
-                            showSourceRepo={areMultipleReposInUse}
+                            showSourceRepo={true}
                             forcedState={
                                 updatingExtensionIds.includes(item.pkgName) ? ExtensionState.UPDATING : undefined
                             }

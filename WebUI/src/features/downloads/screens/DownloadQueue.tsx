@@ -22,7 +22,7 @@ import { makeToast } from '@/base/utils/Toast.ts';
 import { EmptyViewAbsoluteCentered } from '@/base/components/feedback/EmptyViewAbsoluteCentered.tsx';
 import { LoadingPlaceholder } from '@/base/components/feedback/LoadingPlaceholder.tsx';
 import { defaultPromiseErrorHandler } from '@/lib/DefaultPromiseErrorHandler.ts';
-import { DownloaderState } from '@/lib/graphql/generated/graphql.ts';
+import { DownloaderState } from '@/lib/requests/types.ts';
 import { getErrorMessage } from '@/lib/HelperFunctions.ts';
 import { DndSortableItem } from '@/lib/dnd-kit/DndSortableItem.tsx';
 import { DndKitUtil } from '@/lib/dnd-kit/DndKitUtil.ts';
@@ -32,6 +32,7 @@ import { useAppTitle } from '@/features/navigation-bar/hooks/useAppTitle.ts';
 import { useAppAction } from '@/features/navigation-bar/hooks/useAppAction.ts';
 import { ChapterDownloadStatus } from '@/features/chapter/Chapter.types.ts';
 import { VirtuosoPersisted } from '@/lib/virtuoso/Component/VirtuosoPersisted.tsx';
+import { useDownloadStatusSnapshot } from '@/features/downloads/services/DownloadStatusStore.ts';
 
 export const DownloadQueue: React.FC = () => {
     const { t } = useTranslation();
@@ -46,7 +47,15 @@ export const DownloadQueue: React.FC = () => {
         error,
         refetch,
     } = requestManager.useGetDownloadStatus({ notifyOnNetworkStatusChange: true });
-    const downloaderData = downloadStatusData?.downloadStatus;
+    const downloadStatusSnapshot = useDownloadStatusSnapshot();
+    const fallbackQueue = (downloadStatusData?.downloadStatus.queue ?? []).map((entry, index) => ({
+        ...entry,
+        position: index,
+    }));
+    const downloaderData = downloadStatusSnapshot ??
+        (downloadStatusData?.downloadStatus
+            ? { ...downloadStatusData.downloadStatus, queue: fallbackQueue }
+            : undefined);
 
     const queue = downloaderData?.queue ?? [];
     const status = downloaderData?.state ?? DownloaderState.Started;
@@ -78,7 +87,7 @@ export const DownloadQueue: React.FC = () => {
         }
 
         reorderDownload({ variables: { input: { chapterId: list[from].chapter.id, to } } }).catch(() => {
-            revertReorder();
+            revertReorder?.();
         });
     };
 

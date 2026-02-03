@@ -58,7 +58,7 @@ export const useGetMangaMetadata = (
     defaultMetadata?: MangaMetadata,
 ): MangaMetadata => {
     const metadata = getMetadata(metaHolder, defaultMetadata, useEffect);
-    return useMemo(() => metadata, [metaHolder, defaultMetadata]);
+    return useMemo(() => metadata, [metaHolder.id, metaHolder.meta, defaultMetadata]);
 };
 
 export const updateMangaMetadata = async <

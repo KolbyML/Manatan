@@ -35,6 +35,7 @@ pub async fn run_chapter_job(
     tracing::info!("[Job] Started for {} ({} pages)", context, total);
 
     let completed_counter = Arc::new(AtomicUsize::new(0));
+    let processed_counter = Arc::new(AtomicUsize::new(0));
     let stream = futures::stream::iter(pages.into_iter());
 
     // Change from 6 to 2 or 3 for Android stability
@@ -48,6 +49,7 @@ pub async fn run_chapter_job(
             let pass = pass.clone();
             let context = context.clone();
             let completed_counter = completed_counter.clone();
+            let processed_counter = processed_counter.clone();
 
             let page_id = url.split('/').next_back().unwrap_or("unknown").to_string();
 
@@ -55,6 +57,8 @@ pub async fn run_chapter_job(
                 let cache_key = crate::logic::get_cache_key(&url, Some(language));
                 let exists = state.has_cache_entry(&cache_key);
                 if exists {
+                    state.insert_chapter_cache(&job_id, &cache_key);
+                    processed_counter.fetch_add(1, Ordering::Relaxed);
                     tracing::info!("[Page {page_id}] Skip (Cached)");
                 } else {
                     tracing::info!("[Page {page_id}] Starting fetch_and_process (Async)...");
@@ -67,15 +71,19 @@ pub async fn run_chapter_job(
                         add_space_on_merge,
                         language,
                     )
-                        .await
+                    .await
                     {
-                        Ok(res) => state.insert_cache_entry(
-                            &cache_key,
-                            &crate::state::CacheEntry {
-                                context: context.clone(),
-                                data: res,
-                            },
-                        ),
+                        Ok(res) => {
+                            state.insert_cache_entry(
+                                &cache_key,
+                                &crate::state::CacheEntry {
+                                    context: context.clone(),
+                                    data: res,
+                                },
+                            );
+                            state.insert_chapter_cache(&job_id, &cache_key);
+                            processed_counter.fetch_add(1, Ordering::Relaxed);
+                        }
                         Err(err) => {
                             tracing::warn!("[Page {page_id}] Failed: {err:?}");
                         }
@@ -83,6 +91,8 @@ pub async fn run_chapter_job(
                 }
 
                 let current = completed_counter.fetch_add(1, Ordering::Relaxed) + 1;
+                let processed_count = processed_counter.load(Ordering::Relaxed);
+                state.set_chapter_progress(&job_id, total, processed_count);
 
                 {
                     if let Some(prog) = state
@@ -94,12 +104,13 @@ pub async fn run_chapter_job(
                         prog.current = current;
                     }
                 }
-
             }
         })
         .await;
 
     tracing::info!("[Job {job_id}] Finalize...");
+    let processed_count = processed_counter.load(Ordering::Relaxed);
+    state.set_chapter_progress(&job_id, total, processed_count);
 
     state.active_jobs.fetch_sub(1, Ordering::Relaxed);
 

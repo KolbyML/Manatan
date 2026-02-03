@@ -26,7 +26,7 @@ export const ServerAddressSetting = () => {
             settingName={t('settings.about.server.label.address')}
             handleChange={handleServerAddressChange}
             value={serverAddress}
-            placeholder="http://localhost:4567"
+            placeholder="http://localhost:4568"
         />
     );
 };

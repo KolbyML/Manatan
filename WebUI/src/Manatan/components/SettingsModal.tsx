@@ -10,7 +10,7 @@ import { AppStorage } from '@/lib/storage/AppStorage.ts';
 import { COLOR_THEMES, DEFAULT_SETTINGS } from '@/Manatan/types';
 import { apiRequest, getAppVersion, checkForUpdates, triggerAppUpdate, installAppUpdate, getFrequencyDictionaries, getDictionaries } from '@/Manatan/utils/api';
 import { DictionaryManager } from './DictionaryManager';
-import { getAnkiVersion, getDeckNames, getModelNames, getModelFields } from '@/Manatan/utils/anki';
+import { getAnkiVersion, getDeckNames, getModelNames, getModelFields, logAnkiError } from '@/Manatan/utils/anki';
 import { ResetButton } from '@/base/components/buttons/ResetButton.tsx';
 import { Hotkey } from '@/features/reader/hotkeys/settings/components/Hotkey.tsx';
 import { RecordHotkey } from '@/features/reader/hotkeys/settings/components/RecordHotkey.tsx';
@@ -302,7 +302,7 @@ export const SettingsModal: React.FC<{ onClose: () => void }> = ({ onClose }) =>
                 setAnkiDecks(d);
                 setAnkiModels(m);
             } catch (e) {
-                console.error("Failed to fetch anki metadata", e);
+                logAnkiError("Failed to fetch anki metadata", e);
             }
         } else {
             setAnkiStatus('error');
@@ -323,7 +323,9 @@ export const SettingsModal: React.FC<{ onClose: () => void }> = ({ onClose }) =>
                  try {
                      const f = await getModelFields(url, localSettings.ankiModel);
                      setCurrentModelFields(f);
-                 } catch(e) { console.error(e); }
+                 } catch (e) {
+                     logAnkiError("Failed to fetch anki model fields", e);
+                 }
              }
         };
         fetchFields();
@@ -419,7 +421,7 @@ export const SettingsModal: React.FC<{ onClose: () => void }> = ({ onClose }) =>
         });
 
         if (key === 'enableYomitan' && value === true) {
-            const language = (key === 'yomitanLanguage' ? value : localSettings.yomitanLanguage) || 'japanese';
+            const language = localSettings.yomitanLanguage || 'japanese';
             await installDictionary(language);
         }
     };

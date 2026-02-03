@@ -55,7 +55,7 @@ type EpisodeResponse = {
 
 export const AnimeDetails = () => {
     const { t } = useTranslation();
-    const { id } = useParams();
+    const { id } = useParams<{ id: string }>();
     const [data, setData] = useState<AnimeDetailsResponse | null>(null);
     const [episodes, setEpisodes] = useState<EpisodeResponse[]>([]);
     const [error, setError] = useState<string | null>(null);
@@ -113,7 +113,7 @@ export const AnimeDetails = () => {
     }, [id, refreshToken, t]);
 
     useAppTitleAndAction(
-        data?.title ?? t('anime.title'),
+        data?.title ?? t('anime.title' as any),
         <Stack direction="row" sx={{ alignItems: 'center' }}>
             {error && (
                 <CustomTooltip

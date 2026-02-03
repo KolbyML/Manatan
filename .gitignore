@@ -144,16 +144,6 @@ bin/manatan/resources/webui*
 bin/manatan/resources/natives.zip
 bin/manatan/resources/Suwayomi-Server.jar
 bin/manatan/resources/jre_bundle.zip
-bin/manatan_ios/.build/*
-bin/manatan_ios/Manatan/assets/*
-bin/manatan_ios/Manatan/lib/*
-bin/manatan_ios/frameworks/*
-ios_framework.zip
-!bin/manatan_ios/Manatan/lib/empty.txt
-bin/manatan_ios/Manatan/jar/*
-!bin/manatan_ios/Manatan/jar/empty.txt
-bin/manatan_ios/Manatan/webui/*
-!bin/manatan_ios/Manatan/webui/empty.txt
 jre_bundle
 temp_natives/*
 jogamp.7z
@@ -164,7 +154,6 @@ manatan-linux-*.tar.gz
 # iOS / Xcode (Updated)
 # ==========================================
 # Ignore user-specific Xcode settings that cause merge conflicts
-bin/manatan_ios/Manatan.xcodeproj/xcuserdata/
 *.xcuserstate
 *.xcuserdatad
 

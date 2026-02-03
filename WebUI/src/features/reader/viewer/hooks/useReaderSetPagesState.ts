@@ -50,6 +50,8 @@ export const useReaderSetPagesState = (
         }
 
         const { pages: pagesFromResponse } = pagesPayload;
+        const chapterId = pagesPayload.chapter?.id;
+        const pageCount = pagesFromResponse.length;
         const tmpPages = pagesFromResponse.length ? pagesFromResponse : [''];
         const newPages = tmpPages.map((page) =>
             UrlUtil.addParams(page, { sourceId: getReaderStore().manga?.sourceId }),
@@ -79,6 +81,36 @@ export const useReaderSetPagesState = (
         setReaderStateChapters((prevState) => ({
             ...prevState,
             isCurrentChapterReady: arePagesFetched || didPagesChange,
+            mangaChapters: chapterId
+                ? prevState.mangaChapters?.map((chapter) =>
+                      chapter.id === chapterId ? { ...chapter, pageCount } : chapter,
+                  )
+                : prevState.mangaChapters,
+            chapters: chapterId
+                ? prevState.chapters.map((chapter) =>
+                      chapter.id === chapterId ? { ...chapter, pageCount } : chapter,
+                  )
+                : prevState.chapters,
+            initialChapter:
+                chapterId && prevState.initialChapter?.id === chapterId
+                    ? { ...prevState.initialChapter, pageCount }
+                    : prevState.initialChapter,
+            currentChapter:
+                chapterId && prevState.currentChapter?.id === chapterId
+                    ? { ...prevState.currentChapter, pageCount }
+                    : prevState.currentChapter,
+            nextChapter:
+                chapterId && prevState.nextChapter?.id === chapterId
+                    ? { ...prevState.nextChapter, pageCount }
+                    : prevState.nextChapter,
+            previousChapter:
+                chapterId && prevState.previousChapter?.id === chapterId
+                    ? { ...prevState.previousChapter, pageCount }
+                    : prevState.previousChapter,
+            chapterForDuplicatesHandling:
+                chapterId && prevState.chapterForDuplicatesHandling?.id === chapterId
+                    ? { ...prevState.chapterForDuplicatesHandling, pageCount }
+                    : prevState.chapterForDuplicatesHandling,
         }));
 
         setTransitionPageMode(ReaderTransitionPageMode.NONE);

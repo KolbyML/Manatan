@@ -31,7 +31,7 @@ import { TrackerMangaCard } from '@/features/tracker/components/cards/TrackerMan
 import { DIALOG_PADDING } from '@/features/tracker/Tracker.constants.ts';
 import { useGetOptionForDirection } from '@/features/theme/services/ThemeCreator.ts';
 import { defaultPromiseErrorHandler } from '@/lib/DefaultPromiseErrorHandler.ts';
-import { MangaType } from '@/lib/graphql/generated/graphql.ts';
+import { MangaType } from '@/lib/requests/types.ts';
 
 import { MangaIdInfo } from '@/features/manga/Manga.types.ts';
 import { getErrorMessage } from '@/lib/HelperFunctions.ts';

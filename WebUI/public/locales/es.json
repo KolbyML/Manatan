@@ -200,12 +200,6 @@
                 },
                 "title": "Varios",
                 "log_level": {
-                    "graphql": {
-                        "label": {
-                            "title": "Activar los registros de depuración de graphql",
-                            "description": "Esto incluye registros con información no segura para la privacidad"
-                        }
-                    },
                     "label": {
                         "server": "Activar los registros de depuración"
                     }

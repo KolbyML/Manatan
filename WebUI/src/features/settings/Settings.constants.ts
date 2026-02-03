@@ -26,7 +26,7 @@ import {
     WebUiChannel,
     WebUiFlavor,
     WebUiInterface,
-} from '@/lib/graphql/generated/graphql.ts';
+} from '@/lib/requests/types.ts';
 import { ThemeMode } from '@/features/theme/AppTheme.types.ts';
 
 export const MANGA_GRID_WIDTH = {

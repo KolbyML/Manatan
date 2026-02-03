@@ -4,6 +4,15 @@ UNAME_S := $(shell uname -s)
 UNAME_M := $(shell uname -m)
 JOGAMP_TARGET := unknown
 
+MANATAN_SERVER_DIR ?= ../Manatan-Server
+MANATAN_SERVER_PUBLIC_DIR ?= ../Manatan-Server-Public
+LOCAL_TARGET ?= $(shell rustc -vV | sed -n 's/^host: //p')
+LOCAL_LIB_NAME := libmanatan_server.a
+
+ifneq (,$(findstring windows,$(LOCAL_TARGET)))
+LOCAL_LIB_NAME := manatan_server.lib
+endif
+
 # Default Architecture Detection
 DOCKER_ARCH := amd64
 FAKE_ARCH := arm64
@@ -67,6 +76,18 @@ clean:
 	rm -f manatan-linux-*.tar.gz
 	rm -rf jre_bundle
 	rm -rf WebUI/build
+
+.PHONY: local_build_all
+local_build_all:
+	@if [ -z "$(LOCAL_TARGET)" ]; then echo "Failed to detect rustc host target"; exit 1; fi
+	@echo "Building Manatan-Server static lib for $(LOCAL_TARGET)..."
+	@cd "$(MANATAN_SERVER_DIR)" && cargo build --release -p manatan-server
+	@mkdir -p "$(MANATAN_SERVER_PUBLIC_DIR)/lib/$(LOCAL_TARGET)"
+	@cp "$(MANATAN_SERVER_DIR)/target/$(LOCAL_TARGET)/release/$(LOCAL_LIB_NAME)" \
+		"$(MANATAN_SERVER_PUBLIC_DIR)/lib/$(LOCAL_TARGET)/$(LOCAL_LIB_NAME)"
+	@echo "Building Manatan..."
+	@cargo build --release -p manatan \
+		--config 'patch."https://github.com/KolbyML/Manatan-Server-Public".manatan-server-public={ path="../Manatan-Server-Public" }'
 
 .PHONY: clean_rust
 clean_rust:

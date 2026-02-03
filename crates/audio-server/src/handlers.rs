@@ -1,25 +1,28 @@
-use std::{collections::HashMap, io::Cursor};
-use std::convert::TryFrom;
+use std::{collections::HashMap, convert::TryFrom, io::Cursor};
 
-use anyhow::{anyhow, Context};
+use anyhow::{Context, anyhow};
 use axum::{
     extract::{Query, State},
     http::{HeaderMap, StatusCode},
     response::{IntoResponse, Response},
 };
 use bytes::Bytes;
-use hls_m3u8::{MasterPlaylist, MediaPlaylist};
-use hls_m3u8::tags::VariantStream;
-use hls_m3u8::types::{MediaType, ByteRange};
+use hls_m3u8::{
+    MasterPlaylist, MediaPlaylist,
+    tags::VariantStream,
+    types::{ByteRange, MediaType},
+};
 use reqwest::Client;
 use serde::Deserialize;
-use symphonia::core::audio::SampleBuffer;
-use symphonia::core::codecs::{DecoderOptions, CODEC_TYPE_NULL};
-use symphonia::core::errors::Error as SymphoniaError;
-use symphonia::core::formats::FormatOptions;
-use symphonia::core::io::MediaSourceStream;
-use symphonia::core::meta::MetadataOptions;
-use symphonia::core::probe::Hint;
+use symphonia::core::{
+    audio::SampleBuffer,
+    codecs::{CODEC_TYPE_NULL, DecoderOptions},
+    errors::Error as SymphoniaError,
+    formats::FormatOptions,
+    io::MediaSourceStream,
+    meta::MetadataOptions,
+    probe::Hint,
+};
 use tokio::task::spawn_blocking;
 use tracing::warn;
 use url::Url;
@@ -88,7 +91,13 @@ pub async fn clip_handler(
     headers: HeaderMap,
     Query(query): Query<AudioClipQuery>,
 ) -> Response {
-    let AudioClipQuery { animeId, episodeIndex, videoIndex, start, end } = query;
+    let AudioClipQuery {
+        animeId,
+        episodeIndex,
+        videoIndex,
+        start,
+        end,
+    } = query;
     if animeId < 0 || episodeIndex < 0 || videoIndex < 0 {
         return (StatusCode::BAD_REQUEST, "Invalid ids").into_response();
     }
@@ -102,7 +111,16 @@ pub async fn clip_handler(
         return (StatusCode::BAD_REQUEST, "Invalid range").into_response();
     }
 
-    let result = build_audio_clip(&state, &headers, animeId, episodeIndex, videoIndex, safe_start, duration).await;
+    let result = build_audio_clip(
+        &state,
+        &headers,
+        animeId,
+        episodeIndex,
+        videoIndex,
+        safe_start,
+        duration,
+    )
+    .await;
     match result {
         Ok(bytes) => (
             StatusCode::OK,
@@ -177,7 +195,9 @@ async fn build_audio_clip(
         if output_rate.is_none() {
             output_rate = Some(decoded.sample_rate);
             output_channels = Some(decoded.channels);
-        } else if output_rate != Some(decoded.sample_rate) || output_channels != Some(decoded.channels) {
+        } else if output_rate != Some(decoded.sample_rate)
+            || output_channels != Some(decoded.channels)
+        {
             return Err(anyhow!("Mismatched audio formats across segments"));
         }
 
@@ -217,11 +237,9 @@ async fn fetch_media_playlist(
 }
 
 fn select_master_variant(master: &MasterPlaylist<'static>, base_url: &Url) -> anyhow::Result<Url> {
-    if let Some(media) = master
-        .media
-        .iter()
-        .find(|media| media.media_type == MediaType::Audio && media.is_default && media.uri().is_some())
-    {
+    if let Some(media) = master.media.iter().find(|media| {
+        media.media_type == MediaType::Audio && media.is_default && media.uri().is_some()
+    }) {
         return resolve_url(base_url, media.uri().unwrap().as_ref());
     }
 
@@ -235,7 +253,10 @@ fn select_master_variant(master: &MasterPlaylist<'static>, base_url: &Url) -> an
 
     let mut best: Option<(&str, u64)> = None;
     for stream in &master.variant_streams {
-        if let VariantStream::ExtXStreamInf { uri, stream_data, .. } = stream {
+        if let VariantStream::ExtXStreamInf {
+            uri, stream_data, ..
+        } = stream
+        {
             let bandwidth = stream_data.bandwidth();
             if best.map_or(true, |(_, best_bw)| bandwidth < best_bw) {
                 best = Some((uri.as_ref(), bandwidth));
@@ -265,7 +286,10 @@ fn select_segments(
         if let Some(map) = &segment.map {
             let map_url = resolve_url(base_url, map.uri().as_ref())?;
             let map_range = map.range().map(resolve_range_from_byte_range);
-            last_map = Some(MapSelection { url: map_url, byte_range: map_range });
+            last_map = Some(MapSelection {
+                url: map_url,
+                byte_range: map_range,
+            });
         }
 
         let duration = segment.duration.duration().as_secs_f64();
@@ -456,7 +480,12 @@ fn decode_samples_from_bytes(
 
     let mss = MediaSourceStream::new(Box::new(Cursor::new(data)), Default::default());
     let probed = symphonia::default::get_probe()
-        .format(&hint, mss, &FormatOptions::default(), &MetadataOptions::default())
+        .format(
+            &hint,
+            mss,
+            &FormatOptions::default(),
+            &MetadataOptions::default(),
+        )
         .context("Unsupported segment format")?;
     let mut format = probed.format;
     let track = format
@@ -516,8 +545,10 @@ fn decode_samples_from_bytes(
                 let overlap_end = target_end.min(buffer_end);
 
                 if overlap_end > overlap_start {
-                    let start_frame = ((overlap_start - buffer_start) * rate_f).floor().max(0.0) as usize;
-                    let end_frame = ((overlap_end - buffer_start) * rate_f).ceil().max(0.0) as usize;
+                    let start_frame =
+                        ((overlap_start - buffer_start) * rate_f).floor().max(0.0) as usize;
+                    let end_frame =
+                        ((overlap_end - buffer_start) * rate_f).ceil().max(0.0) as usize;
                     let start_index = start_frame.saturating_mul(channels);
                     let end_index = end_frame
                         .saturating_mul(channels)
@@ -546,7 +577,11 @@ fn decode_samples_from_bytes(
         return Ok(None);
     }
 
-    Ok(Some(DecodedSamples { samples, sample_rate, channels }))
+    Ok(Some(DecodedSamples {
+        samples,
+        sample_rate,
+        channels,
+    }))
 }
 
 fn ts_packet_size(data: &[u8]) -> Option<usize> {
@@ -645,15 +680,24 @@ fn extract_adts_from_ts(data: &[u8], packet_size: usize) -> AdtsExtraction {
                     if data_start < payload.len() {
                         data_buf.extend_from_slice(&payload[data_start..]);
                     }
-                    current_pes = Some(PesPayload { pts, data: data_buf });
+                    current_pes = Some(PesPayload {
+                        pts,
+                        data: data_buf,
+                    });
                 } else {
-                    current_pes = Some(PesPayload { pts: None, data: payload.to_vec() });
+                    current_pes = Some(PesPayload {
+                        pts: None,
+                        data: payload.to_vec(),
+                    });
                 }
             } else if let Some(pes) = current_pes.as_mut() {
                 pes.data.extend_from_slice(payload);
             } else {
                 force_segment_start = true;
-                current_pes = Some(PesPayload { pts: None, data: payload.to_vec() });
+                current_pes = Some(PesPayload {
+                    pts: None,
+                    data: payload.to_vec(),
+                });
             }
         }
     }
@@ -676,7 +720,11 @@ fn extract_adts_from_ts(data: &[u8], packet_size: usize) -> AdtsExtraction {
         adts_stream = extract_adts_frames(data);
     }
     let first_pts = first_pts.map(|pts| pts as f64 / 90_000.0);
-    AdtsExtraction { data: adts_stream, first_pts, force_segment_start }
+    AdtsExtraction {
+        data: adts_stream,
+        first_pts,
+        force_segment_start,
+    }
 }
 
 fn parse_pat(payload: &[u8], pusi: bool, pmt_pid: &mut Option<u16>) {
@@ -731,7 +779,8 @@ fn parse_pmt(payload: &[u8], pusi: bool, audio_pid: &mut Option<u16>) {
     if section_end > payload.len() {
         return;
     }
-    let program_info_length = (((payload[idx + 10] & 0x0f) as usize) << 8) | payload[idx + 11] as usize;
+    let program_info_length =
+        (((payload[idx + 10] & 0x0f) as usize) << 8) | payload[idx + 11] as usize;
     let mut i = idx + 12 + program_info_length;
     while i + 5 <= section_end.saturating_sub(4) {
         let stream_type = payload[i];
@@ -861,7 +910,6 @@ fn encode_wav_i16(samples: &[i16], sample_rate: u32, channels: u16) -> anyhow::R
     Ok(output)
 }
 
-
 fn prepare_segment_audio(data: Vec<u8>, hint_extension: Option<String>) -> PreparedAudio {
     if let Some(packet_size) = ts_packet_size(&data) {
         let extraction = extract_adts_from_ts(&data, packet_size);
@@ -869,11 +917,20 @@ fn prepare_segment_audio(data: Vec<u8>, hint_extension: Option<String>) -> Prepa
             return PreparedAudio {
                 data: extraction.data,
                 hint_extension: Some("aac".to_string()),
-                first_pts: if extraction.force_segment_start { None } else { extraction.first_pts },
+                first_pts: if extraction.force_segment_start {
+                    None
+                } else {
+                    extraction.first_pts
+                },
                 force_segment_start: extraction.force_segment_start,
             };
         }
     }
 
-    PreparedAudio { data, hint_extension, first_pts: None, force_segment_start: false }
+    PreparedAudio {
+        data,
+        hint_extension,
+        first_pts: None,
+        force_segment_start: false,
+    }
 }

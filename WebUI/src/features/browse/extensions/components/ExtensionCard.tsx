@@ -131,7 +131,7 @@ export function ExtensionCard(props: IProps) {
                                 </Typography>
                             )}
                         </Typography>
-                        {showSourceRepo && <Typography variant="caption">{repo}</Typography>}
+                        {showSourceRepo && !!repo && <Typography variant="caption">{repo}</Typography>}
                     </Stack>
                     {isInstalled && (
                         <CustomTooltip title={t('settings.title')}>

@@ -14,7 +14,7 @@ import Box from '@mui/material/Box';
 import React, { useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useLocation, useParams } from 'react-router-dom';
-import { isNetworkRequestInFlight } from '@apollo/client/core/networkStatus';
+import { isNetworkRequestInFlight } from '@/lib/requests/RequestStatus.ts';
 import { CustomTooltip } from '@/base/components/CustomTooltip.tsx';
 import { requestManager } from '@/lib/requests/RequestManager.ts';
 import { ChapterList } from '@/features/chapter/components/ChapterList.tsx';
@@ -23,8 +23,6 @@ import { MangaDetails } from '@/features/manga/components/details/MangaDetails.t
 import { MangaToolbarMenu } from '@/features/manga/components/MangaToolbarMenu.tsx';
 import { EmptyViewAbsoluteCentered } from '@/base/components/feedback/EmptyViewAbsoluteCentered.tsx';
 import { LoadingPlaceholder } from '@/base/components/feedback/LoadingPlaceholder.tsx';
-import { GetMangaScreenQuery } from '@/lib/graphql/generated/graphql.ts';
-import { GET_MANGA_SCREEN } from '@/lib/graphql/manga/MangaQuery.ts';
 import { getErrorMessage } from '@/lib/HelperFunctions.ts';
 import { useAppTitleAndAction } from '@/features/navigation-bar/hooks/useAppTitleAndAction.ts';
 import { MangaLocationState } from '@/features/manga/Manga.types.ts';
@@ -42,7 +40,7 @@ export const Manga: React.FC = () => {
         loading: isLoading,
         networkStatus,
         refetch,
-    } = requestManager.useGetManga<GetMangaScreenQuery>(GET_MANGA_SCREEN, id);
+    } = requestManager.useGetMangaScreen(id);
     const isValidating = isNetworkRequestInFlight(networkStatus);
     const manga = data?.manga;
 

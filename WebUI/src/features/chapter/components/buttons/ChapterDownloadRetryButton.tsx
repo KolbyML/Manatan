@@ -9,7 +9,7 @@
 import Refresh from '@mui/icons-material/Refresh';
 import IconButton from '@mui/material/IconButton';
 import { useTranslation } from 'react-i18next';
-import { DownloadState } from '@/lib/graphql/generated/graphql.ts';
+import { DownloadState } from '@/lib/requests/types.ts';
 import { CustomTooltip } from '@/base/components/CustomTooltip.tsx';
 import { Chapters } from '@/features/chapter/services/Chapters.ts';
 import { requestManager } from '@/lib/requests/RequestManager.ts';

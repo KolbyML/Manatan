@@ -27,7 +27,7 @@ import { TrackMangaButton } from '@/features/manga/components/TrackMangaButton.t
 import { useManageMangaLibraryState } from '@/features/manga/hooks/useManageMangaLibraryState.tsx';
 import { Metadata as BaseMetadata } from '@/base/components/texts/Metadata.tsx';
 import { defaultPromiseErrorHandler } from '@/lib/DefaultPromiseErrorHandler.ts';
-import { MangaType, SourceType } from '@/lib/graphql/generated/graphql.ts';
+import { MangaType, SourceType } from '@/lib/requests/types.ts';
 import { useMetadataServerSettings } from '@/features/settings/services/ServerSettingsMetadata.ts';
 import { MANGA_STATUS_TO_TRANSLATION } from '@/features/manga/Manga.constants.ts';
 import {
@@ -227,7 +227,7 @@ export const MangaDetails = ({
         }
     }, [manga.source]);
 
-    const { updateLibraryState } = useManageMangaLibraryState(manga);
+    const { updateLibraryState, isInLibrary } = useManageMangaLibraryState(manga);
 
     const copyTitle = async () => {
         try {
@@ -279,10 +279,10 @@ export const MangaDetails = ({
                     <CustomButton
                         size="medium"
                         onClick={updateLibraryState}
-                        variant={manga.inLibrary ? 'contained' : 'outlined'}
+                        variant={isInLibrary ? 'contained' : 'outlined'}
                     >
-                        {manga.inLibrary ? <FavoriteIcon /> : <FavoriteBorderIcon />}
-                        {manga.inLibrary ? t('manga.button.in_library') : t('manga.button.add_to_library')}
+                        {isInLibrary ? <FavoriteIcon /> : <FavoriteBorderIcon />}
+                        {isInLibrary ? t('manga.button.in_library') : t('manga.button.add_to_library')}
                     </CustomButton>
                     <TrackMangaButton manga={manga} />
                     <OpenSourceButton url={manga.realUrl} />

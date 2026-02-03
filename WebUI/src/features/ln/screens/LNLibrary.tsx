@@ -249,7 +249,7 @@ const LNLibraryCard = ({ item, onOpen, onDelete, isSelectionMode, isSelected, on
                                                         ref={optionButtonRef}
                                                         component="span"
                                                         {...MUIUtil.preventRippleProp(bindTrigger(popupState), {
-                                                            onClick: (event) => {
+                                                            onClick: (event: React.MouseEvent<HTMLButtonElement>) => {
                                                                 event.stopPropagation();
                                                                 event.preventDefault();
                                                                 popupState.open();
@@ -319,7 +319,7 @@ const LNLibraryCard = ({ item, onOpen, onDelete, isSelectionMode, isSelected, on
                         <Menu {...bindMenu(popupState)}>
                             {(onClose) => (
                                 <MenuItem
-                                    onClick={(event) => {
+                                    onClick={(event: React.MouseEvent<HTMLElement>) => {
                                         onClose();
                                         onDelete(item.id, event);
                                     }}
@@ -482,6 +482,7 @@ export const LNLibrary: React.FC = () => {
                 importMessage: 'Starting...',
                 stats: { chapterLengths: [], totalLength: 0 },
                 chapterCount: 0,
+                toc: [],
             };
 
             currentLibrary = [placeholder, ...currentLibrary];

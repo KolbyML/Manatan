@@ -15,6 +15,7 @@ import Checkbox from '@mui/material/Checkbox';
 import MoreVertIcon from '@mui/icons-material/MoreVert';
 import { Link as RouterLink } from 'react-router-dom';
 import { useCallback, useRef } from 'react';
+import type { MouseEvent as ReactMouseEvent } from 'react';
 import PopupState, { bindMenu, bindTrigger } from 'material-ui-popup-state';
 import { useLongPress } from 'use-long-press';
 import { useTranslation } from 'react-i18next';
@@ -177,7 +178,7 @@ export const AnimeListCard = ({
                                                     <IconButton
                                                         ref={optionButtonRef}
                                                         {...MUIUtil.preventRippleProp(bindTrigger(popupState), {
-                                                            onClick: (event) => {
+                                                            onClick: (event: ReactMouseEvent<HTMLButtonElement>) => {
                                                                 event.stopPropagation();
                                                                 event.preventDefault();
                                                                 popupState.open();

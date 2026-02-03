@@ -3,186 +3,88 @@ use std::{io::Cursor, time::Duration};
 use anyhow::anyhow;
 use chrome_lens_ocr::LensClient;
 use image::{DynamicImage, GenericImageView, ImageBuffer, ImageFormat, ImageReader};
-use reqwest::header::{ACCEPT, CONTENT_TYPE};
+use reqwest::header::ACCEPT;
 use serde::{Deserialize, Serialize};
 
-use crate::language::OcrLanguage;
-use crate::merge::{self, MergeConfig};
+use crate::{
+    language::OcrLanguage,
+    merge::{self, MergeConfig},
+};
 
-// --- GraphQL Query Definitions ---
-
-const MANGA_CHAPTERS_QUERY: &str = r#"
-query MangaIdToChapterIDs($id: Int!) {
-  manga(id: $id) {
-    chapters {
-      nodes {
-        id
-        chapterNumber
-      }
-    }
-  }
-}
-"#;
-
-const GET_CHAPTER_PAGES_QUERY: &str = r#"
-mutation GET_CHAPTER_PAGES_FETCH($input: FetchChapterPagesInput!) {
-  fetchChapterPages(input: $input) {
-    chapter {
-      id
-      pageCount
-    }
-  }
-}
-"#;
-
-const PROXY_SETTINGS_QUERY: &str = r#"
-query GetProxySettings {
-  settings {
-    socksProxyEnabled
-    socksProxyVersion
-    socksProxyHost
-    socksProxyPort
-    socksProxyUsername
-    socksProxyPassword
-  }
-}
-"#;
-
-// --- GraphQL Structs ---
+// --- REST Structs ---
 
 #[derive(Deserialize)]
-struct ChapterPageCountResponse {
-    data: Option<ChapterPageCountData>,
+struct SettingsResponse {
+    settings: Option<ProxySettingsRaw>,
 }
 
 #[derive(Deserialize)]
-struct ChapterPageCountData {
-    manga: Option<MangaChaptersNode>,
-}
-
-#[derive(Deserialize)]
-struct MangaChaptersNode {
-    chapters: Option<ChapterList>,
-}
-
-#[derive(Deserialize)]
-struct ChapterList {
-    nodes: Option<Vec<ChapterNode>>,
-}
-
-#[derive(Deserialize)]
-struct ChapterNode {
-    id: i32,
-    #[serde(rename = "chapterNumber")]
-    chapter_number: f64,
-}
-
-#[derive(Deserialize)]
-struct FetchPagesResponse {
-    data: Option<FetchPagesData>,
-}
-
-#[derive(Deserialize)]
-struct FetchPagesData {
-    #[serde(rename = "fetchChapterPages")]
-    fetch_chapter_pages: Option<FetchChapterPagesNode>,
-}
-
-#[derive(Deserialize)]
-struct FetchChapterPagesNode {
-    chapter: Option<FetchedChapterNode>,
-}
-
-#[derive(Deserialize)]
-struct FetchedChapterNode {
-    #[serde(rename = "pageCount")]
-    page_count: Option<usize>,
-}
-
-#[derive(Deserialize)]
-struct ProxySettingsResponse {
-    data: Option<ProxySettingsData>,
-}
-
-#[derive(Deserialize)]
-struct ProxySettingsData {
-    settings: Option<ProxySettings>,
-}
-
-#[derive(Deserialize, Clone, Debug)]
-struct ProxySettings {
+struct ProxySettingsRaw {
     #[serde(rename = "socksProxyEnabled")]
-    socks_proxy_enabled: bool,
-
+    socks_proxy_enabled: Option<bool>,
     #[serde(rename = "socksProxyVersion")]
-    socks_proxy_version: i32,
-
+    socks_proxy_version: Option<i32>,
     #[serde(rename = "socksProxyHost")]
-    socks_proxy_host: String,
-
+    socks_proxy_host: Option<String>,
     #[serde(rename = "socksProxyPort")]
-    socks_proxy_port: String,
-
+    socks_proxy_port: Option<String>,
     #[serde(rename = "socksProxyUsername")]
     socks_proxy_username: Option<String>,
-
     #[serde(rename = "socksProxyPassword")]
     socks_proxy_password: Option<String>,
 }
 
-async fn execute_graphql_request(
-    query_body: serde_json::Value,
-    user: Option<String>,
-    pass: Option<String>,
-) -> anyhow::Result<reqwest::Response> {
-    let client = reqwest::Client::new();
-    let graphql_url = "http://127.0.0.1:4568/api/graphql";
-
-    let mut request = client
-        .post(graphql_url)
-        .header(CONTENT_TYPE, "application/json")
-        .header(ACCEPT, "application/json")
-        .json(&query_body);
-
-    if let Some(username) = user {
-        request = request.basic_auth(username, pass);
-    }
-
-    let response = request.send().await?;
-    let status = response.status();
-
-    if !status.is_success() {
-        let body = response
-            .text()
-            .await
-            .unwrap_or_else(|_| "[Failed to read body]".to_string());
-        return Err(anyhow!(
-            "GraphQL request failed (Status: {status}). Body: {body}"
-        ));
-    }
-
-    Ok(response)
+#[derive(Clone, Debug)]
+struct ProxySettings {
+    socks_proxy_enabled: bool,
+    socks_proxy_version: i32,
+    socks_proxy_host: String,
+    socks_proxy_port: String,
+    socks_proxy_username: Option<String>,
+    socks_proxy_password: Option<String>,
 }
 
 async fn get_proxy_settings(
     user: Option<String>,
     pass: Option<String>,
 ) -> anyhow::Result<Option<ProxySettings>> {
-    let query_body = serde_json::json!({
-        "operationName": "GetProxySettings",
-        "query": PROXY_SETTINGS_QUERY,
-    });
-
-    let response = execute_graphql_request(query_body, user, pass).await?;
-
-    let json_response: ProxySettingsResponse = response
+    let client = reqwest::Client::new();
+    let settings_url = "http://127.0.0.1:4568/api/v1/settings";
+    let mut request = client.get(settings_url).header(ACCEPT, "application/json");
+    if let Some(username) = user {
+        request = request.basic_auth(username, pass);
+    }
+    let response = request.send().await?;
+    let status = response.status();
+    if !status.is_success() {
+        let body = response
+            .text()
+            .await
+            .unwrap_or_else(|_| "[Failed to read body]".to_string());
+        return Err(anyhow!(
+            "REST request failed (Status: {status}). Body: {body}"
+        ));
+    }
+    let json_response: SettingsResponse = response
         .json()
         .await
-        .map_err(|err| anyhow!("Error decoding proxy settings GraphQL response: {err}"))?;
-
-    let proxy_settings = json_response.data.and_then(|data| data.settings);
-
-    Ok(proxy_settings)
+        .map_err(|err| anyhow!("Error decoding settings REST response: {err}"))?;
+    let Some(raw) = json_response.settings else {
+        return Ok(None);
+    };
+    let settings = ProxySettings {
+        socks_proxy_enabled: raw.socks_proxy_enabled.unwrap_or(false),
+        socks_proxy_version: raw.socks_proxy_version.unwrap_or(5),
+        socks_proxy_host: raw.socks_proxy_host.unwrap_or_default(),
+        socks_proxy_port: raw.socks_proxy_port.unwrap_or_default(),
+        socks_proxy_username: raw
+            .socks_proxy_username
+            .filter(|value| !value.is_empty()),
+        socks_proxy_password: raw
+            .socks_proxy_password
+            .filter(|value| !value.is_empty()),
+    };
+    Ok(Some(settings))
 }
 
 pub async fn resolve_total_pages_from_graphql(
@@ -190,70 +92,73 @@ pub async fn resolve_total_pages_from_graphql(
     user: Option<String>,
     pass: Option<String>,
 ) -> anyhow::Result<usize> {
+    resolve_total_pages_from_rest(chapter_base_url, user, pass).await
+}
+
+#[derive(Deserialize)]
+struct RestPageList {
+    pages: Vec<String>,
+}
+
+fn derive_api_base(chapter_base_url: &str) -> String {
+    if let Ok(parsed) = reqwest::Url::parse(chapter_base_url) {
+        let scheme = parsed.scheme();
+        let host = parsed.host_str().unwrap_or("127.0.0.1");
+        let port = parsed
+            .port()
+            .map(|value| format!(":{}", value))
+            .unwrap_or_default();
+        format!("{}://{}{}", scheme, host, port)
+    } else {
+        "http://127.0.0.1:4568".to_string()
+    }
+}
+
+pub async fn resolve_total_pages_from_rest(
+    chapter_base_url: &str,
+    user: Option<String>,
+    pass: Option<String>,
+) -> anyhow::Result<usize> {
     let path = get_cache_key(chapter_base_url, None);
-
     let parts: Vec<&str> = path.split('/').collect();
-
     let manga_id_str = parts
         .iter()
         .find(|&part| *part == "manga")
         .and_then(|_| parts.get(parts.iter().position(|&part| part == "manga")? + 1))
         .ok_or_else(|| anyhow!("Failed to parse manga ID from URL: {chapter_base_url}"))?;
-
-    let chapter_number_str = parts
+    let chapter_index_str = parts
         .iter()
         .find(|&part| *part == "chapter")
         .and_then(|_| parts.get(parts.iter().position(|&part| part == "chapter")? + 1))
-        .ok_or_else(|| anyhow!("Failed to parse chapter number from URL: {chapter_base_url}"))?;
+        .ok_or_else(|| anyhow!("Failed to parse chapter index from URL: {chapter_base_url}"))?;
 
-    let manga_id = manga_id_str.parse::<i32>()?;
-    let chapter_number = chapter_number_str.parse::<i32>()?;
+    let api_base = derive_api_base(chapter_base_url);
+    let url = format!(
+        "{}/api/v1/manga/{}/chapter/{}/pages",
+        api_base, manga_id_str, chapter_index_str
+    );
 
-    let query_body = serde_json::json!({
-        "operationName": "MangaIdToChapterIDs",
-        "variables": { "id": manga_id },
-        "query": MANGA_CHAPTERS_QUERY,
-    });
-
-    let response = execute_graphql_request(query_body, user.clone(), pass.clone()).await?;
-
-    let json_response: ChapterPageCountResponse = response
+    let client = reqwest::Client::new();
+    let mut request = client.get(url).header(ACCEPT, "application/json");
+    if let Some(username) = user {
+        request = request.basic_auth(username, pass);
+    }
+    let response = request.send().await?;
+    let status = response.status();
+    if !status.is_success() {
+        let body = response
+            .text()
+            .await
+            .unwrap_or_else(|_| "[Failed to read body]".to_string());
+        return Err(anyhow!(
+            "REST request failed (Status: {status}). Body: {body}"
+        ));
+    }
+    let list: RestPageList = response
         .json()
         .await
-        .map_err(|err| anyhow!("Error decoding STEP 1 GraphQL response: {err}"))?;
-
-    let chapters: Vec<ChapterNode> = json_response
-        .data
-        .and_then(|data| data.manga)
-        .and_then(|manga| manga.chapters)
-        .and_then(|chapters| chapters.nodes)
-        .ok_or_else(|| anyhow!("GraphQL STEP 1 response missing chapter nodes"))?;
-
-    let internal_chapter_id = chapters[(chapter_number - 1) as usize].id;
-
-    let mutation_body = serde_json::json!({
-        "operationName": "GET_CHAPTER_PAGES_FETCH",
-        "variables": {
-            "input": { "chapterId": internal_chapter_id }
-        },
-        "query": GET_CHAPTER_PAGES_QUERY,
-    });
-
-    let response = execute_graphql_request(mutation_body, user, pass).await?;
-
-    let json_response: FetchPagesResponse = response
-        .json()
-        .await
-        .map_err(|err| anyhow!("Error decoding STEP 2 GraphQL response: {err}"))?;
-
-    let page_count = json_response
-        .data
-        .and_then(|data| data.fetch_chapter_pages)
-        .and_then(|fetch| fetch.chapter)
-        .and_then(|chapter| chapter.page_count)
-        .ok_or_else(|| anyhow!("GraphQL STEP 2 response missing page count"))?;
-
-    Ok(page_count)
+        .map_err(|err| anyhow!("Error decoding REST response: {err}"))?;
+    Ok(list.pages.len())
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug)]
@@ -283,9 +188,16 @@ pub struct BoundingBox {
 /// Helper to strip the scheme/host/query from the URL for caching purposes.
 pub fn get_cache_key(url: &str, language: Option<OcrLanguage>) -> String {
     let raw = if let Ok(parsed) = reqwest::Url::parse(url) {
-        parsed.path().to_string()
+        let mut path = parsed.path().to_string();
+        if let Some(query) = parsed.query() {
+            if !query.is_empty() {
+                path.push('?');
+                path.push_str(query);
+            }
+        }
+        path
     } else {
-        url.split('?').next().unwrap_or(url).to_string()
+        url.to_string()
     };
 
     if let Some(language) = language {
@@ -612,7 +524,7 @@ async fn fetch_and_process_internal(
         Ok(mut parsed) => {
             let _ = parsed.set_scheme("http");
             let _ = parsed.set_host(Some("127.0.0.1"));
-            let _ = parsed.set_port(Some(4567));
+            let _ = parsed.set_port(Some(4568));
             parsed.to_string()
         }
         Err(_) => url.to_string(),

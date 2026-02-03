@@ -50,7 +50,7 @@ export const AnimeSourceBrowse = () => {
     const { t } = useTranslation();
     const navigate = useNavigate();
     const location = useLocation();
-    const { sourceId } = useParams();
+    const { sourceId } = useParams<{ sourceId: string }>();
     const [searchParams] = useSearchParams();
     const query = searchParams.get('query') ?? '';
 
@@ -181,7 +181,7 @@ export const AnimeSourceBrowse = () => {
                     variant={contentType === AnimeSourceContentType.SEARCH ? 'contained' : 'outlined'}
                     onClick={() => setContentType(AnimeSourceContentType.SEARCH)}
                 >
-                    {t('global.button.search')}
+                    {t('global.button.search' as any)}
                 </Button>
             </Stack>
             <Grid container spacing={1}>

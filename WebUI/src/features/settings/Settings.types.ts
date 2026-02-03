@@ -19,7 +19,7 @@ import {
     Maybe,
     SettingsDownloadConversion,
     SettingsDownloadConversionHeader,
-} from '@/lib/graphql/generated/graphql.ts';
+} from '@/lib/requests/types.ts';
 import { MetadataHistorySettings } from '@/features/history/History.types.ts';
 
 export type MetadataServerSettingKeys = keyof MetadataServerSettings;

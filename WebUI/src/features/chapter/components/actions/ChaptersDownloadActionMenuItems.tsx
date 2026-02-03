@@ -8,21 +8,12 @@
 
 import MenuItem from '@mui/material/MenuItem';
 import { useTranslation } from 'react-i18next';
-import gql from 'graphql-tag';
 import { useMetadataServerSettings } from '@/features/settings/services/ServerSettingsMetadata.ts';
 import { Mangas } from '@/features/manga/services/Mangas.ts';
 import { defaultPromiseErrorHandler } from '@/lib/DefaultPromiseErrorHandler.ts';
-import {
-    ChapterOrderBy,
-    GetChaptersMangaQuery,
-    GetChaptersMangaQueryVariables,
-    MangaType,
-    SortOrder,
-} from '@/lib/graphql/generated/graphql.ts';
-import { MANGA_META_FIELDS } from '@/lib/graphql/manga/MangaFragments.ts';
+import { MangaType } from '@/lib/requests/types.ts';
 import { getMangaMetadata } from '@/features/manga/services/MangaMetadata.ts';
 import { requestManager } from '@/lib/requests/RequestManager.ts';
-import { GET_CHAPTERS_MANGA } from '@/lib/graphql/chapter/ChapterQuery.ts';
 import { filterChapters } from '@/features/chapter/utils/ChapterList.util.tsx';
 import { Chapters } from '@/features/chapter/services/Chapters.ts';
 import { makeToast } from '@/base/utils/Toast.ts';
@@ -67,29 +58,16 @@ const handleDownload = async (
     }
 
     const mangaId = mangaIds[0];
-    const manga = Mangas.getFromCache(
-        mangaId,
-        gql`
-            ${MANGA_META_FIELDS}
-            fragment MangaInLibraryState on MangaType {
-                id
-                meta {
-                    ...MANGA_META_FIELDS
-                }
-            }
-        `,
-        'MangaInLibraryState',
-    )!;
+    const mangaResponse = await requestManager.getMangaScreen(mangaId).response;
+    const manga = mangaResponse.data?.manga;
+    if (!manga) {
+        throw new Error('Failed to load manga');
+    }
     const meta = getMangaMetadata(manga);
-    const chapters = await requestManager.getChapters<GetChaptersMangaQuery, GetChaptersMangaQueryVariables>(
-        GET_CHAPTERS_MANGA,
-        {
-            // Align conditions/filters with the query from ChapterList to potentially be able to reuse the cache
-            condition: { mangaId: Number(mangaId) },
-            order: [{ by: ChapterOrderBy.SourceOrder, byType: SortOrder.Desc }],
-        },
-    ).response;
-    const filteredChapters = filterChapters(chapters.data.chapters.nodes, meta);
+
+    const chaptersResponse = await requestManager.getMangaChaptersList(mangaId).response;
+    const chapterNodes = chaptersResponse.data?.chapters.nodes ?? [];
+    const filteredChapters = filterChapters(chapterNodes, meta);
 
     const doNecessaryDownloadAheadDownloadsExist =
         downloadAhead &&

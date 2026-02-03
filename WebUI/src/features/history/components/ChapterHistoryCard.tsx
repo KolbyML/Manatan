@@ -12,7 +12,7 @@ import Card from '@mui/material/Card';
 import { Link } from 'react-router-dom';
 import { memo } from 'react';
 import { DownloadStateIndicator } from '@/base/components/downloads/DownloadStateIndicator.tsx';
-import { ChapterHistoryListFieldsFragment } from '@/lib/graphql/generated/graphql.ts';
+import { ChapterHistoryListFieldsFragment } from '@/lib/requests/types.ts';
 import { AppRoutes } from '@/base/AppRoute.constants.ts';
 import { Chapters } from '@/features/chapter/services/Chapters.ts';
 import { epochToDate, timeFormatter } from '@/base/utils/DateHelper.ts';

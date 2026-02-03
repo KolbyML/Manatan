@@ -47,10 +47,12 @@ export const AnimeSourceCard = ({
     source,
     showSourceRepo,
     showLanguage,
+    onMetaUpdated,
 }: {
     source: AnimeSourceInfo;
     showSourceRepo: boolean;
     showLanguage: boolean;
+    onMetaUpdated?: () => void;
 }) => {
     const { t } = useTranslation();
     const navigate = useNavigate();
@@ -118,7 +120,7 @@ export const AnimeSourceCard = ({
                             {...MUIUtil.preventRippleProp()}
                             onClick={(event) => {
                                 event.preventDefault();
-                                updateSetting('isPinned', !isPinned);
+                                updateSetting('isPinned', !isPinned).then(() => onMetaUpdated?.());
                             }}
                             color={isPinned ? 'primary' : 'inherit'}
                         >

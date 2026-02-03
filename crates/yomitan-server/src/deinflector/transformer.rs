@@ -1,5 +1,7 @@
-use std::collections::{HashMap, HashSet};
-use std::sync::OnceLock;
+use std::{
+    collections::{HashMap, HashSet},
+    sync::OnceLock,
+};
 
 use anyhow::{Context, Result};
 use regex::Regex;

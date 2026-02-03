@@ -2,8 +2,8 @@ use std::{
     collections::HashMap,
     path::PathBuf,
     sync::{
-        atomic::{AtomicBool, Ordering},
         Arc, RwLock,
+        atomic::{AtomicBool, Ordering},
     },
 };
 
@@ -11,7 +11,7 @@ use r2d2::Pool;
 use r2d2_sqlite::SqliteConnectionManager;
 use serde::{Deserialize, Serialize};
 use tracing::info;
-use wordbase_api::{dict::yomitan::GlossaryTag, DictionaryId, Record};
+use wordbase_api::{DictionaryId, Record, dict::yomitan::GlossaryTag};
 
 pub type DbPool = Pool<SqliteConnectionManager>;
 

@@ -1,8 +1,8 @@
 import React, { useState, useMemo, useCallback } from 'react';
 import { createPortal } from 'react-dom';
 import { useOCR } from '@/Manatan/context/OCRContext';
-import { findNotes, addNote, guiBrowse, imageUrlToBase64Webp } from '@/Manatan/utils/anki';
-import { cleanPunctuation, lookupYomitan } from '@/Manatan/utils/api';
+import { findNotes, addNote, guiBrowse, imageUrlToBase64Webp, logAnkiError } from '@/Manatan/utils/anki';
+import { lookupYomitan } from '@/Manatan/utils/api';
 import { buildSentenceFuriganaFromLookup } from '@/Manatan/utils/japaneseFurigana';
 import {
     getWordAudioFilename,
@@ -148,7 +148,7 @@ const AnkiButtons: React.FC<{
                 setExistingNoteId(null);
             }
         } catch (e) {
-            console.error("Anki check failed", e);
+            logAnkiError("Anki check failed", e);
             setStatus('unknown'); 
         }
     };

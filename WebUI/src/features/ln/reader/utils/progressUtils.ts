@@ -399,6 +399,7 @@ export function findNodeBySentence(
 
     // Try full text first
     const searchText = sentenceText.substring(0, 30);
+    const shortSearch = sentenceText.substring(0, 12);
 
     while ((node = walker.nextNode())) {
         const text = node.textContent || '';
