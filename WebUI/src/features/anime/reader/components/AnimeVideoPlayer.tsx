@@ -856,11 +856,10 @@ export const AnimeVideoPlayer = ({
         if (!wrapper || !fullscreenElement) {
             return false;
         }
-        return fullscreenElement === wrapper || wrapper.contains(fullscreenElement);
+        return fullscreenElement.contains(wrapper) || wrapper.contains(fullscreenElement);
     }, []);
 
     const toggleFullscreen = useCallback(async () => {
-        const wrapper = wrapperRef.current;
         if (typeof document === 'undefined') {
             setIsPageFullscreen((prev) => !prev);
             return;
@@ -875,9 +874,10 @@ export const AnimeVideoPlayer = ({
             return;
         }
 
-        if (wrapper && wrapper.requestFullscreen) {
+        const fullscreenTarget = document.documentElement;
+        if (fullscreenTarget?.requestFullscreen) {
             try {
-                await wrapper.requestFullscreen();
+                await fullscreenTarget.requestFullscreen();
                 setIsPageFullscreen(true);
             } catch (err) {
                 setIsPageFullscreen(true);
