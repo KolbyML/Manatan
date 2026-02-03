@@ -22,6 +22,7 @@ import Slider from '@mui/material/Slider';
 import Menu from '@mui/material/Menu';
 import CircularProgress from '@mui/material/CircularProgress';
 import TextField from '@mui/material/TextField';
+import Switch from '@mui/material/Switch';
 import CloseIcon from '@mui/icons-material/Close';
 import PlayArrowIcon from '@mui/icons-material/PlayArrow';
 import PauseIcon from '@mui/icons-material/Pause';
@@ -31,6 +32,8 @@ import KeyboardArrowLeftIcon from '@mui/icons-material/KeyboardArrowLeft';
 import KeyboardArrowRightIcon from '@mui/icons-material/KeyboardArrowRight';
 import KeyboardDoubleArrowLeftIcon from '@mui/icons-material/KeyboardDoubleArrowLeft';
 import KeyboardDoubleArrowRightIcon from '@mui/icons-material/KeyboardDoubleArrowRight';
+import SkipNextIcon from '@mui/icons-material/SkipNext';
+import SkipPreviousIcon from '@mui/icons-material/SkipPrevious';
 import VideoSettingsIcon from '@mui/icons-material/OndemandVideo';
 import SubtitlesIcon from '@mui/icons-material/Subtitles';
 import SpeedIcon from '@mui/icons-material/Speed';
@@ -39,6 +42,8 @@ import FormatListBulletedIcon from '@mui/icons-material/FormatListBulleted';
 import FullscreenIcon from '@mui/icons-material/Fullscreen';
 import FullscreenExitIcon from '@mui/icons-material/FullscreenExit';
 import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
+import VisibilityIcon from '@mui/icons-material/Visibility';
+import VisibilityOffIcon from '@mui/icons-material/VisibilityOff';
 import UploadFileIcon from '@mui/icons-material/UploadFile';
 import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
 import NoteAddIcon from '@mui/icons-material/NoteAdd';
@@ -636,6 +641,10 @@ export const AnimeVideoPlayer = ({
         `anime-${animeId}-subtitle-key`,
         null,
     );
+    const [autoPlayNextEpisode, setAutoPlayNextEpisode] = useLocalStorage<boolean>(
+        'anime-auto-play-next-episode',
+        true,
+    );
     const [savedPlaybackRate, setSavedPlaybackRate] = useLocalStorage<number | null>(
         `anime-${animeId}-playback-rate`,
         null,
@@ -834,6 +843,40 @@ export const AnimeVideoPlayer = ({
             })),
         [availableSubtitleTracks],
     );
+    const hasSubtitleTracks = subtitleOptions.length > 0;
+    const shouldShowAutoPlayToggle = Boolean(onEpisodeSelect && episodeOptions.length > 1);
+
+    const { previousEpisodeOption, nextEpisodeOption, shouldShowEpisodeNavigation } = useMemo(() => {
+        if (!onEpisodeSelect || episodeOptions.length <= 1) {
+            return {
+                previousEpisodeOption: null,
+                nextEpisodeOption: null,
+                shouldShowEpisodeNavigation: false,
+            };
+        }
+        if (currentEpisodeIndex === null || currentEpisodeIndex === undefined) {
+            return {
+                previousEpisodeOption: null,
+                nextEpisodeOption: null,
+                shouldShowEpisodeNavigation: true,
+            };
+        }
+        const currentPosition = episodeOptions.findIndex((option) => option.index === currentEpisodeIndex);
+        if (currentPosition < 0) {
+            return {
+                previousEpisodeOption: null,
+                nextEpisodeOption: null,
+                shouldShowEpisodeNavigation: true,
+            };
+        }
+        return {
+            previousEpisodeOption: currentPosition > 0 ? episodeOptions[currentPosition - 1] : null,
+            nextEpisodeOption: currentPosition < episodeOptions.length - 1
+                ? episodeOptions[currentPosition + 1]
+                : null,
+            shouldShowEpisodeNavigation: true,
+        };
+    }, [currentEpisodeIndex, episodeOptions, onEpisodeSelect]);
 
     useEffect(() => {
         if (!isPageFullscreen) {
@@ -1604,6 +1647,9 @@ export const AnimeVideoPlayer = ({
             setSavedPlaybackPosition(null);
             lastSavedPositionRef.current = null;
             lastSavedAtRef.current = 0;
+            if (autoPlayNextEpisode && nextEpisodeOption && onEpisodeSelect) {
+                onEpisodeSelect(nextEpisodeOption.index);
+            }
         };
         const handlePageHide = () => persistPlaybackPosition(video.currentTime, true);
 
@@ -1618,7 +1664,13 @@ export const AnimeVideoPlayer = ({
             video.removeEventListener('ended', handleEnded);
             window.removeEventListener('pagehide', handlePageHide);
         };
-    }, [persistPlaybackPosition, setSavedPlaybackPosition]);
+    }, [
+        autoPlayNextEpisode,
+        nextEpisodeOption,
+        onEpisodeSelect,
+        persistPlaybackPosition,
+        setSavedPlaybackPosition,
+    ]);
 
     useEffect(() => {
         subtitleRequestRef.current += 1;
@@ -4510,6 +4562,29 @@ export const AnimeVideoPlayer = ({
                             <IconButton
                                 onClick={(event) => {
                                     event.stopPropagation();
+                                    if (!hasSubtitleTracks) {
+                                        return;
+                                    }
+                                    toggleSubtitles();
+                                }}
+                                color="inherit"
+                                disabled={!hasSubtitleTracks}
+                                aria-label={
+                                    hasSubtitleTracks
+                                        ? (isSubtitleDisabled ? 'Show subtitles' : 'Hide subtitles')
+                                        : 'No subtitles available'
+                                }
+                                title={
+                                    hasSubtitleTracks
+                                        ? (isSubtitleDisabled ? 'Show subtitles' : 'Hide subtitles')
+                                        : 'No subtitles available'
+                                }
+                            >
+                                {isSubtitleDisabled ? <VisibilityOffIcon /> : <VisibilityIcon />}
+                            </IconButton>
+                            <IconButton
+                                onClick={(event) => {
+                                    event.stopPropagation();
                                     markMenuInteraction();
                                     setSpeedMenuAnchor(event.currentTarget);
                                 }}
@@ -4590,6 +4665,23 @@ export const AnimeVideoPlayer = ({
                         }}
                     >
                         <Stack direction="row" justifyContent="center" spacing={2} alignItems="center">
+                            {shouldShowEpisodeNavigation && (
+                                <IconButton
+                                    onClick={(event) => {
+                                        event.stopPropagation();
+                                        if (previousEpisodeOption && onEpisodeSelect) {
+                                            onEpisodeSelect(previousEpisodeOption.index);
+                                        }
+                                    }}
+                                    color="inherit"
+                                    sx={{ pointerEvents: 'auto' }}
+                                    disabled={!previousEpisodeOption || !onEpisodeSelect}
+                                    aria-label="Previous episode"
+                                    title={previousEpisodeOption ? 'Previous episode' : 'No previous episode'}
+                                >
+                                    <SkipPreviousIcon />
+                                </IconButton>
+                            )}
                             <IconButton
                                 onClick={(event) => {
                                     event.stopPropagation();
@@ -4626,6 +4718,23 @@ export const AnimeVideoPlayer = ({
                             >
                                 <RotateRightIcon />
                             </IconButton>
+                            {shouldShowEpisodeNavigation && (
+                                <IconButton
+                                    onClick={(event) => {
+                                        event.stopPropagation();
+                                        if (nextEpisodeOption && onEpisodeSelect) {
+                                            onEpisodeSelect(nextEpisodeOption.index);
+                                        }
+                                    }}
+                                    color="inherit"
+                                    sx={{ pointerEvents: 'auto' }}
+                                    disabled={!nextEpisodeOption || !onEpisodeSelect}
+                                    aria-label="Next episode"
+                                    title={nextEpisodeOption ? 'Next episode' : 'No next episode'}
+                                >
+                                    <SkipNextIcon />
+                                </IconButton>
+                            )}
                         </Stack>
                     </Box>
                     <Stack spacing={1} sx={{ pointerEvents: 'none', position: 'relative', zIndex: 4 }}>
@@ -4729,6 +4838,24 @@ export const AnimeVideoPlayer = ({
                                     >
                                         {formatTime(currentTime)} / {formatTime(duration)}
                                     </Typography>
+                                    {shouldShowAutoPlayToggle && (
+                                        <Box
+                                            sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}
+                                            onClick={(event) => event.stopPropagation()}
+                                            onMouseDown={(event) => event.stopPropagation()}
+                                        >
+                                            <Typography variant="caption" sx={{ opacity: 0.8, whiteSpace: 'nowrap' }}>
+                                                Auto-play
+                                            </Typography>
+                                            <Switch
+                                                size="small"
+                                                checked={Boolean(autoPlayNextEpisode)}
+                                                onChange={(event) => setAutoPlayNextEpisode(event.target.checked)}
+                                                color="default"
+                                                inputProps={{ 'aria-label': 'Auto-play next episode' }}
+                                            />
+                                        </Box>
+                                    )}
                                 </Box>
                             </Stack>
                             <Stack spacing={0.5} alignItems="center" sx={{ pointerEvents: 'auto' }}>
