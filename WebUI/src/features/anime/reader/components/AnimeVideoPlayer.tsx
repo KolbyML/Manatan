@@ -579,7 +579,9 @@ export const AnimeVideoPlayer = ({
 }: Props) => {
     const theme = useTheme();
     const isDesktop = useMediaQuery(theme.breakpoints.up('md'));
-    const isMobile = MediaQuery.useIsTouchDevice() || useMediaQuery(theme.breakpoints.down('sm'));
+    const isTouchDevice = MediaQuery.useIsTouchDevice();
+    const isNarrowScreen = useMediaQuery(theme.breakpoints.down('sm'));
+    const isMobile = isTouchDevice || isNarrowScreen;
     const { isAndroid, isDesktopPlatform } = useMemo(() => {
         const ua = navigator.userAgent;
         const android = /android/i.test(ua);

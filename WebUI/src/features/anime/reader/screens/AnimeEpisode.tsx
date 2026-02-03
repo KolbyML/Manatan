@@ -82,7 +82,9 @@ export const AnimeEpisode = () => {
     const { id, episodeIndex } = useParams();
     const navigate = useNavigate();
     const theme = useTheme();
-    const isMobile = MediaQuery.useIsTouchDevice() || useMediaQuery(theme.breakpoints.down('sm'));
+    const isTouchDevice = MediaQuery.useIsTouchDevice();
+    const isNarrowScreen = useMediaQuery(theme.breakpoints.down('sm'));
+    const isMobile = isTouchDevice || isNarrowScreen;
     const { settings } = useOCR();
     const { setOverride } = useNavBarContext();
     const [animeTitle, setAnimeTitle] = useState<string | null>(null);
