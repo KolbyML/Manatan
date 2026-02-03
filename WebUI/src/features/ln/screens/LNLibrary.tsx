@@ -236,6 +236,7 @@ const LNLibraryCard = ({ item, onOpen, onDelete, isSelectionMode, isSelected, on
                                                 <CustomTooltip title="Options">
                                                     <IconButton
                                                         ref={optionButtonRef}
+                                                        component="span"
                                                         {...MUIUtil.preventRippleProp(bindTrigger(popupState), {
                                                             onClick: (event) => {
                                                                 event.stopPropagation();
@@ -243,6 +244,7 @@ const LNLibraryCard = ({ item, onOpen, onDelete, isSelectionMode, isSelected, on
                                                                 popupState.open();
                                                             },
                                                         })}
+                                                        aria-label="Options"
                                                         className="ln-option-button"
                                                         size="small"
                                                         sx={{
