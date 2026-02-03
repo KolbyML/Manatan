@@ -546,7 +546,7 @@ export const SettingsModal: React.FC<{ onClose: () => void }> = ({ onClose }) =>
 
         let successCount = 0;
         let failCount = 0;
-        let lastMessage = '';
+        const failureMessages: string[] = [];
 
         for (let i = 0; i < files.length; i += 1) {
             const file = files[i];
@@ -556,15 +556,16 @@ export const SettingsModal: React.FC<{ onClose: () => void }> = ({ onClose }) =>
                 showProgress(`Importing ${i + 1}/${files.length}...`);
                 const res = await fetch('/api/yomitan/import', { method: 'POST', body: formData });
                 const json = await res.json();
-                lastMessage = json.message || lastMessage;
                 if (json.status === 'ok') {
                     successCount += 1;
                 } else {
                     failCount += 1;
+                    const message = json.message ? String(json.message) : 'Unknown error.';
+                    failureMessages.push(`${file.name}: ${message}`);
                 }
             } catch (err) {
                 failCount += 1;
-                lastMessage = String(err);
+                failureMessages.push(`${file.name}: ${String(err)}`);
             }
         }
 
@@ -575,9 +576,17 @@ export const SettingsModal: React.FC<{ onClose: () => void }> = ({ onClose }) =>
         if (failCount === 0) {
             showAlert('Success', `Imported ${successCount} dictionaries.`);
         } else if (successCount === 0) {
-            showAlert('Failed', lastMessage || 'No dictionaries were imported.');
+            showAlert('Failed', failureMessages.join('\n') || 'No dictionaries were imported.');
         } else {
-            showAlert('Partial Success', `Imported ${successCount}. Failed ${failCount}. ${lastMessage || ''}`.trim());
+            const detail = failureMessages.length
+                ? `Failed dictionaries:\n${failureMessages.join('\n')}`
+                : 'Some dictionaries failed to import.';
+            showAlert(
+                'Partial Import',
+                `Imported ${successCount} dictionary${successCount === 1 ? '' : 'ies'}.
+Failed ${failCount}.
+${detail}`,
+            );
         }
 
         if (fileInputRef.current) {
