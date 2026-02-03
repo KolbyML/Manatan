@@ -39,6 +39,22 @@ pub fn import_zip(state: &AppState, data: &[u8]) -> Result<String> {
         file.read_to_string(&mut s)?;
         let json: Value = serde_json::from_str(&s)?;
 
+        let format_value = json.get("format").or_else(|| json.get("version"));
+        let format_version = format_value.and_then(|value| {
+            value
+                .as_i64()
+                .or_else(|| value.as_str().and_then(|text| text.parse::<i64>().ok()))
+        });
+        if format_version != Some(3) {
+            return Err(anyhow::anyhow!(match format_version {
+                Some(found) => format!(
+                    "Unsupported dictionary format version {} (expected 3).",
+                    found
+                ),
+                None => "Unsupported dictionary format: missing version (expected 3).".to_string(),
+            }));
+        }
+
         let name = json["title"].as_str().unwrap_or("Unknown").to_string();
         let mut dm = DictionaryMeta::new(DictionaryKind::Yomitan, name);
         dm.version = json["revision"].as_str().map(|s| s.to_string());
@@ -47,6 +63,19 @@ pub fn import_zip(state: &AppState, data: &[u8]) -> Result<String> {
     };
 
     let dict_name = meta.name.clone();
+    let normalized_name = dict_name.trim().to_lowercase();
+    {
+        let dicts = state.dictionaries.read().expect("lock");
+        if dicts
+            .values()
+            .any(|dict| dict.name.trim().to_lowercase() == normalized_name)
+        {
+            return Err(anyhow::anyhow!(format!(
+                "Dictionary '{}' is already imported.",
+                dict_name
+            )));
+        }
+    }
 
     // 2. Database Transaction Setup
     let mut conn = state.pool.get()?;
