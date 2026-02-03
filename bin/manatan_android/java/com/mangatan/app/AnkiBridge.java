@@ -403,22 +403,19 @@ public class AnkiBridge {
         String targetName = params.getString("modelName");
         JSONArray result = new JSONArray();
 
-        // 1. We query for the Name AND the Fields
         try (Cursor c = ctx.getContentResolver().query(
                 MODELS_URI,
                 new String[]{MODEL_NAME, MODEL_FIELD_NAMES},
-                null, null, null)) { // We query all because AnkiDroid is ignoring filters
+                null, null, null)) { 
 
             if (c != null) {
                 while (c.moveToNext()) {
                     String dbModelName = c.getString(0);
 
-                    // 2. Manually verify the name matches exactly
                     if (dbModelName == null || !dbModelName.equals(targetName)) {
                         continue;
                     }
 
-                    // 3. If we are here, we found the right model. Now parse it.
                     String rawData = c.getString(1);
                     if (rawData == null) continue;
 
@@ -467,7 +464,6 @@ public class AnkiBridge {
     String query = params.getString("query");
     String searchQuery = query;
     
-    // If searching by note ID, add deck context
     if (query.startsWith("nid:")) {
         try {
             long noteId = Long.parseLong(query.substring(4).trim());
@@ -475,7 +471,6 @@ public class AnkiBridge {
             try (Cursor c = ctx.getContentResolver().query(cardsUri, new String[]{"deck_id"}, null, null, null)) {
                 if (c != null && c.moveToFirst()) {
                     long deckId = c.getLong(0);
-                    // Find deck name using existing pattern
                     try (Cursor d = ctx.getContentResolver().query(DECKS_URI, new String[]{DECK_ID, DECK_NAME}, null, null, null)) {
                         if (d != null) {
                             while (d.moveToNext()) {
@@ -503,14 +498,14 @@ public class AnkiBridge {
     return new JSONArray();
 }
 
-    private static long addNote(Context ctx, JSONObject params) throws Exception {
+      private static long addNote(Context ctx, JSONObject params) throws Exception {
         JSONObject note = params.getJSONObject("note");
         String deckName = note.getString("deckName");
         String modelName = note.getString("modelName");
         JSONObject fields = note.getJSONObject("fields");
 
-        if (note.has("picture")) processMedia(ctx, fields, note.get("picture"));
-        if (note.has("audio")) processMedia(ctx, fields, note.get("audio"));
+        if (note.has("picture")) processMedia(ctx, fields, note.get("picture"), false);
+        if (note.has("audio")) processMedia(ctx, fields, note.get("audio"), true);
 
         long targetDeckId = findDeckId(ctx, deckName);
         long modelId = findModelId(ctx, modelName);
@@ -567,7 +562,8 @@ public class AnkiBridge {
         long noteId = note.getLong("id");
         JSONObject fields = note.getJSONObject("fields");
 
-        if (note.has("picture")) processMedia(ctx, fields, note.get("picture"));
+        if (note.has("picture")) processMedia(ctx, fields, note.get("picture"), false);
+        if (note.has("audio")) processMedia(ctx, fields, note.get("audio"), true);
 
         Uri uri = Uri.withAppendedPath(NOTES_URI, String.valueOf(noteId));
         try (Cursor c = ctx.getContentResolver().query(uri, new String[]{NOTE_MID, NOTE_FLDS}, null, null, null)) {
@@ -589,6 +585,7 @@ public class AnkiBridge {
             }
         }
     }
+
 
     private static JSONArray canAddNotes(Context ctx, JSONObject params) throws Exception {
         JSONArray notes = params.getJSONArray("notes");
@@ -612,57 +609,67 @@ public class AnkiBridge {
         return results;
     }
 
-    private static void processMedia(Context ctx, JSONObject fields, Object mediaObj) throws Exception {
-    JSONArray arr = (mediaObj instanceof JSONArray) ? (JSONArray) mediaObj : new JSONArray().put(mediaObj);
+   private static void processMedia(Context ctx, JSONObject fields, Object mediaObj, boolean isAudioContext) throws Exception {
+        JSONArray arr = (mediaObj instanceof JSONArray) ? (JSONArray) mediaObj : new JSONArray().put(mediaObj);
 
-    for (int i = 0; i < arr.length(); i++) {
-        JSONObject m = arr.getJSONObject(i);
-        if (!m.has("data") || !m.has("filename")) continue;
+        Pattern VALID_AUDIO_EXT = Pattern.compile("(?i).*\\.(mp3|aac|m4a|wav|webm|ogg|flac)$");
 
-        String storedFilename = saveMedia(ctx, m.getString("filename"), m.getString("data"));
-        if (storedFilename == null) continue;
+        for (int i = 0; i < arr.length(); i++) {
+            JSONObject m = arr.getJSONObject(i);
+            
+            Log.i(TAG, "Processing media: " + m.toString()); 
+            
+            if (!m.has("filename")) continue;
+            String filename = m.getString("filename");
 
-        String val;
-        String lowerFilename = storedFilename.toLowerCase();
-        if (lowerFilename.endsWith(".mp3") ||
-                lowerFilename.endsWith(".aac") ||
-                lowerFilename.endsWith(".m4a") ||
-                lowerFilename.endsWith(".wav") ||
-                lowerFilename.endsWith(".webm") ||
-                lowerFilename.endsWith(".ogg") ||
-                lowerFilename.endsWith(".flac")) {
-            val = "[sound:" + storedFilename + "]";
-        } else {
-            val = "<img src=\"" + storedFilename + "\">";
-        }
+            if (isAudioContext) {
+                if (!VALID_AUDIO_EXT.matcher(filename).matches()) {
+                    if (filename.contains(".")) {
+                        filename = filename.substring(0, filename.lastIndexOf('.')) + ".mp3";
+                    } else {
+                        filename = filename + ".mp3";
+                    }
+                    Log.i(TAG, "Forced audio extension: " + filename);
+                }
+            }
+            
+            String storedFilename = null;
+            
+            if (m.has("data")) {
+                storedFilename = saveMedia(ctx, filename, m.getString("data"));
+            } else if (m.has("url")) {
+                storedFilename = saveMediaFromUrl(ctx, filename, m.getString("url"));
+            } else if (m.has("path")) {
+                storedFilename = saveMediaFromPath(ctx, filename, m.getString("path"));
+            }
+            
+            if (storedFilename == null) continue;
 
-        JSONArray targets = m.optJSONArray("fields");
-        if (targets != null) {
-            for (int j = 0; j < targets.length(); j++) {
-                String fName = targets.getString(j);
-                String current = fields.optString(fName, "");
-                fields.put(fName, current + val);
+            // Generate tag based on context
+            String val;
+            if (isAudioContext) {
+                val = "[sound:" + storedFilename + "]";
+            } else {
+                val = "<img src=\"" + storedFilename + "\">";
+            }
+
+            JSONArray targets = m.optJSONArray("fields");
+            if (targets != null) {
+                for (int j = 0; j < targets.length(); j++) {
+                    String fName = targets.getString(j);
+                    String current = fields.optString(fName, "");
+                    fields.put(fName, current + val);
+                }
             }
         }
     }
-}
 
-   private static String storeMediaFile(Context ctx, JSONObject params) throws Exception {
+    private static String storeMediaFile(Context ctx, JSONObject params) throws Exception {
         String filename = params.getString("filename");
-        
-        // Check for data, url, or path
-        if (params.has("data")) {
-            // Base64 encoded data
-            return saveMedia(ctx, filename, params.getString("data"));
-        } else if (params.has("url")) {
-            // Download from URL 
-            return saveMediaFromUrl(ctx, filename, params.getString("url"));
-        } else if (params.has("path")) {
-            // Local file path
-            return saveMediaFromPath(ctx, filename, params.getString("path"));
-        } else {
-            throw new Exception("storeMediaFile requires 'data', 'url', or 'path' parameter");
-        }
+        if (params.has("data")) return saveMedia(ctx, filename, params.getString("data"));
+        else if (params.has("url")) return saveMediaFromUrl(ctx, filename, params.getString("url"));
+        else if (params.has("path")) return saveMediaFromPath(ctx, filename, params.getString("path"));
+        else throw new Exception("storeMediaFile requires 'data', 'url', or 'path'");
     }
 
     private static String saveMedia(Context ctx, String name, String b64) throws Exception {
@@ -671,78 +678,45 @@ public class AnkiBridge {
     }
 
     private static String saveMediaFromUrl(Context ctx, String name, String urlString) throws Exception {
-        Log.i(TAG, "Downloading media from URL: " + urlString);
-        
+        Log.i(TAG, "Downloading: " + urlString + " -> " + name);
         URL url = new URL(urlString);
         HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-        
         try {
             conn.setRequestMethod("GET");
-            conn.setConnectTimeout(15000); // 15 seconds
-            conn.setReadTimeout(15000);    // 15 seconds
+            conn.setConnectTimeout(30000);
+            conn.setReadTimeout(30000);
             conn.setInstanceFollowRedirects(true);
-            
-            // Set a user agent to avoid being blocked
             conn.setRequestProperty("User-Agent", "Manatan/1.0");
             
-            int responseCode = conn.getResponseCode();
-            if (responseCode != HttpURLConnection.HTTP_OK) {
-                throw new Exception("HTTP error downloading media: " + responseCode);
+            if (conn.getResponseCode() != HttpURLConnection.HTTP_OK) {
+                throw new Exception("HTTP " + conn.getResponseCode());
             }
             
-            // Read the entire file into memory
             ByteArrayOutputStream buffer = new ByteArrayOutputStream();
             InputStream input = conn.getInputStream();
-            
             byte[] data = new byte[8192];
-            int bytesRead;
-            while ((bytesRead = input.read(data)) != -1) {
-                buffer.write(data, 0, bytesRead);
-            }
+            int r;
+            while ((r = input.read(data)) != -1) buffer.write(data, 0, r);
             
-            input.close();
-            byte[] fileData = buffer.toByteArray();
-            
-            Log.i(TAG, "Downloaded " + fileData.length + " bytes");
-            
-           
-            return saveMediaBytes(ctx, name, fileData);
-            
+            return saveMediaBytes(ctx, name, buffer.toByteArray());
         } finally {
             conn.disconnect();
         }
     }
 
     private static String saveMediaFromPath(Context ctx, String name, String filePath) throws Exception {
-        Log.i(TAG, "Reading media from path: " + filePath);
-        
         File file = new File(filePath);
-        if (!file.exists()) {
-            throw new Exception("File not found: " + filePath);
-        }
-        
-        InputStream input = new java.io.FileInputStream(file);
-        ByteArrayOutputStream buffer = new ByteArrayOutputStream();
-        
-        try {
+        if (!file.exists()) throw new Exception("File not found: " + filePath);
+        try (InputStream input = new java.io.FileInputStream(file);
+             ByteArrayOutputStream buffer = new ByteArrayOutputStream()) {
             byte[] data = new byte[8192];
-            int bytesRead;
-            while ((bytesRead = input.read(data)) != -1) {
-                buffer.write(data, 0, bytesRead);
-            }
-            
-            byte[] fileData = buffer.toByteArray();
-            Log.i(TAG, "Read " + fileData.length + " bytes from file");
-            
-            return saveMediaBytes(ctx, name, fileData);
-            
-        } finally {
-            input.close();
+            int r;
+            while ((r = input.read(data)) != -1) buffer.write(data, 0, r);
+            return saveMediaBytes(ctx, name, buffer.toByteArray());
         }
     }
 
     private static String saveMediaBytes(Context ctx, String name, byte[] data) throws Exception {
-        // Detect file type from extension
         String lowerName = name.toLowerCase();
         boolean isAudio = lowerName.endsWith(".mp3") || lowerName.endsWith(".aac") || 
                           lowerName.endsWith(".m4a") || lowerName.endsWith(".wav") ||
@@ -753,48 +727,23 @@ public class AnkiBridge {
         values.put(MediaStore.MediaColumns.DISPLAY_NAME, name);
         
         Uri collection;
+        
         if (isAudio) {
-            // Set correct MIME type for audio
-            if (lowerName.endsWith(".mp3")) {
-                values.put(MediaStore.MediaColumns.MIME_TYPE, "audio/mpeg");
-            } else if (lowerName.endsWith(".m4a") || lowerName.endsWith(".aac")) {
-                values.put(MediaStore.MediaColumns.MIME_TYPE, "audio/mp4");
-            } else if (lowerName.endsWith(".wav")) {
-                values.put(MediaStore.MediaColumns.MIME_TYPE, "audio/wav");
-            } else if (lowerName.endsWith(".webm")) {
-                values.put(MediaStore.MediaColumns.MIME_TYPE, "audio/webm");
-            } else if (lowerName.endsWith(".ogg")) {
-                values.put(MediaStore.MediaColumns.MIME_TYPE, "audio/ogg");
-            } else if (lowerName.endsWith(".flac")) {
-                values.put(MediaStore.MediaColumns.MIME_TYPE, "audio/flac");
-            } else {
-                values.put(MediaStore.MediaColumns.MIME_TYPE, "audio/mpeg"); // default
-            }
-            
-            // Save to Music folder
+            if (lowerName.endsWith(".mp3")) values.put(MediaStore.MediaColumns.MIME_TYPE, "audio/mpeg");
+            else if (lowerName.endsWith(".m4a")) values.put(MediaStore.MediaColumns.MIME_TYPE, "audio/mp4");
+            else if (lowerName.endsWith(".wav")) values.put(MediaStore.MediaColumns.MIME_TYPE, "audio/wav");
+            else if (lowerName.endsWith(".ogg")) values.put(MediaStore.MediaColumns.MIME_TYPE, "audio/ogg");
+            else values.put(MediaStore.MediaColumns.MIME_TYPE, "audio/mpeg");
+
             values.put(MediaStore.MediaColumns.RELATIVE_PATH, Environment.DIRECTORY_MUSIC + "/Manatan");
             collection = MediaStore.Audio.Media.EXTERNAL_CONTENT_URI;
         } else {
-            // Image handling - support multiple formats
-            if (lowerName.endsWith(".webp")) {
-                values.put(MediaStore.MediaColumns.MIME_TYPE, "image/webp");
-            } else if (lowerName.endsWith(".jpg") || lowerName.endsWith(".jpeg")) {
-                values.put(MediaStore.MediaColumns.MIME_TYPE, "image/jpeg");
-            } else if (lowerName.endsWith(".png")) {
-                values.put(MediaStore.MediaColumns.MIME_TYPE, "image/png");
-            } else if (lowerName.endsWith(".gif")) {
-                values.put(MediaStore.MediaColumns.MIME_TYPE, "image/gif");
-            } else if (lowerName.endsWith(".bmp")) {
-                values.put(MediaStore.MediaColumns.MIME_TYPE, "image/bmp");
-            } else {
-                values.put(MediaStore.MediaColumns.MIME_TYPE, "image/png"); // default
-            }
-            
-            String legacyPath = Environment.DIRECTORY_PICTURES + "/Mangatan";
-            String newPath = Environment.DIRECTORY_PICTURES + "/Manatan";
-            File legacyDir = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES), "Mangatan");
-            String relativePath = legacyDir.exists() ? legacyPath : newPath;
-            values.put(MediaStore.MediaColumns.RELATIVE_PATH, relativePath);
+            if (lowerName.endsWith(".jpg") || lowerName.endsWith(".jpeg")) values.put(MediaStore.MediaColumns.MIME_TYPE, "image/jpeg");
+            else if (lowerName.endsWith(".png")) values.put(MediaStore.MediaColumns.MIME_TYPE, "image/png");
+            else if (lowerName.endsWith(".webp")) values.put(MediaStore.MediaColumns.MIME_TYPE, "image/webp");
+            else values.put(MediaStore.MediaColumns.MIME_TYPE, "image/png");
+
+            values.put(MediaStore.MediaColumns.RELATIVE_PATH, Environment.DIRECTORY_PICTURES + "/Manatan");
             collection = MediaStore.Images.Media.EXTERNAL_CONTENT_URI;
         }
 
@@ -812,10 +761,11 @@ public class AnkiBridge {
         );
       
         ContentValues cv = new ContentValues();
-        cv.put("file_uri", externalUri.toString()); 
-        cv.put("preferred_name", name.replaceAll("\\..*$", ""));
+        cv.put(MEDIA_FILE_URI, externalUri.toString()); 
+        
+      
+        cv.put(MEDIA_PREFERRED_NAME, name.replaceAll("\\.[^.]*$", ""));
 
-        Log.i("AnkiBridge", "Asking AnkiDroid to copy: " + externalUri.toString());
         Uri res = ctx.getContentResolver().insert(MEDIA_URI, cv);
         
         ctx.getContentResolver().delete(externalUri, null, null);
