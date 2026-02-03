@@ -5,6 +5,12 @@ import { cleanPunctuation, lookupYomitan } from '@/Manatan/utils/api';
 import { DictionaryResult } from '@/Manatan/types';
 import { DictionaryView } from '@/Manatan/components/DictionaryView';
 
+const POPUP_GAP = 10;
+const POPUP_MIN_WIDTH_PX = 280;
+const POPUP_MAX_WIDTH_PX = 1920;
+const POPUP_MIN_HEIGHT_PX = 200;
+const POPUP_MAX_HEIGHT_PX = 1080;
+
 const HighlightOverlay = () => {
     const { dictPopup } = useOCR();
     if (!dictPopup.visible || !dictPopup.highlight?.rects) return null;
@@ -42,10 +48,25 @@ const HighlightOverlay = () => {
 };
 
 export const YomitanPopup = () => {
-    const { dictPopup, setDictPopup, notifyPopupClosed } = useOCR();
+    const { dictPopup, setDictPopup, notifyPopupClosed, settings } = useOCR();
     const popupRef = useRef<HTMLDivElement>(null);
     const backdropRef = useRef<HTMLDivElement>(null);
     const [posStyle, setPosStyle] = React.useState<React.CSSProperties>({});
+
+    const popupWidthPxRaw = Number.isFinite(settings.yomitanPopupWidthPx)
+        ? settings.yomitanPopupWidthPx
+        : 340;
+    const popupHeightPxRaw = Number.isFinite(settings.yomitanPopupHeightPx)
+        ? settings.yomitanPopupHeightPx
+        : 450;
+    const popupScaleRaw = Number.isFinite(settings.yomitanPopupScalePercent)
+        ? settings.yomitanPopupScalePercent
+        : 100;
+    const popupScalePercent = Math.min(Math.max(popupScaleRaw, 50), 200);
+    const popupScale = popupScalePercent / 100;
+    const popupWidthPx = Math.min(Math.max(popupWidthPxRaw, POPUP_MIN_WIDTH_PX), POPUP_MAX_WIDTH_PX);
+    const popupHeightPx = Math.min(Math.max(popupHeightPxRaw, POPUP_MIN_HEIGHT_PX), POPUP_MAX_HEIGHT_PX);
+    const popupWidthStyle = `${popupWidthPx}px`;
 
     const processedEntries = dictPopup.results;
 
@@ -150,15 +171,18 @@ export const YomitanPopup = () => {
             }
             : { left: 0, top: 0, right: window.innerWidth, bottom: window.innerHeight };
 
-        const GAP = 10;
-        const DEFAULT_WIDTH = 340;
-        const MAX_HEIGHT = 450;
-
         const popupEl = popupRef.current;
-        const popupWidth = popupEl?.offsetWidth || DEFAULT_WIDTH;
+        const viewportWidth = viewport.right - viewport.left;
+        const viewportHeight = viewport.bottom - viewport.top;
+        const maxWidthBase = Math.max(POPUP_MIN_WIDTH_PX, (viewportWidth - POPUP_GAP * 2) / popupScale);
+        const baseWidth = Math.min(popupWidthPx, maxWidthBase);
+        const maxHeightViewport = Math.max(120, (viewportHeight - POPUP_GAP * 2) / popupScale);
+        const baseMaxHeight = Math.min(popupHeightPx, maxHeightViewport);
+        const popupWidth = popupEl?.offsetWidth || baseWidth;
         const measuredHeight = popupEl?.offsetHeight || 0;
-        const maxHeight = Math.min(MAX_HEIGHT, Math.max(120, viewport.bottom - viewport.top - GAP * 2));
-        const popupHeight = measuredHeight > 0 ? Math.min(measuredHeight, maxHeight) : maxHeight;
+        const popupHeight = measuredHeight > 0 ? Math.min(measuredHeight, baseMaxHeight) : baseMaxHeight;
+        const popupWidthScaled = popupWidth * popupScale;
+        const popupHeightScaled = popupHeight * popupScale;
 
         const selectionRects = (() => {
             const selection = window.getSelection();
@@ -190,10 +214,10 @@ export const YomitanPopup = () => {
             bottom = Math.max(bottom, rect.y + rect.height);
         }
 
-        const rightSpace = viewport.right - right - GAP;
-        const leftSpace = left - viewport.left - GAP;
-        const aboveSpace = top - viewport.top - GAP;
-        const belowSpace = viewport.bottom - bottom - GAP;
+        const rightSpace = viewport.right - right - POPUP_GAP;
+        const leftSpace = left - viewport.left - POPUP_GAP;
+        const aboveSpace = top - viewport.top - POPUP_GAP;
+        const belowSpace = viewport.bottom - bottom - POPUP_GAP;
 
         const clamp = (value: number, min: number, max: number) => {
             if (max < min) return min;
@@ -203,23 +227,31 @@ export const YomitanPopup = () => {
         let finalLeft: number;
         let finalTop: number;
 
-        if (rightSpace >= popupWidth) {
-            finalLeft = right + GAP;
+        if (rightSpace >= popupWidthScaled) {
+            finalLeft = right + POPUP_GAP;
             finalTop = top;
-        } else if (leftSpace >= popupWidth) {
-            finalLeft = left - GAP - popupWidth;
+        } else if (leftSpace >= popupWidthScaled) {
+            finalLeft = left - POPUP_GAP - popupWidthScaled;
             finalTop = top;
         } else {
-            const placeBelow = belowSpace >= popupHeight || belowSpace >= aboveSpace;
-            finalTop = placeBelow ? bottom + GAP : top - GAP - popupHeight;
+            const placeBelow = belowSpace >= popupHeightScaled || belowSpace >= aboveSpace;
+            finalTop = placeBelow ? bottom + POPUP_GAP : top - POPUP_GAP - popupHeightScaled;
             finalLeft = left;
         }
 
-        finalLeft = clamp(finalLeft, viewport.left + GAP, viewport.right - popupWidth - GAP);
-        finalTop = clamp(finalTop, viewport.top + GAP, viewport.bottom - popupHeight - GAP);
+        finalLeft = clamp(finalLeft, viewport.left + POPUP_GAP, viewport.right - popupWidthScaled - POPUP_GAP);
+        finalTop = clamp(finalTop, viewport.top + POPUP_GAP, viewport.bottom - popupHeightScaled - POPUP_GAP);
 
-        setPosStyle({ top: finalTop, left: finalLeft, maxHeight: `${maxHeight}px` });
-    }, [dictPopup.visible, dictPopup.x, dictPopup.y, dictPopup.highlight]);
+        setPosStyle({ top: finalTop, left: finalLeft, maxHeight: `${baseMaxHeight}px`, width: `${baseWidth}px` });
+    }, [
+        dictPopup.visible,
+        dictPopup.x,
+        dictPopup.y,
+        dictPopup.highlight,
+        popupHeightPx,
+        popupWidthPx,
+        popupScale,
+    ]);
 
     useLayoutEffect(() => {
         const el = backdropRef.current;
@@ -268,10 +300,16 @@ export const YomitanPopup = () => {
     if (!dictPopup.visible) return null;
 
     const popupStyle: React.CSSProperties = {
-        position: 'fixed', zIndex: 2147483647, width: '340px', overflowY: 'auto',
+        position: 'fixed',
+        zIndex: 2147483647,
+        width: popupWidthStyle,
+        maxWidth: `calc((100% - ${POPUP_GAP * 2}px) / ${popupScale})`,
+        overflowY: 'auto',
         backgroundColor: '#1a1d21', color: '#eee', border: '1px solid #444',
         borderRadius: '8px', boxShadow: '0 8px 24px rgba(0,0,0,0.5)',
         padding: '16px', fontFamily: 'sans-serif', fontSize: '14px', lineHeight: '1.5',
+        transform: `scale(${popupScale})`,
+        transformOrigin: 'top left',
         ...posStyle
     };
 

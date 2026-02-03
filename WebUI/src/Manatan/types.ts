@@ -98,6 +98,9 @@ export interface Settings {
     tapZonePercent: number;
     jimakuApiKey?: string;
     yomitanLanguage: YomitanLanguage;
+    yomitanPopupWidthPx: number;
+    yomitanPopupHeightPx: number;
+    yomitanPopupScalePercent: number;
     debugMode: boolean;
     mobileMode: boolean;
     soloHoverMode: boolean;
@@ -254,6 +257,9 @@ export const DEFAULT_SETTINGS: Settings = {
     tapZonePercent: 30,
     jimakuApiKey: '',
     yomitanLanguage: 'japanese',
+    yomitanPopupWidthPx: 340,
+    yomitanPopupHeightPx: 450,
+    yomitanPopupScalePercent: 100,
     debugMode: false,
     mobileMode: false,
     soloHoverMode: true,

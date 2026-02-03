@@ -69,6 +69,10 @@ const inlineInputStyle: React.CSSProperties = {
     paddingRight: '94px',
 };
 
+const inlineInputCompactStyle: React.CSSProperties = {
+    paddingRight: '42px',
+};
+
 const unitToggleStyle = (active: boolean): React.CSSProperties => ({
     padding: '2px 6px',
     borderRadius: '4px',
@@ -166,6 +170,15 @@ export const SettingsModal: React.FC<{ onClose: () => void }> = ({ onClose }) =>
     const popupLeftValue = popupLeftUnit === 'px'
         ? localSettings.animePopupLeftOffsetPx
         : localSettings.animePopupLeftOffsetPercent;
+    const yomitanPopupWidthValue = Number.isFinite(localSettings.yomitanPopupWidthPx)
+        ? localSettings.yomitanPopupWidthPx
+        : DEFAULT_SETTINGS.yomitanPopupWidthPx;
+    const yomitanPopupHeightValue = Number.isFinite(localSettings.yomitanPopupHeightPx)
+        ? localSettings.yomitanPopupHeightPx
+        : DEFAULT_SETTINGS.yomitanPopupHeightPx;
+    const yomitanPopupScaleValue = Number.isFinite(localSettings.yomitanPopupScalePercent)
+        ? localSettings.yomitanPopupScalePercent
+        : DEFAULT_SETTINGS.yomitanPopupScalePercent;
     const persistSettings = useCallback((nextSettings: typeof settings) => {
         AppStorage.local.setItem('mangatan_settings_v3', JSON.stringify(nextSettings));
         setSettings(nextSettings);
@@ -433,6 +446,18 @@ export const SettingsModal: React.FC<{ onClose: () => void }> = ({ onClose }) =>
         handleChange('animePopupLeftOffsetPx', DEFAULT_SETTINGS.animePopupLeftOffsetPx);
     };
 
+    const resetYomitanPopupWidth = () => {
+        handleChange('yomitanPopupWidthPx', DEFAULT_SETTINGS.yomitanPopupWidthPx);
+    };
+
+    const resetYomitanPopupHeight = () => {
+        handleChange('yomitanPopupHeightPx', DEFAULT_SETTINGS.yomitanPopupHeightPx);
+    };
+
+    const resetYomitanPopupScale = () => {
+        handleChange('yomitanPopupScalePercent', DEFAULT_SETTINGS.yomitanPopupScalePercent);
+    };
+
     const handleFieldMapChange = (ankiField: string, mapValue: string) => {
         const currentMap = (localSettings.ankiFieldMap as Record<string, string>) || {};
         const newMap = { ...currentMap, [ankiField]: mapValue };
@@ -689,6 +714,96 @@ export const SettingsModal: React.FC<{ onClose: () => void }> = ({ onClose }) =>
                             <div style={{ fontSize: '0.85em', color: '#aaa' }}>
                                 Used when installing or resetting default dictionaries.
                             </div>
+                        </div>
+
+                        <div style={{ marginTop: '12px', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                                <label htmlFor="yomitanPopupWidthValue">Popup Width (px)</label>
+                                <div style={inlineInputWrapperStyle}>
+                                    <input
+                                        id="yomitanPopupWidthValue"
+                                        type="number"
+                                        step="10"
+                                        min="280"
+                                        max="1920"
+                                        value={yomitanPopupWidthValue}
+                                        onChange={(e) => handleChange(
+                                            'yomitanPopupWidthPx',
+                                            parseInt(e.target.value, 10),
+                                        )}
+                                        style={inlineInputCompactStyle}
+                                    />
+                                    <div style={inlineInputActionsStyle}>
+                                        <IconButton
+                                            size="small"
+                                            onClick={resetYomitanPopupWidth}
+                                            aria-label="Reset popup dictionary width"
+                                            style={{ padding: 4 }}
+                                        >
+                                            <RestartAltIcon fontSize="small" />
+                                        </IconButton>
+                                    </div>
+                                </div>
+                            </div>
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                                <label htmlFor="yomitanPopupHeightValue">Popup Height (px)</label>
+                                <div style={inlineInputWrapperStyle}>
+                                    <input
+                                        id="yomitanPopupHeightValue"
+                                        type="number"
+                                        step="10"
+                                        min="200"
+                                        max="1080"
+                                        value={yomitanPopupHeightValue}
+                                        onChange={(e) => handleChange(
+                                            'yomitanPopupHeightPx',
+                                            parseInt(e.target.value, 10),
+                                        )}
+                                        style={inlineInputCompactStyle}
+                                    />
+                                    <div style={inlineInputActionsStyle}>
+                                        <IconButton
+                                            size="small"
+                                            onClick={resetYomitanPopupHeight}
+                                            aria-label="Reset popup dictionary height"
+                                            style={{ padding: 4 }}
+                                        >
+                                            <RestartAltIcon fontSize="small" />
+                                        </IconButton>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div style={{ marginTop: '12px', display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                            <label htmlFor="yomitanPopupScaleValue">Popup Scale (%)</label>
+                            <div style={inlineInputWrapperStyle}>
+                                <input
+                                    id="yomitanPopupScaleValue"
+                                    type="number"
+                                    step="5"
+                                    min="50"
+                                    max="200"
+                                    value={yomitanPopupScaleValue}
+                                    onChange={(e) => handleChange(
+                                        'yomitanPopupScalePercent',
+                                        parseInt(e.target.value, 10),
+                                    )}
+                                    style={inlineInputCompactStyle}
+                                />
+                                <div style={inlineInputActionsStyle}>
+                                    <IconButton
+                                        size="small"
+                                        onClick={resetYomitanPopupScale}
+                                        aria-label="Reset popup dictionary scale"
+                                        style={{ padding: 4 }}
+                                    >
+                                        <RestartAltIcon fontSize="small" />
+                                    </IconButton>
+                                </div>
+                            </div>
+                        </div>
+                        <div style={{ fontSize: '0.85em', color: '#aaa', marginTop: '6px' }}>
+                            Adjust the popup dictionary size and scale.
                         </div>
                         
                         <div style={{
