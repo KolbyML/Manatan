@@ -820,30 +820,41 @@ export const PagedReader: React.FC<PagedReaderProps> = ({
     // Wheel Handler
     // ========================================================================
 
-    useEffect(() => {
-        const wrapper = wrapperRef.current;
-        if (!wrapper) return;
+    
+useEffect(() => {
+    const wrapper = wrapperRef.current;
+    if (!wrapper) return;
 
-        const handleWheel = (e: WheelEvent) => {
-            e.preventDefault();
-            if (wheelTimeoutRef.current || isTransitioning || !contentReady) return;
+    let lastWheelTime = 0;
+    const wheelDebounce = 300;
 
-            const delta = isVertical ? e.deltaY : (e.deltaX || e.deltaY);
-            if (Math.abs(delta) > 20) {
-                if (delta > 0) goNext();
-                else goPrev();
-                wheelTimeoutRef.current = window.setTimeout(() => {
-                    wheelTimeoutRef.current = null;
-                }, 200);
+    const handleWheel = (e: WheelEvent) => {
+        e.preventDefault();
+        
+        if (isTransitioning || !contentReady) return;
+
+        const now = Date.now();
+        if (now - lastWheelTime < wheelDebounce) return;
+
+        const delta = e.deltaY;
+        
+        if (Math.abs(delta) > 20) {
+            lastWheelTime = now;
+            
+            
+            if (delta > 0) {
+                goNext();
+            } else {
+                goPrev();
             }
-        };
+        }
+    };
 
-        wrapper.addEventListener('wheel', handleWheel, { passive: false });
-        return () => {
-            wrapper.removeEventListener('wheel', handleWheel);
-            if (wheelTimeoutRef.current) clearTimeout(wheelTimeoutRef.current);
-        };
-    }, [isVertical, goNext, goPrev, isTransitioning, contentReady]);
+    wrapper.addEventListener('wheel', handleWheel, { passive: false });
+    return () => {
+        wrapper.removeEventListener('wheel', handleWheel);
+    };
+}, [goNext, goPrev, isTransitioning, contentReady]);
 
     // ========================================================================
     // Visibility Change Handler (Save on Hide)
