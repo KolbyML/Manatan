@@ -1,11 +1,40 @@
-import React, { useRef, useEffect, useState, useCallback, useMemo } from 'react';
+
+import React, {
+    useRef,
+    useEffect,
+    useState,
+    useCallback,
+    useMemo,
+    useLayoutEffect
+} from 'react';
 import { Settings } from '@/Manatan/types';
+import { BookStats, AppStorage } from '@/lib/storage/AppStorage';
 import { ReaderNavigationUI } from './ReaderNavigationUI';
-import { useReaderCore } from '../hooks/useReaderCore';
 import { buildTypographyStyles } from '../utils/styles';
 import { handleKeyNavigation, NavigationCallbacks } from '../utils/navigation';
 import { PagedReaderProps } from '../types/reader';
+import { detectVisibleBlockPaged, restoreToBlockPaged } from '../utils/pagedPosition';
+import { extractContextSnippet } from '../utils/blockPosition';
+import { getReaderTheme } from '../utils/themes';
+import { useTextLookup } from '../hooks/useTextLookup';
+import {
+    SaveablePosition,
+    calculateProgress,
+    createSaveScheduler
+} from '../utils/readerSave';
 import './PagedReader.css';
+
+// ============================================================================
+// Constants
+// ============================================================================
+
+const DRAG_THRESHOLD = 10;
+const SAVE_DEBOUNCE_MS = 3000;
+const POSITION_DETECT_DELAY_MS = 150;
+
+// ============================================================================
+// Component
+// ============================================================================
 
 export const PagedReader: React.FC<PagedReaderProps> = ({
     bookId,
@@ -24,20 +53,132 @@ export const PagedReader: React.FC<PagedReaderProps> = ({
     onUpdateSettings,
     chapterFilenames = [],
 }) => {
+    // ========================================================================
+    // Refs
+    // ========================================================================
+
     const wrapperRef = useRef<HTMLDivElement>(null);
+    const viewportRef = useRef<HTMLDivElement>(null);
     const contentRef = useRef<HTMLDivElement>(null);
     const wheelTimeoutRef = useRef<number | null>(null);
+    const navigationIntentRef = useRef<{ goToLastPage: boolean } | null>(null);
+    const positionDetectTimerRef = useRef<number | null>(null);
 
-    // --- State ---
+    // Restore state refs
+    const restoreAnchorRef = useRef<{ blockId?: string; chapterIndex: number } | null>(null);
+    const lastRestoreKeyRef = useRef<string>('');
+    const restorePendingRef = useRef(false);
+
+    // Drag detection
+    const isDraggingRef = useRef(false);
+    const startPosRef = useRef({ x: 0, y: 0 });
+
+    // Callback refs (prevent re-render loops)
+    const onPositionUpdateRef = useRef(onPositionUpdate);
+    const onRegisterSaveRef = useRef(onRegisterSave);
+    const onToggleUIRef = useRef(onToggleUI);
+
+    // Save scheduler ref
+    const saveSchedulerRef = useRef(createSaveScheduler(bookId, SAVE_DEBOUNCE_MS));
+
+    // ========================================================================
+    // Initialization
+    // ========================================================================
+
+    // Initialize anchor from props once
+    useEffect(() => {
+        if (!restoreAnchorRef.current) {
+            restoreAnchorRef.current = {
+                blockId: initialProgress?.blockId,
+                chapterIndex: initialProgress?.chapterIndex ?? initialChapter,
+            };
+        }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
+
+    // ========================================================================
+    // Update Callback Refs
+    // ========================================================================
+
+    useEffect(() => {
+        onPositionUpdateRef.current = onPositionUpdate;
+    }, [onPositionUpdate]);
+
+    useEffect(() => {
+        onRegisterSaveRef.current = onRegisterSave;
+    }, [onRegisterSave]);
+
+    useEffect(() => {
+        onToggleUIRef.current = onToggleUI;
+    }, [onToggleUI]);
+
+    // Update save scheduler when bookId changes
+    useEffect(() => {
+        saveSchedulerRef.current = createSaveScheduler(bookId, SAVE_DEBOUNCE_MS);
+    }, [bookId]);
+
+    // ========================================================================
+    // State
+    // ========================================================================
+
     const [dimensions, setDimensions] = useState({ width: 0, height: 0 });
     const [currentSection, setCurrentSection] = useState(initialChapter);
     const [currentPage, setCurrentPage] = useState(initialPage);
     const [totalPages, setTotalPages] = useState(1);
     const [contentReady, setContentReady] = useState(false);
     const [isTransitioning, setIsTransitioning] = useState(false);
-    const [effectivePageSize, setEffectivePageSize] = useState(0);
+    const [measuredPageSize, setMeasuredPageSize] = useState<number>(0);
+    const [currentProgress, setCurrentProgress] = useState(initialProgress?.totalProgress || 0);
+    const [currentPosition, setCurrentPosition] = useState<SaveablePosition | null>(null);
 
-    // --- 1. UNIFIED CALCULATION SOURCE ---
+    // ========================================================================
+    // Simple Derived Values
+    // ========================================================================
+
+    const theme = useMemo(
+        () => getReaderTheme(settings.lnTheme),
+        [settings.lnTheme]
+    );
+
+    const navOptions = useMemo(
+        () => ({ isVertical, isRTL, isPaged: true }),
+        [isVertical, isRTL]
+    );
+
+    const { tryLookup } = useTextLookup();
+
+    // ========================================================================
+    // Layout Key (Detects when layout changes require restore)
+    // ========================================================================
+
+    const layoutKey = useMemo(() => {
+        return JSON.stringify({
+            isVertical,
+            isRTL,
+            fontSize: settings.lnFontSize,
+            lineHeight: settings.lnLineHeight,
+            letterSpacing: settings.lnLetterSpacing,
+            fontFamily: settings.lnFontFamily,
+            textAlign: settings.lnTextAlign,
+            furigana: settings.lnEnableFurigana,
+            pageMargin: settings.lnPageMargin,
+            marginTop: settings.lnMarginTop,
+            marginBottom: settings.lnMarginBottom,
+            marginLeft: settings.lnMarginLeft,
+            marginRight: settings.lnMarginRight,
+        });
+    }, [
+        isVertical, isRTL,
+        settings.lnFontSize, settings.lnLineHeight, settings.lnLetterSpacing,
+        settings.lnFontFamily, settings.lnTextAlign, settings.lnEnableFurigana,
+        settings.lnPageMargin, settings.lnMarginTop, settings.lnMarginBottom,
+        settings.lnMarginLeft, settings.lnMarginRight,
+    ]);
+
+    // ========================================================================
+    // Layout Calculation
+    // ========================================================================
+
     const layout = useMemo(() => {
         if (dimensions.width === 0 || dimensions.height === 0) return null;
 
@@ -49,9 +190,6 @@ export const PagedReader: React.FC<PagedReaderProps> = ({
 
         const columnWidth = isVertical ? contentH : contentW;
 
-        // Keep original pageSize calculation
-        const pageSize = columnWidth + gap;
-
         return {
             gap,
             padding,
@@ -60,7 +198,6 @@ export const PagedReader: React.FC<PagedReaderProps> = ({
             contentW,
             contentH,
             columnWidth,
-            pageSize
         };
     }, [dimensions, settings.lnPageMargin, isVertical]);
 
@@ -69,48 +206,81 @@ export const PagedReader: React.FC<PagedReaderProps> = ({
         [chapters, currentSection]
     );
 
-    const typographyStyles = useMemo(() =>
-        buildTypographyStyles(settings, isVertical),
-        [settings, isVertical]);
+    const typographyStyles = useMemo(
+        () => buildTypographyStyles(settings, isVertical),
+        [settings, isVertical]
+    );
 
-    const {
-        theme,
-        navOptions,
-        currentProgress,
-        currentPosition,
-        reportChapterChange,
-        reportPageChange,
-        handleContentClick,
-        touchHandlers,
-    } = useReaderCore({
-        bookId,
-        chapters,
-        stats,
-        settings,
-        containerRef: wrapperRef,
-        isVertical,
-        isRTL,
-        isPaged: true,
-        currentChapter: currentSection,
-        currentPage,
-        totalPages,
-        initialProgress,
-        onToggleUI,
-        onPositionUpdate,
-        onRegisterSave,
-    });
+    // Memoized transform - only recalculate when page actually changes
+    const transform = useMemo(() => {
+        const effectivePageSize = measuredPageSize > 0
+            ? measuredPageSize
+            : (layout?.columnWidth || 0) + (layout?.gap || 80);
+        const pageOffset = Math.round(currentPage * effectivePageSize);
+        return isVertical
+            ? `translateY(-${pageOffset}px)`
+            : `translateX(-${pageOffset}px)`;
+    }, [currentPage, measuredPageSize, layout?.columnWidth, layout?.gap, isVertical]);
 
-    // --- Resize Observer ---
+    // Memoized content style to prevent re-renders on UI toggle
+    const contentStyle = useMemo(() => {
+        if (!layout) return {};
+        return {
+            ...typographyStyles,
+            columnWidth: `${layout.columnWidth}px`,
+            columnGap: `${layout.gap}px`,
+            columnFill: 'auto',
+            boxSizing: 'border-box',
+            overflowWrap: 'break-word',
+            wordBreak: 'break-word',
+            transform: transform,
+            transition: settings.lnDisableAnimations
+                ? 'none'
+                : 'transform 0.3s ease-out',
+            willChange: 'transform',
+            ...(isVertical
+                ? {
+                    writingMode: 'vertical-rl',
+                    textOrientation: 'mixed',
+                    width: `${layout.contentW}px`,
+                    height: 'auto',
+                    minHeight: `${layout.contentH}px`,
+                }
+                : {
+                    height: `${layout.contentH}px`,
+                    width: 'auto',
+                    minWidth: `${layout.contentW}px`,
+                }
+            ),
+        };
+    }, [
+        typographyStyles,
+        layout,
+        transform,
+        settings.lnDisableAnimations,
+        isVertical
+    ]);
+
+    // ========================================================================
+    // Register Save Function with Parent
+    // ========================================================================
+
+    useEffect(() => {
+        const saveNow = saveSchedulerRef.current.saveNow;
+        onRegisterSaveRef.current?.(saveNow);
+    }, []);
+
+    // ========================================================================
+    // Resize Observer
+    // ========================================================================
+
     useEffect(() => {
         const updateDimensions = () => {
             if (wrapperRef.current) {
                 const rect = wrapperRef.current.getBoundingClientRect();
-
-                // iOS Safari fix: account for dynamic UI bars
+                // iOS Safari fix
                 const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
-                const height = isSafari
-                    ? window.innerHeight
-                    : rect.height;
+                const height = isSafari ? window.innerHeight : rect.height;
 
                 setDimensions({
                     width: Math.floor(rect.width),
@@ -120,114 +290,16 @@ export const PagedReader: React.FC<PagedReaderProps> = ({
         };
 
         updateDimensions();
+
         const resizeObserver = new ResizeObserver(updateDimensions);
         if (wrapperRef.current) {
             resizeObserver.observe(wrapperRef.current);
         }
+
         return () => resizeObserver.disconnect();
     }, []);
 
-    // Calculate total pages
-    const navigationIntentRef = useRef<{ goToLastPage: boolean } | null>(null);
-
-    // --- Page Calculation Logic ---
-    useEffect(() => {
-        if (!contentRef.current || !layout) return;
-
-        let cancelled = false;
-
-        const calculatePages = async () => {
-            setContentReady(false);
-
-            const content = contentRef.current;
-            if (!content || cancelled) return;
-
-            // Wait for fonts to be ready
-            if (document.fonts) {
-                try {
-                    await document.fonts.ready;
-                } catch (error) {
-                    console.warn('Font loading check failed:', error);
-                }
-            }
-
-            if (cancelled) return;
-
-            const images = content.querySelectorAll('img');
-
-            const imagePromises = Array.from(images).map(img => {
-                if (img.complete) return Promise.resolve();
-                return new Promise<void>(resolve => {
-                    img.onload = () => resolve();
-                    img.onerror = () => resolve();
-                    setTimeout(resolve, 50);
-                });
-            });
-
-            await Promise.all(imagePromises);
-
-            if (cancelled) return;
-
-            requestAnimationFrame(() => {
-                const currentContent = contentRef.current;
-                if (cancelled || !currentContent) return;
-
-                // Force Reflow
-                void currentContent.offsetHeight;
-
-                const scrollSize = isVertical ? currentContent.scrollHeight : currentContent.scrollWidth;
-                const computedStyle = window.getComputedStyle(currentContent);
-
-                // Get the ACTUAL column width from browser
-                const actualColumnWidth = parseFloat(computedStyle.columnWidth) || layout.columnWidth;
-                const actualGap = parseFloat(computedStyle.columnGap) || layout.gap;
-                const actualPageSize = actualColumnWidth + actualGap;
-
-                // Store the browser's actual page size for transform calculations
-                setEffectivePageSize(actualPageSize);
-
-                // Smarter page calculation to avoid ghost pages
-                let calculatedPages = 1;
-                const threshold = actualPageSize * 0.1; // Need 10% overhang for new page
-
-                if (scrollSize > actualPageSize + threshold) {
-                    const rawPages = scrollSize / actualPageSize;
-                    const lastPageFill = rawPages % 1; // Fraction of last page used
-
-                    // If last page is less than 5% full, it's likely a rounding artifact
-                    if (lastPageFill > 0 && lastPageFill < 0.05) {
-                        calculatedPages = Math.max(1, Math.floor(rawPages));
-                    } else {
-                        calculatedPages = Math.max(1, Math.ceil(rawPages));
-                    }
-                }
-
-                setTotalPages(calculatedPages);
-
-                const intent = navigationIntentRef.current;
-                navigationIntentRef.current = null;
-
-                if (intent?.goToLastPage) {
-                    setCurrentPage(calculatedPages - 1);
-                } else {
-                    setCurrentPage(p => Math.min(p, calculatedPages - 1));
-                }
-
-                requestAnimationFrame(() => {
-                    if (cancelled) return;
-                    setIsTransitioning(false);
-                    setContentReady(true);
-                });
-            });
-        };
-
-        calculatePages();
-
-        return () => {
-            cancelled = true;
-        };
-    }, [currentHtml, layout, isVertical, typographyStyles, settings]);
-
+    // Update dimensions on direction change
     useEffect(() => {
         if (wrapperRef.current) {
             const rect = wrapperRef.current.getBoundingClientRect();
@@ -238,33 +310,376 @@ export const PagedReader: React.FC<PagedReaderProps> = ({
         }
     }, [isVertical]);
 
-    // --- Reporting ---
+    // ========================================================================
+    // Page Calculation (After Render)
+    // ========================================================================
+
+    useLayoutEffect(() => {
+        if (!contentRef.current || !layout) return;
+
+        let cancelled = false;
+
+        const calculatePages = async () => {
+            setContentReady(false);
+
+            const content = contentRef.current;
+            if (!content || cancelled) return;
+
+            // Wait for fonts
+            if (document.fonts) {
+                try {
+                    await document.fonts.ready;
+                } catch (error) {
+                    console.warn('[PagedReader] Font loading check failed:', error);
+                }
+            }
+
+            if (cancelled) return;
+
+            // Wait for images
+            const images = content.querySelectorAll('img');
+            const imagePromises = Array.from(images).map(img => {
+                if (img.complete) return Promise.resolve();
+                return new Promise<void>(resolve => {
+                    img.onload = () => resolve();
+                    img.onerror = () => resolve();
+                    setTimeout(resolve, 100);
+                });
+            });
+
+            await Promise.all(imagePromises);
+
+            if (cancelled) return;
+
+            // Wait for layout to settle
+            await new Promise(resolve => requestAnimationFrame(resolve));
+            await new Promise(resolve => requestAnimationFrame(resolve));
+
+            if (cancelled) return;
+
+            const currentContent = contentRef.current;
+            if (!currentContent) return;
+
+            // Force reflow
+            void currentContent.offsetHeight;
+            void currentContent.scrollWidth;
+
+            // Get actual values from browser
+            const computedStyle = window.getComputedStyle(currentContent);
+            const actualColumnWidth = parseFloat(computedStyle.columnWidth) || layout.columnWidth;
+            const actualGap = parseFloat(computedStyle.columnGap) || layout.gap;
+            const actualPageSize = actualColumnWidth + actualGap;
+
+            setMeasuredPageSize(actualPageSize);
+
+            // Calculate total pages
+            const scrollSize = isVertical
+                ? currentContent.scrollHeight
+                : currentContent.scrollWidth;
+
+            let calculatedPages = 1;
+            if (scrollSize > actualColumnWidth) {
+                calculatedPages = Math.max(1, Math.ceil((scrollSize - 1) / actualPageSize));
+            }
+
+            setTotalPages(calculatedPages);
+
+            // Handle navigation intent
+            const intent = navigationIntentRef.current;
+            navigationIntentRef.current = null;
+
+            if (intent?.goToLastPage) {
+                setCurrentPage(calculatedPages - 1);
+            } else {
+                setCurrentPage(p => Math.min(p, calculatedPages - 1));
+            }
+
+            requestAnimationFrame(() => {
+                if (cancelled) return;
+                setIsTransitioning(false);
+                setContentReady(true);
+            });
+        };
+
+        calculatePages();
+
+        return () => {
+            cancelled = true;
+        };
+    }, [currentHtml, layout, isVertical, typographyStyles]);
+
+    // ========================================================================
+    // Position Detection
+    // ========================================================================
+
+    const detectAndReportPosition = useCallback(() => {
+        // GUARD: Don't save position if a restore is pending
+        if (restorePendingRef.current) return;
+
+        if (!contentReady || !viewportRef.current || !stats) return;
+
+        const pageSize = measuredPageSize > 0
+            ? measuredPageSize
+            : (layout?.columnWidth || 0) + (layout?.gap || 80);
+
+        if (pageSize <= 0) return;
+
+        const detected = detectVisibleBlockPaged(
+            viewportRef.current,
+            currentPage,
+            pageSize,
+            isVertical,
+            currentSection
+        );
+
+        if (!detected) {
+            console.warn('[PagedReader] No block detected on page', currentPage);
+            return;
+        }
+
+        // Update the anchor for future restores
+        restoreAnchorRef.current = {
+            blockId: detected.blockId,
+            chapterIndex: currentSection,
+        };
+
+        // Extract context for restoration
+        const contextSnippet = extractContextSnippet(
+            detected.element as Element,
+            detected.blockLocalOffset,
+            20
+        );
+
+        // Calculate progress
+        const progressCalc = calculateProgress(
+            currentSection,
+            detected.chapterCharOffset,
+            stats
+        );
+
+        // Build position object
+        const position: SaveablePosition = {
+            blockId: detected.blockId,
+            blockLocalOffset: detected.blockLocalOffset,
+            contextSnippet,
+            chapterIndex: currentSection,
+            pageIndex: currentPage,
+            chapterCharOffset: detected.chapterCharOffset,
+            totalCharsRead: progressCalc.totalCharsRead,
+            chapterProgress: progressCalc.chapterProgress,
+            totalProgress: progressCalc.totalProgress,
+            sentenceText: contextSnippet,
+        };
+
+        // Update local state
+        setCurrentProgress(progressCalc.totalProgress);
+        setCurrentPosition(position);
+
+        // Schedule save
+        saveSchedulerRef.current.scheduleSave(position);
+
+        // Notify parent (via ref to prevent loops)
+        onPositionUpdateRef.current?.({
+            chapterIndex: currentSection,
+            pageIndex: currentPage,
+            chapterCharOffset: detected.chapterCharOffset,
+            sentenceText: contextSnippet,
+            totalProgress: progressCalc.totalProgress,
+            blockId: detected.blockId,
+        });
+
+    }, [contentReady, stats, measuredPageSize, layout, currentPage, currentSection, isVertical]);
+
+    // Detect position after page/chapter changes
     useEffect(() => {
         if (contentReady && !isTransitioning) {
-            reportPageChange(currentPage, totalPages);
-        }
-    }, [currentPage, totalPages, contentReady, isTransitioning, reportPageChange]);
+            // Clear previous timer
+            if (positionDetectTimerRef.current) {
+                clearTimeout(positionDetectTimerRef.current);
+            }
 
-    // --- Navigation ---
+            // Delay to ensure transform has been applied
+            positionDetectTimerRef.current = window.setTimeout(() => {
+                detectAndReportPosition();
+            }, POSITION_DETECT_DELAY_MS);
+
+            return () => {
+                if (positionDetectTimerRef.current) {
+                    clearTimeout(positionDetectTimerRef.current);
+                }
+            };
+        }
+    }, [contentReady, isTransitioning, currentPage, currentSection, detectAndReportPosition]);
+
+    // ========================================================================
+    // Position Restoration (Clean "Once per Layout" Logic)
+    // ========================================================================
+
+    useEffect(() => {
+        if (!contentReady) return;
+        if (!contentRef.current) return;
+        if (measuredPageSize <= 0) return;
+
+        // Create a unique key for this layout state
+        // Restores happen exactly once when this key changes
+        const restoreKey = `${currentSection}|${layoutKey}|${measuredPageSize}|${totalPages}`;
+
+        if (restoreKey === lastRestoreKeyRef.current) return;
+
+        // Block detection until we finish
+        restorePendingRef.current = true;
+
+        const anchor = restoreAnchorRef.current;
+        const anchorBlockId = anchor?.blockId;
+        const anchorChapter = anchor?.chapterIndex ?? 0;
+
+        // If no anchor or wrong chapter, just mark done and allow detection
+        if (!anchorBlockId || anchorChapter !== currentSection) {
+            lastRestoreKeyRef.current = restoreKey;
+            restorePendingRef.current = false;
+            return;
+        }
+
+        const blockEl = contentRef.current.querySelector(
+            `[data-block-id="${anchorBlockId}"]`
+        ) as HTMLElement | null;
+
+        if (!blockEl) {
+            lastRestoreKeyRef.current = restoreKey;
+            restorePendingRef.current = false;
+            return;
+        }
+
+        const blockRect = blockEl.getBoundingClientRect();
+        const contentRect = contentRef.current.getBoundingClientRect();
+
+        // Match your existing logic (vertical uses translateY, horizontal uses translateX)
+        const offset = isVertical
+            ? (blockRect.top - contentRect.top)
+            : (blockRect.left - contentRect.left);
+
+        const targetPage = Math.floor(Math.abs(offset) / measuredPageSize);
+        const clamped = Math.max(0, Math.min(targetPage, totalPages - 1));
+
+        // Mark as restored for this layout
+        lastRestoreKeyRef.current = restoreKey;
+
+        setCurrentPage(prev => {
+            if (prev === clamped) {
+                // If page didn't change, release the guard immediately
+                restorePendingRef.current = false;
+                return prev;
+            }
+            return clamped;
+        });
+
+        // Release guard after state updates
+        requestAnimationFrame(() => {
+            restorePendingRef.current = false;
+        });
+
+    }, [
+        contentReady,
+        measuredPageSize,
+        totalPages,
+        currentSection,
+        isVertical,
+        layoutKey,
+        // (Note: we use refs for anchors so we don't depend on changing positions)
+    ]);
+
+    // ========================================================================
+    // Touch/Click Handlers
+    // ========================================================================
+
+    const handlePointerDown = useCallback((e: React.PointerEvent) => {
+        isDraggingRef.current = false;
+        startPosRef.current = { x: e.clientX, y: e.clientY };
+    }, []);
+
+    const handlePointerMove = useCallback((e: React.PointerEvent) => {
+        if (!isDraggingRef.current) {
+            const dx = Math.abs(e.clientX - startPosRef.current.x);
+            const dy = Math.abs(e.clientY - startPosRef.current.y);
+            if (dx > DRAG_THRESHOLD || dy > DRAG_THRESHOLD) {
+                isDraggingRef.current = true;
+            }
+        }
+    }, []);
+
+    const handleContentClick = useCallback(async (e: React.MouseEvent) => {
+        if (isDraggingRef.current) return;
+
+        const target = e.target as HTMLElement;
+
+        // Handle links
+        const link = target.closest('a');
+        if (link) {
+            const href = link.getAttribute('href');
+
+            if (href?.startsWith('#')) {
+                e.preventDefault();
+                const targetId = href.substring(1);
+                const targetElement = document.getElementById(targetId);
+                if (targetElement) {
+                    targetElement.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }
+            } else if (href?.startsWith('http')) {
+                e.preventDefault();
+                window.open(href, '_blank', 'noopener,noreferrer');
+            } else if (href?.includes('.html') || href?.includes('.xhtml')) {
+                e.preventDefault();
+                const linkEvent = new CustomEvent('epub-link-clicked', {
+                    detail: { href },
+                    bubbles: true
+                });
+                e.currentTarget.dispatchEvent(linkEvent);
+            }
+            return;
+        }
+
+        // Ignore UI elements
+        if (target.closest('button, img, ruby rt, .nav-btn, .reader-progress-bar, .dict-popup')) {
+            return;
+        }
+
+        // Try text lookup
+        const lookupSuccess = await tryLookup(e);
+        if (!lookupSuccess) {
+            onToggleUIRef.current?.();
+        }
+    }, [tryLookup]);
+
+    // ========================================================================
+    // Navigation
+    // ========================================================================
+
     const goToPage = useCallback((page: number) => {
         const clamped = Math.max(0, Math.min(page, totalPages - 1));
-        if (clamped !== currentPage) setCurrentPage(clamped);
+        if (clamped !== currentPage) {
+            setCurrentPage(clamped);
+        }
     }, [totalPages, currentPage]);
 
     const goToSection = useCallback((section: number, goToLastPage = false) => {
         const clamped = Math.max(0, Math.min(section, chapters.length - 1));
         if (clamped === currentSection) return;
 
+        // Save current position before switching
+        saveSchedulerRef.current.saveNow();
+
         setIsTransitioning(true);
         setContentReady(false);
+        // Clear restore key so we restore again in new chapter if needed
+        lastRestoreKeyRef.current = '';
         navigationIntentRef.current = { goToLastPage };
         setCurrentSection(clamped);
         setCurrentPage(0);
-        reportChapterChange(clamped, goToLastPage ? -1 : 0);
-    }, [chapters.length, currentSection, reportChapterChange]);
+    }, [chapters.length, currentSection]);
 
     const goNext = useCallback(() => {
         if (!contentReady || isTransitioning) return;
+
         if (currentPage < totalPages - 1) {
             goToPage(currentPage + 1);
         } else if (currentSection < chapters.length - 1) {
@@ -274,6 +689,7 @@ export const PagedReader: React.FC<PagedReaderProps> = ({
 
     const goPrev = useCallback(() => {
         if (!contentReady || isTransitioning) return;
+
         if (currentPage > 0) {
             goToPage(currentPage - 1);
         } else if (currentSection > 0) {
@@ -281,7 +697,6 @@ export const PagedReader: React.FC<PagedReaderProps> = ({
         }
     }, [currentPage, currentSection, goToPage, goToSection, contentReady, isTransitioning]);
 
-    // Keyboard navigation
     const navCallbacks: NavigationCallbacks = useMemo(() => ({
         goNext,
         goPrev,
@@ -289,17 +704,28 @@ export const PagedReader: React.FC<PagedReaderProps> = ({
         goToEnd: () => goToPage(totalPages - 1),
     }), [goNext, goPrev, goToPage, totalPages]);
 
-    // --- Inputs ---
+    // ========================================================================
+    // Keyboard Navigation
+    // ========================================================================
+
     useEffect(() => {
         const handleKeyDown = (e: KeyboardEvent) => {
             const target = e.target as HTMLElement;
             if (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA') return;
             if (!contentReady || isTransitioning) return;
-            if (handleKeyNavigation(e, navOptions, navCallbacks)) e.preventDefault();
+            if (handleKeyNavigation(e, navOptions, navCallbacks)) {
+                e.preventDefault();
+            }
         };
+
         window.addEventListener('keydown', handleKeyDown);
         return () => window.removeEventListener('keydown', handleKeyDown);
     }, [navOptions, navCallbacks, contentReady, isTransitioning]);
+
+    // ========================================================================
+    // EPUB Link Handler
+    // ========================================================================
+
     useEffect(() => {
         const container = wrapperRef.current;
         if (!container) return;
@@ -307,15 +733,15 @@ export const PagedReader: React.FC<PagedReaderProps> = ({
         const handleEpubLink = (event: Event) => {
             const customEvent = event as CustomEvent<{ href: string }>;
             const href = customEvent.detail.href;
-
             const [filename, anchor] = href.split('#');
 
+            // Find chapter by filename
             let chapterIndex = chapterFilenames.indexOf(filename);
 
             if (chapterIndex === -1) {
-                chapterIndex = chapterFilenames.findIndex(fn => {
-                    return fn.endsWith(filename) || fn.endsWith('/' + filename);
-                });
+                chapterIndex = chapterFilenames.findIndex(fn =>
+                    fn.endsWith(filename) || fn.endsWith('/' + filename)
+                );
             }
 
             if (chapterIndex === -1) {
@@ -328,39 +754,33 @@ export const PagedReader: React.FC<PagedReaderProps> = ({
 
             if (chapterIndex !== -1 && chapterIndex < chapters.length) {
                 if (chapterIndex === currentSection && anchor) {
+                    // Same chapter, scroll to anchor
                     setTimeout(() => {
                         const element = document.getElementById(anchor);
-                        if (element && contentRef.current && layout) {
+                        if (element && contentRef.current && measuredPageSize > 0) {
                             const rect = element.getBoundingClientRect();
                             const contentRect = contentRef.current.getBoundingClientRect();
-
                             const offset = isVertical
                                 ? rect.top - contentRect.top
                                 : rect.left - contentRect.left;
-
-                            const pageSize = effectivePageSize || layout.pageSize;
-                            const targetPage = Math.floor(Math.abs(offset) / pageSize);
-
+                            const targetPage = Math.floor(Math.abs(offset) / measuredPageSize);
                             goToPage(Math.max(0, Math.min(targetPage, totalPages - 1)));
                         }
                     }, 100);
                 } else {
+                    // Different chapter
                     goToSection(chapterIndex, false);
 
                     if (anchor) {
                         setTimeout(() => {
                             const element = document.getElementById(anchor);
-                            if (element && contentRef.current && layout) {
+                            if (element && contentRef.current && measuredPageSize > 0) {
                                 const rect = element.getBoundingClientRect();
                                 const contentRect = contentRef.current.getBoundingClientRect();
-
                                 const offset = isVertical
                                     ? rect.top - contentRect.top
                                     : rect.left - contentRect.left;
-
-                                const pageSize = effectivePageSize || layout.pageSize;
-                                const targetPage = Math.floor(Math.abs(offset) / pageSize);
-
+                                const targetPage = Math.floor(Math.abs(offset) / measuredPageSize);
                                 goToPage(Math.max(0, Math.min(targetPage, totalPages - 1)));
                             }
                         }, 500);
@@ -370,25 +790,31 @@ export const PagedReader: React.FC<PagedReaderProps> = ({
         };
 
         container.addEventListener('epub-link-clicked', handleEpubLink);
+        return () => container.removeEventListener('epub-link-clicked', handleEpubLink);
+    }, [chapters.length, goToSection, chapterFilenames, currentSection, goToPage, isVertical, measuredPageSize, totalPages]);
 
-        return () => {
-            container.removeEventListener('epub-link-clicked', handleEpubLink);
-        };
-    }, [chapters.length, goToSection, chapterFilenames, currentSection, goToPage, isVertical, layout, effectivePageSize, totalPages]);
+    // ========================================================================
+    // Wheel Handler
+    // ========================================================================
 
     useEffect(() => {
         const wrapper = wrapperRef.current;
         if (!wrapper) return;
+
         const handleWheel = (e: WheelEvent) => {
             e.preventDefault();
             if (wheelTimeoutRef.current || isTransitioning || !contentReady) return;
-            const delta = isVertical ? e.deltaY : e.deltaX || e.deltaY;
+
+            const delta = isVertical ? e.deltaY : (e.deltaX || e.deltaY);
             if (Math.abs(delta) > 20) {
                 if (delta > 0) goNext();
                 else goPrev();
-                wheelTimeoutRef.current = window.setTimeout(() => wheelTimeoutRef.current = null, 200);
+                wheelTimeoutRef.current = window.setTimeout(() => {
+                    wheelTimeoutRef.current = null;
+                }, 200);
             }
         };
+
         wrapper.addEventListener('wheel', handleWheel, { passive: false });
         return () => {
             wrapper.removeEventListener('wheel', handleWheel);
@@ -396,27 +822,66 @@ export const PagedReader: React.FC<PagedReaderProps> = ({
         };
     }, [isVertical, goNext, goPrev, isTransitioning, contentReady]);
 
-    const handleTouchEnd = useCallback((e: React.TouchEvent) => {
-        if (isTransitioning || !contentReady) return;
-        touchHandlers.handleTouchEnd(e, navCallbacks);
-    }, [touchHandlers, navCallbacks, isTransitioning, contentReady]);
+    // ========================================================================
+    // Visibility Change Handler (Save on Hide)
+    // ========================================================================
 
-    // --- Early Return ---
+    useEffect(() => {
+        const handleVisibilityChange = () => {
+            if (document.visibilityState === 'hidden') {
+                saveSchedulerRef.current.saveNow();
+            }
+        };
+
+        document.addEventListener('visibilitychange', handleVisibilityChange);
+        return () => document.removeEventListener('visibilitychange', handleVisibilityChange);
+    }, []);
+
+    // ========================================================================
+    // Cleanup
+    // ========================================================================
+
+    useEffect(() => {
+        return () => {
+            // Cancel pending timers
+            if (positionDetectTimerRef.current) {
+                clearTimeout(positionDetectTimerRef.current);
+            }
+            if (wheelTimeoutRef.current) {
+                clearTimeout(wheelTimeoutRef.current);
+            }
+
+            // Force save on unmount
+            saveSchedulerRef.current.saveNow();
+        };
+    }, []);
+
+    // ========================================================================
+    // Early Return
+    // ========================================================================
+
     if (!layout) {
-        return <div ref={wrapperRef} className="paged-reader-wrapper" style={{ backgroundColor: theme.bg }} />;
+        return (
+            <div
+                ref={wrapperRef}
+                className="paged-reader-wrapper"
+                style={{ backgroundColor: theme.bg }}
+            />
+        );
     }
 
-    // --- Render Logic ---
-    // Use browser's actual page size, fallback to JS calculation
-    const pageOffset = currentPage === -1
-        ? 0
-        : Math.round(currentPage * (effectivePageSize || layout.pageSize));
+    // ========================================================================
+    // Render
+    // ========================================================================
 
-    const transform = isVertical
-        ? `translateY(-${pageOffset}px)`
-        : `translateX(-${pageOffset}px)`;
+    // Calculate derived values for rendering
+    const effectivePageSize = measuredPageSize > 0
+        ? measuredPageSize
+        : (layout?.columnWidth || 0) + (layout?.gap || 80);
 
-    const progressPercent = totalPages > 0 ? ((currentPage + 1) / totalPages) * 100 : 0;
+    const pageProgressPercent = totalPages > 0
+        ? ((currentPage + 1) / totalPages) * 100
+        : 0;
 
     return (
         <div
@@ -424,67 +889,41 @@ export const PagedReader: React.FC<PagedReaderProps> = ({
             className="paged-reader-wrapper"
             style={{ backgroundColor: theme.bg, color: theme.fg }}
         >
+            {/* Dynamic image sizing */}
             <style>{`
                 .paged-content img {
                     max-width: 100%;
+                    max-height: ${layout.contentH}px;
                     height: auto;
                     display: block;
                 }
             `}</style>
 
+            {/* Viewport */}
             <div
+                ref={viewportRef}
                 className="paged-viewport"
                 style={{
                     position: 'absolute',
                     inset: 0,
                     overflow: 'hidden',
                     clipPath: 'inset(0px)',
+                    padding: `${layout.padding}px`,
                 }}
                 onClick={handleContentClick}
-                onPointerDown={touchHandlers.handlePointerDown}
-                onPointerMove={touchHandlers.handlePointerMove}
-                onTouchStart={touchHandlers.handleTouchStart}
-                onTouchMove={touchHandlers.handleTouchMove}
-                onTouchEnd={handleTouchEnd}
+                onPointerDown={handlePointerDown}
+                onPointerMove={handlePointerMove}
             >
+                {/* Content */}
                 <div
                     ref={contentRef}
                     className={`paged-content ${!settings.lnEnableFurigana ? 'furigana-hidden' : ''}`}
-                    style={{
-                        ...typographyStyles,
-
-                        padding: `${layout.padding}px`,
-                        columnWidth: `${layout.columnWidth}px`,
-                        columnGap: `${layout.gap}px`,
-                        columnRule: `${layout.gap}px solid ${theme.bg}`,
-                        columnFill: 'auto',
-
-                        boxSizing: 'border-box',
-                        overflowWrap: 'break-word',
-                        wordBreak: 'break-word',
-
-                        transform: transform,
-                        transition: settings.lnDisableAnimations
-                            ? 'none'
-                            : 'transform 0.3s ease-out',
-                        willChange: 'transform',
-
-                        ...(isVertical
-                            ? {
-                                width: `${layout.width}px`,
-                                height: 'auto',
-                                minHeight: `${layout.height}px`,
-                            }
-                            : {
-                                height: `${layout.height}px`,
-                                width: 'auto',
-                                minWidth: `${layout.width}px`,
-                            }),
-                    }}
+                    style={contentStyle}
                     dangerouslySetInnerHTML={{ __html: currentHtml }}
                 />
             </div>
 
+            {/* Loading Overlay */}
             {(!contentReady || isTransitioning) && (
                 <div
                     className="paged-loading"
@@ -505,7 +944,7 @@ export const PagedReader: React.FC<PagedReaderProps> = ({
                     totalPages={totalPages}
                     currentChapter={currentSection}
                     totalChapters={chapters.length}
-                    progress={progressPercent}
+                    progress={pageProgressPercent}
                     totalBookProgress={currentProgress}
                     showSlider={totalPages > 1}
                     onPageChange={goToPage}

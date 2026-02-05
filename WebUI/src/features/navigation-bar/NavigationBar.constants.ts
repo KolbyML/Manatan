@@ -51,7 +51,7 @@ const NAVIGATION_BAR_BASE_ITEMS = [
     },
     {
         path: AppRoutes.ln.path as RestrictedNavBarItem<'both'>['path'],
-        title: 'Light Novels',
+        title: 'Novels',
         SelectedIconComponent: AutoStoriesIcon,
         IconComponent: AutoStoriesIcon,
         show: 'both',
