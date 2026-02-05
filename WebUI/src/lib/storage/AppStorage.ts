@@ -436,4 +436,15 @@ export class AppStorage {
 
         return { imported, conflicts };
     }
+
+    // ========================================================================
+    // Block Check Methods
+    // ========================================================================
+
+    static async hasBookBlocks(bookId: string): Promise<boolean> {
+        const metadata = await this.getLnMetadata(bookId);
+        if (!metadata) return false;
+
+        return metadata.stats.blockMaps && metadata.stats.blockMaps.length > 0;
+    }
 }
