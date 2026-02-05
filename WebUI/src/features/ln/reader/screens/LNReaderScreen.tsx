@@ -85,6 +85,9 @@ export const LNReaderScreen: React.FC = () => {
             pageNumber: 0,
             chapterCharOffset: 0,
             sentenceText: '',
+            blockId: undefined,
+            blockLocalOffset: 0,
+            contextSnippet: '',
         }));
         setCurrentChapter(index);
         setTocOpen(false);
@@ -164,6 +167,9 @@ export const LNReaderScreen: React.FC = () => {
                             pageIndex: savedProgress.pageNumber,
                             chapterCharOffset: savedProgress.chapterCharOffset,
                             totalProgress: savedProgress.totalProgress,
+                            blockId: savedProgress.blockId,
+                            blockLocalOffset: savedProgress.blockLocalOffset,
+                            contextSnippet: savedProgress.contextSnippet,
                         }
                         : undefined
                 }
