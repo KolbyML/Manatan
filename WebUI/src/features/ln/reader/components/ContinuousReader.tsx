@@ -76,7 +76,16 @@ export const ContinuousReader: React.FC<ContinuousReaderProps> = ({
     const currentBlockElementRef = useRef<Element | null>(null);
 
     // Save scheduler
-    const saveSchedulerRef = useRef(createSaveScheduler(bookId, SAVE_DEBOUNCE_MS));
+    const [isSaved, setIsSaved] = useState(true);
+    const saveSchedulerRef = useRef(
+        createSaveScheduler({
+            bookId,
+            debounceMs: SAVE_DEBOUNCE_MS,
+            autoSaveEnabled: settings.lnAutoBookmark ?? true,
+            saveDelay: settings.lnBookmarkDelay ?? 0,
+            onSaveStatusChange: setIsSaved,
+        })
+    );
 
     // ========================================================================
     // Update Callback Refs
@@ -95,8 +104,18 @@ export const ContinuousReader: React.FC<ContinuousReaderProps> = ({
     }, [onToggleUI]);
 
     useEffect(() => {
-        saveSchedulerRef.current = createSaveScheduler(bookId, SAVE_DEBOUNCE_MS);
-    }, [bookId]);
+        if (initialProgress?.blockId) {
+            saveSchedulerRef.current.setInitialSavedPosition(initialProgress.blockId);
+        }
+    }, []);
+
+    useEffect(() => {
+        saveSchedulerRef.current.updateOptions({
+            bookId,
+            autoSaveEnabled: settings.lnAutoBookmark ?? true,
+            saveDelay: settings.lnBookmarkDelay ?? 0,
+        });
+    }, [bookId, settings.lnAutoBookmark, settings.lnBookmarkDelay]);
 
     // ========================================================================
     // State
@@ -107,7 +126,7 @@ export const ContinuousReader: React.FC<ContinuousReaderProps> = ({
     const [contentLoaded, setContentLoaded] = useState(false);
     const [currentProgress, setCurrentProgress] = useState(initialProgress?.totalProgress || 0);
     const [currentPosition, setCurrentPosition] = useState<SaveablePosition | null>(null);
-    const [restorationComplete, setRestorationComplete] = useState(!initialProgress?.blockId); // True if no restoration needed
+    const [restorationComplete, setRestorationComplete] = useState(!initialProgress?.blockId);
 
     // ========================================================================
     // Simple Derived Values
@@ -537,6 +556,10 @@ export const ContinuousReader: React.FC<ContinuousReaderProps> = ({
         return () => container.removeEventListener('wheel', handleWheel);
     }, [isVertical, isRTL, settings.lnFontSize, settings.lnLineHeight]);
 
+    const handleSaveNow = useCallback(async (): Promise<boolean> => {
+        return await saveSchedulerRef.current.saveNow();
+    }, []);
+
     // ========================================================================
     // Visibility Change Handler
     // ========================================================================
@@ -586,9 +609,10 @@ export const ContinuousReader: React.FC<ContinuousReaderProps> = ({
 
     return (
         <div
-            className={`continuous-reader-wrapper ${isRTL ? 'rtl-mode' : 'ltr-mode'}`}
-            style={wrapperStyle}
-        >
+    className={`continuous-reader-wrapper ${isRTL ? 'rtl-mode' : 'ltr-mode'}`}
+    style={wrapperStyle}
+    data-dark-mode={settings.lnTheme === 'dark' || settings.lnTheme === 'black'}
+>
             <div
                 ref={containerRef}
                 className={`continuous-reader-container ${isVertical ? 'vertical' : 'horizontal'}`}
@@ -632,6 +656,8 @@ export const ContinuousReader: React.FC<ContinuousReaderProps> = ({
                 bookStats={stats}
                 settings={settings}
                 onUpdateSettings={onUpdateSettings}
+                isSaved={isSaved}
+                onSaveNow={handleSaveNow}
             />
         </div>
     );

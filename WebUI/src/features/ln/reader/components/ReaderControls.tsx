@@ -539,6 +539,85 @@ export const ReaderControls: React.FC<Props> = ({
 
                 <Divider sx={{ my: 3, borderColor: `${theme.fg}22` }} />
 
+{/* Bookmarking Section */}
+<Box sx={{ mb: 3 }}>
+    <Typography variant="subtitle2" sx={{ mb: 1.5, fontWeight: 600, opacity: 0.8 }}>
+        Bookmarking
+    </Typography>
+
+    <FormControlLabel
+        control={
+            <Switch
+                checked={settings.lnAutoBookmark ?? true}
+                onChange={(e) => onUpdateSettings('lnAutoBookmark', e.target.checked)}
+                sx={{
+                    '& .MuiSwitch-switchBase.Mui-checked': { color: theme.fg },
+                    '& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track': { backgroundColor: theme.fg },
+                }}
+            />
+        }
+        label={
+            <Box>
+                <Typography variant="body2">Auto-Bookmark</Typography>
+                <Typography variant="caption" sx={{ opacity: 0.6 }}>
+                    Automatically save position after delay
+                </Typography>
+            </Box>
+        }
+        sx={{ mb: 2, width: '100%' }}
+    />
+
+    {(settings.lnAutoBookmark ?? true) && (
+        <Box>
+            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1 }}>
+                <Typography variant="caption" sx={{ opacity: 0.8 }}>
+                    Auto-Bookmark Delay
+                </Typography>
+                <TextField
+                    size="small"
+                    value={settings.lnBookmarkDelay ?? 5}
+                    onChange={(e) => {
+                        const val = parseInt(e.target.value, 10);
+                        if (!isNaN(val) && val >= 0 && val <= 60) {
+                            onUpdateSettings('lnBookmarkDelay', val);
+                        }
+                    }}
+                    type="number"
+                    inputProps={{ min: 0, max: 60, step: 1 }}
+                    sx={getInputStyles(theme)}
+                    InputProps={{
+                        endAdornment: <InputAdornment position="end" sx={{ color: theme.fg }}>sec</InputAdornment>
+                    }}
+                />
+            </Box>
+            <Slider
+                value={settings.lnBookmarkDelay ?? 5}
+                min={0}
+                max={60}
+                step={1}
+                marks={[
+                    { value: 0, label: 'Off' },
+                    { value: 5, label: '5s' },
+                    { value: 15, label: '15s' },
+                    { value: 30, label: '30s' },
+                    { value: 60, label: '1m' },
+                ]}
+                onChange={(_, v) => onUpdateSettings('lnBookmarkDelay', v as number)}
+                sx={{ 
+                    color: theme.fg,
+                    '& .MuiSlider-markLabel': { color: theme.fg, fontSize: '0.7rem' }
+                }}
+            />
+            <Typography variant="caption" sx={{ display: 'block', mt: 0.5, opacity: 0.7 }}>
+                {(settings.lnBookmarkDelay ?? 5) === 0 
+                    ? 'Auto-bookmarking disabled (use manual bookmark only)' 
+                    : `Auto-bookmark after staying on a page for ${settings.lnBookmarkDelay ?? 5} seconds`}
+            </Typography>
+        </Box>
+    )}
+</Box>
+<Divider sx={{ my: 3, borderColor: `${theme.fg}22` }} />
+
                 {/* Features Section */}
                 <Box sx={{ mb: 2 }}>
                     <Typography variant="subtitle2" sx={{ mb: 1.5, fontWeight: 600, opacity: 0.8 }}>

@@ -389,3 +389,111 @@
     max-height: 1.5em !important;
     margin: 0 0.1em !important;
 }
+
+/* Invert inline glyph images in dark mode */
+[data-dark-mode="true"] .paged-content img.gaiji,
+[data-dark-mode="true"] .paged-content img.gaiji-line,
+[data-dark-mode="true"] .paged-content img.gaiji1,
+[data-dark-mode="true"] .paged-content img.inline-img,
+[data-dark-mode="true"] .paged-content img[width="1"],
+[data-dark-mode="true"] .paged-content img[width="2"],
+[data-dark-mode="true"] .paged-content img[height="1"],
+[data-dark-mode="true"] .paged-content img[height="2"],
+[data-dark-mode="true"] .paged-content img[style*="display: inline"],
+[data-dark-mode="true"] .paged-content img[style*="display:inline"],
+[data-dark-mode="true"] .chapter-block img.gaiji,
+[data-dark-mode="true"] .chapter-block img.gaiji-line,
+[data-dark-mode="true"] .chapter-block img.gaiji1,
+[data-dark-mode="true"] .chapter-block img.inline-img,
+[data-dark-mode="true"] .chapter-block img[width="1"],
+[data-dark-mode="true"] .chapter-block img[width="2"],
+[data-dark-mode="true"] .chapter-block img[height="1"],
+[data-dark-mode="true"] .chapter-block img[height="2"],
+[data-dark-mode="true"] .chapter-block img[style*="display: inline"],
+[data-dark-mode="true"] .chapter-block img[style*="display:inline"] {
+    filter: invert(1);
+}
+
+/* =====================================================
+   UNIVERSAL EPUB CSS HANDLER
+   ===================================================== */
+
+/* Gothic/Sans-serif fonts */
+.chapter-block .gfont,
+.chapter-block .gothic,
+.chapter-block div.gfont,
+.chapter-block span.gfont,
+.chapter-block p.gfont {
+    font-family: "Hiragino Kaku Gothic ProN", "Yu Gothic", "MS Gothic", "Noto Sans JP", sans-serif !important;
+}
+
+/* Mincho/Serif fonts */
+.chapter-block .mfont,
+.chapter-block .mincho {
+    font-family: "Hiragino Mincho ProN", "Yu Mincho", "MS Mincho", "Noto Serif JP", serif !important;
+}
+
+/* Bold */
+.chapter-block .bold,
+.chapter-block .b,
+.chapter-block .strong,
+.chapter-block .font-weight-bold {
+    font-weight: bold !important;
+}
+
+/* Normal weight */
+.chapter-block .font-weight-normal {
+    font-weight: normal !important;
+}
+
+/* Italic */
+.chapter-block .italic,
+.chapter-block .i,
+.chapter-block .em {
+    font-style: italic !important;
+}
+
+/* Normal style */
+.chapter-block .font-style-normal {
+    font-style: normal !important;
+}
+
+/* Gothic + Bold combined */
+.chapter-block .gfont.bold,
+.chapter-block div.gfont.bold,
+.chapter-block div.gfont.bold p,
+.chapter-block p.gfont.bold,
+.chapter-block span.gfont.bold {
+    font-family: "Hiragino Kaku Gothic ProN", "Yu Gothic", "MS Gothic", "Noto Sans JP", sans-serif !important;
+    font-weight: bold !important;
+}
+
+/* Children of gfont.bold div */
+.chapter-block div.gfont.bold *,
+.chapter-block div[class*="gfont"][class*="bold"] *,
+.chapter-block div[class*="gfont"][class*="bold"] p {
+    font-family: "Hiragino Kaku Gothic ProN", "Yu Gothic", "MS Gothic", "Noto Sans JP", sans-serif !important;
+    font-weight: bold !important;
+}
+
+/* Text Colors */
+.chapter-block .color-black       { color: #000000 !important; }
+.chapter-block .color-dimgray     { color: #696969 !important; }
+.chapter-block .color-gray        { color: #808080 !important; }
+.chapter-block .color-darkgray    { color: #a9a9a9 !important; }
+.chapter-block .color-silver      { color: #c0c0c0 !important; }
+.chapter-block .color-gainsboro   { color: #dcdcdc !important; }
+.chapter-block .color-white       { color: #ffffff !important; }
+.chapter-block .color-transparent { color: transparent !important; }
+.chapter-block .color-red         { color: #ff0000 !important; }
+.chapter-block .color-blue        { color: #0000ff !important; }
+.chapter-block .color-cyan        { color: #00ffff !important; }
+.chapter-block .color-magenta     { color: #ff00ff !important; }
+.chapter-block .color-orangered   { color: #ff4500 !important; }
+
+/* Font Sizes */
+.chapter-block .font-1em30 { font-size: 1.3em !important; }
+.chapter-block .font-1em50 { font-size: 1.5em !important; }
+.chapter-block .font-2em   { font-size: 2em !important; }
+.chapter-block .font-small { font-size: 0.8em !important; }
+.chapter-block .font-large { font-size: 1.2em !important; }
