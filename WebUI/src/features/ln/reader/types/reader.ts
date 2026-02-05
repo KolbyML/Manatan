@@ -17,6 +17,10 @@ export interface BaseReaderProps {
         pageIndex?: number;
         chapterCharOffset?: number;
         totalProgress?: number;
+
+        blockId?: string;
+        blockLocalOffset?: number;
+        contextSnippet?: string;
     };
     onToggleUI?: () => void;
     showNavigation?: boolean;
@@ -26,6 +30,10 @@ export interface BaseReaderProps {
         chapterCharOffset?: number;
         sentenceText: string;
         totalProgress: number;
+
+        blockId?: string;
+        blockLocalOffset?: number;
+        contextSnippet?: string;
     }) => void;
     onRegisterSave?: (saveFn: () => Promise<void>) => void;
     onUpdateSettings?: (key: string, value: any) => void;

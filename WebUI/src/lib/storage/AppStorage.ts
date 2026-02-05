@@ -7,6 +7,7 @@
  */
 
 // eslint-disable-next-line max-classes-per-file
+import { BlockIndexMap } from '@/features/ln/reader/types/block';
 import { jsonSaveParse } from '@/lib/HelperFunctions.ts';
 import localforage from 'localforage';
 
@@ -103,6 +104,7 @@ export class Storage {
 export interface BookStats {
     chapterLengths: number[];
     totalLength: number;
+    blockMaps?: BlockIndexMap[];
 }
 
 export interface TocItem {
@@ -135,20 +137,15 @@ export interface LNMetadata {
 export interface LNProgress {
     chapterIndex: number;
     pageNumber?: number;
-
-    // Character-based
     chapterCharOffset: number;
     totalCharsRead: number;
-
-    // Restoration anchor
     sentenceText: string;
-
-    // Percentages
     chapterProgress: number;
     totalProgress: number;
 
-    // Meta
-    lastRead: number;
+    blockId?: string;
+    blockLocalOffset?: number;
+    contextSnippet?: string;
 }
 
 export interface LNParsedBook {

@@ -13,10 +13,16 @@ import {
     MenuItem,
     ListItemIcon,
     Checkbox,
+    Dialog,
+    DialogTitle,
+    DialogContent,
+    DialogContentText,
+    DialogActions,
 } from '@mui/material';
 import UploadFileIcon from '@mui/icons-material/UploadFile';
 import DeleteIcon from '@mui/icons-material/Delete';
 import MoreVertIcon from '@mui/icons-material/MoreVert';
+import LibraryAddCheckIcon from '@mui/icons-material/LibraryAddCheck';
 import { styled } from '@mui/material/styles';
 
 import { AppStorage, LNMetadata } from '@/lib/storage/AppStorage';
@@ -37,12 +43,15 @@ import { useAppTitle } from '@/features/navigation-bar/hooks/useAppTitle';
 import { useMetadataServerSettings } from '@/features/settings/services/ServerSettingsMetadata';
 import { useResizeObserver } from '@/base/hooks/useResizeObserver';
 import { useNavBarContext } from '@/features/navigation-bar/NavbarContext';
-import LibraryAddCheckIcon from '@mui/icons-material/LibraryAddCheck';
+
+// --- Types ---
 
 interface LibraryItem extends LNMetadata {
     importProgress?: number;
     importMessage?: string;
 }
+
+// --- Styled Components ---
 
 const BottomGradient = styled('div')({
     position: 'absolute',
@@ -59,6 +68,8 @@ const BottomGradientDoubledDown = styled('div')({
     height: '20%',
     background: 'linear-gradient(180deg, rgba(0,0,0,0) 0%, rgba(0,0,0,1) 100%)',
 });
+
+// --- Helper Components ---
 
 type LNLibraryCardProps = {
     item: LibraryItem;
@@ -327,6 +338,8 @@ const LNLibraryCard = ({ item, onOpen, onDelete, isSelectionMode, isSelected, on
     );
 };
 
+// --- Main Component ---
+
 export const LNLibrary: React.FC = () => {
     const navigate = useNavigate();
     const [library, setLibrary] = useState<LibraryItem[]>([]);
@@ -341,6 +354,31 @@ export const LNLibrary: React.FC = () => {
     const [dimensions, setDimensions] = useState(
         gridWrapperRef.current?.offsetWidth ?? Math.max(0, document.documentElement.offsetWidth - navBarWidth)
     );
+
+    // --- Confirmation Dialog State ---
+    const [confirmOpen, setConfirmOpen] = useState(false);
+    const [confirmOptions, setConfirmOptions] = useState<{ title: string; message: string; confirmText?: string; cancelText?: string }>({
+        title: '',
+        message: ''
+    });
+    const confirmResolver = useRef<((value: boolean) => void) | null>(null);
+
+    // Helper to show confirm dialog as a Promise (replacing window.confirm)
+    const confirm = useCallback((title: string, message: string, confirmText = 'Confirm', cancelText = 'Cancel'): Promise<boolean> => {
+        return new Promise((resolve) => {
+            setConfirmOptions({ title, message, confirmText, cancelText });
+            setConfirmOpen(true);
+            confirmResolver.current = resolve;
+        });
+    }, []);
+
+    const handleConfirmClose = (result: boolean) => {
+        setConfirmOpen(false);
+        if (confirmResolver.current) {
+            confirmResolver.current(result);
+            confirmResolver.current = null;
+        }
+    };
 
     useEffect(() => {
         loadLibrary();
@@ -383,12 +421,11 @@ export const LNLibrary: React.FC = () => {
         return title
             .toLowerCase()
             .replace(/\.epub$/i, '')
-            .replace(/[^\p{L}\p{N}\s]/gu, '') // Unicode-aware: keeps all letters and numbers
+            .replace(/[^\p{L}\p{N}\s]/gu, '') // Unicode-aware
             .replace(/\s+/g, ' ')
             .trim();
     };
 
-    // Check if a book with similar title already exists in current library state
     const findDuplicateInLibrary = useCallback((title: string, currentLibrary: LibraryItem[]): LibraryItem | undefined => {
         const normalizedTitle = normalizeTitle(title);
         return currentLibrary.find(item =>
@@ -405,19 +442,20 @@ export const LNLibrary: React.FC = () => {
         const skippedFiles: string[] = [];
         const importedFiles: string[] = [];
 
-        // Keep track of current library state for duplicate checking
         let currentLibrary = [...library];
 
         for (let fileIndex = 0; fileIndex < files.length; fileIndex++) {
             const file = files[fileIndex];
             const fileTitle = file.name.replace(/\.epub$/i, '');
 
-            // Check for duplicate by filename first
             const existingBook = findDuplicateInLibrary(fileTitle, currentLibrary);
 
             if (existingBook) {
-                const shouldReplace = window.confirm(
-                    `"${existingBook.title}" already exists in your library.\n\nDo you want to replace it?`
+                const shouldReplace = await confirm(
+                    'Duplicate File',
+                    `"${existingBook.title}" already exists in your library.\n\nDo you want to replace it?`,
+                    'Replace',
+                    'Skip'
                 );
 
                 if (!shouldReplace) {
@@ -425,7 +463,6 @@ export const LNLibrary: React.FC = () => {
                     continue;
                 }
 
-                // Delete the existing book before importing
                 clearBookCache(existingBook.id);
                 await AppStorage.deleteLnData(existingBook.id);
                 currentLibrary = currentLibrary.filter(item => item.id !== existingBook.id);
@@ -465,24 +502,24 @@ export const LNLibrary: React.FC = () => {
                 });
 
                 if (result.success && result.metadata && result.content) {
-                    // Check again for duplicate using parsed metadata title
                     const metadataTitle = result.metadata.title;
                     const duplicateByMetadata = findDuplicateInLibrary(metadataTitle, currentLibrary.filter(i => i.id !== bookId));
 
                     if (duplicateByMetadata) {
-                        const shouldReplace = window.confirm(
-                            `The book "${metadataTitle}" already exists in your library (detected from EPUB metadata).\n\nDo you want to replace it?`
+                        const shouldReplace = await confirm(
+                            'Duplicate Metadata',
+                            `The book "${metadataTitle}" already exists in your library (detected from EPUB metadata).\n\nDo you want to replace it?`,
+                            'Replace',
+                            'Skip'
                         );
 
                         if (!shouldReplace) {
-                            // Remove the placeholder and skip
                             currentLibrary = currentLibrary.filter(item => item.id !== bookId);
                             setLibrary(prev => prev.filter(item => item.id !== bookId));
                             skippedFiles.push(file.name);
                             continue;
                         }
 
-                        // Delete the existing book
                         clearBookCache(duplicateByMetadata.id);
                         await AppStorage.deleteLnData(duplicateByMetadata.id);
                         currentLibrary = currentLibrary.filter(item => item.id !== duplicateByMetadata.id);
@@ -501,7 +538,6 @@ export const LNLibrary: React.FC = () => {
                         hasProgress: false,
                     };
 
-                    // Update current library tracking
                     currentLibrary = currentLibrary.map(item =>
                         item.id === bookId ? finalItem : item
                     );
@@ -514,7 +550,6 @@ export const LNLibrary: React.FC = () => {
 
                     importedFiles.push(result.metadata.title);
                     console.log(`[Import] Complete: ${result.metadata.title}`);
-                    console.log(`[Import] Stats: ${result.metadata.chapterCount} chapters, ${result.metadata.stats.totalLength} chars`);
                 } else {
                     setLibrary((prev) =>
                         prev.map((item) =>
@@ -531,7 +566,6 @@ export const LNLibrary: React.FC = () => {
                 }
             } catch (err: any) {
                 console.error(`[Import] Error for ${file.name}:`, err);
-
                 setLibrary((prev) =>
                     prev.map((item) =>
                         item.id === bookId
@@ -547,41 +581,33 @@ export const LNLibrary: React.FC = () => {
             }
         }
 
-        // Show summary if multiple files were processed
-        if (files.length > 1) {
-            const summary = [];
-            if (importedFiles.length > 0) {
-                summary.push(`Imported: ${importedFiles.length} book(s)`);
-            }
-            if (skippedFiles.length > 0) {
-                summary.push(`Skipped: ${skippedFiles.length}`);
-            }
-            if (summary.length > 0) {
-                console.log(`[Import Summary] ${summary.join(', ')}`);
-            }
-        }
-
         setIsImporting(false);
         e.target.value = '';
-    }, [library, findDuplicateInLibrary]);
+    }, [library, findDuplicateInLibrary, confirm]);
 
     const handleDelete = useCallback(async (id: string, e: React.MouseEvent) => {
         e.stopPropagation();
 
-        if (!window.confirm('Delete this book?')) return;
+        const shouldDelete = await confirm('Delete Book', 'Are you sure you want to delete this book? This cannot be undone.', 'Delete');
+        if (!shouldDelete) return;
 
         clearBookCache(id);
         setLibrary((prev) => prev.filter((item) => item.id !== id));
         await AppStorage.deleteLnData(id);
-    }, []);
+    }, [confirm]);
 
     const handleMultiDelete = useCallback(async () => {
         if (selectedIds.size === 0) return;
 
         const count = selectedIds.size;
-        if (!window.confirm(`Delete ${count} selected book${count > 1 ? 's' : ''}?`)) return;
+        const shouldDelete = await confirm(
+            'Delete Selected',
+            `Are you sure you want to delete ${count} selected book${count > 1 ? 's' : ''}?`,
+            'Delete'
+        );
 
-        // Delete all selected books
+        if (!shouldDelete) return;
+
         for (const id of selectedIds) {
             clearBookCache(id);
             await AppStorage.deleteLnData(id);
@@ -590,7 +616,7 @@ export const LNLibrary: React.FC = () => {
         setLibrary((prev) => prev.filter((item) => !selectedIds.has(item.id)));
         setSelectedIds(new Set());
         setIsSelectionMode(false);
-    }, [selectedIds]);
+    }, [selectedIds, confirm]);
 
     const handleToggleSelect = useCallback((id: string) => {
         setSelectedIds((prev) => {
@@ -660,7 +686,6 @@ export const LNLibrary: React.FC = () => {
                     </>
                 ) : (
                     <>
-                        {/* Add Multi-Select Button here */}
                         {library.length > 0 && (
                             <IconButton
                                 color="inherit"
@@ -720,6 +745,31 @@ export const LNLibrary: React.FC = () => {
                     </Box>
                 ))}
             </Box>
+
+            {/* Confirmation Dialog */}
+            <Dialog
+                open={confirmOpen}
+                onClose={() => handleConfirmClose(false)}
+                aria-labelledby="alert-dialog-title"
+                aria-describedby="alert-dialog-description"
+            >
+                <DialogTitle id="alert-dialog-title">
+                    {confirmOptions.title}
+                </DialogTitle>
+                <DialogContent>
+                    <DialogContentText id="alert-dialog-description" sx={{ whiteSpace: 'pre-line' }}>
+                        {confirmOptions.message}
+                    </DialogContentText>
+                </DialogContent>
+                <DialogActions>
+                    <Button onClick={() => handleConfirmClose(false)} color="inherit">
+                        {confirmOptions.cancelText || 'Cancel'}
+                    </Button>
+                    <Button onClick={() => handleConfirmClose(true)} autoFocus color="primary">
+                        {confirmOptions.confirmText || 'Confirm'}
+                    </Button>
+                </DialogActions>
+            </Dialog>
         </Box>
     );
 };

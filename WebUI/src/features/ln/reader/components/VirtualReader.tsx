@@ -20,6 +20,9 @@ interface VirtualReaderProps {
         pageIndex?: number;
         chapterCharOffset?: number;
         totalProgress?: number;
+        blockId?: string;
+        blockLocalOffset?: number;
+        contextSnippet?: string;
     };
     renderHeader?: (showUI: boolean, toggleUI: () => void) => ReactNode;
     onOpenToc?: () => void;
@@ -32,6 +35,9 @@ interface VirtualReaderProps {
         chapterCharOffset?: number;
         sentenceText: string;
         totalProgress: number;
+        blockId?: string;
+        blockLocalOffset?: number;
+        contextSnippet?: string;
     }) => void;
 }
 
@@ -42,6 +48,10 @@ interface SharedPosition {
     sentenceText: string;
     totalProgress: number;
     timestamp: number;
+
+    blockId?: string;
+    blockLocalOffset?: number;
+    contextSnippet?: string;
 }
 
 export const VirtualReader: React.FC<VirtualReaderProps> = ({
@@ -73,7 +83,12 @@ export const VirtualReader: React.FC<VirtualReaderProps> = ({
         sentenceText: externalInitialProgress?.sentenceText ?? '',
         totalProgress: externalInitialProgress?.totalProgress ?? 0,
         timestamp: Date.now(),
+
+        blockId: externalInitialProgress?.blockId,
+        blockLocalOffset: externalInitialProgress?.blockLocalOffset,
+        contextSnippet: externalInitialProgress?.contextSnippet,
     });
+
 
 
     const forceSaveRef = useRef<(() => Promise<void>) | null>(null);
@@ -104,6 +119,9 @@ export const VirtualReader: React.FC<VirtualReaderProps> = ({
             chapterCharOffset?: number;
             sentenceText: string;
             totalProgress: number;
+            blockId?: string;
+            blockLocalOffset?: number;
+            contextSnippet?: string;
         }) => {
             if (position.chapterCharOffset || position.sentenceText) {
                 const prevChapter = sharedPositionRef.current.chapterIndex;
@@ -115,6 +133,10 @@ export const VirtualReader: React.FC<VirtualReaderProps> = ({
                     sentenceText: position.sentenceText,
                     totalProgress: position.totalProgress,
                     timestamp: Date.now(),
+
+                    blockId: position.blockId,
+                    blockLocalOffset: position.blockLocalOffset,
+                    contextSnippet: position.contextSnippet,
                 };
 
                 if (onChapterChange && position.chapterIndex !== prevChapter) {
@@ -163,6 +185,7 @@ export const VirtualReader: React.FC<VirtualReaderProps> = ({
                     chapter: pos.chapterIndex,
                     page: pos.pageIndex,
                     charOffset: pos.chapterCharOffset,
+                    blockId: pos.blockId,
                 });
 
                 if (pos.sentenceText || pos.chapterCharOffset > 0) {
@@ -174,6 +197,10 @@ export const VirtualReader: React.FC<VirtualReaderProps> = ({
                         sentenceText: pos.sentenceText,
                         chapterProgress: 0,
                         totalProgress: pos.totalProgress,
+
+                        blockId: pos.blockId,
+                        blockLocalOffset: pos.blockLocalOffset,
+                        contextSnippet: pos.contextSnippet,
                     });
                 }
 
@@ -183,6 +210,10 @@ export const VirtualReader: React.FC<VirtualReaderProps> = ({
                     chapterCharOffset: pos.chapterCharOffset,
                     sentenceText: pos.sentenceText,
                     totalProgress: pos.totalProgress,
+
+                    blockId: pos.blockId,
+                    blockLocalOffset: pos.blockLocalOffset,
+                    contextSnippet: pos.contextSnippet,
                 });
                 setCurrentIndex(pos.chapterIndex);
                 setCurrentPage(pos.pageIndex);
