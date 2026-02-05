@@ -2636,6 +2636,7 @@ export const AnimeVideoPlayer = ({
 
             Object.entries(map).forEach(([ankiField, mapType]) => {
                 if (mapType === 'Target Word') fields[ankiField] = entry.headword;
+                else if (mapType === 'Word (Again)') fields[ankiField] = entry.headword;
                 else if (mapType === 'Reading') fields[ankiField] = entry.reading;
                 else if (mapType === 'Furigana') fields[ankiField] = generateAnkiFurigana(entry);
                 else if (mapType === 'Definition' || mapType === 'Glossary') {
@@ -2647,6 +2648,7 @@ export const AnimeVideoPlayer = ({
                     fields[ankiField] = sentenceFurigana;
                 }
                 else if (mapType === 'Word Audio') fields[ankiField] = '';
+                else if (mapType === 'x') fields[ankiField] = 'x';
                 else if (typeof mapType === 'string') {
                     const name = getSingleGlossaryName(mapType);
                     if (name) {

@@ -337,6 +337,7 @@ const AnkiButtons: React.FC<{
         }
         for (const [ankiField, mapType] of Object.entries(map)) {
             if (mapType === 'Target Word') fields[ankiField] = entry.headword;
+            else if (mapType === 'Word (Again)') fields[ankiField] = entry.headword;
             else if (mapType === 'Reading') fields[ankiField] = entry.reading;
             else if (mapType === 'Furigana') fields[ankiField] = generateAnkiFurigana(entry.furigana || []);
             else if (mapType === 'Definition' || mapType === 'Glossary') fields[ankiField] = buildGlossaryHtml();
@@ -344,6 +345,7 @@ const AnkiButtons: React.FC<{
             else if (mapType === 'Sentence') fields[ankiField] = sentence;
             else if (mapType === 'Sentence Furigana') fields[ankiField] = sentenceFurigana;
             else if (mapType === 'Word Audio') fields[ankiField] = '';
+            else if (mapType === 'x') fields[ankiField] = 'x';
             else if (typeof mapType === 'string') {
                 const name = getSingleGlossaryName(mapType);
                 if (name) fields[ankiField] = buildGlossaryHtml(name);
