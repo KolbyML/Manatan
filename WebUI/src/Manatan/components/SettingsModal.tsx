@@ -131,8 +131,10 @@ const BASE_MAPPING_OPTIONS = [
     'Furigana',
     'Reading',
     'Target Word',
+    'Word (Again)',
     'Glossary',
     'Frequency',
+    'x',
 ];
 
 const SINGLE_GLOSSARY_PREFIX = 'Single Glossary ';
