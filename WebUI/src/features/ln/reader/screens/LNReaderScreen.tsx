@@ -9,7 +9,13 @@ import {
     Drawer,
     List,
     ListItemButton,
-    ListItemText
+    ListItemText,
+    Dialog,
+    DialogTitle,
+    DialogContent,
+    DialogContentText,
+    DialogActions,
+    Button
 } from '@mui/material';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import SettingsIcon from '@mui/icons-material/Settings';
@@ -41,6 +47,24 @@ export const LNReaderScreen: React.FC = () => {
     const [tocOpen, setTocOpen] = useState(false);
     const [progressLoaded, setProgressLoaded] = useState(false);
     const [currentChapter, setCurrentChapter] = useState(0);
+    const [showMigrationDialog, setShowMigrationDialog] = useState(false);
+
+    // Check for blocks and show migration dialog one-time
+    useEffect(() => {
+        if (!id || !progressLoaded) return;
+
+        const checkBlocksAndShowDialog = async () => {
+            const hasBlocks = await AppStorage.hasBookBlocks(id);
+            const migrationKey = `ln_migration_dialog_shown_${id}`;
+
+            if (!hasBlocks && !localStorage.getItem(migrationKey)) {
+                setShowMigrationDialog(true);
+                localStorage.setItem(migrationKey, 'true');
+            }
+        };
+
+        checkBlocksAndShowDialog();
+    }, [id, progressLoaded]);
 
     useEffect(() => {
         if (!id) return;
@@ -324,6 +348,23 @@ export const LNReaderScreen: React.FC = () => {
             />
 
             <YomitanPopup />
+
+            <Dialog
+                open={showMigrationDialog}
+                onClose={() => setShowMigrationDialog(false)}
+                maxWidth="sm"
+                fullWidth
+            >
+                <DialogTitle>Reader Update</DialogTitle>
+                <DialogContent>
+                    <DialogContentText>
+                        This book needs to be re-imported to update its data for improved progress tracking.
+                    </DialogContentText>
+                </DialogContent>
+                <DialogActions>
+                    <Button onClick={() => setShowMigrationDialog(false)}>Dismiss</Button>
+                </DialogActions>
+            </Dialog>
         </Box>
     );
 };

@@ -79,7 +79,16 @@ export const PagedReader: React.FC<PagedReaderProps> = ({
     const onToggleUIRef = useRef(onToggleUI);
 
     // Save scheduler ref
-    const saveSchedulerRef = useRef(createSaveScheduler(bookId, SAVE_DEBOUNCE_MS));
+    const [isSaved, setIsSaved] = useState(true);
+    const saveSchedulerRef = useRef(
+        createSaveScheduler({
+            bookId,
+            debounceMs: SAVE_DEBOUNCE_MS,
+            autoSaveEnabled: settings.lnAutoBookmark ?? true,
+            saveDelay: settings.lnBookmarkDelay ?? 0,
+            onSaveStatusChange: setIsSaved,
+        })
+    );
 
     // ========================================================================
     // Initialization
@@ -94,6 +103,12 @@ export const PagedReader: React.FC<PagedReaderProps> = ({
             };
         }
         // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
+
+    useEffect(() => {
+        if (initialProgress?.blockId) {
+            saveSchedulerRef.current.setInitialSavedPosition(initialProgress.blockId);
+        }
     }, []);
 
     // ========================================================================
@@ -114,8 +129,12 @@ export const PagedReader: React.FC<PagedReaderProps> = ({
 
     // Update save scheduler when bookId changes
     useEffect(() => {
-        saveSchedulerRef.current = createSaveScheduler(bookId, SAVE_DEBOUNCE_MS);
-    }, [bookId]);
+        saveSchedulerRef.current.updateOptions({
+            bookId,
+            autoSaveEnabled: settings.lnAutoBookmark ?? true,
+            saveDelay: settings.lnBookmarkDelay ?? 0,
+        });
+    }, [bookId, settings.lnAutoBookmark, settings.lnBookmarkDelay]);
 
     // ========================================================================
     // State
@@ -182,7 +201,7 @@ export const PagedReader: React.FC<PagedReaderProps> = ({
     const layout = useMemo(() => {
         if (dimensions.width === 0 || dimensions.height === 0) return null;
 
-        const gap = 80;
+        const gap =160;
         const padding = settings.lnPageMargin || 24;
 
         const contentW = dimensions.width - (padding * 2);
@@ -704,6 +723,10 @@ export const PagedReader: React.FC<PagedReaderProps> = ({
         goToEnd: () => goToPage(totalPages - 1),
     }), [goNext, goPrev, goToPage, totalPages]);
 
+    const handleSaveNow = useCallback(async (): Promise<boolean> => {
+        return await saveSchedulerRef.current.saveNow();
+    }, []);
+
     // ========================================================================
     // Keyboard Navigation
     // ========================================================================
@@ -797,30 +820,41 @@ export const PagedReader: React.FC<PagedReaderProps> = ({
     // Wheel Handler
     // ========================================================================
 
-    useEffect(() => {
-        const wrapper = wrapperRef.current;
-        if (!wrapper) return;
+    
+useEffect(() => {
+    const wrapper = wrapperRef.current;
+    if (!wrapper) return;
 
-        const handleWheel = (e: WheelEvent) => {
-            e.preventDefault();
-            if (wheelTimeoutRef.current || isTransitioning || !contentReady) return;
+    let lastWheelTime = 0;
+    const wheelDebounce = 300;
 
-            const delta = isVertical ? e.deltaY : (e.deltaX || e.deltaY);
-            if (Math.abs(delta) > 20) {
-                if (delta > 0) goNext();
-                else goPrev();
-                wheelTimeoutRef.current = window.setTimeout(() => {
-                    wheelTimeoutRef.current = null;
-                }, 200);
+    const handleWheel = (e: WheelEvent) => {
+        e.preventDefault();
+        
+        if (isTransitioning || !contentReady) return;
+
+        const now = Date.now();
+        if (now - lastWheelTime < wheelDebounce) return;
+
+        const delta = e.deltaY;
+        
+        if (Math.abs(delta) > 20) {
+            lastWheelTime = now;
+            
+            
+            if (delta > 0) {
+                goNext();
+            } else {
+                goPrev();
             }
-        };
+        }
+    };
 
-        wrapper.addEventListener('wheel', handleWheel, { passive: false });
-        return () => {
-            wrapper.removeEventListener('wheel', handleWheel);
-            if (wheelTimeoutRef.current) clearTimeout(wheelTimeoutRef.current);
-        };
-    }, [isVertical, goNext, goPrev, isTransitioning, contentReady]);
+    wrapper.addEventListener('wheel', handleWheel, { passive: false });
+    return () => {
+        wrapper.removeEventListener('wheel', handleWheel);
+    };
+}, [goNext, goPrev, isTransitioning, contentReady]);
 
     // ========================================================================
     // Visibility Change Handler (Save on Hide)
@@ -885,10 +919,11 @@ export const PagedReader: React.FC<PagedReaderProps> = ({
 
     return (
         <div
-            ref={wrapperRef}
-            className="paged-reader-wrapper"
-            style={{ backgroundColor: theme.bg, color: theme.fg }}
-        >
+    ref={wrapperRef}
+    className="paged-reader-wrapper"
+    style={{ backgroundColor: theme.bg, color: theme.fg }}
+    data-dark-mode={settings.lnTheme === 'dark' || settings.lnTheme === 'black'}
+>
             {/* Dynamic image sizing */}
             <style>{`
                 .paged-content img {
@@ -955,6 +990,8 @@ export const PagedReader: React.FC<PagedReaderProps> = ({
                     bookStats={stats}
                     settings={settings}
                     onUpdateSettings={onUpdateSettings}
+                    isSaved={isSaved}
+                    onSaveNow={handleSaveNow}
                 />
             )}
         </div>

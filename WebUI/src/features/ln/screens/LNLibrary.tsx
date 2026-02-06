@@ -346,6 +346,7 @@ export const LNLibrary: React.FC = () => {
     const [isImporting, setIsImporting] = useState(false);
     const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
     const [isSelectionMode, setIsSelectionMode] = useState(false);
+    const [isDragOver, setIsDragOver] = useState(false);
 
     const { navBarWidth } = useNavBarContext();
     const { settings: { mangaGridItemWidth } } = useMetadataServerSettings();
@@ -433,7 +434,7 @@ export const LNLibrary: React.FC = () => {
         );
     }, []);
 
-    const handleImport = useCallback(async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const handleImport = useCallback(async (e: React.ChangeEvent<HTMLInputElement> | { target: { files: File[]; value: string } }) => {
         if (!e.target.files?.length) return;
 
         const files = Array.from(e.target.files);
@@ -649,6 +650,46 @@ export const LNLibrary: React.FC = () => {
         navigate(AppRoutes.ln.childRoutes.reader.path(id));
     }, [navigate]);
 
+    // Drag and Drop handlers
+    const handleDragOver = useCallback((e: React.DragEvent) => {
+        e.preventDefault();
+        e.stopPropagation();
+        setIsDragOver(true);
+    }, []);
+
+    const handleDragLeave = useCallback((e: React.DragEvent) => {
+        e.preventDefault();
+        e.stopPropagation();
+        // Only hide overlay if leaving the main container
+        if (e.currentTarget === e.target) {
+            setIsDragOver(false);
+        }
+    }, []);
+
+    const handleDrop = useCallback(async (e: React.DragEvent) => {
+        e.preventDefault();
+        e.stopPropagation();
+        setIsDragOver(false);
+
+        const files = Array.from(e.dataTransfer.files);
+        const epubFiles = files.filter(file => 
+            file.name.toLowerCase().endsWith('.epub') || 
+            file.type === 'application/epub+zip'
+        );
+
+        if (epubFiles.length === 0) return;
+
+        // Simulate input change event to reuse existing import logic
+        const mockEvent = {
+            target: {
+                files: epubFiles,
+                value: '',
+            }
+        } as any;
+
+        await handleImport(mockEvent);
+    }, [handleImport]);
+
     useAppTitle('Light Novels');
 
     const appAction = useMemo(
@@ -716,7 +757,35 @@ export const LNLibrary: React.FC = () => {
     useAppAction(appAction, [appAction]);
 
     return (
-        <Box sx={{ p: 1 }}>
+        <Box 
+            sx={{ p: 1, position: 'relative', minHeight: '100vh' }}
+            onDragOver={handleDragOver}
+            onDragLeave={handleDragLeave}
+            onDrop={handleDrop}
+        >
+            {/* Drag overlay */}
+            {isDragOver && (
+                <Box
+                    sx={{
+                        position: 'fixed',
+                        inset: 0,
+                        backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        zIndex: 9999,
+                        pointerEvents: 'none',
+                    }}
+                >
+                    <Box sx={{ textAlign: 'center', color: 'white' }}>
+                        <UploadFileIcon sx={{ fontSize: 64, mb: 2 }} />
+                        <Typography variant="h4" sx={{ fontWeight: 'bold' }}>
+                            Drop EPUB files to import
+                        </Typography>
+                    </Box>
+                </Box>
+            )}
+
             {library.length === 0 && !isImporting && (
                 <Typography variant="body1" color="text.secondary" align="center" sx={{ mt: 10 }}>
                     No books found. Import an EPUB to start reading.

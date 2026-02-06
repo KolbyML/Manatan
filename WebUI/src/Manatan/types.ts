@@ -141,6 +141,8 @@ export interface Settings {
     lnDisableAnimations: boolean;
     lnLockProgressBar?: boolean;
     lnShowCharProgress?: boolean;
+     lnAutoBookmark?: boolean;         
+    lnBookmarkDelay?: number;   
     // Dropdown setting for grouping behavior
     resultGroupingMode: 'grouped' | 'flat';
 
@@ -309,7 +311,9 @@ export const DEFAULT_SETTINGS: Settings = {
     lnParagraphSpacing: 1.5,
     lnDisableAnimations: true,
     lnLockProgressBar: false,
-    lnShowCharProgress: false
+    lnShowCharProgress: false,
+    lnAutoBookmark: true,
+    lnBookmarkDelay: 15,
 };
 
 export const COLOR_THEMES: Record<ColorTheme, { accent: string; background: string }> = {
