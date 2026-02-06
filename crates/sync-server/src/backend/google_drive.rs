@@ -17,7 +17,7 @@ use google_drive3::hyper_rustls::HttpsConnector;
 use google_drive3::hyper_util::client::legacy::connect::HttpConnector;
 use google_drive3::hyper_util::client::legacy::Client;
 use google_drive3::hyper_util::rt::TokioExecutor;
-use google_drive3::common::mime;
+use google_drive3::common::Mime;
 use google_drive3::DriveHub;
 
 // ============================================================================
