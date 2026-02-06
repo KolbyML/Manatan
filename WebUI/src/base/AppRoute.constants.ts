@@ -111,6 +111,10 @@ export const AppRoutes = {
                 match: 'tracking',
                 path: '/settings/tracking',
             },
+            sync: {
+                match: 'sync',
+                path: '/settings/sync',
+            },
             appearance: {
                 match: 'appearance',
                 path: '/settings/appearance',

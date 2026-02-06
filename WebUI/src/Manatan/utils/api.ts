@@ -44,6 +44,13 @@ export const apiRequest = async <T>(
     });
 
     const text = await response.text();
+    
+    // Check for HTTP errors
+    if (!response.ok) {
+        const errorMessage = text || `HTTP ${response.status}: ${response.statusText}`;
+        throw new Error(errorMessage);
+    }
+    
     if (!text) return {} as T;
 
     try {
