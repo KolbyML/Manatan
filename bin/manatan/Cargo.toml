@@ -37,10 +37,11 @@ tracing-subscriber.workspace = true
 zip.workspace = true
 
 # Internal Crates
-manatan-ocr-server.workspace = true
-manatan-yomitan-server.workspace = true
 manatan-audio-server.workspace = true
 manatan-server-public.workspace = true
+manatan-ocr-server.workspace = true
+manatan-sync-server.workspace = true
+manatan-yomitan-server.workspace = true
 
 [[bin]]
 name = "manatan"

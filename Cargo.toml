@@ -4,7 +4,8 @@ members = [
     "bin/manatan",
     "bin/manatan_android",
     "crates/audio-server",
-    "crates/ocr-server", 
+    "crates/ocr-server",
+    "crates/sync-server",
     "crates/yomitan-server",
 ]
 exclude = ["bin/manatan"]
@@ -72,10 +73,11 @@ tracing-subscriber = { version = "0.3.20", features = ["env-filter"] }
 zip = "6.0"
 
 # Internal Dependencies
-manatan-ocr-server = { path = "crates/ocr-server" }
-manatan-yomitan-server = { path = "crates/yomitan-server" }
 manatan-audio-server = { path = "crates/audio-server" }
 manatan-server-public = { git = "https://github.com/KolbyML/Manatan-Server-Public", rev = "78110d9ece16a094bfae052a68a8047e0d206afd" }
+manatan-ocr-server = { path = "crates/ocr-server" }
+manatan-sync-server = { path = "crates/sync-server" }
+manatan-yomitan-server = { path = "crates/yomitan-server" }
 
 [profile.test]
 inherits = "release"
