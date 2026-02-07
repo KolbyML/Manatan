@@ -60,15 +60,20 @@ const MEMBERSHIP_PERKS = [
     '🚀 1 month early access to builds',
     '📝 Your name in the Manatan About page',
     '🎖️ Discord role',
+    '📚 More than 1 MDict import (coming soon) - Yomitan dictionaries stay free',
+    '▶️ YouTube support with AI subtitles (coming soon)',
+    '🧠 AI subtitles (coming soon)',
+    '🗂️ AI Anki card enhancement (coming soon)',
+    '🔄 Anki/Manatan SRS cross-sync server (coming soon) - Google Drive sync stays free (without Anki sync)',
 ];
 
 const MEMBERSHIP_TIERS: MembershipTier[] = [
     { key: 'diamond', label: '💎 Diamond', backers: [] },
     { key: 'ruby', label: '❤️ Ruby', backers: [] },
     { key: 'sapphire', label: '🔷 Sapphire', backers: [] },
-    { key: 'emerald', label: '🟢 Emerald', backers: ['Samu'] },
+    { key: 'emerald', label: '🟢 Emerald', backers: ['Ryohei11', 'Samu'] },
     { key: 'crystal', label: '✨ Crystal', backers: ['Emelia', 'artgor', 'Enviromath', 'Leighton Woods'] },
-    { key: 'stone', label: '🪨 Stone', backers: ['Helios', 'Ryohei11'] },
+    { key: 'stone', label: '🪨 Stone', backers: ['Helios'] },
 ];
 
 const DONATION_ADDRESSES = [
