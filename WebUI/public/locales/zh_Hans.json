@@ -74,7 +74,7 @@
                         "all": "$t(extension.language.all)",
                         "next_other": "下{{count}}个章节",
                         "unread": "$t(global.filter.label.unread)",
-                        "confirmation_other": "将会下载{{count}}个章节\nSuwayomi并不是一个批量下载工具，下载过多可能会导致被来源站点封禁，或引发性能问题。"
+                        "confirmation_other": "将会下载{{count}}个章节\nManatan并不是一个批量下载工具，下载过多可能会导致被来源站点封禁，或引发性能问题。"
                     }
                 },
                 "delete": {

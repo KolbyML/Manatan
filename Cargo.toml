@@ -75,7 +75,7 @@ zip = "6.0"
 manatan-ocr-server = { path = "crates/ocr-server" }
 manatan-yomitan-server = { path = "crates/yomitan-server" }
 manatan-audio-server = { path = "crates/audio-server" }
-manatan-server-public = { git = "https://github.com/KolbyML/Manatan-Server-Public", rev = "" }
+manatan-server-public = { git = "https://github.com/KolbyML/Manatan-Server-Public", rev = "78110d9ece16a094bfae052a68a8047e0d206afd" }
 
 [profile.test]
 inherits = "release"

@@ -1118,7 +1118,7 @@
                         "next_other": "Prochains {{count}} chapitres",
                         "confirmation_one": "Vous êtes sur le point de télécharger un chapitre",
                         "confirmation_many": "",
-                        "confirmation_other": "Vous êtes sur le point de télécharger {{count}} chapitres.\nSuwayomi n’est pas un téléchargeur massif et trop de téléchargements peuvent vous bannir des sources ou causer des problèmes de performance."
+                        "confirmation_other": "Vous êtes sur le point de télécharger {{count}} chapitres.\nManatan n’est pas un téléchargeur massif et trop de téléchargements peuvent vous bannir des sources ou causer des problèmes de performance."
                     }
                 }
             },
@@ -1594,7 +1594,7 @@
                     "label": {
                         "description": "Ajouter des dépôts à partir desquels des extensions peuvent être installées",
                         "title": "Dépôts d'extensions",
-                        "disclaimer": "<strong> Suwayomi ne fournit aucun support pour les dépôts ou extensions tiers ! </strong> <br/> Utilisez avec prudence car il pourrait y avoir des acteurs malveillants créant ces dépôts. <br/> En tant qu'utilisateur, vous devez vérifier la sécurité et que vous faites confiance à tout dépôt ou extension."
+                        "disclaimer": "<strong> Manatan ne fournit aucun support pour les dépôts ou extensions tiers ! </strong> <br/> Utilisez avec prudence car il pourrait y avoir des acteurs malveillants créant ces dépôts. <br/> En tant qu'utilisateur, vous devez vérifier la sécurité et que vous faites confiance à tout dépôt ou extension."
                     },
                     "dialog": {
                         "action": {

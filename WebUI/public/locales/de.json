@@ -165,7 +165,7 @@
                         "next_other": "Nächste {{count}} Kapitel",
                         "unread": "$t(global.filter.label.unread)",
                         "confirmation_one": "Du bist dabei, ein Kapitel herunterzuladen",
-                        "confirmation_other": "Du bist dabei, {{count}} Kapitel herunterzuladen\nSuwayomi ist kein Massen-Downloadtool, zu viele Downloads können dafür sorgen, dass du bei der Quelle gebannt wirst und/oder Performanceprobleme auslösen."
+                        "confirmation_other": "Du bist dabei, {{count}} Kapitel herunterzuladen\nManatan ist kein Massen-Downloadtool, zu viele Downloads können dafür sorgen, dass du bei der Quelle gebannt wirst und/oder Performanceprobleme auslösen."
                     },
                     "button": {
                         "selected": "Auswahl downloaden"
@@ -659,7 +659,7 @@
             "repositories": {
                 "custom": {
                     "label": {
-                        "disclaimer": "<strong>Suwayomi bietet keine Unterstützung für Repositories oder Erweiterungen von Drittanbietern an!</strong><br/>Sei vorsichtig, da diese Repositories von böswilligen Akteuren erstellt werden könnten.<br/>Du als Benutzer musst die Sicherheit des Repositories oder der Erweiterung überprüfen, bevor du diesen vertraust.",
+                        "disclaimer": "<strong>Manatan bietet keine Unterstützung für Repositories oder Erweiterungen von Drittanbietern an!</strong><br/>Sei vorsichtig, da diese Repositories von böswilligen Akteuren erstellt werden könnten.<br/>Du als Benutzer musst die Sicherheit des Repositories oder der Erweiterung überprüfen, bevor du diesen vertraust.",
                         "title": "Erweiterungs-Repositories",
                         "description": "Füge zusätzliche Repositories mit installierbaren Erweiterungen hinzu"
                     },

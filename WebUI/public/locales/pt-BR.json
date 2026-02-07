@@ -92,8 +92,8 @@
                         "success_other": "{{count}} transferências adicionadas",
                         "unread": "$t(global.filter.label.unread)",
                         "confirmation_one": "Você está prestes a baixar um capítulo",
-                        "confirmation_many": "Você está prestes a baixar {{count}} capítulos\nSuwayomi não é um downloader em massa e muitos downloads podem fazê-lo ser banido dos sites de origem e/ou podem causar problemas de desempenho.",
-                        "confirmation_other": "Você está prestes a baixar {{count}} capítulos\nSuwayomi não é um downloader em massa e muitos downloads podem fazê-lo ser banido dos sites de origem e/ou podem causar problemas de desempenho."
+                        "confirmation_many": "Você está prestes a baixar {{count}} capítulos\nManatan não é um downloader em massa e muitos downloads podem fazê-lo ser banido dos sites de origem e/ou podem causar problemas de desempenho.",
+                        "confirmation_other": "Você está prestes a baixar {{count}} capítulos\nManatan não é um downloader em massa e muitos downloads podem fazê-lo ser banido dos sites de origem e/ou podem causar problemas de desempenho."
                     },
                     "button": {
                         "selected": "Transferir selecionados"
@@ -350,7 +350,7 @@
                     },
                     "label": {
                         "description": "Adicionar repositórios de onde extensões podem ser instaladas",
-                        "disclaimer": "<strong>Suwayomi não provê nenhuma assistência para repositóries ou extensões de terceiros!</strong><br/>Use com cuidado pois podem existir agentes mal-intencionados criando esses repositórios.<br/>Você como usuário precisa verificar a segurança destes repositórios e extensões, e certificar sua confiabilidade.",
+                        "disclaimer": "<strong>Manatan não provê nenhuma assistência para repositóries ou extensões de terceiros!</strong><br/>Use com cuidado pois podem existir agentes mal-intencionados criando esses repositórios.<br/>Você como usuário precisa verificar a segurança destes repositórios e extensões, e certificar sua confiabilidade.",
                         "title": "Repositórios de extensões"
                     }
                 }

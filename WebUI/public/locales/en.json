@@ -78,7 +78,7 @@
             "ahead": "$t(download.settings.download_ahead.title) ({{count}})",
             "all": "$t(extension.language.all)",
             "confirmation_one": "You are about to download one chapter",
-            "confirmation_other": "You are about to download {{count}} chapters.\nSuwayomi is not a mass downloader and too many downloads can get you banned from sources and/or cause performance issues.",
+            "confirmation_other": "You are about to download {{count}} chapters.\nManatan is not a mass downloader and too many downloads can get you banned from sources and/or cause performance issues.",
             "error_one": "Could not add the download",
             "error_other": "Could not add downloads",
             "next_one": "Next chapter",
@@ -344,7 +344,7 @@
           },
           "label": {
             "description": "Add repositories from which extensions can be installed",
-            "disclaimer": "<strong>Suwayomi does not provide any support for 3rd party repositories or extensions!</strong><br/>Use with caution as there could be malicious actors making those repositories.<br/>You as the user need to verify the security and that you trust any repository or extension.",
+            "disclaimer": "<strong>Manatan does not provide any support for 3rd party repositories or extensions!</strong><br/>Use with caution as there could be malicious actors making those repositories.<br/>You as the user need to verify the security and that you trust any repository or extension.",
             "title": "Extension repositories"
           }
         }
@@ -1557,7 +1557,7 @@
         },
         "cbz_mime_type": {
           "compatible": "Compatible",
-          "description": "Controls the MimeType that Suwayomi sends in OPDS entries for CBZ archives. Also affects global CBZ download.\nModern follows recent IANA standard (2017), while LEGACY (deprecated mimetype for .cbz) and COMPATIBLE (deprecated mimetype for all comic archives) might be more compatible with older clients.",
+          "description": "Controls the MimeType that Manatan sends in OPDS entries for CBZ archives. Also affects global CBZ download.\nModern follows recent IANA standard (2017), while LEGACY (deprecated mimetype for .cbz) and COMPATIBLE (deprecated mimetype for all comic archives) might be more compatible with older clients.",
           "legacy": "Legacy",
           "modern": "Modern",
           "title": "CBZ MIME-Type"

@@ -997,8 +997,8 @@
                         "next_many": "Los siguientes {{count}} capítulos",
                         "next_other": "Los siguientes {{count}} capítulos",
                         "confirmation_one": "Estás a punto de descargar un capítulo.",
-                        "confirmation_many": "Estás a punto de descargar {{count}} capítulos.\nSuwayomi no es un descargador masivo, y demasiadas descargas pueden hacer que te bloqueen de las fuentes y/o causar problemas de rendimiento.",
-                        "confirmation_other": "Estás a punto de descargar {{count}} capítulos.\nSuwayomi no es un descargador masivo, y demasiadas descargas pueden hacer que te bloqueen de las fuentes y/o causar problemas de rendimiento."
+                        "confirmation_many": "Estás a punto de descargar {{count}} capítulos.\nManatan no es un descargador masivo, y demasiadas descargas pueden hacer que te bloqueen de las fuentes y/o causar problemas de rendimiento.",
+                        "confirmation_other": "Estás a punto de descargar {{count}} capítulos.\nManatan no es un descargador masivo, y demasiadas descargas pueden hacer que te bloqueen de las fuentes y/o causar problemas de rendimiento."
                     }
                 }
             },
@@ -1437,7 +1437,7 @@
                     "label": {
                         "description": "Añadir repositorios desde los que instalar extensiones",
                         "title": "Repositorios de extensiones",
-                        "disclaimer": "<strong>¡Suwayomi no proporciona soporte para repositorios o extensiones de terceros!</strong><br/>Usar con precaución ya que podría haber actores maliciosos haciendo esos repositorios.<br/>Como usuario necesitas verificar la seguridad y que confíes en cualquier repositorio o extensión."
+                        "disclaimer": "<strong>¡Manatan no proporciona soporte para repositorios o extensiones de terceros!</strong><br/>Usar con precaución ya que podría haber actores maliciosos haciendo esos repositorios.<br/>Como usuario necesitas verificar la seguridad y que confíes en cualquier repositorio o extensión."
                     }
                 }
             },

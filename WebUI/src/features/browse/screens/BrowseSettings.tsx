@@ -131,7 +131,7 @@ export const BrowseSettings = () => {
                 description={t('extension.settings.repositories.custom.label.description')}
                 dialogDisclaimer={
                     <Trans i18nKey="extension.settings.repositories.custom.label.disclaimer">
-                        <strong>Suwayomi does not provide any support for 3rd party repositories or extensions!</strong>
+                        <strong>Manatan does not provide any support for 3rd party repositories or extensions!</strong>
                         <br />
                         Use with caution as there could be malicious actors making those repositories.
                         <br />
@@ -153,7 +153,7 @@ export const BrowseSettings = () => {
                 description={t('extension.settings.repositories.custom.label.description')}
                 dialogDisclaimer={
                     <Trans i18nKey="extension.settings.repositories.custom.label.disclaimer">
-                        <strong>Suwayomi does not provide any support for 3rd party repositories or extensions!</strong>
+                        <strong>Manatan does not provide any support for 3rd party repositories or extensions!</strong>
                         <br />
                         Use with caution as there could be malicious actors making those repositories.
                         <br />

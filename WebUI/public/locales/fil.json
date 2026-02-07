@@ -239,7 +239,7 @@
                     "label": {
                         "title": "Mga Extension repository",
                         "description": "Magdagdag ng mga repository kung saan maaaring mai-install ang mga extension",
-                        "disclaimer": "<strong>Ang Suwayomi ay hindi nagbibigay ng anumang suporta para sa mga 3rd party na repository o extension!</strong><br/>Gumamit nang may pag-iingat dahil maaaring may mga malisyosong aktor na gumagawa ng mga repository na iyon.<br/>Ikaw bilang user ay kailangang i-verify ang seguridad at na pinagkakatiwalaan mo ang anumang repository o extension."
+                        "disclaimer": "<strong>Ang Manatan ay hindi nagbibigay ng anumang suporta para sa mga 3rd party na repository o extension!</strong><br/>Gumamit nang may pag-iingat dahil maaaring may mga malisyosong aktor na gumagawa ng mga repository na iyon.<br/>Ikaw bilang user ay kailangang i-verify ang seguridad at na pinagkakatiwalaan mo ang anumang repository o extension."
                     },
                     "dialog": {
                         "action": {

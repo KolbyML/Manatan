@@ -82,7 +82,7 @@
                         "ahead": "$t(download.settings.download_ahead.title) ({{count}})",
                         "all": "$t(extension.language.all)",
                         "next_other": "{{count}} bab selanjutnya",
-                        "confirmation_other": "Kamu akan mengunduh {{count}} chapter.\nSuwayomi bukanlah pengunduh massal, dan terlalu banyak unduhan dapat menyebabkan Anda diblokir dari sumber dan/atau menyebabkan masalah kinerja."
+                        "confirmation_other": "Kamu akan mengunduh {{count}} chapter.\nManatan bukanlah pengunduh massal, dan terlalu banyak unduhan dapat menyebabkan Anda diblokir dari sumber dan/atau menyebabkan masalah kinerja."
                     },
                     "button": {
                         "selected": "Memilih Unduhan"
@@ -501,7 +501,7 @@
                         }
                     },
                     "label": {
-                        "disclaimer": "<strong>Suwayomi tidak mendukung repositori atau file tambahan pihak ketiga!</strong><br/>Gunakan dengan hati-hati karena ada kemungkinan adanya aktor jahat yang membuat repositori tersebut .<br/>Anda sebagai pengguna harus memverifikasi keamanan dan mempercayai repositori dan ekstensi apapun.",
+                        "disclaimer": "<strong>Manatan tidak mendukung repositori atau file tambahan pihak ketiga!</strong><br/>Gunakan dengan hati-hati karena ada kemungkinan adanya aktor jahat yang membuat repositori tersebut .<br/>Anda sebagai pengguna harus memverifikasi keamanan dan mempercayai repositori dan ekstensi apapun.",
                         "title": "Repositori ekstensi",
                         "description": "Tambahkan repositori tempat ekstensi dapat diinstal"
                     }

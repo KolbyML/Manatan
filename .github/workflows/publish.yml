@@ -26,6 +26,7 @@ concurrency:
   cancel-in-progress: true
 
 permissions:
+  actions: write
   contents: write
 
 jobs:
@@ -70,41 +71,10 @@ jobs:
           fi
 
   # --- JOB 2: Build Custom JREs ---
-  jlink:
-    needs: prepare_version
-    runs-on: ${{ matrix.os }}
-    strategy:
-      matrix:
-        include:
-          - os: ubuntu-latest
-            name: linux-amd64
-          - os: ubuntu-24.04-arm
-            name: linux-arm64
-          - os: windows-latest
-            name: windows-x64
-          - os: macos-15
-            name: macOS-arm64
-          - os: macos-15-intel
-            name: macOS-x64
-    steps:
-      - name: Set up JDK
-        uses: actions/setup-java@v4
-        with:
-          java-version: 21
-          distribution: 'zulu'
-
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Package JDK
-        run: make jlink
-
-      - name: Upload JDK package
-        uses: actions/upload-artifact@v4
-        with:
-          name: ${{ matrix.name }}-jre
-          path: jre_bundle
-          retention-days: 1
+  jre_bundle:
+    uses: ./.github/workflows/jre.yml
+    with:
+      target: all
 
   # --- JOB 3: Build WebUI ---
   build_webui:
@@ -144,7 +114,7 @@ jobs:
   # --- JOB 4: Build Manatan Launcher ---
   build_manatan:
     name: Build Manatan Desktop (${{ matrix.name }})
-    needs: [jlink, build_webui, prepare_version]
+    needs: [jre_bundle, build_webui, prepare_version]
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
@@ -227,17 +197,17 @@ jobs:
       - name: Download JRE
         uses: actions/download-artifact@v4
         with:
-          name: ${{ matrix.arch_name }}-jre
+          name: jre-bundles
           path: temp_jre
       
       - name: Zip JRE for Embedding
         shell: bash
         run: |
-          cd temp_jre
+          cd temp_jre/${{ matrix.arch_name }}
           if [ "${{ runner.os }}" == "Windows" ]; then
-            7z a -tzip ../bin/manatan/resources/jre_bundle.zip *
+            7z a -tzip "${{ github.workspace }}/bin/manatan/resources/jre_bundle.zip" *
           else
-            zip -r ../bin/manatan/resources/jre_bundle.zip .
+            zip -r "${{ github.workspace }}/bin/manatan/resources/jre_bundle.zip" .
           fi
 
       - name: Download Suwayomi JAR

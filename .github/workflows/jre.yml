@@ -1,0 +1,109 @@
+name: Build JRE Bundle
+
+on:
+  workflow_call:
+    inputs:
+      target:
+        description: Target JRE bundle to build
+        required: false
+        default: all
+        type: string
+  workflow_dispatch:
+    inputs:
+      target:
+        description: Target JRE bundle to build
+        required: true
+        default: all
+        type: choice
+        options:
+          - all
+          - linux-amd64
+          - linux-arm64
+          - windows-x64
+          - macOS-arm64
+          - macOS-x64
+
+permissions:
+  actions: write
+  contents: read
+
+jobs:
+  build_jre:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: ubuntu-latest
+            name: linux-amd64
+          - os: ubuntu-24.04-arm
+            name: linux-arm64
+          - os: windows-latest
+            name: windows-x64
+          - os: macos-15
+            name: macOS-arm64
+          - os: macos-15-intel
+            name: macOS-x64
+    if: ${{ inputs.target == 'all' || inputs.target == matrix.name }}
+    steps:
+      - name: Set up JDK
+        uses: actions/setup-java@v4
+        with:
+          java-version: 21
+          distribution: zulu
+
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Package JDK
+        run: make jlink
+
+      - name: Stage JRE bundle
+        shell: bash
+        run: |
+          mkdir -p jre_bundle_out/${{ matrix.name }}
+          cp -r jre_bundle/. jre_bundle_out/${{ matrix.name }}/
+
+      - name: Upload per-target staging artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: jre-part-${{ matrix.name }}
+          path: jre_bundle_out/${{ matrix.name }}
+          retention-days: 1
+
+  publish_jre_artifact:
+    needs: build_jre
+    runs-on: ubuntu-latest
+    if: ${{ always() && !cancelled() }}
+    steps:
+      - name: Delete previous consolidated JRE artifacts
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const owner = context.repo.owner;
+            const repo = context.repo.repo;
+            const targetName = 'jre-bundles';
+
+            const artifacts = await github.paginate(
+              github.rest.actions.listArtifactsForRepo,
+              { owner, repo, per_page: 100 }
+            );
+
+            const oldArtifacts = artifacts.filter((artifact) => artifact.name === targetName);
+
+            for (const artifact of oldArtifacts) {
+              core.info(`Deleting artifact ${artifact.id} (${artifact.name}) from run ${artifact.workflow_run?.id ?? 'unknown'}`);
+              await github.rest.actions.deleteArtifact({
+                owner,
+                repo,
+                artifact_id: artifact.id,
+              });
+            }
+
+      - name: Upload consolidated JRE artifact
+        uses: actions/upload-artifact/merge@v4
+        with:
+          name: jre-bundles
+          pattern: jre-part-*
+          delete-merged: true
+          retention-days: 90

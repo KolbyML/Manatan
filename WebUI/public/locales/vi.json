@@ -71,7 +71,7 @@
                         "unread": "$t(global.filter.label.unread)",
                         "ahead": "$t(download.settings.download_ahead.title) ({{count}})",
                         "all": "Tất cả các chương",
-                        "confirmation_other": "Bạn sắp tải xuống {{count}} chương.\nSuwayomi không phải là trình tải xuống hàng loạt và việc tải xuống quá nhiều có thể khiến bạn bị cấm khỏi các nguồn và/hoặc gây ra sự cố về hiệu suất."
+                        "confirmation_other": "Bạn sắp tải xuống {{count}} chương.\nManatan không phải là trình tải xuống hàng loạt và việc tải xuống quá nhiều có thể khiến bạn bị cấm khỏi các nguồn và/hoặc gây ra sự cố về hiệu suất."
                     },
                     "button": {
                         "selected": "Tải xuống đã chọn"
@@ -306,7 +306,7 @@
                     "label": {
                         "title": "Kho tiện ích",
                         "description": "Thêm kho tiện ích",
-                        "disclaimer": "<strong>Suwayomi không cung cấp bất cứ hỗ trờ gì cho kho tiện ích hay tiện ích của bên thứ 3!</strong><br/>Cẩn trọng với những tiện ích vì chúng có thể được tạo bởi những kẻ xấu. <br/>Bạn với tư cách là người dùng nên kiểm tra trước khi tin tưởng bất kì kho tiện ích hay tiện ích nào."
+                        "disclaimer": "<strong>Manatan không cung cấp bất cứ hỗ trờ gì cho kho tiện ích hay tiện ích của bên thứ 3!</strong><br/>Cẩn trọng với những tiện ích vì chúng có thể được tạo bởi những kẻ xấu. <br/>Bạn với tư cách là người dùng nên kiểm tra trước khi tin tưởng bất kì kho tiện ích hay tiện ích nào."
                     }
                 }
             },

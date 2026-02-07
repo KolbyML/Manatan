@@ -703,6 +703,7 @@ export const AnimeVideoPlayer = ({
     const lastPlaybackWarningRef = useRef<number | null>(null);
     const subtitleRequestRef = useRef(0);
     const dictionaryRequestRef = useRef(0);
+    const dictionaryVisibleRef = useRef(false);
 
     useEffect(() => {
         const video = videoRef.current;
@@ -812,6 +813,10 @@ export const AnimeVideoPlayer = ({
     }, [resetSubtitleDisplay, shouldRenderSubtitles]);
     const subtitleRenderResetRef = useRef<number | null>(null);
     const activeCueKeyRef = useRef<string>('');
+
+    useEffect(() => {
+        dictionaryVisibleRef.current = dictionaryVisible;
+    }, [dictionaryVisible]);
 
     useEffect(() => {
         if (isPaused && !dictionaryVisible && !autoOverlayDisabled) {
@@ -1244,6 +1249,9 @@ export const AnimeVideoPlayer = ({
                     if (onReady) {
                         onReady();
                     } else {
+                        if (dictionaryVisibleRef.current) {
+                            return;
+                        }
                         video.play().catch(() => {});
                     }
                     return;
@@ -1316,6 +1324,9 @@ export const AnimeVideoPlayer = ({
                 if (braveVolumeRef.current !== null) {
                     video.volume = braveVolumeRef.current;
                 }
+                if (dictionaryVisibleRef.current) {
+                    return;
+                }
                 video.play().catch(() => {});
             };
             if (video.paused) {
@@ -1336,6 +1347,9 @@ export const AnimeVideoPlayer = ({
         braveScheduleRef.current = scheduleBraveAudioResets;
         const attemptPlay = (force = false) => {
             if (!force && userPausedRef.current) {
+                return;
+            }
+            if (dictionaryVisibleRef.current) {
                 return;
             }
             if (isBrave && shouldUseHls) {
@@ -2963,16 +2977,26 @@ export const AnimeVideoPlayer = ({
         ],
     );
 
-    const handleSubtitleMouseLeave = useCallback(() => {
+    const handleSubtitleMouseLeave = useCallback((event: React.MouseEvent<HTMLDivElement>) => {
         if (hoverLookupTimerRef.current !== null) {
             window.clearTimeout(hoverLookupTimerRef.current);
             hoverLookupTimerRef.current = null;
         }
         hoverLookupRef.current = null;
+
+        if (!dictionaryVisible) {
+            return;
+        }
+
+        const nextTarget = event.relatedTarget as HTMLElement | null;
+        if (nextTarget?.closest('[data-subtitle-cue="true"]')) {
+            return;
+        }
+
         if (hoverLookupEnabled && settings.animeSubtitleHoverAutoResume && dictionaryOpenedByHoverRef.current) {
             resumeFromDictionary();
         }
-    }, [hoverLookupEnabled, settings.animeSubtitleHoverAutoResume]);
+    }, [dictionaryVisible, hoverLookupEnabled, settings.animeSubtitleHoverAutoResume]);
 
     useEffect(() => {
         return () => {
@@ -2983,6 +3007,9 @@ export const AnimeVideoPlayer = ({
     }, []);
 
     const togglePlay = useCallback(() => {
+        if (dictionaryVisible) {
+            return;
+        }
         const video = videoRef.current;
         if (!video) return;
         if (video.paused) {
@@ -2996,7 +3023,7 @@ export const AnimeVideoPlayer = ({
             userPausedRef.current = true;
             video.pause();
         }
-    }, [setIsOverlayVisible]);
+    }, [dictionaryVisible, setIsOverlayVisible]);
 
 
     const resumeFromDictionary = () => {
@@ -4195,6 +4222,7 @@ export const AnimeVideoPlayer = ({
                     activeCues.map((cue) => (
                         <Box
                             key={cue.id}
+                            data-subtitle-cue="true"
                             sx={{
                                 color: 'white',
                                 borderRadius: 1,
@@ -4211,7 +4239,7 @@ export const AnimeVideoPlayer = ({
                             }}
                             onClick={(event) => handleSubtitleClick(event, cue.text, cue.id, cue.start, cue.end)}
                             onMouseMove={(event) => handleSubtitleMouseMove(event, cue)}
-                            onMouseLeave={() => handleSubtitleMouseLeave()}
+                            onMouseLeave={(event) => handleSubtitleMouseLeave(event)}
                         >
                             <Typography
                                 variant="body1"
@@ -4813,7 +4841,13 @@ export const AnimeVideoPlayer = ({
                                         onChange={handleSeek}
                                         aria-label="Video position"
                                         size="small"
-                                        sx={{ py: 0, transform: 'translateY(12px)' }}
+                                        sx={{
+                                            py: 1.25,
+                                            transform: 'translateY(12px)',
+                                            '& .MuiSlider-rail, & .MuiSlider-track': {
+                                                height: 4,
+                                            },
+                                        }}
                                     />
                                 </Box>
                                 <Box

@@ -28,7 +28,7 @@ tracing.workspace = true
 thiserror = "2.0"
 zip.workspace = true
 wordbase-api = { git = "https://github.com/kolbyml/wordbase", rev = "b3a5a825b5afa05d9cd57ce18e24d988f1ab88ca" }
-rusqlite = { version = "0.31", features = ["bundled"] }
+rusqlite = "0.31"
 r2d2 = "0.8"
 r2d2_sqlite = "0.24"
 snap = "1.1"

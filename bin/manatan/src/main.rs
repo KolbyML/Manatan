@@ -3,7 +3,7 @@ mod io;
 use std::{
     env,
     fs::{self},
-    net::Ipv4Addr,
+    net::{Ipv4Addr, TcpListener},
     path::{Path, PathBuf},
     process::Stdio,
     sync::{
@@ -973,6 +973,7 @@ async fn run_server(
 
     let suwayomi_pid_path = data_dir.join("suwayomi.pid");
     cleanup_orphan_suwayomi(&suwayomi_pid_path);
+    ensure_suwayomi_port_available(SUWAYOMI_HOST, SUWAYOMI_PORT)?;
 
     let mut suwayomi_proc = Command::new(&java_exec)
         .current_dir(data_dir)
@@ -1027,8 +1028,19 @@ async fn run_server(
         );
     }
 
-    let manatan_runtime_url =
-        env::var("MANATAN_JAVA_URL").unwrap_or_else(|_| SUWAYOMI_HTTP_BASE_URL.to_string());
+    let manatan_runtime_url = if runtime_only {
+        if let Ok(value) = env::var("MANATAN_JAVA_URL")
+            && value != SUWAYOMI_HTTP_BASE_URL
+        {
+            warn!(
+                "Ignoring MANATAN_JAVA_URL={} while runtime-only is enabled; using {}",
+                value, SUWAYOMI_HTTP_BASE_URL
+            );
+        }
+        SUWAYOMI_HTTP_BASE_URL.to_string()
+    } else {
+        env::var("MANATAN_JAVA_URL").unwrap_or_else(|_| SUWAYOMI_HTTP_BASE_URL.to_string())
+    };
     let tracker_remote_search = env::var("MANATAN_TRACKER_REMOTE_SEARCH")
         .ok()
         .and_then(|value| match value.to_lowercase().as_str() {
@@ -1061,7 +1073,7 @@ async fn run_server(
     let manatan_config = ManatanServerConfig {
         host: host.to_string(),
         port,
-        java_runtime_url: manatan_runtime_url,
+        java_runtime_url: manatan_runtime_url.clone(),
         webview_enabled: true,
         aidoku_index_url,
         aidoku_enabled,
@@ -1077,6 +1089,9 @@ async fn run_server(
     let manatan_state = build_state(manatan_config)
         .await
         .map_err(|err| anyhow!("Failed to init Manatan server: {err}"))?;
+    ensure_runtime_bridge_available(&manatan_runtime_url)
+        .await
+        .map_err(|err| anyhow!("Failed runtime bridge preflight: {err}"))?;
     let manatan_router = build_router_without_cors(manatan_state);
 
     info!("🌍 Starting Web Interface at http://{}:{}", host, port);
@@ -1086,7 +1101,6 @@ async fn run_server(
     let audio_router = manatan_audio_server::create_router(data_dir.clone());
     let system_router = Router::new().route("/version", any(current_version_handler));
 
-    let client = Client::new();
     let cors = CorsLayer::new()
         .allow_origin(AllowOrigin::mirror_request())
         .allow_methods([
@@ -1172,6 +1186,62 @@ async fn serve_react_app(uri: Uri) -> impl IntoResponse {
     }
 
     (StatusCode::NOT_FOUND, "404 - Index.html missing").into_response()
+}
+
+fn ensure_suwayomi_port_available(host: &str, port: u16) -> anyhow::Result<()> {
+    match TcpListener::bind((host, port)) {
+        Ok(listener) => {
+            drop(listener);
+            Ok(())
+        }
+        Err(err) => Err(anyhow!(
+            "{}:{} is already in use ({err}). Stop any existing Suwayomi/Manatan process and try again.",
+            host,
+            port
+        )),
+    }
+}
+
+async fn ensure_runtime_bridge_available(base_url: &str) -> anyhow::Result<()> {
+    let client = Client::new();
+    let health_url = format!("{}/runtime/v1/health", base_url);
+    let bridge_url = format!("{}/runtime/v1/bridge/manga/pages", base_url);
+
+    for _ in 0..60 {
+        if let Ok(resp) = client.get(&health_url).send().await
+            && resp.status().is_success()
+        {
+            let bridge_resp = client
+                .post(&bridge_url)
+                .header("content-type", "application/json")
+                .body("{}")
+                .send()
+                .await;
+
+            return match bridge_resp {
+                Ok(resp) if resp.status() == StatusCode::NOT_FOUND => {
+                    let body = resp
+                        .text()
+                        .await
+                        .unwrap_or_else(|_| "[failed to read body]".to_string());
+                    Err(anyhow!(
+                        "runtime bridge endpoint missing at {} (status 404, body={}). This usually means an outdated or wrong Suwayomi runtime is running.",
+                        bridge_url,
+                        body
+                    ))
+                }
+                Ok(_) => Ok(()),
+                Err(err) => Err(anyhow!("failed calling runtime bridge endpoint: {err}")),
+            };
+        }
+
+        tokio::time::sleep(Duration::from_secs(1)).await;
+    }
+
+    Err(anyhow!(
+        "timed out waiting for runtime health endpoint {}",
+        health_url
+    ))
 }
 
 fn get_asset_target_string() -> &'static str {

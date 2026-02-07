@@ -196,7 +196,7 @@
                     "label": {
                         "title": "Repositórios da extensão",
                         "description": "Adicionar repositórios de onde as extensões podem ser instaladas",
-                        "disclaimer": "<strong>Suwayomi não fornece suporte para repositórios ou extensões de terceiros!</strong><br/>Use com cuidado, pois pode haver autores mal-intencionados criando esses repositórios.<br/>Você, como usuário, precisa verificar a segurança e confiar em qualquer repositório ou extensão."
+                        "disclaimer": "<strong>Manatan não fornece suporte para repositórios ou extensões de terceiros!</strong><br/>Use com cuidado, pois pode haver autores mal-intencionados criando esses repositórios.<br/>Você, como usuário, precisa verificar a segurança e confiar em qualquer repositório ou extensão."
                     }
                 }
             },

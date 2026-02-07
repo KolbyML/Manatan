@@ -51,8 +51,8 @@
                         "success_few": "{{count}} pobierania dodane",
                         "success_many": "{{count}} pobierań dodanych",
                         "confirmation_one": "Za chwilę pobierzesz jeden rozdział",
-                        "confirmation_few": "Za chwilę pobierzesz {{count}} rozdziały.\nSuwayomi nie jest programem do masowego pobierania, a zbyt duża liczba pobrań może spowodować zablokowanie dostępu do źródeł i/lub problemy z wydajnością.",
-                        "confirmation_many": "Za chwilę pobierzesz {{count}} rozdziałów.\nSuwayomi nie jest programem do masowego pobierania, a zbyt duża liczba pobrań może spowodować zablokowanie dostępu do źródeł i/lub problemy z wydajnością."
+                        "confirmation_few": "Za chwilę pobierzesz {{count}} rozdziały.\nManatan nie jest programem do masowego pobierania, a zbyt duża liczba pobrań może spowodować zablokowanie dostępu do źródeł i/lub problemy z wydajnością.",
+                        "confirmation_many": "Za chwilę pobierzesz {{count}} rozdziałów.\nManatan nie jest programem do masowego pobierania, a zbyt duża liczba pobrań może spowodować zablokowanie dostępu do źródeł i/lub problemy z wydajnością."
                     },
                     "button": {
                         "selected": "Pobierz wybrane"
@@ -335,7 +335,7 @@
                     "label": {
                         "title": "Repozytoria rozszerzeń",
                         "description": "Dodaj repozytoria, z których można instalować rozszerzenia",
-                        "disclaimer": "<strong>Suwayomi nie zapewnia żadnego wsparcia dla zewnętrznych repozytoriów lub rozszerzeń! </strong><br/>Dodawaj repozytoria rozważnie, ponieważ mogą istnieć twórcy, tworzący szkodliwe rozszerzenia.<br/>Ty jako użytkownik musisz zweryfikować bezpieczeństwo i czy ufasz jakiemukolwiek repozytorium lub rozszerzeniu."
+                        "disclaimer": "<strong>Manatan nie zapewnia żadnego wsparcia dla zewnętrznych repozytoriów lub rozszerzeń! </strong><br/>Dodawaj repozytoria rozważnie, ponieważ mogą istnieć twórcy, tworzący szkodliwe rozszerzenia.<br/>Ty jako użytkownik musisz zweryfikować bezpieczeństwo i czy ufasz jakiemukolwiek repozytorium lub rozszerzeniu."
                     },
                     "error": {
                         "label": {

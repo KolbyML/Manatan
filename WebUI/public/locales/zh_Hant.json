@@ -273,7 +273,7 @@
                         "all": "$t(extension.language.all)",
                         "unread": "$t(global.filter.label.unread)",
                         "next_other": "$t(reader.button.next_chapter)",
-                        "confirmation_other": "您即將下載 {{count}} 個章節。\nSuwayomi 不是一個大量夏下載工具，太多的下載可能導致您被來源封鎖或性能問題。"
+                        "confirmation_other": "您即將下載 {{count}} 個章節。\nManatan 不是一個大量夏下載工具，太多的下載可能導致您被來源封鎖或性能問題。"
                     },
                     "button": {
                         "selected": "下載已選擇"
@@ -391,7 +391,7 @@
                     "label": {
                         "title": "擴充套件儲存庫",
                         "description": "新增可以安裝擴充套件的儲存庫",
-                        "disclaimer": "<strong>Suwayomi 不提供任何第三方儲存庫或擴充套件的支援！</strong><br/>請謹慎使用，因為可能是惡意行為者製作了這些儲存庫。<br/>作為使用者，您需要確認其安全性以及是否信任任何儲存庫或擴充套件。"
+                        "disclaimer": "<strong>Manatan 不提供任何第三方儲存庫或擴充套件的支援！</strong><br/>請謹慎使用，因為可能是惡意行為者製作了這些儲存庫。<br/>作為使用者，您需要確認其安全性以及是否信任任何儲存庫或擴充套件。"
                     },
                     "dialog": {
                         "action": {

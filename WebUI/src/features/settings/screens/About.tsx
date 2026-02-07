@@ -531,7 +531,7 @@ export function About() {
                                         rel="noreferrer"
                                         sx={{ borderRadius: 1, px: 1, py: 0.75 }}
                                     >
-                                        <ListItemText primary="Suwayomi Server" secondary={aboutServer.github} />
+                                        <ListItemText primary="Manatan Server" secondary={aboutServer.github} />
                                     </ListItemLink>
                                 </List>
                             </Stack>

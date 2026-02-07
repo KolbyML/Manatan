@@ -267,6 +267,35 @@ dev-embedded: setup-depends bundle_jre
 dev-embedded-local-jar: download_natives desktop_webui local_suwayomi_jar bundle_jre
 	cargo run --release -p manatan --features embed-jre
 
+MANATAN_SERVER_DIR := ../Manatan-Server
+MANATAN_SERVER_PUBLIC_DIR := ../Manatan-Server-Public
+HOST_TARGET := $(shell rustc -vV | awk '/^host:/ {print $$2}')
+
+.PHONY: local_manatan_server_staticlib
+local_manatan_server_staticlib:
+	@echo "Building local manatan-server staticlib (public-static)..."
+	@if [ ! -d "$(MANATAN_SERVER_DIR)" ]; then \
+		echo "Error: $(MANATAN_SERVER_DIR) not found."; \
+		exit 1; \
+	fi
+	@if [ ! -d "$(MANATAN_SERVER_PUBLIC_DIR)" ]; then \
+		echo "Error: $(MANATAN_SERVER_PUBLIC_DIR) not found."; \
+		exit 1; \
+	fi
+	@(cd $(MANATAN_SERVER_DIR) && cargo build --release -p manatan-server --lib --features public-static)
+	@lib_name="libmanatan_server.a"; \
+	if echo "$(HOST_TARGET)" | grep -q "windows"; then \
+		lib_name="manatan_server.lib"; \
+	fi; \
+	mkdir -p "$(MANATAN_SERVER_PUBLIC_DIR)/lib/$(HOST_TARGET)"; \
+	cp "$(MANATAN_SERVER_DIR)/target/release/$$lib_name" "$(MANATAN_SERVER_PUBLIC_DIR)/lib/$(HOST_TARGET)/$$lib_name"
+	@(cd $(MANATAN_SERVER_PUBLIC_DIR) && cargo build)
+
+.PHONY: dev-embedded-local-server-jar
+dev-embedded-local-server-jar: download_natives desktop_webui local_suwayomi_jar_force bundle_jre local_manatan_server_staticlib
+	cargo clean -p manatan-server-public
+	MANATAN_JAVA_URL=http://127.0.0.1:4566 cargo run --release -p manatan --features embed-jre --config 'patch."https://github.com/KolbyML/Manatan-Server-Public".manatan-server-public.path="../Manatan-Server-Public"'
+
 .PHONY: dev-embedded-jar
 dev-embedded-jar: download_natives bundle_jre local_suwayomi_jar
 	@echo "Starting WebUI dev server (skipping release build)..."
@@ -365,6 +394,22 @@ local_suwayomi_jar:
 	else \
 		echo "Local Suwayomi-Server JAR is up to date."; \
 	fi; \
+	if [ -z "$$latest_jar" ]; then \
+		echo "Error: No Suwayomi-Server JAR found in $(SUWAYOMI_SERVER_BUILD_DIR)."; \
+		exit 1; \
+	fi; \
+	mkdir -p bin/manatan/resources; \
+	cp "$$latest_jar" bin/manatan/resources/Suwayomi-Server.jar
+
+.PHONY: local_suwayomi_jar_force
+local_suwayomi_jar_force:
+	@echo "Force building local Suwayomi-Server JAR..."
+	@if [ ! -d "$(SUWAYOMI_SERVER_DIR)" ]; then \
+		echo "Error: $(SUWAYOMI_SERVER_DIR) not found."; \
+		exit 1; \
+	fi
+	@(cd $(SUWAYOMI_SERVER_DIR) && ./gradlew :server:shadowJar)
+	@latest_jar=$$(ls -t $(SUWAYOMI_SERVER_JAR_GLOB) 2>/dev/null | head -n 1); \
 	if [ -z "$$latest_jar" ]; then \
 		echo "Error: No Suwayomi-Server JAR found in $(SUWAYOMI_SERVER_BUILD_DIR)."; \
 		exit 1; \

@@ -95,8 +95,8 @@
                         "next_other": "{{count}} capitoli successivi",
                         "unread": "$t(global.filter.label.unread)",
                         "confirmation_one": "Stai per scaricare un capitolo",
-                        "confirmation_many": "Stai per scaricare {{count}} capitoli.\nSuwayomi non è un programma che scarica in massa e troppi download possono comportare il ban dalle fonti e/o causare problemi di prestazioni.",
-                        "confirmation_other": "Stai per scaricare {{count}} capitoli.\nSuwayomi non è un programma che scarica in massa e troppi download possono comportare il ban dalle fonti e/o causare problemi di prestazioni."
+                        "confirmation_many": "Stai per scaricare {{count}} capitoli.\nManatan non è un programma che scarica in massa e troppi download possono comportare il ban dalle fonti e/o causare problemi di prestazioni.",
+                        "confirmation_other": "Stai per scaricare {{count}} capitoli.\nManatan non è un programma che scarica in massa e troppi download possono comportare il ban dalle fonti e/o causare problemi di prestazioni."
                     }
                 },
                 "delete": {
@@ -356,7 +356,7 @@
                     "label": {
                         "description": "Aggiungi repository da cui installare le estensioni",
                         "title": "Repository delle estensioni",
-                        "disclaimer": "<strong>Suwayomi non fornisce alcun supporto per repository o estensioni di terze parti!</strong><br/>Usare con cautela poichè potrebbero esserci malintenzionati che creano questi repository.<br/>L'utente deve verificare la sicurezza e la fiducia in qualsiasi repository o estensione."
+                        "disclaimer": "<strong>Manatan non fornisce alcun supporto per repository o estensioni di terze parti!</strong><br/>Usare con cautela poichè potrebbero esserci malintenzionati che creano questi repository.<br/>L'utente deve verificare la sicurezza e la fiducia in qualsiasi repository o estensione."
                     },
                     "error": {
                         "label": {

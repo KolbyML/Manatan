@@ -150,7 +150,7 @@
                         "all": "$t(extension.language.all)",
                         "unread": "$t(global.filter.label.unread)",
                         "confirmation_one": "U staat op het punt een hoofdstuk te downloaden",
-                        "confirmation_other": "Je staat op het punt {{count}} hoofdstukken te downloaden.\nSuwayomi downloadt niet massaal en te veel downloads kunnen leiden tot een blokkade van de bronnen en/of prestatieproblemen."
+                        "confirmation_other": "Je staat op het punt {{count}} hoofdstukken te downloaden.\nManatan downloadt niet massaal en te veel downloads kunnen leiden tot een blokkade van de bronnen en/of prestatieproblemen."
                     },
                     "button": {
                         "selected": "Download geselecteerde"
@@ -297,7 +297,7 @@
                     "label": {
                         "description": "Voeg repositories toe, waaruit extensies kunnen worden geïnstalleerd",
                         "title": "Extensie-repository's",
-                        "disclaimer": "<strong>Suwayomi biedt geen ondersteuning voor repository's of extensies van derden!</strong><br/>Wees voorzichtig, want er kunnen kwaadwillende mensen zijn die deze repository's maken.<br/>U als gebruiker moet de beveiliging verifiëren, dat u elke repository of extensie vertrouwt."
+                        "disclaimer": "<strong>Manatan biedt geen ondersteuning voor repository's of extensies van derden!</strong><br/>Wees voorzichtig, want er kunnen kwaadwillende mensen zijn die deze repository's maken.<br/>U als gebruiker moet de beveiliging verifiëren, dat u elke repository of extensie vertrouwt."
                     },
                     "error": {
                         "label": {
