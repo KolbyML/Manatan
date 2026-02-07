@@ -14,7 +14,6 @@ import { SyncAdvancedOptions } from '../components/SyncAdvancedOptions';
 
 export function SyncSettings() {
     const { error, lastConflicts, clearError } = useSync();
-
     useAppTitle('Sync');
 
     return (
@@ -27,7 +26,8 @@ export function SyncSettings() {
                     </Alert>
                 )}
 
-                {lastConflicts.length > 0 && (
+                {/* Safety check added here */}
+                {lastConflicts && lastConflicts.length > 0 && (
                     <Alert severity="info">
                         <AlertTitle>Conflicts Resolved</AlertTitle>
                         {lastConflicts.map((conflict, index) => (

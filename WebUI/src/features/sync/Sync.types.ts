@@ -78,7 +78,8 @@ export interface SyncPayload {
     lnMetadata: Record<string, LNMetadata>;
     lnContent?: Record<string, LNParsedBook>;
     lnFiles?: Record<string, string>;
-    fileManifest?: Record<string, FileReference>;
+    deletedBookIds?: string[];
+    deletedFileRefs?: FileReference[];
 }
 
 export type SyncBackendType = 'none' | 'googledrive' | 'webdav' | 'syncyomi';
@@ -88,26 +89,26 @@ export type GoogleDriveFolderType = 'public' | 'appData';
 export type DeletionBehavior = 'keepEverywhere' | 'deleteEverywhere' | 'askEachTime';
 
 export interface SyncConfig {
-    lnProgress: boolean;
-    lnMetadata: boolean;
-    lnContent: boolean;
-    lnFiles: boolean;
-    syncOnChapterRead: boolean;
-    syncOnChapterOpen: boolean;
-    syncOnAppStart: boolean;
-    syncOnAppResume: boolean;
+    ln_progress: boolean;
+    ln_metadata: boolean;
+    ln_content: boolean;
+    ln_files: boolean;
+    sync_on_chapter_read: boolean;
+    sync_on_chapter_open: boolean;
+    sync_on_app_start: boolean;
+    sync_on_app_resume: boolean;
     backend: SyncBackendType;
-    googleDriveFolder: string;
-    googleDriveFolderType: GoogleDriveFolderType;
-    deletionBehavior: DeletionBehavior;
+    google_drive_folder: string;
+    google_drive_folder_type: GoogleDriveFolderType;
+    deletion_behavior: DeletionBehavior;
 }
 
 export interface AuthStatus {
     connected: boolean;
     backend: string;
     email?: string;
-    lastSync?: number;
-    deviceId: string;
+    last_sync?: number;
+    device_id: string;
 }
 
 export interface AuthFlow {
@@ -121,35 +122,36 @@ export interface MergeRequest {
 }
 
 export interface ConflictInfo {
-    bookId: string;
+    book_id: string;
     field: string;
-    localValue: string;
-    remoteValue: string;
+    local_value: string;
+    remote_value: string;
     resolution: string;
 }
 
 export interface MergeResponse {
     payload: SyncPayload;
-    syncTimestamp: number;
-    filesToUpload: string[];
-    filesToDownload: string[];
+    sync_timestamp: number;
+    files_to_upload: string[];
+    files_to_download: string[];
+}
     conflicts: ConflictInfo[];
 }
 
 export interface PushResponse {
     success: boolean;
     etag: string;
-    syncTimestamp: number;
+    sync_timestamp: number;
 }
 
 // Frontend-only types
 export interface SyncState {
     status: AuthStatus | null;
     config: SyncConfig | null;
-    isSyncing: boolean;
-    lastSyncTime: Date | null;
+    is_syncing: boolean;
+    last_sync_time: Date | null;
     error: string | null;
-    syncProgress: SyncProgress | null;
+    sync_progress: SyncProgress | null;
 }
 
 export interface SyncProgress {

@@ -47,77 +47,186 @@ export class SyncService {
         config: SyncConfig,
         onProgress?: (progress: SyncProgress) => void,
     ): Promise<SyncPayload> {
+        console.log('[SYNC] ===== COLLECTING LOCAL DATA =====');
+        console.log('[SYNC] Config: progress=%s, metadata=%s, content=%s, files=%s',
+            config.lnProgress, config.lnMetadata, config.lnContent, config.lnFiles);
+
         const payload: SyncPayload = {
             schemaVersion: 1,
             deviceId: this.getDeviceId(),
             lastModified: Date.now(),
             lnProgress: {},
             lnMetadata: {},
+            lnContent: {},
+            lnFiles: {},
         };
 
         // Collect progress
         if (config.lnProgress) {
-            onProgress?.({ phase: 'collecting', message: 'Collecting reading progress...' });
+            const progressMsg = 'Collecting reading progress...';
+            console.log('[SYNC] ' + progressMsg);
+            onProgress?.({ phase: 'collecting', message: progressMsg });
             const progressKeys = await AppStorage.lnProgress.keys();
+            console.log('[SYNC] Found %d progress entries', progressKeys.length);
             for (const key of progressKeys) {
-                const progress = await AppStorage.lnProgress.getItem<LNProgress>(key);
+                let progress = await AppStorage.lnProgress.getItem<any>(key);
                 if (progress) {
+                    // Apply progress migration if needed
+                    if (progress.chapter_index !== undefined) {
+                        // Old snake_case format - migrate to camelCase
+                        progress = {
+                            chapterIndex: progress.chapter_index,
+                            pageNumber: progress.page_number,
+                            chapterCharOffset: progress.chapter_char_offset,
+                            totalCharsRead: progress.total_chars_read,
+                            sentenceText: progress.sentence_text,
+                            chapterProgress: progress.chapter_progress,
+                            totalProgress: progress.total_progress,
+                            blockId: progress.block_id,
+                            blockLocalOffset: progress.block_local_offset,
+                            contextSnippet: progress.context_snippet,
+                            lastRead: progress.last_read,
+                            lastModified: progress.last_modified,
+                            syncVersion: progress.sync_version,
+                            deviceId: progress.device_id,
+                        };
+                        // Save migrated data back to storage
+                        await AppStorage.lnProgress.setItem(key, progress);
+                    }
+                    
                     payload.lnProgress[key] = progress;
                 }
             }
+            console.log('[SYNC] Collected %d progress entries', Object.keys(payload.lnProgress).length);
         }
 
         // Collect metadata
         if (config.lnMetadata) {
-            onProgress?.({ phase: 'collecting', message: 'Collecting book metadata...' });
+            const metadataMsg = 'Collecting book metadata...';
+            console.log('[SYNC] ' + metadataMsg);
+            onProgress?.({ phase: 'collecting', message: metadataMsg });
             const metadataKeys = await AppStorage.lnMetadata.keys();
+            console.log('[SYNC] Found %d metadata entries', metadataKeys.length);
             for (const key of metadataKeys) {
-                const metadata = await AppStorage.lnMetadata.getItem<LNMetadata>(key);
+                let metadata = await AppStorage.lnMetadata.getItem<any>(key);
                 if (metadata) {
+                    let needsMigration = false;
+                    
+                    // Check if migration is needed (snake_case format)
+                    if (metadata.added_at !== undefined || 
+                        metadata.is_processing !== undefined || 
+                        metadata.stats?.chapter_lengths !== undefined) {
+                        needsMigration = true;
+                        
+                        // Migrate to camelCase
+                        metadata = {
+                            id: metadata.id,
+                            title: metadata.title,
+                            author: metadata.author,
+                            cover: metadata.cover,
+                            addedAt: metadata.added_at || metadata.addedAt,
+                            isProcessing: metadata.is_processing || metadata.isProcessing,
+                            isError: metadata.is_error || metadata.isError,
+                            errorMsg: metadata.error_msg || metadata.errorMsg,
+                            stats: {
+                                chapterLengths: metadata.stats?.chapter_lengths || metadata.stats?.chapterLengths || [],
+                                totalLength: metadata.stats?.total_length || metadata.stats?.totalLength || 0,
+                                blockMaps: (metadata.stats?.block_maps || metadata.stats?.blockMaps || [])
+                                    .filter((block: any) => block && (block.startOffset !== undefined || block.start_offset !== undefined))
+                                    .map((block: any) => ({
+                                        blockId: block.blockId || block.block_id || `generated-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+                                        startOffset: block.startOffset || block.start_offset || 0,
+                                        endOffset: block.endOffset || block.end_offset || 0,
+                                    })),
+                            },
+                            chapterCount: metadata.chapter_count || metadata.chapterCount,
+                            toc: (metadata.toc || []).map((toc: any) => ({
+                                label: toc.label,
+                                href: toc.href,
+                                chapterIndex: toc.chapter_index || toc.chapterIndex,
+                            })),
+                            hasProgress: metadata.has_progress || metadata.hasProgress,
+                            lastModified: metadata.last_modified || metadata.lastModified,
+                            syncVersion: metadata.sync_version || metadata.syncVersion,
+                        };
+                        
+                        // Save migrated data back to storage
+                        await AppStorage.lnMetadata.setItem(key, metadata);
+                    }
+                    
                     payload.lnMetadata[key] = metadata;
                 }
             }
+            console.log('[SYNC] Collected %d metadata entries', Object.keys(payload.lnMetadata).length);
         }
 
         // Collect content (large!)
         if (config.lnContent) {
-            onProgress?.({ phase: 'collecting', message: 'Collecting parsed content...' });
+            const contentMsg = 'Collecting parsed content...';
+            console.log('[SYNC] ' + contentMsg);
+            onProgress?.({ phase: 'collecting', message: contentMsg });
             payload.lnContent = {};
             const contentKeys = await AppStorage.lnContent.keys();
+            console.log('[SYNC] Found %d content entries', contentKeys.length);
             
             for (let i = 0; i < contentKeys.length; i++) {
                 const key = contentKeys[i];
-                const content = await AppStorage.lnContent.getItem<LNParsedBook>(key);
+                let content = await AppStorage.lnContent.getItem<any>(key);
                 
                 if (content) {
+                    let needsMigration = false;
+                    
+                    // Check if migration is needed (snake_case format)
+                    if ((content as any).image_blobs !== undefined || (content as any).chapter_filenames !== undefined) {
+                        needsMigration = true;
+                        
+                        // Migrate to camelCase
+                        content = {
+                            chapters: content.chapters || (content as any).chapters || [],
+                            imageBlobs: (content as any).image_blobs || content.imageBlobs || {},
+                            chapterFilenames: (content as any).chapter_filenames || content.chapterFilenames || [],
+                        };
+                        
+                        // Save migrated data back to storage
+                        await AppStorage.lnContent.setItem(key, content);
+                    }
+                    
                     // Convert Blobs to base64
                     const imageBlobs: Record<string, string> = {};
-                    for (const [imgKey, blob] of Object.entries(content.imageBlobs || {})) {
+                    const storedImageBlobs = content.imageBlobs || {};
+                    for (const [imgKey, blob] of Object.entries(storedImageBlobs)) {
                         if (blob instanceof Blob) {
                             imageBlobs[imgKey] = await this.blobToBase64(blob);
                         } else {
                             imageBlobs[imgKey] = blob as string;
                         }
                     }
+                    
                     payload.lnContent[key] = {
-                        ...content,
+                        chapters: content.chapters || [],
                         imageBlobs,
+                        chapterFilenames: content.chapterFilenames || [],
                     };
                 }
 
+                const progressPercent = ((i + 1) / contentKeys.length) * 100;
                 onProgress?.({
                     phase: 'collecting',
                     message: `Collecting content (${i + 1}/${contentKeys.length})...`,
-                    percent: ((i + 1) / contentKeys.length) * 100,
+                    percent: progressPercent,
                 });
             }
+            console.log('[SYNC] Collected %d content entries', Object.keys(payload.lnContent || {}).length);
         }
 
         // Collect files (very large!)
         if (config.lnFiles) {
-            onProgress?.({ phase: 'collecting', message: 'Collecting EPUB files...' });
+            const filesMsg = 'Collecting EPUB files...';
+            console.log('[SYNC] ' + filesMsg);
+            onProgress?.({ phase: 'collecting', message: filesMsg });
             payload.lnFiles = {};
             const fileKeys = await AppStorage.files.keys();
+            console.log('[SYNC] Found %d files', fileKeys.length);
 
             for (let i = 0; i < fileKeys.length; i++) {
                 const key = fileKeys[i];
@@ -127,13 +236,22 @@ export class SyncService {
                     payload.lnFiles[key] = await this.blobToBase64(file);
                 }
 
+                const progressPercent = ((i + 1) / fileKeys.length) * 100;
                 onProgress?.({
                     phase: 'collecting',
                     message: `Collecting files (${i + 1}/${fileKeys.length})...`,
-                    percent: ((i + 1) / fileKeys.length) * 100,
+                    percent: progressPercent,
                 });
             }
+            console.log('[SYNC] Collected %d files', Object.keys(payload.lnFiles || {}).length);
         }
+
+        console.log('[SYNC] ===== LOCAL DATA COLLECTION COMPLETE =====');
+        console.log('[SYNC] Summary: %d progress, %d metadata, %d content, %d files',
+            Object.keys(payload.lnProgress).length,
+            Object.keys(payload.lnMetadata).length,
+            Object.keys(payload.lnContent || {}).length,
+            Object.keys(payload.lnFiles || {}).length);
 
         return payload;
     }
@@ -226,53 +344,90 @@ export class SyncService {
     // ========================================================================
 
     static async sync(onProgress?: (progress: SyncProgress) => void): Promise<MergeResponse> {
+        console.log('[SYNC] ===== STARTING FULL SYNC =====');
+
         // Get current config
         const config = await SyncApi.getConfig();
+        console.log('[SYNC] Config loaded');
 
         // Collect local data
-        onProgress?.({ phase: 'collecting', message: 'Collecting local data...' });
+        const collectingMsg = 'Collecting local data...';
+        console.log('[SYNC] ' + collectingMsg);
+        onProgress?.({ phase: 'collecting', message: collectingMsg });
         const localPayload = await this.collectLocalData(config, onProgress);
 
         // Send to backend for merge
-        onProgress?.({ phase: 'uploading', message: 'Syncing with cloud...' });
+        const uploadingMsg = 'Syncing with cloud...';
+        console.log('[SYNC] ' + uploadingMsg);
+        onProgress?.({ phase: 'uploading', message: uploadingMsg });
         const response = await SyncApi.merge({
             payload: localPayload,
             config,
         });
 
+        console.log('[SYNC] Merge response received:');
+        console.log('  - Timestamp: %d', response.syncTimestamp);
+        console.log('  - Conflicts: %d', response.conflicts.length);
+        console.log('  - Files to upload: %d', response.filesToUpload.length);
+        console.log('  - Files to download: %d', response.filesToDownload.length);
+
         // Apply merged data
-        onProgress?.({ phase: 'applying', message: 'Applying changes...' });
+        const applyingMsg = 'Applying changes...';
+        console.log('[SYNC] ' + applyingMsg);
+        onProgress?.({ phase: 'applying', message: applyingMsg });
         await this.applyMergedData(response.payload, config, onProgress);
 
-        // Store last sync time
+        // Store last sync time (both in localStorage and return the value for context)
         this.setLastSyncTime(response.syncTimestamp);
+        console.log('[SYNC] Last sync time set to:', new Date(response.syncTimestamp));
 
+        console.log('[SYNC] ===== SYNC COMPLETE =====');
         return response;
     }
 
     static async pullOnly(onProgress?: (progress: SyncProgress) => void): Promise<void> {
+        console.log('[SYNC] ===== STARTING PULL ONLY =====');
+
         const config = await SyncApi.getConfig();
+        console.log('[SYNC] Config loaded');
         
-        onProgress?.({ phase: 'merging', message: 'Downloading from cloud...' });
+        const downloadingMsg = 'Downloading from cloud...';
+        console.log('[SYNC] ' + downloadingMsg);
+        onProgress?.({ phase: 'merging', message: downloadingMsg });
         const payload = await SyncApi.pull();
         
         if (payload) {
-            onProgress?.({ phase: 'applying', message: 'Applying changes...' });
+            const applyingMsg = 'Applying changes...';
+            console.log('[SYNC] ' + applyingMsg);
+            onProgress?.({ phase: 'applying', message: applyingMsg });
             await this.applyMergedData(payload, config, onProgress);
             this.setLastSyncTime(Date.now());
+            console.log('[SYNC] ===== PULL COMPLETE =====');
+        } else {
+            console.log('[SYNC] No remote data to pull');
+            console.log('[SYNC] ===== PULL COMPLETE (NO DATA) =====');
         }
     }
 
     static async pushOnly(onProgress?: (progress: SyncProgress) => void): Promise<void> {
+        console.log('[SYNC] ===== STARTING PUSH ONLY =====');
+
         const config = await SyncApi.getConfig();
+        console.log('[SYNC] Config loaded');
         
-        onProgress?.({ phase: 'collecting', message: 'Collecting local data...' });
+        const collectingMsg = 'Collecting local data...';
+        console.log('[SYNC] ' + collectingMsg);
+        onProgress?.({ phase: 'collecting', message: collectingMsg });
         const payload = await this.collectLocalData(config, onProgress);
         
-        onProgress?.({ phase: 'uploading', message: 'Uploading to cloud...' });
+        const uploadingMsg = 'Uploading to cloud...';
+        console.log('[SYNC] ' + uploadingMsg);
+        onProgress?.({ phase: 'uploading', message: uploadingMsg });
         const response = await SyncApi.push(payload);
         
         this.setLastSyncTime(response.syncTimestamp);
+        console.log('[SYNC] Push complete! Timestamp: %d', response.syncTimestamp);
+        console.log('[SYNC] ===== PUSH COMPLETE =====');
     }
 
     // ========================================================================

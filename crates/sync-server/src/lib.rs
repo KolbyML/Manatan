@@ -1,4 +1,4 @@
-use axum::Router;
+use axum::{extract::DefaultBodyLimit, Router};
 use std::path::PathBuf;
 use tower_http::cors::{Any, CorsLayer};
 
@@ -23,5 +23,7 @@ pub fn create_router(data_dir: PathBuf) -> Router {
 
     routes::router()
         .layer(cors)
+        // Allow up to 100MB request bodies for large LN data
+        .layer(DefaultBodyLimit::max(100 * 1024 * 1024))
         .with_state(state)
 }

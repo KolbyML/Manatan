@@ -73,7 +73,7 @@ export function Settings() {
                 <ListItemIcon>
                     <CloudSyncIcon />
                 </ListItemIcon>
-                <ListItemText primary={t('sync.title')} />
+                <ListItemText primary="Sync" />
             </ListItemLink>
             <ListItemLink to={AppRoutes.settings.childRoutes.backup.path}>
                 <ListItemIcon>

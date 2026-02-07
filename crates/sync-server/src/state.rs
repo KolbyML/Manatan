@@ -12,6 +12,7 @@ const DB_KEY_LAST_SYNC: &[u8] = b"last_sync_timestamp";
 const DB_KEY_LAST_ETAG: &[u8] = b"last_sync_etag";
 const DB_KEY_SYNC_CONFIG: &[u8] = b"sync_config";
 const DB_KEY_AUTH_STATE: &[u8] = b"oauth_state";
+const DB_KEY_AUTH_REDIRECT_URI: &[u8] = b"oauth_redirect_uri";
 
 #[derive(Clone)]
 pub struct SyncState {
@@ -118,21 +119,37 @@ impl SyncState {
         Ok(())
     }
 
-    // Sync Metadata
-    pub fn get_last_sync(&self) -> Option<i64> {
+    // OAuth Redirect URI (stored during auth start for callback)
+    pub fn set_auth_redirect_uri(&self, uri: &str) -> Result<(), sled::Error> {
+        self.db.insert(DB_KEY_AUTH_REDIRECT_URI, uri.as_bytes())?;
+        self.db.flush()?;
+        Ok(())
+    }
+
+    pub fn get_auth_redirect_uri(&self) -> Option<String> {
         self.db
-            .get(DB_KEY_LAST_SYNC)
+            .get(DB_KEY_AUTH_REDIRECT_URI)
             .ok()
             .flatten()
-            .and_then(|v| {
-                let bytes: [u8; 8] = v.as_ref().try_into().ok()?;
-                Some(i64::from_le_bytes(bytes))
-            })
+            .map(|v| String::from_utf8_lossy(&v).to_string())
+    }
+
+    pub fn clear_auth_redirect_uri(&self) -> Result<(), sled::Error> {
+        self.db.remove(DB_KEY_AUTH_REDIRECT_URI)?;
+        self.db.flush()?;
+        Ok(())
+    }
+
+    // Sync Metadata
+    pub fn get_last_sync(&self) -> Option<i64> {
+        self.db.get(DB_KEY_LAST_SYNC).ok().flatten().and_then(|v| {
+            let bytes: [u8; 8] = v.as_ref().try_into().ok()?;
+            Some(i64::from_le_bytes(bytes))
+        })
     }
 
     pub fn set_last_sync(&self, timestamp: i64) -> Result<(), sled::Error> {
-        self.db
-            .insert(DB_KEY_LAST_SYNC, &timestamp.to_le_bytes())?;
+        self.db.insert(DB_KEY_LAST_SYNC, &timestamp.to_le_bytes())?;
         self.db.flush()?;
         Ok(())
     }
@@ -178,7 +195,11 @@ impl SyncState {
             .and_then(|v| serde_json::from_slice(&v).ok())
     }
 
-    pub fn set_upload_state(&self, upload_id: &str, state: &UploadState) -> Result<(), sled::Error> {
+    pub fn set_upload_state(
+        &self,
+        upload_id: &str,
+        state: &UploadState,
+    ) -> Result<(), sled::Error> {
         let key = format!("upload:{}", upload_id);
         let bytes = serde_json::to_vec(state).unwrap_or_default();
         self.db.insert(key.as_bytes(), bytes)?;

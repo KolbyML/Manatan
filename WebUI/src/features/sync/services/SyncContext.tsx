@@ -3,12 +3,13 @@ import { SyncApi } from './SyncApi';
 import { SyncService } from './SyncService';
 import { AuthStatus, SyncConfig, SyncProgress, ConflictInfo } from '../Sync.types';
 import { DEFAULT_SYNC_CONFIG } from '../Sync.constants';
+import { RequestManager } from '@/lib/requests/RequestManager';
 
 interface SyncContextValue {
     // State
     status: AuthStatus | null;
     config: SyncConfig;
-    isSyncing: boolean;
+    is_syncing: boolean;
     lastSyncTime: Date | null;
     error: string | null;
     progress: SyncProgress | null;
@@ -30,7 +31,7 @@ const SyncContext = createContext<SyncContextValue | null>(null);
 export const SyncProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     const [status, setStatus] = useState<AuthStatus | null>(null);
     const [config, setConfig] = useState<SyncConfig>(DEFAULT_SYNC_CONFIG);
-    const [isSyncing, setIsSyncing] = useState(false);
+    const [is_syncing, setIsSyncing] = useState(false);
     const [lastSyncTime, setLastSyncTime] = useState<Date | null>(null);
     const [error, setError] = useState<string | null>(null);
     const [progress, setProgress] = useState<SyncProgress | null>(null);
@@ -64,24 +65,24 @@ export const SyncProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
     // Auto-sync on app start
     useEffect(() => {
-        if (config.syncOnAppStart && status?.connected && !isSyncing) {
+        if (config.sync_on_app_start && status?.connected && !is_syncing) {
             sync();
         }
-    }, [config.syncOnAppStart, status?.connected]);
+    }, [config.sync_on_app_start, status?.connected]);
 
     // Auto-sync on app resume (visibility change)
     useEffect(() => {
-        if (!config.syncOnAppResume || !status?.connected) return;
+        if (!config.sync_on_app_resume || !status?.connected) return;
 
         const handleVisibilityChange = () => {
-            if (document.visibilityState === 'visible' && !isSyncing) {
+            if (document.visibilityState === 'visible' && !is_syncing) {
                 sync();
             }
         };
 
         document.addEventListener('visibilitychange', handleVisibilityChange);
         return () => document.removeEventListener('visibilitychange', handleVisibilityChange);
-    }, [config.syncOnAppResume, status?.connected, isSyncing]);
+    }, [config.sync_on_app_resume, status?.connected, is_syncing]);
 
     const refreshStatus = useCallback(async () => {
         try {
@@ -104,7 +105,9 @@ export const SyncProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const connect = useCallback(async () => {
         try {
             setError(null);
+            // Use current origin for redirect URI to work on mobile and desktop
             const redirectUri = `${window.location.origin}/api/sync/auth/google/callback`;
+            console.log('[Sync] Auth redirectUri:', redirectUri);
             console.log('[Sync] Starting auth, redirectUri:', redirectUri);
             
             const response = await SyncApi.startGoogleAuth(redirectUri);
@@ -122,8 +125,18 @@ export const SyncProvider: React.FC<{ children: React.ReactNode }> = ({ children
             sessionStorage.setItem('sync_auth_return_path', window.location.pathname + window.location.search);
             sessionStorage.setItem('sync_auth_in_progress', 'true');
             
-            // Redirect to Google auth (works on all platforms including mobile)
-            window.location.href = authUrl;
+            // Use appropriate redirect method based on platform
+            const requestManager = new RequestManager();
+            
+            try {
+                // Try to use webview for native mobile apps
+                const webviewUrl = requestManager.getWebviewUrl(authUrl);
+                window.location.href = webviewUrl;
+            } catch (e) {
+                console.warn('[Sync] Webview redirect failed, using fallback:', e);
+                // Fallback to direct navigation for desktop browsers
+                window.location.href = authUrl;
+            }
         } catch (e) {
             console.error('[Sync] Connection failed:', e);
             setError(`Connection failed: ${e}`);
@@ -141,7 +154,7 @@ export const SyncProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }, [refreshStatus]);
 
     const sync = useCallback(async () => {
-        if (isSyncing || !status?.connected) return;
+        if (is_syncing || !status?.connected) return;
 
         try {
             setIsSyncing(true);
@@ -151,7 +164,8 @@ export const SyncProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
             const result = await SyncService.sync(setProgress);
 
-            setLastSyncTime(new Date(result.syncTimestamp));
+            // Use the service's stored time for consistency
+            setLastSyncTime(SyncService.getLastSyncTime());
             setLastConflicts(result.conflicts);
             setProgress(null);
         } catch (e) {
@@ -160,10 +174,10 @@ export const SyncProvider: React.FC<{ children: React.ReactNode }> = ({ children
             setIsSyncing(false);
             setProgress(null);
         }
-    }, [isSyncing, status?.connected]);
+    }, [is_syncing, status?.connected]);
 
     const pullOnly = useCallback(async () => {
-        if (isSyncing || !status?.connected) return;
+        if (is_syncing || !status?.connected) return;
 
         try {
             setIsSyncing(true);
@@ -172,7 +186,7 @@ export const SyncProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
             await SyncService.pullOnly(setProgress);
 
-            setLastSyncTime(new Date());
+            setLastSyncTime(SyncService.getLastSyncTime());
             setProgress(null);
         } catch (e) {
             setError(`Pull failed: ${e}`);
@@ -180,10 +194,10 @@ export const SyncProvider: React.FC<{ children: React.ReactNode }> = ({ children
             setIsSyncing(false);
             setProgress(null);
         }
-    }, [isSyncing, status?.connected]);
+    }, [is_syncing, status?.connected]);
 
     const pushOnly = useCallback(async () => {
-        if (isSyncing || !status?.connected) return;
+        if (is_syncing || !status?.connected) return;
 
         try {
             setIsSyncing(true);
@@ -192,7 +206,7 @@ export const SyncProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
             await SyncService.pushOnly(setProgress);
 
-            setLastSyncTime(new Date());
+            setLastSyncTime(SyncService.getLastSyncTime());
             setProgress(null);
         } catch (e) {
             setError(`Push failed: ${e}`);
@@ -200,7 +214,7 @@ export const SyncProvider: React.FC<{ children: React.ReactNode }> = ({ children
             setIsSyncing(false);
             setProgress(null);
         }
-    }, [isSyncing, status?.connected]);
+    }, [is_syncing, status?.connected]);
 
     const updateConfig = useCallback(async (updates: Partial<SyncConfig>) => {
         try {
@@ -220,7 +234,7 @@ export const SyncProvider: React.FC<{ children: React.ReactNode }> = ({ children
         () => ({
             status,
             config,
-            isSyncing,
+            is_syncing,
             lastSyncTime,
             error,
             progress,
@@ -237,7 +251,7 @@ export const SyncProvider: React.FC<{ children: React.ReactNode }> = ({ children
         [
             status,
             config,
-            isSyncing,
+            is_syncing,
             lastSyncTime,
             error,
             progress,

@@ -10,45 +10,58 @@ use std::collections::HashMap;
 #[serde(rename_all = "camelCase")]
 pub struct LNProgress {
     /// Current chapter index
+    #[serde(alias = "chapterIndex")]
     pub chapter_index: i32,
 
     /// Current page number (optional, for paginated view)
     #[serde(skip_serializing_if = "Option::is_none")]
+    #[serde(alias = "pageNumber")]
     pub page_number: Option<i32>,
 
     /// Character offset within the chapter
+    #[serde(alias = "chapterCharOffset")]
     pub chapter_char_offset: i32,
 
     /// Total characters read across all chapters
+    #[serde(alias = "totalCharsRead")]
     pub total_chars_read: i32,
 
     /// The sentence currently being read
+    #[serde(alias = "sentenceText")]
     pub sentence_text: String,
 
     /// Progress within current chapter (0.0 - 1.0)
+    #[serde(alias = "chapterProgress")]
     pub chapter_progress: f64,
 
     /// Overall book progress (0.0 - 1.0)
+    #[serde(alias = "totalProgress")]
     pub total_progress: f64,
 
     // Block tracking
     #[serde(skip_serializing_if = "Option::is_none")]
+    #[serde(alias = "blockId")]
     pub block_id: Option<String>,
 
     #[serde(skip_serializing_if = "Option::is_none")]
+    #[serde(alias = "blockLocalOffset")]
     pub block_local_offset: Option<i32>,
 
     #[serde(skip_serializing_if = "Option::is_none")]
+    #[serde(alias = "contextSnippet")]
     pub context_snippet: Option<String>,
 
     // Sync metadata
     #[serde(skip_serializing_if = "Option::is_none")]
+    #[serde(alias = "lastRead")]
     pub last_read: Option<i64>,
 
     #[serde(skip_serializing_if = "Option::is_none")]
+    #[serde(alias = "lastModified")]
     pub last_modified: Option<i64>,
 
     #[serde(skip_serializing_if = "Option::is_none")]
+    #[serde(alias = "syncVersion")]
     pub sync_version: Option<i32>,
 
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -90,8 +103,11 @@ impl LNProgress {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct BlockIndexMap {
+    #[serde(alias = "blockId")]
     pub block_id: String,
+    #[serde(alias = "startOffset")]
     pub start_offset: i32,
+    #[serde(alias = "endOffset")]
     pub end_offset: i32,
 }
 
@@ -111,6 +127,7 @@ pub struct BookStats {
 pub struct TocItem {
     pub label: String,
     pub href: String,
+    #[serde(alias = "chapterIndex")]
     pub chapter_index: i32,
 }
 
@@ -125,32 +142,40 @@ pub struct LNMetadata {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub cover: Option<String>,
 
+    #[serde(alias = "addedAt")]
     pub added_at: i64,
 
     // Processing state
     #[serde(skip_serializing_if = "Option::is_none")]
+    #[serde(alias = "isProcessing")]
     pub is_processing: Option<bool>,
 
     #[serde(skip_serializing_if = "Option::is_none")]
+    #[serde(alias = "isError")]
     pub is_error: Option<bool>,
 
     #[serde(skip_serializing_if = "Option::is_none")]
+    #[serde(alias = "errorMsg")]
     pub error_msg: Option<String>,
 
     // Pre-calculated on import
     pub stats: BookStats,
+    #[serde(alias = "chapterCount")]
     pub chapter_count: i32,
     pub toc: Vec<TocItem>,
 
     // For library display
     #[serde(skip_serializing_if = "Option::is_none")]
+    #[serde(alias = "hasProgress")]
     pub has_progress: Option<bool>,
 
     // Sync metadata
     #[serde(skip_serializing_if = "Option::is_none")]
+    #[serde(alias = "lastModified")]
     pub last_modified: Option<i64>,
 
     #[serde(skip_serializing_if = "Option::is_none")]
+    #[serde(alias = "syncVersion")]
     pub sync_version: Option<i32>,
 }
 
@@ -166,9 +191,11 @@ pub struct LNParsedBook {
     pub chapters: Vec<String>,
 
     /// Images extracted from the EPUB (base64 encoded)
+    #[serde(alias = "imageBlobs")]
     pub image_blobs: HashMap<String, String>,
 
     /// Original filenames of chapters
+    #[serde(alias = "chapterFilenames")]
     pub chapter_filenames: Vec<String>,
 }
 
@@ -176,11 +203,17 @@ pub struct LNParsedBook {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct FileReference {
+    #[serde(alias = "bookId")]
     pub book_id: String,
+    #[serde(alias = "fileType")]
     pub file_type: FileType,
+    #[serde(alias = "fileHash")]
     pub file_hash: String,
+    #[serde(alias = "fileSize")]
     pub file_size: u64,
+    #[serde(alias = "lastModified")]
     pub last_modified: i64,
+    #[serde(alias = "driveFileId")]
     pub drive_file_id: Option<String>,
 }
 

@@ -9,18 +9,18 @@ import {
 } from './Sync.types.ts';
 
 export const DEFAULT_SYNC_CONFIG: SyncConfig = {
-    lnProgress: true,
-    lnMetadata: true,
-    lnContent: true,
-    lnFiles: false,
-    syncOnChapterRead: false,
-    syncOnChapterOpen: false,
-    syncOnAppStart: false,
-    syncOnAppResume: false,
+    ln_progress: true,
+    ln_metadata: true,
+    ln_content: true,
+    ln_files: false,
+    sync_on_chapter_read: false,
+    sync_on_chapter_open: false,
+    sync_on_app_start: false,
+    sync_on_app_resume: false,
     backend: 'none',
-    googleDriveFolder: 'Manatan',
-    googleDriveFolderType: 'public',
-    deletionBehavior: 'keepEverywhere',
+    google_drive_folder: 'Manatan',
+    google_drive_folder_type: 'public',
+    deletion_behavior: 'keepEverywhere',
 };
 
 // Backend type options
@@ -84,24 +84,24 @@ export const DELETION_BEHAVIOR_SELECT_VALUES: SelectSettingValue<DeletionBehavio
 );
 
 // What to sync options
-export const SYNC_DATA_OPTIONS: { key: keyof Pick<SyncConfig, 'lnProgress' | 'lnMetadata' | 'lnContent' | 'lnFiles'>; labelKey: TranslationKey; descriptionKey?: TranslationKey; warning?: boolean }[] = [
+export const SYNC_DATA_OPTIONS: { key: keyof Pick<SyncConfig, 'ln_progress' | 'ln_metadata' | 'ln_content' | 'ln_files'>; labelKey: TranslationKey; descriptionKey?: TranslationKey; warning?: boolean }[] = [
     {
-        key: 'lnProgress',
+        key: 'ln_progress',
         labelKey: 'sync.data.option.progress.label',
         descriptionKey: 'sync.data.option.progress.description',
     },
     {
-        key: 'lnMetadata',
+        key: 'ln_metadata',
         labelKey: 'sync.data.option.metadata.label',
         descriptionKey: 'sync.data.option.metadata.description',
     },
     {
-        key: 'lnContent',
+        key: 'ln_content',
         labelKey: 'sync.data.option.content.label',
         descriptionKey: 'sync.data.option.content.description',
     },
     {
-        key: 'lnFiles',
+        key: 'ln_files',
         labelKey: 'sync.data.option.files.label',
         descriptionKey: 'sync.data.option.files.description',
         warning: true,
@@ -109,21 +109,21 @@ export const SYNC_DATA_OPTIONS: { key: keyof Pick<SyncConfig, 'lnProgress' | 'ln
 ];
 
 // Sync trigger options
-export const SYNC_TRIGGER_OPTIONS: { key: keyof Pick<SyncConfig, 'syncOnAppStart' | 'syncOnAppResume' | 'syncOnChapterRead' | 'syncOnChapterOpen'>; labelKey: TranslationKey }[] = [
+export const SYNC_TRIGGER_OPTIONS: { key: keyof Pick<SyncConfig, 'sync_on_app_start' | 'sync_on_app_resume' | 'sync_on_chapter_read' | 'sync_on_chapter_open'>; labelKey: TranslationKey }[] = [
     {
-        key: 'syncOnAppStart',
+        key: 'sync_on_app_start',
         labelKey: 'sync.trigger.option.app_start.label',
     },
     {
-        key: 'syncOnAppResume',
+        key: 'sync_on_app_resume',
         labelKey: 'sync.trigger.option.app_resume.label',
     },
     {
-        key: 'syncOnChapterRead',
+        key: 'sync_on_chapter_read',
         labelKey: 'sync.trigger.option.chapter_read.label',
     },
     {
-        key: 'syncOnChapterOpen',
+        key: 'sync_on_chapter_open',
         labelKey: 'sync.trigger.option.chapter_open.label',
     },
 ];
