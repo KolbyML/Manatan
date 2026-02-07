@@ -152,11 +152,32 @@ android_icon:
 	mkdir -p bin/manatan_android/res/mipmap-xhdpi
 	mkdir -p bin/manatan_android/res/mipmap-hdpi
 	mkdir -p bin/manatan_android/res/mipmap-mdpi
-	cp bin/manatan_ios/Manatan/Assets.xcassets/AppIcon.appiconset/manatanlogo11.png bin/manatan_android/res/mipmap-xxxhdpi/ic_launcher.png
-	cp bin/manatan_ios/Manatan/Assets.xcassets/AppIcon.appiconset/manatanlogo11.png bin/manatan_android/res/mipmap-xxhdpi/ic_launcher.png
-	cp bin/manatan_ios/Manatan/Assets.xcassets/AppIcon.appiconset/manatanlogo11.png bin/manatan_android/res/mipmap-xhdpi/ic_launcher.png
-	cp bin/manatan_ios/Manatan/Assets.xcassets/AppIcon.appiconset/manatanlogo11.png bin/manatan_android/res/mipmap-hdpi/ic_launcher.png
-	cp bin/manatan_ios/Manatan/Assets.xcassets/AppIcon.appiconset/manatanlogo11.png bin/manatan_android/res/mipmap-mdpi/ic_launcher.png
+	@icon_src=""; \
+	for candidate in \
+		"bin/manatan/resources/manatanlogo11.png" \
+		"bin/manatan_android/res/mipmap-xxxhdpi/ic_launcher.png" \
+		"bin/manatan/resources/faviconlogo.png" \
+		"WebUI/public/web-app-manifest-512x512.png" \
+		"WebUI/src/Manatan/assets/manatan_logo.png"; do \
+		if [ -f "$$candidate" ]; then \
+			icon_src="$$candidate"; \
+			break; \
+		fi; \
+	done; \
+	if [ -z "$$icon_src" ]; then \
+		echo "Error: no icon source found for Android launcher."; \
+		exit 1; \
+	fi; \
+	for dest in \
+		"bin/manatan_android/res/mipmap-xxxhdpi/ic_launcher.png" \
+		"bin/manatan_android/res/mipmap-xxhdpi/ic_launcher.png" \
+		"bin/manatan_android/res/mipmap-xhdpi/ic_launcher.png" \
+		"bin/manatan_android/res/mipmap-hdpi/ic_launcher.png" \
+		"bin/manatan_android/res/mipmap-mdpi/ic_launcher.png"; do \
+		if [ "$$icon_src" != "$$dest" ]; then \
+			cp "$$icon_src" "$$dest"; \
+		fi; \
+	done
 
 bin/manatan_ios/Manatan/webui/index.html: WebUI/build/index.html
 	@echo "Packaging WebUI for iOS..."
@@ -235,7 +256,7 @@ download_android_natives: bin/manatan_android/assets/natives.tar
 bin/manatan_android/assets/Suwayomi-Server.jar:
 	@echo "Downloading Android Suwayomi Server JAR..."
 	mkdir -p bin/manatan_android/assets
-	curl -L "https://github.com/KolbyML/Suwayomi-Server/releases/download/v1.0.20/Suwayomi-Server-v2.1.2066.jar" -o bin/manatan_android/assets/Suwayomi-Server.jar
+	curl -L "https://github.com/KolbyML/Suwayomi-Server/releases/download/v1.0.22/Suwayomi-Server-v2.1.2068.jar" -o bin/manatan_android/assets/Suwayomi-Server.jar
 
 .PHONY: download_android_jar
 download_android_jar: bin/manatan_android/assets/Suwayomi-Server.jar
@@ -264,8 +285,9 @@ dev-embedded: setup-depends bundle_jre
 	cargo run --release -p manatan --features embed-jre
 
 .PHONY: dev-embedded-local-jar
-dev-embedded-local-jar: download_natives desktop_webui local_suwayomi_jar bundle_jre
-	cargo run --release -p manatan --features embed-jre
+dev-embedded-local-jar: download_natives desktop_webui local_suwayomi_jar bundle_jre local_manatan_server_staticlib
+	cargo clean -p manatan-server-public
+	cargo run --release -p manatan --features embed-jre --config 'patch."https://github.com/KolbyML/Manatan-Server-Public".manatan-server-public.path="../Manatan-Server-Public"'
 
 MANATAN_SERVER_DIR := ../Manatan-Server
 MANATAN_SERVER_PUBLIC_DIR := ../Manatan-Server-Public
@@ -288,7 +310,10 @@ local_manatan_server_staticlib:
 		lib_name="manatan_server.lib"; \
 	fi; \
 	mkdir -p "$(MANATAN_SERVER_PUBLIC_DIR)/lib/$(HOST_TARGET)"; \
-	cp "$(MANATAN_SERVER_DIR)/target/release/$$lib_name" "$(MANATAN_SERVER_PUBLIC_DIR)/lib/$(HOST_TARGET)/$$lib_name"
+	cp "$(MANATAN_SERVER_DIR)/target/release/$$lib_name" "$(MANATAN_SERVER_PUBLIC_DIR)/lib/$(HOST_TARGET)/$$lib_name"; \
+	if [ "$$lib_name" = "libmanatan_server.a" ] && command -v objcopy >/dev/null 2>&1; then \
+		objcopy --weaken-symbol=rust_eh_personality "$(MANATAN_SERVER_PUBLIC_DIR)/lib/$(HOST_TARGET)/$$lib_name"; \
+	fi
 	@(cd $(MANATAN_SERVER_PUBLIC_DIR) && cargo build)
 
 .PHONY: dev-embedded-local-server-jar
@@ -362,7 +387,7 @@ bundle_jre: bin/manatan/resources/jre_bundle.zip
 bin/manatan/resources/Suwayomi-Server.jar:
 	@echo "Downloading Suwayomi Server JAR..."
 	mkdir -p bin/manatan/resources
-	curl -L "https://github.com/KolbyML/Suwayomi-Server/releases/download/v1.0.20/Suwayomi-Server-v2.1.2066.jar" -o $@
+	curl -L "https://github.com/KolbyML/Suwayomi-Server/releases/download/v1.0.22/Suwayomi-Server-v2.1.2068.jar" -o $@
 
 .PHONY: download_jar
 download_jar: bin/manatan/resources/Suwayomi-Server.jar
@@ -421,7 +446,7 @@ bin/manatan_ios/Manatan/jar/suwayomi-server.jar:
 	@echo "Downloading iOS Suwayomi Server JAR..."
 	mkdir -p bin/manatan_ios/Manatan/jar
 	rm -f bin/manatan_ios/Manatan/jar/suwayomi-server.jar
-	curl -L "https://github.com/KolbyML/Suwayomi-Server/releases/download/v1.0.20/Suwayomi-Server-v2.1.2066.jar" -o $@
+	curl -L "https://github.com/KolbyML/Suwayomi-Server/releases/download/v1.0.22/Suwayomi-Server-v2.1.2068.jar" -o $@
 
 .PHONY: download_ios_jar
 download_ios_jar: bin/manatan_ios/Manatan/jar/suwayomi-server.jar

@@ -203,7 +203,26 @@ jobs:
       - name: Zip JRE for Embedding
         shell: bash
         run: |
-          cd temp_jre/${{ matrix.arch_name }}
+          JRE_DIR=""
+          for candidate in \
+            "temp_jre/${{ matrix.arch_name }}" \
+            "temp_jre/jre_bundle_out/${{ matrix.arch_name }}"; do
+            if [ -d "$candidate" ]; then
+              JRE_DIR="$candidate"
+              break
+            fi
+          done
+
+          if [ -z "$JRE_DIR" ]; then
+            echo "Could not find extracted JRE directory for ${{ matrix.arch_name }}"
+            echo "Contents of temp_jre:"
+            ls -la temp_jre || true
+            echo "Recursive tree (top levels):"
+            find temp_jre -maxdepth 3 -type d || true
+            exit 1
+          fi
+
+          cd "$JRE_DIR"
           if [ "${{ runner.os }}" == "Windows" ]; then
             7z a -tzip "${{ github.workspace }}/bin/manatan/resources/jre_bundle.zip" *
           else
@@ -522,3 +541,26 @@ jobs:
           DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK }}
           VERSION_TAG: ${{ needs.prepare_version.outputs.version_tag }}
         run: python .github/scripts/discord_announce.py
+
+  cleanup_run_artifacts:
+    name: Cleanup Run Artifacts
+    needs: [prepare_version, jre_bundle, build_webui, build_manatan, build_android, release]
+    if: ${{ always() }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Delete artifacts from this workflow run
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+          RUN_ID: ${{ github.run_id }}
+        run: |
+          ids=$(gh api "repos/$REPO/actions/runs/$RUN_ID/artifacts?per_page=100" --jq '.artifacts[].id')
+          if [ -z "$ids" ]; then
+            echo "No artifacts to delete for run $RUN_ID"
+            exit 0
+          fi
+
+          for id in $ids; do
+            echo "Deleting artifact $id"
+            gh api -X DELETE "repos/$REPO/actions/artifacts/$id" >/dev/null
+          done

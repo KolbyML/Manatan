@@ -56,6 +56,7 @@ libloading = "0.9"
 mime_guess = "2.0"
 open = "5.1"
 openssl = { version = "0.10", features = ["vendored"] }
+openssl-sys = { version = "0.9.111", features = ["vendored"] }
 reqwest = { version = "0.12.24", default-features = false, features = ["json", "stream", "multipart", "rustls-tls"] }
 rust-embed = "8.2"
 self_update = { version = "0.42", features = ["archive-zip", "compression-zip-deflate", "archive-tar", "compression-flate2"] }
@@ -74,7 +75,7 @@ zip = "6.0"
 
 # Internal Dependencies
 manatan-audio-server = { path = "crates/audio-server" }
-manatan-server-public = { git = "https://github.com/KolbyML/Manatan-Server-Public", rev = "78110d9ece16a094bfae052a68a8047e0d206afd" }
+manatan-server-public = { git = "https://github.com/KolbyML/Manatan-Server-Public", rev = "c0f1c9696bf8bdacfa3663a5b1d863d0a77fc428" }
 manatan-ocr-server = { path = "crates/ocr-server" }
 manatan-sync-server = { path = "crates/sync-server" }
 manatan-yomitan-server = { path = "crates/yomitan-server" }
