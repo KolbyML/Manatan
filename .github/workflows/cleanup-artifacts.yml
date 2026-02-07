@@ -18,9 +18,28 @@ jobs:
           GH_TOKEN: ${{ github.token }}
           REPO: ${{ github.repository }}
         run: |
+          set -u
+
+          retry_gh() {
+            local max=5
+            local delay=2
+            local n=1
+            while true; do
+              if "$@"; then
+                return 0
+              fi
+              if [ "$n" -ge "$max" ]; then
+                return 1
+              fi
+              sleep "$delay"
+              n=$((n+1))
+              delay=$((delay*2))
+            done
+          }
+
           cutoff=$(date -u -d '4 hours ago' +%s)
 
-          gh api --paginate "repos/$REPO/actions/artifacts?per_page=100" \
+          if ! retry_gh gh api --paginate "repos/$REPO/actions/artifacts?per_page=100" \
             --jq '.artifacts[] | [.id, .name, .created_at, .expired] | @tsv' | \
           while IFS=$'\t' read -r id name created_at expired; do
             if [ "$expired" = "true" ]; then
@@ -30,6 +49,10 @@ jobs:
             created_epoch=$(date -u -d "$created_at" +%s)
             if [ "$created_epoch" -lt "$cutoff" ]; then
               echo "Deleting artifact $id ($name, created: $created_at)"
-              gh api -X DELETE "repos/$REPO/actions/artifacts/$id" >/dev/null
+              if ! retry_gh gh api -X DELETE "repos/$REPO/actions/artifacts/$id" >/dev/null; then
+                echo "Warning: failed to delete artifact $id after retries"
+              fi
             fi
-          done
+          done; then
+            echo "Warning: failed to list artifacts after retries"
+          fi
