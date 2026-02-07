@@ -104,6 +104,7 @@ jobs:
         with:
           name: ${{ matrix.name }}-jre
           path: jre_bundle
+          retention-days: 1
 
   # --- JOB 3: Build WebUI ---
   build_webui:
@@ -131,12 +132,14 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: webui-assets
-          path: WebUI/build 
+          path: WebUI/build
+          retention-days: 1
       - name: Upload WebUI Dist (Tarball)
         uses: actions/upload-artifact@v4
         with:
           name: webui-dist
-          path: webui-dist.tar.gz          
+          path: webui-dist.tar.gz
+          retention-days: 1
 
   # --- JOB 4: Build Manatan Launcher ---
   build_manatan:
@@ -341,6 +344,7 @@ jobs:
             output/manatan_*.deb
             output/manatan-*.tar.gz
             output/manatan-macos.zip
+          retention-days: 1
 
   # --- JOB 5: Build Android APK ---
   build_android:
@@ -457,6 +461,7 @@ jobs:
         with:
           name: manatan-android
           path: signed_apks/*.apk
+          retention-days: 1
 
   # --- JOB 7: Release ---
   release:

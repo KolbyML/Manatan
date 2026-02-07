@@ -1,0 +1,35 @@
+name: Cleanup Artifacts
+
+on:
+  schedule:
+    - cron: "0 * * * *"
+  workflow_dispatch:
+
+permissions:
+  actions: write
+  contents: read
+
+jobs:
+  cleanup:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Delete artifacts older than 4 hours
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+        run: |
+          cutoff=$(date -u -d '4 hours ago' +%s)
+
+          gh api --paginate "repos/$REPO/actions/artifacts?per_page=100" \
+            --jq '.artifacts[] | [.id, .name, .created_at, .expired] | @tsv' | \
+          while IFS=$'\t' read -r id name created_at expired; do
+            if [ "$expired" = "true" ]; then
+              continue
+            fi
+
+            created_epoch=$(date -u -d "$created_at" +%s)
+            if [ "$created_epoch" -lt "$cutoff" ]; then
+              echo "Deleting artifact $id ($name, created: $created_at)"
+              gh api -X DELETE "repos/$REPO/actions/artifacts/$id" >/dev/null
+            fi
+          done
