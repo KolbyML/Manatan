@@ -34,6 +34,9 @@ import { ImageProcessingType } from '@/features/settings/Settings.types.ts';
 import { OCRProvider } from '@/Manatan/context/OCRContext';
 import { OCRManager } from '@/Manatan/OCRManager.tsx';
 
+// Manatan Sync Provider
+import { SyncProvider } from '@/features/sync/services/SyncContext';
+
 const { Browse } = loadable(() => import('@/features/browse/screens/Browse.tsx'), lazyLoadFallback);
 const { DownloadQueue } = loadable(() => import('@/features/downloads/screens/DownloadQueue.tsx'), lazyLoadFallback);
 const { Library } = loadable(() => import('@/features/library/screens/Library.tsx'), lazyLoadFallback);
@@ -101,6 +104,7 @@ const { HistorySettings } = loadable(() => import('@/features/history/screens/Hi
 const { LNLibrary } = loadable(() => import('@/features/ln/screens/LNLibrary.tsx'), lazyLoadFallback);
 const { LNReaderScreen } = loadable(() => import('@/features/ln/reader/screens/LNReaderScreen.tsx'), lazyLoadFallback);
 const { Dictionary } = loadable(() => import('@/features/dictionary/Dictionary.tsx'), lazyLoadFallback);
+const { SyncSettings } = loadable(() => import('@/features/sync/screens/SyncSettings.tsx'), lazyLoadFallback);
 
 if (import.meta.env.DEV) {
     // Adds messages only in a dev environment
@@ -272,6 +276,7 @@ const MainApp = () => {
                                 path={AppRoutes.settings.childRoutes.tracking.match}
                                 element={<TrackingSettings />}
                             />
+                            <Route path={AppRoutes.settings.childRoutes.sync.match} element={<SyncSettings />} />
                             <Route path={AppRoutes.settings.childRoutes.appearance.match} element={<Appearance />} />
                         </Route>
 
@@ -373,6 +378,7 @@ export const App: React.FC = () => (
             <CssBaseline enableColorScheme />
             <OCRProvider>
                 <OCRManager />
+                <SyncProvider>
 
                 <Routes>
                     {/* Fullscreen Reader Routes */}
@@ -398,6 +404,7 @@ export const App: React.FC = () => (
                         }
                     />
                 </Routes>
+                </SyncProvider>
             </OCRProvider>
         </AuthGuard>
     </AppContext>

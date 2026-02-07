@@ -220,6 +220,14 @@ jobs:
           name: webui-assets
           path: bin/manatan/resources/webui
 
+      - name: Create OAuth Credentials
+        shell: bash
+        env:
+         GDRIVE_ID: ${{ secrets.GDRIVE_ID }}
+        run: |
+         mkdir -p bin/manatan/resources/secrets
+         echo "$GDRIVE_ID" > bin/manatan/resources/secrets/client_secrets.json
+
       - name: Build Binary
         shell: bash
         env:
@@ -369,6 +377,14 @@ jobs:
           make download_android_jar
           make download_android_jre
           make android_icon
+
+      - name: Create OAuth Credentials
+        shell: bash
+        env:
+          GDRIVE_ID: ${{ secrets.GDRIVE_ID }}
+        run: |
+          mkdir -p bin/manatan_android/secrets
+          echo "$GDRIVE_ID" > bin/manatan_android/secrets/client_secrets.json
 
       - name: Configure Dummy Keystore
         working-directory: bin/manatan_android

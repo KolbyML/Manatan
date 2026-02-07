@@ -186,3 +186,4 @@ yarn-error.log*
 !.env.example
 
 ocr-test-data
+crates/sync-server/secrets/client_secrets.json
