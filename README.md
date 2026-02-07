@@ -20,12 +20,13 @@ Traditional setups for watching anime or reading manga with Japanese lookup can 
 **Manatan simplifies everything into a single app:**
 * **Zero Configuration:** No need to install "Monkey scripts," configure Optical Character Recognition (OCR) tools, or mess with command lines.
 * **Universal Language Support:** Manatan supports every language.
-* **Built-in OCR:** Just hover over text to get selectable text for dictionary lookups.
+* **Built-in OCR for Manga:** Just hover over text to get selectable text for dictionary lookups.
 * **Anime Support:** Subtitle parsing with popup dictionary lookups while you watch.
 * **1-Click Anime Cards:** Generate Anki cards from anime sentences with a single click, with sentence audio.
-* **Light Novels & EPUBs:** Read light novels and EPUBs with instant OCR/lookup.
+* **Novel Support:** Read EPUBS with sync accross devices, instant dictionary lookups, and Anki card generation.
 * **Cross-Platform:** Run the exact same interface on your PC, Mac, Android, or iOS device.
 * **Browser Interface:** Uses the familiar [Suwayomi](https://github.com/Suwayomi/Suwayomi-Server) interface in your favorite web browser.
+* **Extensible:** Supports Mihon, Aniyomi, and Aidoku extensions
 
 ### 🖥️ Supported Platforms
 | Windows | Linux | macOS | Android | iOS |
@@ -49,9 +50,13 @@ https://github.com/user-attachments/assets/38c63c86-289d-45a4-ba85-e29f1b812ceb
 - [x] Add iOS Support https://github.com/KolbyML/Manatan/issues/19
 - [x] Add Anime Support
 - [x] 1 click anime/video cards
-- [x] LightNovel/Epub support
-- [ ] Rust backend rewrite, faster load times, smaller binary, smaller ram usage
-- [ ] Add Mangayomi, Aidoku, LNReader extension support, ontop of existing Mihon/Aniyomi extension support
+- [x] Novel Support
+- [x] Rust backend rewrite, faster load times, smaller binary, smaller ram usage
+- [x] Add Novel sync support across devices
+- [x] Add Word Audio
+- [x] Add Aidoku extension support, ontop of existing Mihon/Aniyomi extension support
+- [ ] Massively improve local media UX
+- [ ] Add Mangayomi, LNReader extension support
 - [ ] Add local .mkv video support
 - [ ] Add 1 click setup local audio support for popup dictionary lookups
 - [ ] Local OCR engine support
@@ -70,8 +75,7 @@ https://github.com/user-attachments/assets/38c63c86-289d-45a4-ba85-e29f1b812ceb
 4.  The Manatan web interface (`127.0.0.1:4568/`) should open in a new browser tab.
     * *Please wait ~30 seconds for the initial setup to finish. Reload the page to access the library.*
 5.  **Adding Sources:**
-    * Go to **Settings** > **Browse** > **Extension repositories** > **Add Repository**.
-    * Paste a valid Mihon `index.min.json` extension repository URL (search "mihon extension repos" on Google to find one) and click **OK**.
+    * Google how to use Mihon, then if you want to try other extension support google how to use Aniyomi or Aidoku.
 6.  **Installing Extensions:**
     * Go to **"Browse"** on the left sidebar, then the **"Extensions"** tab.
     * Click **"Install"** on your desired source.

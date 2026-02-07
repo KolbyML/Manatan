@@ -44,31 +44,35 @@ jobs:
             name: macOS-arm64
           - os: macos-15-intel
             name: macOS-x64
-    if: ${{ inputs.target == 'all' || inputs.target == matrix.name }}
     steps:
       - name: Set up JDK
+        if: ${{ inputs.target == 'all' || inputs.target == matrix.name }}
         uses: actions/setup-java@v4
         with:
           java-version: 21
           distribution: zulu
 
       - name: Checkout code
+        if: ${{ inputs.target == 'all' || inputs.target == matrix.name }}
         uses: actions/checkout@v4
 
       - name: Package JDK
+        if: ${{ inputs.target == 'all' || inputs.target == matrix.name }}
         run: make jlink
 
       - name: Stage JRE bundle
+        if: ${{ inputs.target == 'all' || inputs.target == matrix.name }}
         shell: bash
         run: |
           mkdir -p jre_bundle_out/${{ matrix.name }}
           cp -r jre_bundle/. jre_bundle_out/${{ matrix.name }}/
 
       - name: Upload per-target staging artifact
+        if: ${{ inputs.target == 'all' || inputs.target == matrix.name }}
         uses: actions/upload-artifact@v4
         with:
           name: jre-part-${{ matrix.name }}
-          path: jre_bundle_out/${{ matrix.name }}
+          path: jre_bundle_out
           retention-days: 1
 
   publish_jre_artifact:
@@ -105,5 +109,5 @@ jobs:
         with:
           name: jre-bundles
           pattern: jre-part-*
-          delete-merged: true
+          delete-merged: false
           retention-days: 90
