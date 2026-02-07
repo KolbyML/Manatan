@@ -1,0 +1,61 @@
+/* =====================================================
+   CLICK ZONE VISUAL INDICATORS
+   ===================================================== */
+
+.click-zone-visual {
+    position: fixed;
+    z-index: 100;
+    pointer-events: none !important;
+    user-select: none;
+    -webkit-user-select: none;
+}
+
+.click-zone-visual.disabled {
+    opacity: 0.3;
+}
+
+/* Faint visualization (when UI is visible) */
+.click-zone-visual.faint {
+    background-color: rgba(128, 128, 128, 0.1);
+    border: 1px dashed rgba(128, 128, 128, 0.35);
+}
+
+.click-zone-visual.faint.prev {
+    background-color: rgba(128, 128, 128, 0.1);
+    border-color: rgba(128, 128, 128, 0.35);
+}
+
+/* Debug visualization (clear borders) */
+.click-zone-visual.debug {
+    background-color: rgba(0, 100, 255, 0.15);
+    border: 2px dashed rgba(0, 100, 255, 0.6);
+}
+
+.click-zone-visual.debug.prev {
+    background-color: rgba(255, 100, 0, 0.15);
+    border-color: rgba(255, 100, 0, 0.6);
+}
+
+/* =====================================================
+   VERTICAL MODE
+   ===================================================== */
+
+.click-zone-visual.vertical.prev {
+    right: 0;
+}
+
+.click-zone-visual.vertical.next {
+    left: 0;
+}
+
+/* =====================================================
+   HORIZONTAL MODE
+   ===================================================== */
+
+.click-zone-visual.horizontal.prev {
+    top: 0;
+}
+
+.click-zone-visual.horizontal.next {
+    bottom: 0;
+}

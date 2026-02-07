@@ -289,11 +289,6 @@
         font-size: 18px;
     }
 
-    /* HIDE buttons in horizontal mode on mobile */
-    .nav-btn.horizontal {
-        display: none;
-    }
-
     /* Vertical mode stays LEFT/RIGHT on mobile */
     .nav-btn.vertical.prev {
         right: calc(12px + env(safe-area-inset-right));
@@ -370,11 +365,6 @@
 @media (hover: none) {
     .nav-btn {
         opacity: 0.6;
-    }
-
-    /* HIDE buttons in horizontal mode on touch devices */
-    .nav-btn.horizontal {
-        display: none;
     }
 }
 
@@ -464,4 +454,80 @@
 @keyframes pulse {
     0%, 100% { opacity: 0.7; }
     50% { opacity: 1; }
+}
+
+/* =====================================================
+   CLICK/TAP ZONES
+   ===================================================== */
+
+.click-zone {
+    position: fixed;
+    z-index: 50;
+    pointer-events: auto;
+    cursor: pointer;
+    user-select: none;
+    -webkit-user-select: none;
+    -webkit-tap-highlight-color: transparent;
+}
+
+.click-zone.disabled {
+    pointer-events: none;
+}
+
+/* Debug mode - visualize zones with colored borders */
+.click-zone.debug {
+    background-color: rgba(0, 100, 255, 0.15);
+    border: 2px dashed rgba(0, 100, 255, 0.6);
+}
+
+.click-zone.debug.prev {
+    background-color: rgba(255, 100, 0, 0.15);
+    border-color: rgba(255, 100, 0, 0.6);
+}
+
+.click-zone.debug:hover {
+    background-color: rgba(0, 100, 255, 0.25);
+}
+
+.click-zone.debug.prev:hover {
+    background-color: rgba(255, 100, 0, 0.25);
+}
+
+/* Vertical mode (Japanese RTL) - zones on LEFT and RIGHT edges */
+.click-zone.vertical.prev {
+    right: 0;
+    top: 0;
+    bottom: 0;
+}
+
+.click-zone.vertical.next {
+    left: 0;
+    top: 0;
+    bottom: 0;
+}
+
+/* Horizontal mode - zones on TOP and BOTTOM edges */
+.click-zone.horizontal.prev {
+    top: 0;
+    left: 0;
+    right: 0;
+}
+
+.click-zone.horizontal.next {
+    bottom: 0;
+    left: 0;
+    right: 0;
+}
+
+/* Touch feedback for mobile devices */
+@media (hover: none) {
+    .click-zone:active {
+        background-color: rgba(128, 128, 128, 0.1);
+    }
+    
+    /* Make zones larger on touch devices */
+    .click-zone {
+        min-width: 44px;
+        min-height: 44px;
+    }
 }
