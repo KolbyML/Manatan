@@ -142,7 +142,15 @@ export interface Settings {
     lnLockProgressBar?: boolean;
     lnShowCharProgress?: boolean;
      lnAutoBookmark?: boolean;         
-    lnBookmarkDelay?: number;   
+    lnBookmarkDelay?: number;  
+    // Navigation settings
+    lnHideNavButtons?: boolean;
+    lnEnableClickZones?: boolean;
+    lnClickZoneSize?: number;
+    lnClickZonePosition?: 'full' | 'start' | 'center' | 'end';
+    lnClickZoneCoverage?: number;
+    lnClickZonePlacement?: 'horizontal' | 'vertical';
+    lnEnableSwipe?: boolean;   
     // Dropdown setting for grouping behavior
     resultGroupingMode: 'grouped' | 'flat';
 
@@ -316,6 +324,14 @@ export const DEFAULT_SETTINGS: Settings = {
     lnShowCharProgress: false,
     lnAutoBookmark: true,
     lnBookmarkDelay: 15,
+    // Navigation defaults
+    lnHideNavButtons: false,
+    lnEnableClickZones: true,
+    lnClickZoneSize: 10,
+    lnClickZonePosition: 'full',
+    lnClickZoneCoverage: 60,
+    lnClickZonePlacement: 'vertical',
+    lnEnableSwipe: true,
 };
 
 export const COLOR_THEMES: Record<ColorTheme, { accent: string; background: string }> = {

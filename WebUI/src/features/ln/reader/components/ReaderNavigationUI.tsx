@@ -90,10 +90,11 @@ export const ReaderNavigationUI: React.FC<ReaderNavigationUIProps> = ({
 
     const showPageSlider = showSlider && mode === 'paged' && totalPages && totalPages > 1 && onPageChange && currentPage !== undefined;
     const showCharProgress = settings?.lnShowCharProgress ?? false;
+    const showNavButtons = visible && !(settings?.lnHideNavButtons ?? false);
 
     return (
         <div className="reader-navigation-ui">
-            {visible && (
+            {showNavButtons && (
                 <>
                     <button
                         className={`nav-btn prev ${isVertical ? 'vertical' : 'horizontal'}`}

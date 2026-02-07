@@ -10,6 +10,7 @@ import React, {
 import { Settings } from '@/Manatan/types';
 import { BookStats, AppStorage } from '@/lib/storage/AppStorage';
 import { ReaderNavigationUI } from './ReaderNavigationUI';
+import { ClickZones, getClickZone } from './ClickZones';
 import { buildTypographyStyles } from '../utils/styles';
 import { handleKeyNavigation, NavigationCallbacks } from '../utils/navigation';
 import { PagedReaderProps } from '../types/reader';
@@ -31,6 +32,8 @@ import './PagedReader.css';
 const DRAG_THRESHOLD = 10;
 const SAVE_DEBOUNCE_MS = 3000;
 const POSITION_DETECT_DELAY_MS = 150;
+const SWIPE_MIN_DISTANCE = 50;
+const SWIPE_MAX_TIME = 500;
 
 // ============================================================================
 // Component
@@ -69,9 +72,10 @@ export const PagedReader: React.FC<PagedReaderProps> = ({
     const lastRestoreKeyRef = useRef<string>('');
     const restorePendingRef = useRef(false);
 
-    // Drag detection
+    // Drag/touch detection
     const isDraggingRef = useRef(false);
     const startPosRef = useRef({ x: 0, y: 0 });
+    const touchStartRef = useRef<{ x: number; y: number; time: number } | null>(null);
 
     // Callback refs (prevent re-render loops)
     const onPositionUpdateRef = useRef(onPositionUpdate);
@@ -611,64 +615,6 @@ export const PagedReader: React.FC<PagedReaderProps> = ({
     // Touch/Click Handlers
     // ========================================================================
 
-    const handlePointerDown = useCallback((e: React.PointerEvent) => {
-        isDraggingRef.current = false;
-        startPosRef.current = { x: e.clientX, y: e.clientY };
-    }, []);
-
-    const handlePointerMove = useCallback((e: React.PointerEvent) => {
-        if (!isDraggingRef.current) {
-            const dx = Math.abs(e.clientX - startPosRef.current.x);
-            const dy = Math.abs(e.clientY - startPosRef.current.y);
-            if (dx > DRAG_THRESHOLD || dy > DRAG_THRESHOLD) {
-                isDraggingRef.current = true;
-            }
-        }
-    }, []);
-
-    const handleContentClick = useCallback(async (e: React.MouseEvent) => {
-        if (isDraggingRef.current) return;
-
-        const target = e.target as HTMLElement;
-
-        // Handle links
-        const link = target.closest('a');
-        if (link) {
-            const href = link.getAttribute('href');
-
-            if (href?.startsWith('#')) {
-                e.preventDefault();
-                const targetId = href.substring(1);
-                const targetElement = document.getElementById(targetId);
-                if (targetElement) {
-                    targetElement.scrollIntoView({ behavior: 'smooth', block: 'start' });
-                }
-            } else if (href?.startsWith('http')) {
-                e.preventDefault();
-                window.open(href, '_blank', 'noopener,noreferrer');
-            } else if (href?.includes('.html') || href?.includes('.xhtml')) {
-                e.preventDefault();
-                const linkEvent = new CustomEvent('epub-link-clicked', {
-                    detail: { href },
-                    bubbles: true
-                });
-                e.currentTarget.dispatchEvent(linkEvent);
-            }
-            return;
-        }
-
-        // Ignore UI elements
-        if (target.closest('button, img, ruby rt, .nav-btn, .reader-progress-bar, .dict-popup')) {
-            return;
-        }
-
-        // Try text lookup
-        const lookupSuccess = await tryLookup(e);
-        if (!lookupSuccess) {
-            onToggleUIRef.current?.();
-        }
-    }, [tryLookup]);
-
     // ========================================================================
     // Navigation
     // ========================================================================
@@ -715,6 +661,154 @@ export const PagedReader: React.FC<PagedReaderProps> = ({
             goToSection(currentSection - 1, true);
         }
     }, [currentPage, currentSection, goToPage, goToSection, contentReady, isTransitioning]);
+
+    // ========================================================================
+    // Touch/Click Handlers
+    // ========================================================================
+
+    const handlePointerDown = useCallback((e: React.PointerEvent) => {
+        isDraggingRef.current = false;
+        startPosRef.current = { x: e.clientX, y: e.clientY };
+    }, []);
+
+    const handlePointerMove = useCallback((e: React.PointerEvent) => {
+        if (!isDraggingRef.current) {
+            const dx = Math.abs(e.clientX - startPosRef.current.x);
+            const dy = Math.abs(e.clientY - startPosRef.current.y);
+            if (dx > DRAG_THRESHOLD || dy > DRAG_THRESHOLD) {
+                isDraggingRef.current = true;
+            }
+        }
+    }, []);
+
+    const handleTouchStart = useCallback((e: React.TouchEvent) => {
+        if (e.touches.length === 1) {
+            touchStartRef.current = {
+                x: e.touches[0].clientX,
+                y: e.touches[0].clientY,
+                time: Date.now(),
+            };
+        }
+    }, []);
+
+    const handleTouchEnd = useCallback((e: React.TouchEvent) => {
+        if (!touchStartRef.current) return;
+        if (!contentReady || isTransitioning) return;
+        if (!(settings.lnEnableSwipe ?? true)) return;
+
+        const touch = touchStartRef.current;
+        touchStartRef.current = null;
+
+        // Don't handle swipe if touching UI elements
+        const target = e.target as HTMLElement;
+        if (target.closest('.reader-progress-bar, .nav-btn, .dict-popup, .click-zone')) {
+            return;
+        }
+
+        const deltaX = e.changedTouches[0].clientX - touch.x;
+        const deltaY = e.changedTouches[0].clientY - touch.y;
+        const deltaTime = Date.now() - touch.time;
+
+        if (deltaTime > SWIPE_MAX_TIME) return;
+
+        // VERTICAL SWIPE: Works in BOTH modes
+        // Swipe UP = next, Swipe DOWN = prev
+        if (Math.abs(deltaY) > Math.abs(deltaX) && Math.abs(deltaY) > SWIPE_MIN_DISTANCE) {
+            if (deltaY > 0) {
+                goPrev(); // Swipe down = back
+            } else {
+                goNext(); // Swipe up = forward
+            }
+            return;
+        }
+
+        // HORIZONTAL SWIPE: Works in BOTH modes with inverted logic
+        if (Math.abs(deltaX) > Math.abs(deltaY) && Math.abs(deltaX) > SWIPE_MIN_DISTANCE) {
+            if (isVertical) {
+                // Vertical text mode: swipe right = next, swipe left = prev 
+                if (deltaX > 0) {
+                    goNext(); // Swipe right = forward
+                } else {
+                    goPrev(); // Swipe left = back
+                }
+            } else {
+                // Horizontal text mode: swipe left = next, swipe right = prev 
+                if (deltaX > 0) {
+                    goPrev(); // Swipe right = back
+                } else {
+                    goNext(); // Swipe left = forward
+                }
+            }
+        }
+    }, [contentReady, isTransitioning, isVertical, isRTL, goNext, goPrev, settings.lnEnableSwipe]);
+
+    const handleContentClick = useCallback(async (e: React.MouseEvent) => {
+        if (isDraggingRef.current) return;
+
+        const target = e.target as HTMLElement;
+
+        // Handle links
+        const link = target.closest('a');
+        if (link) {
+            const href = link.getAttribute('href');
+
+            if (href?.startsWith('#')) {
+                e.preventDefault();
+                const targetId = href.substring(1);
+                const targetElement = document.getElementById(targetId);
+                if (targetElement) {
+                    targetElement.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }
+            } else if (href?.startsWith('http')) {
+                e.preventDefault();
+                window.open(href, '_blank', 'noopener,noreferrer');
+            } else if (href?.includes('.html') || href?.includes('.xhtml')) {
+                e.preventDefault();
+                const linkEvent = new CustomEvent('epub-link-clicked', {
+                    detail: { href },
+                    bubbles: true
+                });
+                e.currentTarget.dispatchEvent(linkEvent);
+            }
+            return;
+        }
+
+        // Ignore UI elements
+        if (target.closest('button, img, ruby rt, .nav-btn, .reader-progress-bar, .dict-popup')) {
+            return;
+        }
+
+        // Try text lookup first (highest priority)
+        const lookupSuccess = await tryLookup(e);
+        if (lookupSuccess) return;
+
+        // Check if click zones are enabled and detect zone click
+        if (settings.lnEnableClickZones && wrapperRef.current) {
+            const rect = wrapperRef.current.getBoundingClientRect();
+            const zone = getClickZone(
+                e.clientX,
+                e.clientY,
+                rect,
+                isVertical,
+                settings.lnClickZonePlacement ?? 'vertical',
+                settings.lnClickZoneSize ?? 10,
+                settings.lnClickZonePosition ?? 'full',
+                settings.lnClickZoneCoverage ?? 60
+            );
+            
+            if (zone === 'prev') {
+                goPrev();
+                return;
+            }
+            if (zone === 'next') {
+                goNext();
+                return;
+            }
+        }
+
+        // Otherwise toggle UI
+        onToggleUIRef.current?.();
+    }, [tryLookup, settings.lnEnableClickZones, settings.lnClickZonePlacement, settings.lnClickZoneSize, settings.lnClickZonePosition, settings.lnClickZoneCoverage, isVertical, goPrev, goNext]);
 
     const navCallbacks: NavigationCallbacks = useMemo(() => ({
         goNext,
@@ -950,6 +1044,8 @@ useEffect(() => {
                 onClick={handleContentClick}
                 onPointerDown={handlePointerDown}
                 onPointerMove={handlePointerMove}
+                onTouchStart={handleTouchStart}
+                onTouchEnd={handleTouchEnd}
             >
                 {/* Content */}
                 <div
@@ -968,6 +1064,21 @@ useEffect(() => {
                 >
                     <div className="loading-spinner" />
                 </div>
+            )}
+
+            {/* Click Zones - Visual Debug Only */}
+            {contentReady && (
+                <ClickZones
+                    isVertical={isVertical}
+                    canGoNext={currentPage < totalPages - 1 || currentSection < chapters.length - 1}
+                    canGoPrev={currentPage > 0 || currentSection > 0}
+                    zoneSize={settings.lnClickZoneSize ?? 10}
+                    zonePosition={settings.lnClickZonePosition ?? 'full'}
+                    zoneCoverage={settings.lnClickZoneCoverage ?? 60}
+                    zonePlacement={settings.lnClickZonePlacement ?? 'vertical'}
+                    visible={showNavigation}
+                    debugMode={settings.debugMode}
+                />
             )}
 
             {contentReady && (

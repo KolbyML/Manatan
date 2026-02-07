@@ -618,6 +618,194 @@ export const ReaderControls: React.FC<Props> = ({
 </Box>
 <Divider sx={{ my: 3, borderColor: `${theme.fg}22` }} />
 
+{/* Navigation Section */}
+<Box sx={{ mb: 3 }}>
+    <Typography variant="subtitle2" sx={{ mb: 1.5, fontWeight: 600, opacity: 0.8 }}>
+        Navigation
+    </Typography>
+
+    {/* Show/Hide Nav Buttons */}
+    <FormControlLabel
+        control={
+            <Switch
+                checked={!(settings.lnHideNavButtons ?? false)}
+                onChange={(e) => onUpdateSettings('lnHideNavButtons', !e.target.checked)}
+                sx={{
+                    '& .MuiSwitch-switchBase.Mui-checked': { color: theme.fg },
+                    '& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track': { backgroundColor: theme.fg },
+                }}
+            />
+        }
+        label={
+            <Box>
+                <Typography variant="body2">Navigation Buttons</Typography>
+                <Typography variant="caption" sx={{ opacity: 0.6 }}>
+                    Show prev/next arrows on screen
+                </Typography>
+            </Box>
+        }
+        sx={{ mb: 2, width: '100%' }}
+    />
+
+    {/* Enable Swipe */}
+    <FormControlLabel
+        control={
+            <Switch
+                checked={settings.lnEnableSwipe ?? true}
+                onChange={(e) => onUpdateSettings('lnEnableSwipe', e.target.checked)}
+                sx={{
+                    '& .MuiSwitch-switchBase.Mui-checked': { color: theme.fg },
+                    '& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track': { backgroundColor: theme.fg },
+                }}
+            />
+        }
+        label={
+            <Box>
+                <Typography variant="body2">Swipe Navigation</Typography>
+                <Typography variant="caption" sx={{ opacity: 0.6 }}>
+                    Swipe to turn pages (touch devices)
+                </Typography>
+            </Box>
+        }
+        sx={{ mb: 2, width: '100%' }}
+    />
+
+    {/* Click Zones - Only show in paginated mode */}
+    {settings.lnPaginationMode === 'paginated' && (
+        <>
+            <FormControlLabel
+                control={
+                    <Switch
+                        checked={settings.lnEnableClickZones ?? true}
+                        onChange={(e) => onUpdateSettings('lnEnableClickZones', e.target.checked)}
+                        sx={{
+                            '& .MuiSwitch-switchBase.Mui-checked': { color: theme.fg },
+                            '& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track': { backgroundColor: theme.fg },
+                        }}
+                    />
+                }
+                label={
+                    <Box>
+                        <Typography variant="body2">Click/Touch Zones</Typography>
+                        <Typography variant="caption" sx={{ opacity: 0.6 }}>
+                            Tap screen edges to navigate
+                        </Typography>
+                    </Box>
+                }
+                sx={{ mb: 2, width: '100%' }}
+            />
+
+            {(settings.lnEnableClickZones ?? true) && (
+                <>
+                    {/* Zone Size */}
+                    <Box sx={{ mb: 2 }}>
+                        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1 }}>
+                            <Typography variant="caption" sx={{ opacity: 0.8 }}>Zone Size</Typography>
+                            <TextField
+                                size="small"
+                                value={settings.lnClickZoneSize ?? 10}
+                                onChange={(e) => {
+                                    const val = parseInt(e.target.value, 10);
+                                    if (!isNaN(val) && val >= 0 && val <= 50) {
+                                        onUpdateSettings('lnClickZoneSize', val);
+                                    }
+                                }}
+                                type="number"
+                                inputProps={{ min: 0, max: 50, step: 5 }}
+                                sx={getInputStyles(theme)}
+                                InputProps={{
+                                    endAdornment: <InputAdornment position="end" sx={{ color: theme.fg }}>%</InputAdornment>
+                                }}
+                            />
+                        </Box>
+                        <Slider
+                            value={settings.lnClickZoneSize ?? 10}
+                            min={0}
+                            max={50}
+                            step={5}
+                            onChange={(_, v) => onUpdateSettings('lnClickZoneSize', v as number)}
+                            sx={{ color: theme.fg }}
+                        />
+                    </Box>
+
+                    {/* Zone Placement */}
+                    <FormControl fullWidth size="small" sx={{ mb: 2 }}>
+                        <InputLabel sx={{ color: theme.fg, '&.Mui-focused': { color: theme.fg } }}>
+                            Zone Placement
+                        </InputLabel>
+                        <Select
+                            value={settings.lnClickZonePlacement ?? 'vertical'}
+                            label="Zone Placement"
+                            onChange={(e) => onUpdateSettings('lnClickZonePlacement', e.target.value)}
+                            sx={selectStyles}
+                            MenuProps={menuProps}
+                        >
+                            <MenuItem value="horizontal">Horizontal</MenuItem>
+                            <MenuItem value="vertical">Vertical</MenuItem>
+                        </Select>
+                    </FormControl>
+
+                    {/* Zone Position */}
+                    <FormControl fullWidth size="small" sx={{ mb: 2 }}>
+                        <InputLabel sx={{ color: theme.fg, '&.Mui-focused': { color: theme.fg } }}>
+                            Zone Position
+                        </InputLabel>
+                        <Select
+                            value={settings.lnClickZonePosition ?? 'full'}
+                            label="Zone Position"
+                            onChange={(e) => onUpdateSettings('lnClickZonePosition', e.target.value)}
+                            sx={selectStyles}
+                            MenuProps={menuProps}
+                        >
+                            <MenuItem value="full">Full Edge</MenuItem>
+                            <MenuItem value="start">Start</MenuItem>
+                            <MenuItem value="center">Center</MenuItem>
+                            <MenuItem value="end">End</MenuItem>
+                        </Select>
+                    </FormControl>
+
+                    {/* Zone Coverage (only if not full) */}
+                    {(settings.lnClickZonePosition ?? 'full') !== 'full' && (
+                        <Box sx={{ mb: 2 }}>
+                            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1 }}>
+                                <Typography variant="caption" sx={{ opacity: 0.8 }}>Zone Coverage</Typography>
+                                <TextField
+                                    size="small"
+                                    value={settings.lnClickZoneCoverage ?? 60}
+                                    onChange={(e) => {
+                                        const val = parseInt(e.target.value, 10);
+                                        if (!isNaN(val) && val >= 30 && val <= 100) {
+                                            onUpdateSettings('lnClickZoneCoverage', val);
+                                        }
+                                    }}
+                                    type="number"
+                                    inputProps={{ min: 30, max: 100, step: 10 }}
+                                    sx={getInputStyles(theme)}
+                                    InputProps={{
+                                        endAdornment: <InputAdornment position="end" sx={{ color: theme.fg }}>%</InputAdornment>
+                                    }}
+                                />
+                            </Box>
+                            <Slider
+                                value={settings.lnClickZoneCoverage ?? 60}
+                                min={30}
+                                max={100}
+                                step={10}
+                                onChange={(_, v) => onUpdateSettings('lnClickZoneCoverage', v as number)}
+                                sx={{ color: theme.fg }}
+                            />
+                            <Typography variant="caption" sx={{ display: 'block', mt: 0.5, opacity: 0.7 }}>
+                                How much of the edge the zone covers
+                            </Typography>
+                        </Box>
+                    )}
+                </>
+            )}
+        </>
+    )}
+</Box>
+<Divider sx={{ my: 3, borderColor: `${theme.fg}22` }} />
+
                 {/* Features Section */}
                 <Box sx={{ mb: 2 }}>
                     <Typography variant="subtitle2" sx={{ mb: 1.5, fontWeight: 600, opacity: 0.8 }}>
