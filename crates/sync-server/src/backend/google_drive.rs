@@ -3,13 +3,14 @@ use crate::error::SyncError;
 use crate::state::SyncState;
 use crate::types::SyncPayload;
 use async_trait::async_trait;
+use base64::Engine as _;
 use flate2::read::GzDecoder;
 use flate2::write::GzEncoder;
 use flate2::Compression;
 use serde::Deserialize;
+use sha2::{Digest, Sha256};
 use std::io::{Read, Write};
-use std::path::Path;
-use tracing::{debug, error, info};
+use tracing::{error, info};
 
 // Re-exports from google-drive3
 use google_drive3::api::File;
@@ -23,53 +24,25 @@ use google_drive3::DriveHub;
 // OAuth Credentials
 // ============================================================================
 
-#[derive(Debug, Deserialize)]
-struct ClientSecrets {
-    installed: InstalledCredentials,
-}
+const EMBEDDED_GDRIVE_CLIENT_ID: &str =
+    "547124386971-e2bhbiav8rq299irqim61io2o02iucct.apps.googleusercontent.com";
+const GDRIVE_CLIENT_ID_ENV: &str = "MANATAN_GDRIVE_CLIENT_ID";
 
-#[derive(Debug, Deserialize, Clone)]
+#[derive(Debug, Clone)]
 struct InstalledCredentials {
     client_id: String,
-    client_secret: String,
-    #[serde(default = "default_auth_uri")]
-    auth_uri: String,
-    #[serde(default = "default_token_uri")]
-    token_uri: String,
-    #[serde(default)]
-    redirect_uris: Vec<String>,
 }
 
-fn default_auth_uri() -> String {
-    "https://accounts.google.com/o/oauth2/auth".to_string()
-}
+fn load_credentials() -> InstalledCredentials {
+    let client_id = std::env::var(GDRIVE_CLIENT_ID_ENV)
+        .ok()
+        .map(|value| value.trim().to_string())
+        .filter(|value| !value.is_empty())
+        .unwrap_or_else(|| EMBEDDED_GDRIVE_CLIENT_ID.to_string());
 
-fn default_token_uri() -> String {
-    "https://oauth2.googleapis.com/token".to_string()
-}
-
-fn load_credentials(data_dir: &Path) -> Result<InstalledCredentials, SyncError> {
-    let possible_paths = [
-        data_dir.join("client_secrets.json"),
-        data_dir.join("secrets").join("client_secrets.json"),
-        std::env::current_dir()
-            .unwrap_or_default()
-            .join("crates")
-            .join("sync-server")
-            .join("secrets")
-            .join("client_secrets.json"),
-    ];
-
-    for path in &possible_paths {
-        if path.exists() {
-            let content = std::fs::read_to_string(path).map_err(SyncError::IoError)?;
-            let secrets: ClientSecrets = serde_json::from_str(&content).map_err(|e| {
-                SyncError::OAuthError(format!("Failed to parse client_secrets.json: {}", e))
-            })?;
-            return Ok(secrets.installed);
-        }
+    InstalledCredentials {
+        client_id,
     }
-    Err(SyncError::OAuthError("client_secrets.json not found".to_string()))
 }
 
 // ============================================================================
@@ -82,8 +55,35 @@ const SCOPES: &[&str] = &[
     "https://www.googleapis.com/auth/userinfo.email",
 ];
 
+const GOOGLE_OAUTH_AUTH_ENDPOINT: &str = "https://accounts.google.com/o/oauth2/v2/auth";
+const DEFAULT_GOOGLE_OAUTH_BROKER_ENDPOINT: &str = "https://manatan.com/auth/google";
+const GOOGLE_OAUTH_BROKER_ENDPOINT_ENV: &str = "MANATAN_GOOGLE_OAUTH_BROKER_ENDPOINT";
+const GOOGLE_OAUTH_BROKER_TOKEN_ENV: &str = "MANATAN_GOOGLE_OAUTH_BROKER_TOKEN";
 const SYNC_FILE_NAME: &str = "manatan_sync.proto.gz";
 const FOLDER_MIME_TYPE: &str = "application/vnd.google-apps.folder";
+
+fn oauth_token_endpoint() -> String {
+    std::env::var(GOOGLE_OAUTH_BROKER_ENDPOINT_ENV)
+        .ok()
+        .map(|value| value.trim().to_string())
+        .filter(|value| !value.is_empty())
+        .unwrap_or_else(|| DEFAULT_GOOGLE_OAUTH_BROKER_ENDPOINT.to_string())
+}
+
+fn oauth_broker_token() -> Option<String> {
+    let runtime = std::env::var(GOOGLE_OAUTH_BROKER_TOKEN_ENV)
+        .ok()
+        .map(|value| value.trim().to_string())
+        .filter(|value| !value.is_empty());
+
+    if runtime.is_some() {
+        return runtime;
+    }
+
+    option_env!("MANATAN_GOOGLE_OAUTH_BROKER_TOKEN")
+        .map(|value| value.trim().to_string())
+        .filter(|value| !value.is_empty())
+}
 
 type HyperConnector = HttpsConnector<HttpConnector>;
 
@@ -93,19 +93,13 @@ type HyperConnector = HttpsConnector<HttpConnector>;
 
 pub struct GoogleDriveBackend {
     state: SyncState,
-    credentials: Option<InstalledCredentials>,
+    credentials: InstalledCredentials,
     hub: Option<DriveHub<HyperConnector>>,
 }
 
 impl GoogleDriveBackend {
     pub fn new(state: SyncState) -> Self {
-        let credentials = match load_credentials(&state.data_dir) {
-            Ok(creds) => Some(creds),
-            Err(e) => {
-                error!("Failed to load OAuth credentials: {}", e);
-                None
-            }
-        };
+        let credentials = load_credentials();
 
         Self {
             state,
@@ -114,14 +108,7 @@ impl GoogleDriveBackend {
         }
     }
 
-    fn get_credentials(&self) -> Result<&InstalledCredentials, SyncError> {
-        self.credentials.as_ref().ok_or_else(|| {
-            SyncError::OAuthError("OAuth credentials not loaded".to_string())
-        })
-    }
-
     pub async fn initialize(&mut self) -> Result<(), SyncError> {
-        self.get_credentials()?;
         if self.state.get_access_token().is_none() || self.state.get_refresh_token().is_none() {
             return Err(SyncError::NotAuthenticated);
         }
@@ -147,22 +134,26 @@ impl GoogleDriveBackend {
     }
 
     async fn refresh_access_token(&self) -> Result<(), SyncError> {
-        let credentials = self.get_credentials()?;
         let Some(refresh_token) = self.state.get_refresh_token() else {
             return Err(SyncError::NotAuthenticated);
         };
 
         let client = reqwest::Client::new();
-        let params = [
-            ("refresh_token", refresh_token.as_str()),
-            ("client_id", credentials.client_id.as_str()),
-            ("client_secret", credentials.client_secret.as_str()),
-            ("grant_type", "refresh_token"),
+        let params = vec![
+            ("refresh_token".to_string(), refresh_token),
+            ("client_id".to_string(), self.credentials.client_id.clone()),
+            ("grant_type".to_string(), "refresh_token".to_string()),
         ];
 
-        let response = client
-            .post("https://oauth2.googleapis.com/token")
-            .form(&params)
+        let endpoint = oauth_token_endpoint();
+        let mut request = client.post(&endpoint).form(&params);
+        if endpoint != "https://oauth2.googleapis.com/token" {
+            if let Some(broker_token) = oauth_broker_token() {
+                request = request.bearer_auth(broker_token);
+            }
+        }
+
+        let response = request
             .send()
             .await
             .map_err(|e| SyncError::OAuthError(e.to_string()))?;
@@ -251,18 +242,28 @@ impl GoogleDriveBackend {
         Ok(body_bytes.to_vec())
     }
 
-    async fn exchange_code_for_tokens(&self, code: &str, redirect_uri: &str) -> Result<(String, String), SyncError> {
-        let credentials = self.get_credentials()?;
+    async fn exchange_code_for_tokens(&self, code: &str, redirect_uri: &str, code_verifier: &str) -> Result<(String, String), SyncError> {
         let client = reqwest::Client::new();
-        let params = [
-            ("code", code),
-            ("client_id", &credentials.client_id),
-            ("client_secret", &credentials.client_secret),
-            ("redirect_uri", redirect_uri),
-            ("grant_type", "authorization_code"),
+        let params = vec![
+            ("code".to_string(), code.to_string()),
+            ("client_id".to_string(), self.credentials.client_id.clone()),
+            ("redirect_uri".to_string(), redirect_uri.to_string()),
+            ("grant_type".to_string(), "authorization_code".to_string()),
+            ("code_verifier".to_string(), code_verifier.to_string()),
         ];
 
-        let response = client.post("https://oauth2.googleapis.com/token").form(&params).send().await.map_err(|e| SyncError::OAuthError(e.to_string()))?;
+        let endpoint = oauth_token_endpoint();
+        let mut request = client.post(&endpoint).form(&params);
+        if endpoint != "https://oauth2.googleapis.com/token" {
+            if let Some(broker_token) = oauth_broker_token() {
+                request = request.bearer_auth(broker_token);
+            }
+        }
+
+        let response = request
+            .send()
+            .await
+            .map_err(|e| SyncError::OAuthError(e.to_string()))?;
         if !response.status().is_success() {
             return Err(SyncError::OAuthError(format!("Token exchange failed: {}", response.text().await.unwrap_or_default())));
         }
@@ -384,24 +385,44 @@ impl SyncBackend for GoogleDriveBackend {
     }
 
     fn start_auth(&self, redirect_uri: &str) -> Result<AuthFlow, SyncError> {
-        let credentials = self.get_credentials()?;
         let state = uuid::Uuid::new_v4().to_string();
+        let code_verifier = format!(
+            "{}{}",
+            uuid::Uuid::new_v4().simple(),
+            uuid::Uuid::new_v4().simple()
+        );
+        let code_challenge = base64::engine::general_purpose::URL_SAFE_NO_PAD
+            .encode(Sha256::digest(code_verifier.as_bytes()));
+
         self.state.set_auth_state(&state)?;
+        self.state.set_auth_code_verifier(&code_verifier)?;
 
         let scopes = SCOPES.join(" ");
         let auth_url = format!(
-            "https://accounts.google.com/o/oauth2/v2/auth?client_id={}&redirect_uri={}&response_type=code&scope={}&access_type=offline&prompt=consent&state={}",
-            credentials.client_id, urlencoding::encode(redirect_uri), urlencoding::encode(&scopes), state
+            "{}?client_id={}&redirect_uri={}&response_type=code&scope={}&access_type=offline&prompt=consent&state={}&code_challenge={}&code_challenge_method=S256",
+            GOOGLE_OAUTH_AUTH_ENDPOINT,
+            self.credentials.client_id,
+            urlencoding::encode(redirect_uri),
+            urlencoding::encode(&scopes),
+            state,
+            urlencoding::encode(&code_challenge)
         );
 
         Ok(AuthFlow { auth_url, state })
     }
 
     async fn complete_auth(&mut self, code: &str, redirect_uri: &str) -> Result<(), SyncError> {
-        let (access_token, refresh_token) = self.exchange_code_for_tokens(code, redirect_uri).await?;
+        let code_verifier = self
+            .state
+            .get_auth_code_verifier()
+            .ok_or_else(|| SyncError::OAuthError("Missing PKCE verifier".to_string()))?;
+        let (access_token, refresh_token) = self
+            .exchange_code_for_tokens(code, redirect_uri, &code_verifier)
+            .await?;
         self.state.set_access_token(&access_token)?;
         self.state.set_refresh_token(&refresh_token)?;
         self.state.clear_auth_state()?;
+        self.state.clear_auth_code_verifier()?;
         self.setup_hub().await?;
         info!("Successfully authenticated with Google Drive");
         Ok(())

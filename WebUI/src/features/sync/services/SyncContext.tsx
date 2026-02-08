@@ -4,6 +4,7 @@ import { SyncService } from './SyncService';
 import { AuthStatus, SyncConfig, SyncProgress, ConflictInfo } from '../Sync.types';
 import { DEFAULT_SYNC_CONFIG } from '../Sync.constants';
 import { RequestManager } from '@/lib/requests/RequestManager';
+import { getAppVersion } from '@/Manatan/utils/api';
 
 interface SyncContextValue {
     // State
@@ -127,11 +128,16 @@ export const SyncProvider: React.FC<{ children: React.ReactNode }> = ({ children
             
             // Use appropriate redirect method based on platform
             const requestManager = new RequestManager();
-            
+
             try {
-                // Try to use webview for native mobile apps
-                const webviewUrl = requestManager.getWebviewUrl(authUrl);
-                window.location.href = webviewUrl;
+                const appVersion = await getAppVersion();
+                if (appVersion.variant === 'native-webview') {
+                    const webviewUrl = requestManager.getWebviewUrl(authUrl);
+                    window.location.href = webviewUrl;
+                    return;
+                }
+
+                window.location.href = authUrl;
             } catch (e) {
                 console.warn('[Sync] Webview redirect failed, using fallback:', e);
                 // Fallback to direct navigation for desktop browsers

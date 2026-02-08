@@ -123,7 +123,13 @@ async fn google_callback(
 ) -> Result<Redirect, SyncError> {
     match handle_callback(state, query.code, query.state).await {
         Ok(_) => Ok(Redirect::to("/settings/sync")),
-        Err(e) => Ok(Redirect::to(&format!("/settings/sync?error={}", urlencoding::encode(&e.to_string())))),
+        Err(e) => {
+            tracing::warn!("[AUTH] Google callback failed: {e}");
+            Ok(Redirect::to(&format!(
+                "/settings/sync?error={}",
+                urlencoding::encode(&e.user_message())
+            )))
+        }
     }
 }
 
@@ -208,6 +214,7 @@ async fn disconnect(State(state): State<SyncState>) -> Result<Json<CallbackRespo
 
     *gdrive = None;
     let _ = state.clear_auth_state();
+    let _ = state.clear_auth_code_verifier();
     let _ = state.clear_auth_redirect_uri();
 
     let mut config = state.get_sync_config();

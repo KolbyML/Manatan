@@ -4,6 +4,7 @@ use axum::{
     Json,
 };
 use serde_json::json;
+use tracing::warn;
 
 #[derive(Debug, thiserror::Error)]
 pub enum SyncError {
@@ -41,6 +42,20 @@ pub enum SyncError {
     Other(#[from] anyhow::Error),
 }
 
+impl SyncError {
+    pub fn user_message(&self) -> String {
+        match self {
+            SyncError::OAuthError(_) => {
+                "Google Drive authentication failed. Please reconnect and try again.".to_string()
+            }
+            SyncError::DriveError(_) => {
+                "Google Drive request failed. Please try again later.".to_string()
+            }
+            _ => self.to_string(),
+        }
+    }
+}
+
 impl IntoResponse for SyncError {
     fn into_response(self) -> Response {
         let (status, error_type) = match &self {
@@ -48,15 +63,21 @@ impl IntoResponse for SyncError {
             SyncError::OAuthError(_) => (StatusCode::BAD_REQUEST, "oauth_error"),
             SyncError::DriveError(_) => (StatusCode::BAD_GATEWAY, "drive_error"),
             SyncError::Conflict(_) => (StatusCode::CONFLICT, "conflict"),
-            SyncError::UploadIncomplete { .. } => (StatusCode::PARTIAL_CONTENT, "upload_incomplete"),
+            SyncError::UploadIncomplete { .. } => {
+                (StatusCode::PARTIAL_CONTENT, "upload_incomplete")
+            }
             SyncError::FileNotFound(_) => (StatusCode::NOT_FOUND, "file_not_found"),
             SyncError::BadRequest(_) => (StatusCode::BAD_REQUEST, "bad_request"),
             _ => (StatusCode::INTERNAL_SERVER_ERROR, "internal_error"),
         };
 
+        if matches!(&self, SyncError::OAuthError(_) | SyncError::DriveError(_)) {
+            warn!("Sync request failed [{}]: {}", error_type, self);
+        }
+
         let body = Json(json!({
             "error": error_type,
-            "message": self.to_string(),
+            "message": self.user_message(),
         }));
 
         (status, body).into_response()

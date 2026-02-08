@@ -13,6 +13,7 @@ const DB_KEY_LAST_ETAG: &[u8] = b"last_sync_etag";
 const DB_KEY_SYNC_CONFIG: &[u8] = b"sync_config";
 const DB_KEY_AUTH_STATE: &[u8] = b"oauth_state";
 const DB_KEY_AUTH_REDIRECT_URI: &[u8] = b"oauth_redirect_uri";
+const DB_KEY_AUTH_CODE_VERIFIER: &[u8] = b"oauth_code_verifier";
 
 #[derive(Clone)]
 pub struct SyncState {
@@ -115,6 +116,27 @@ impl SyncState {
 
     pub fn clear_auth_state(&self) -> Result<(), sled::Error> {
         self.db.remove(DB_KEY_AUTH_STATE)?;
+        self.db.flush()?;
+        Ok(())
+    }
+
+    pub fn set_auth_code_verifier(&self, verifier: &str) -> Result<(), sled::Error> {
+        self.db
+            .insert(DB_KEY_AUTH_CODE_VERIFIER, verifier.as_bytes())?;
+        self.db.flush()?;
+        Ok(())
+    }
+
+    pub fn get_auth_code_verifier(&self) -> Option<String> {
+        self.db
+            .get(DB_KEY_AUTH_CODE_VERIFIER)
+            .ok()
+            .flatten()
+            .map(|v| String::from_utf8_lossy(&v).to_string())
+    }
+
+    pub fn clear_auth_code_verifier(&self) -> Result<(), sled::Error> {
+        self.db.remove(DB_KEY_AUTH_CODE_VERIFIER)?;
         self.db.flush()?;
         Ok(())
     }

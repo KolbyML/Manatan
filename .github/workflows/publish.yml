@@ -239,19 +239,17 @@ jobs:
           name: webui-assets
           path: bin/manatan/resources/webui
 
-      - name: Create OAuth Credentials
-        shell: bash
-        env:
-         GDRIVE_ID: ${{ secrets.GDRIVE_ID }}
-        run: |
-         mkdir -p bin/manatan/resources/secrets
-         echo "$GDRIVE_ID" > bin/manatan/resources/secrets/client_secrets.json
-
       - name: Build Binary
         shell: bash
         env:
           CARGO_TARGET_DIR: ${{ github.workspace }}/target
+          CARGO_PROFILE_RELEASE_STRIP: symbols
+          MANATAN_GOOGLE_OAUTH_BROKER_TOKEN: ${{ secrets.MANATAN_GOOGLE_OAUTH_BROKER_TOKEN }}
         run: |
+          if [ -z "$MANATAN_GOOGLE_OAUTH_BROKER_TOKEN" ]; then
+            echo "Missing MANATAN_GOOGLE_OAUTH_BROKER_TOKEN secret" >&2
+            exit 1
+          fi
           cd bin/manatan
           cargo build --release --target ${{ matrix.target }} --features embed-jre
 
@@ -397,14 +395,6 @@ jobs:
           make download_android_jre
           make android_icon
 
-      - name: Create OAuth Credentials
-        shell: bash
-        env:
-          GDRIVE_ID: ${{ secrets.GDRIVE_ID }}
-        run: |
-          mkdir -p bin/manatan_android/secrets
-          echo "$GDRIVE_ID" > bin/manatan_android/secrets/client_secrets.json
-
       - name: Configure Dummy Keystore
         working-directory: bin/manatan_android
         run: |
@@ -419,7 +409,14 @@ jobs:
 
       - name: Build APKs
         working-directory: bin/manatan_android
+        env:
+          CARGO_PROFILE_RELEASE_STRIP: symbols
+          MANATAN_GOOGLE_OAUTH_BROKER_TOKEN: ${{ secrets.MANATAN_GOOGLE_OAUTH_BROKER_TOKEN }}
         run: |
+          if [ -z "$MANATAN_GOOGLE_OAUTH_BROKER_TOKEN" ]; then
+            echo "Missing MANATAN_GOOGLE_OAUTH_BROKER_TOKEN secret" >&2
+            exit 1
+          fi
           NDK_ROOT=${ANDROID_NDK_HOME}
           if [ -z "$NDK_ROOT" ]; then NDK_ROOT=$(ls -d /usr/local/lib/android/sdk/ndk/* | sort -V | tail -n1); fi
           TOOLCHAIN_BIN="$NDK_ROOT/toolchains/llvm/prebuilt/linux-x86_64/bin"
