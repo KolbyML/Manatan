@@ -385,21 +385,6 @@ const splitTagString = (tag: string): string[] =>
 const normalizeTagList = (tags: string[]): string[] =>
     tags.flatMap((tag) => splitTagString(tag));
 
-const buildAnkiTags = (entry: DictionaryResult): string[] => {
-    const allTags = new Set(['manatan']);
-    entry.glossary?.forEach((def) => normalizeTagList(def.tags ?? []).forEach((tag) => allTags.add(tag)));
-    entry.termTags?.forEach((tag: any) => {
-        if (typeof tag === 'string') {
-            splitTagString(tag).forEach((item) => allTags.add(item));
-            return;
-        }
-        if (tag && typeof tag === 'object' && tag.name) {
-            splitTagString(tag.name).forEach((item) => allTags.add(item));
-        }
-    });
-    return Array.from(allTags);
-};
-
 const generateAnkiFurigana = (entry: DictionaryResult): string => {
     if (!entry.furigana || entry.furigana.length === 0) {
         return entry.headword;
@@ -2703,7 +2688,6 @@ export const AnimeVideoPlayer = ({
                 }
             });
 
-            const tags = buildAnkiTags(entry);
             const url = settings.ankiConnectUrl || 'http://127.0.0.1:8765';
             const imgField = Object.keys(map).find((key) => map[key] === 'Image');
             const audioField = Object.keys(map).find((key) => map[key] === 'Sentence Audio');
@@ -2749,7 +2733,7 @@ export const AnimeVideoPlayer = ({
                     settings.ankiDeck,
                     settings.ankiModel,
                     fields,
-                    tags,
+                    ['manatan'],
                     pictureData,
                     audioPayloads.length ? audioPayloads : undefined,
                 );

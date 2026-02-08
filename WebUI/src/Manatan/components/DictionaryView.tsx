@@ -308,15 +308,6 @@ const AnkiButtons: React.FC<{
                 `;
             }).join('');
         };
-        const allTags = new Set(['manatan']);
-        entry.glossary.forEach((def) => normalizeTagList(def.tags).forEach((t) => allTags.add(t)));
-        entry.termTags?.forEach((t: any) => {
-            if (typeof t === 'string') {
-                splitTagString(t).forEach((tag) => allTags.add(tag));
-            } else if (t && typeof t === 'object' && t.name) {
-                splitTagString(t.name).forEach((tag) => allTags.add(tag));
-            }
-        });
         const sentence = dictPopup.context?.sentence || '';
         const needsSentenceFurigana = Object.values(map).includes('Sentence Furigana');
         const sentenceFurigana = needsSentenceFurigana
@@ -373,7 +364,15 @@ const AnkiButtons: React.FC<{
                     }
                 }
             }
-            const res = await addNote(url, settings.ankiDeck!, settings.ankiModel!, fields, Array.from(allTags), pictureData, wordAudioData);
+            const res = await addNote(
+                url,
+                settings.ankiDeck!,
+                settings.ankiModel!,
+                fields,
+                ['manatan'],
+                pictureData,
+                wordAudioData,
+            );
             if (res) {
                 setStatus('exists');
                 setExistingNoteId(res);
