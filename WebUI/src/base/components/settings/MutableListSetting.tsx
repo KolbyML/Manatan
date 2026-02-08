@@ -66,6 +66,7 @@ type MutableListSettingProps = Pick<TextSettingProps, 'settingName' | 'placehold
     description?: string;
     dialogDisclaimer?: JSX.Element | string;
     addItemButtonTitle?: string;
+    resetToDefaultValues?: string[];
     handleChange: (values: string[], removedValues: string[]) => void;
     allowDuplicates?: boolean;
     validateItem?: (value: string, tmpValues?: string[]) => boolean;
@@ -82,6 +83,7 @@ export const MutableListSetting = ({
     valueInfos,
     handleChange,
     addItemButtonTitle,
+    resetToDefaultValues,
     placeholder,
     allowDuplicates = false,
     validateItem = () => true,
@@ -144,6 +146,13 @@ export const MutableListSetting = ({
         const removedValues = values.filter((value) => !updatedValues.includes(value));
 
         handleChange(updatedValues, removedValues);
+    };
+
+    const resetToDefault = () => {
+        const defaults = (resetToDefaultValues ?? [])
+            .map((value) => value.trim())
+            .filter((value) => value.length > 0);
+        setDialogValues(defaults);
     };
 
     return (
@@ -233,9 +242,14 @@ export const MutableListSetting = ({
                             width: '100%',
                         }}
                     >
-                        <Button onClick={() => setIsAddItemDialogOpen(true)}>
-                            {addItemButtonTitle ?? t('global.button.add')}
-                        </Button>
+                        <Stack direction="row" spacing={1}>
+                            {!!resetToDefaultValues?.length && (
+                                <Button onClick={resetToDefault}>{t('global.button.reset_to_default')}</Button>
+                            )}
+                            <Button onClick={() => setIsAddItemDialogOpen(true)}>
+                                {addItemButtonTitle ?? t('global.button.add')}
+                            </Button>
+                        </Stack>
                         <Stack direction="row">
                             <Button onClick={() => closeDialog()}>{t('global.button.cancel')}</Button>
                             <Button onClick={() => saveChanges()}>{t('global.button.ok')}</Button>

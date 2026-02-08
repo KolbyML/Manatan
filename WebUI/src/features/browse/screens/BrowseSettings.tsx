@@ -14,7 +14,6 @@ import Switch from '@mui/material/Switch';
 import { requestManager } from '@/lib/requests/RequestManager.ts';
 import { NumberSetting } from '@/base/components/settings/NumberSetting.tsx';
 import { MutableListSetting } from '@/base/components/settings/MutableListSetting.tsx';
-import { TextSetting } from '@/base/components/settings/text/TextSetting.tsx';
 import {
     createUpdateMetadataServerSettings,
     useMetadataServerSettings,
@@ -28,9 +27,26 @@ import { ServerSettings as GqlServerSettings } from '@/features/settings/Setting
 import { getErrorMessage } from '@/lib/HelperFunctions.ts';
 import { useAppTitle } from '@/features/navigation-bar/hooks/useAppTitle.ts';
 
-type ExtensionsSettings = GqlServerSettings & {
-    localAnimeSourcePath?: string;
-    animeExtensionRepos?: string[];
+type ExtensionsSettings = Omit<GqlServerSettings, 'localSourcePath'> & {
+    localSourcePath: string[];
+    localAnimeSourcePath: string[];
+    animeExtensionRepos: string[];
+};
+
+const coerceStringArray = (value: unknown): string[] => {
+    if (Array.isArray(value)) {
+        return value
+            .filter((item): item is string => typeof item === 'string')
+            .map((item) => item.trim())
+            .filter((item) => item.length > 0);
+    }
+
+    if (typeof value === 'string') {
+        const trimmed = value.trim();
+        return trimmed.length ? [trimmed] : [];
+    }
+
+    return [];
 };
 
 export const BrowseSettings = () => {
@@ -74,9 +90,13 @@ export const BrowseSettings = () => {
         );
     }
 
-    const serverSettings = data!.settings as ExtensionsSettings;
-    const animeExtensionRepos = serverSettings.animeExtensionRepos ?? [];
-    const localAnimeSourcePath = serverSettings.localAnimeSourcePath ?? '';
+    const serverSettings = data!.settings as unknown as ExtensionsSettings;
+    const defaults = (data as any)?.defaults;
+    const animeExtensionRepos = coerceStringArray((serverSettings as any).animeExtensionRepos);
+    const localSourcePaths = coerceStringArray((serverSettings as any).localSourcePath);
+    const localAnimeSourcePaths = coerceStringArray((serverSettings as any).localAnimeSourcePath);
+    const defaultLocalSourcePaths = coerceStringArray(defaults?.localSourcePath);
+    const defaultLocalAnimeSourcePaths = coerceStringArray(defaults?.localAnimeSourcePath);
 
     const isValidExtensionRepo = (repo: string) => {
         const trimmed = repo.trim();
@@ -172,23 +192,17 @@ export const BrowseSettings = () => {
             />
             <MutableListSetting
                 settingName={t('settings.server.local_source.path.label.title')}
-                dialogDescription={t('settings.server.local_source.path.label.description')}
-                value={serverSettings.localSourcePath}
-                settingDescription={
-                    serverSettings.localSourcePath.length ? serverSettings.localSourcePath : t('global.label.default')
-                }
-                handleChange={(path) => updateSetting('localSourcePath', path)}
+                description={t('settings.server.local_source.path.label.description')}
+                valueInfos={localSourcePaths.map((path) => [path])}
+                resetToDefaultValues={defaultLocalSourcePaths}
+                handleChange={(paths) => updateSetting('localSourcePath', paths)}
             />
-            <TextSetting
+            <MutableListSetting
                 settingName={t('settings.server.local_anime_source.path.label.title')}
-                dialogDescription={t('settings.server.local_anime_source.path.label.description')}
-                value={localAnimeSourcePath}
-                settingDescription={
-                    localAnimeSourcePath.length
-                        ? localAnimeSourcePath
-                        : t('global.label.default')
-                }
-                handleChange={(path) => updateSetting('localAnimeSourcePath', path)}
+                description={t('settings.server.local_anime_source.path.label.description')}
+                valueInfos={localAnimeSourcePaths.map((path) => [path])}
+                resetToDefaultValues={defaultLocalAnimeSourcePaths}
+                handleChange={(paths) => updateSetting('localAnimeSourcePath', paths)}
             />
         </List>
     );

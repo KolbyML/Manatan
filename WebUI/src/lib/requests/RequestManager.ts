@@ -4348,8 +4348,9 @@ export class RequestManager {
                 config: { signal },
             });
             const payload = await response.json();
-            const nextSettings = payload?.settings ?? settings;
-            this.setServerSettingsSnapshot({ settings: nextSettings } as GetServerSettingsQuery);
+            const nextSnapshot = (payload?.settings ? payload : { settings }) as GetServerSettingsQuery;
+            const nextSettings = (nextSnapshot as any)?.settings ?? settings;
+            this.setServerSettingsSnapshot(nextSnapshot);
             return {
                 setSettings: {
                     settings: nextSettings,

@@ -1506,7 +1506,7 @@
         "path": {
           "label": {
             "description": "The path to the directory on the server where local source files are saved in",
-            "title": "Local source location"
+            "title": "Local Manga source location"
           }
         }
       },
