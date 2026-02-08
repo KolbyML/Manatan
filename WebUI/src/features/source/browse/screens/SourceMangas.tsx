@@ -412,15 +412,15 @@ export function SourceMangas() {
         <>
             <AppbarSearch />
             <SourceGridLayout />
-            <CustomTooltip title={t('global.button.open_webview')} disabled={!source?.baseUrl}>
-                <IconButton
-                    disabled={!source?.baseUrl}
-                    href={source?.baseUrl ? requestManager.getWebviewUrl(source?.baseUrl) : ''}
-                    rel="noreferrer"
-                    target="_blank"
-                    color="inherit"
-                >
-                    <IconWebView />
+                <CustomTooltip title={t('global.button.open_webview')} disabled={!source?.baseUrl}>
+                    <IconButton
+                        disabled={!source?.baseUrl}
+                        href={source?.baseUrl ? requestManager.getWebviewUrl(source?.baseUrl) : undefined}
+                        rel="noreferrer"
+                        target="_blank"
+                        color="inherit"
+                    >
+                        <IconWebView />
                 </IconButton>
             </CustomTooltip>
             {source?.isConfigurable && (

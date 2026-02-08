@@ -125,7 +125,7 @@ export const AnimeSourceBrowse = () => {
             <CustomTooltip title={t('global.button.open_webview')} disabled={!source?.baseUrl}>
                 <IconButton
                     disabled={!source?.baseUrl}
-                    href={source?.baseUrl ? requestManager.getWebviewUrl(source.baseUrl) : ''}
+                    href={source?.baseUrl ? requestManager.getWebviewUrl(source.baseUrl) : undefined}
                     rel="noreferrer"
                     target="_blank"
                     color="inherit"

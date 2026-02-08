@@ -151,7 +151,8 @@ export function Options({ sourceFilter, group, updateFilterValue, update }: IFil
                             />
                         );
                     default:
-                        throw new Error(`Unknown source filter "${e}"`);
+                        console.warn('[SourceOptions] Unknown source filter', e);
+                        return null;
                 }
             })}
         </Stack>
