@@ -11,7 +11,7 @@ import CircularProgress from '@mui/material/CircularProgress';
 import IconButton from '@mui/material/IconButton';
 import Stack from '@mui/material/Stack';
 import Box from '@mui/material/Box';
-import React, { useEffect, useRef } from 'react';
+import React, { useCallback, useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useLocation, useParams } from 'react-router-dom';
 import { isNetworkRequestInFlight } from '@/lib/requests/RequestStatus.ts';
@@ -46,6 +46,18 @@ export const Manga: React.FC = () => {
 
     const [refresh, { loading: refreshing, error: refreshError }] = useRefreshManga(id);
 
+    // `refetch` is not referentially stable (it is recreated every render). If we use it directly in
+    // callbacks/effects dependencies, it can trigger infinite update loops through NavBar context.
+    const refetchRef = useRef(refetch);
+    useEffect(() => {
+        refetchRef.current = refetch;
+    }, [refetch]);
+
+    const refreshAndRefetch = useCallback(async () => {
+        await refresh();
+        await refetchRef.current();
+    }, [refresh]);
+
     const error = mangaError ?? refreshError;
 
     useEffect(() => {
@@ -54,9 +66,9 @@ export const Manga: React.FC = () => {
         const doFetch = !autofetchedRef.current && !manga.initialized;
         if (doFetch) {
             autofetchedRef.current = true;
-            refresh();
+            refreshAndRefetch().catch(() => {});
         }
-    }, [manga]);
+    }, [manga, refreshAndRefetch]);
 
     useAppTitleAndAction(
         manga?.title ?? t('manga.title_one'),
@@ -76,7 +88,7 @@ export const Manga: React.FC = () => {
                         </>
                     }
                 >
-                    <IconButton onClick={() => refetch()}>
+                    <IconButton onClick={() => refetchRef.current()}>
                         <Warning color="error" />
                     </IconButton>
                 </CustomTooltip>
@@ -86,9 +98,9 @@ export const Manga: React.FC = () => {
                     <CircularProgress size={16} />
                 </IconButton>
             )}
-            {manga && <MangaToolbarMenu manga={manga} onRefresh={refresh} refreshing={refreshing} />}
+            {manga && <MangaToolbarMenu manga={manga} onRefresh={refreshAndRefetch} refreshing={refreshing} />}
         </Stack>,
-        [t, error, isValidating, refreshing, manga, refresh],
+        [t, error, isValidating, refreshing, manga, refreshAndRefetch],
     );
 
     if (error && !manga) {
