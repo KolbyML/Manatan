@@ -249,6 +249,13 @@ export const SearchAll: React.FC = () => {
     } = useMetadataServerSettings();
 
     const { data, loading, error, refetch } = requestManager.useGetSourceList({ notifyOnNetworkStatusChange: true });
+    const refetchRef = useRef(refetch);
+    useEffect(() => {
+        refetchRef.current = refetch;
+    }, [refetch]);
+    const refreshSources = useCallback(() => {
+        refetchRef.current().catch(defaultPromiseErrorHandler('SearchAll::refetch'));
+    }, []);
     const sources = useMemo(() => data?.sources.nodes ?? [], [data?.sources.nodes]);
 
     const [sourceToLoadingStateMap, setSourceToLoadingStateMap] = useState<SourceToLoadingStateMap>(new Map());
@@ -300,9 +307,10 @@ export const SearchAll: React.FC = () => {
                 setSelectedLanguages={setShownLangs}
                 languages={sourceLanguages}
                 sources={sources ?? []}
+                onMetaUpdated={refreshSources}
             />
         </>,
-        [shownLangs, setShownLangs, sourceLanguages, sources],
+        [shownLangs, setShownLangs, sourceLanguages, sources, refreshSources],
     );
 
     if (loading) {
@@ -314,7 +322,7 @@ export const SearchAll: React.FC = () => {
             <EmptyViewAbsoluteCentered
                 message={t('global.error.label.failed_to_load_data')}
                 messageExtra={getErrorMessage(error)}
-                retry={() => refetch().catch(defaultPromiseErrorHandler('SearchAll::refetch'))}
+                retry={refreshSources}
             />
         );
     }

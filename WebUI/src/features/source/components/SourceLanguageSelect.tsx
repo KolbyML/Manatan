@@ -6,7 +6,7 @@
  * file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
 
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import Button from '@mui/material/Button';
 import DialogTitle from '@mui/material/DialogTitle';
 import DialogContent from '@mui/material/DialogContent';
@@ -44,6 +44,7 @@ export const SourceLanguageSelect = ({
     setSelectedLanguages,
     languages,
     sources,
+    onMetaUpdated,
 }: {
     selectedLanguages: string[];
     setSelectedLanguages: (languages: string[]) => void;
@@ -54,6 +55,7 @@ export const SourceLanguageSelect = ({
         SourceDisplayNameInfo &
         SourceIconInfo &
         SourceMetaInfo)[];
+    onMetaUpdated?: () => void;
 }) => {
     const { t } = useTranslation();
 
@@ -61,6 +63,13 @@ export const SourceLanguageSelect = ({
 
     const [tmpSelectedLanguages, setTmpSelectedLanguages] = useState(toUniqueLanguageCodes(selectedLanguages));
     const [open, setOpen] = useState<boolean>(false);
+
+    useEffect(() => {
+        if (!open) {
+            setTmpSourceIdToEnabledState({});
+            setTmpSelectedLanguages(toUniqueLanguageCodes(selectedLanguages));
+        }
+    }, [open, selectedLanguages]);
 
     const sourcesByLanguage = useMemo(() => Sources.groupByLanguage(sources), [sources]);
 
@@ -81,15 +90,29 @@ export const SourceLanguageSelect = ({
     };
 
     const handleOk = () => {
+        const nextSelectedLanguages = toUniqueLanguageCodes(tmpSelectedLanguages);
+        const sourceIdToEnabledState = tmpSourceIdToEnabledState;
+
         setOpen(false);
+        setTmpSourceIdToEnabledState({});
+        setSelectedLanguages(nextSelectedLanguages);
+
+        const hasSourceEnableChanges = !!Object.keys(sourceIdToEnabledState).length;
+        if (!hasSourceEnableChanges) {
+            return;
+        }
 
         Promise.all(
-            Object.entries(tmpSourceIdToEnabledState).map(([sourceId, enabled]) =>
-                updateSourceMetadata(sources.find((source) => source.id === sourceId)!, 'isEnabled', enabled),
-            ),
-        ).catch((e) => makeToast(t('global.error.label.failed_to_save_changes'), 'error', getErrorMessage(e)));
-        setTmpSourceIdToEnabledState({});
-        setSelectedLanguages(toUniqueLanguageCodes(tmpSelectedLanguages));
+            Object.entries(sourceIdToEnabledState).map(([sourceId, enabled]) => {
+                const source = sources.find((entry) => entry.id === sourceId);
+                if (!source) {
+                    return Promise.resolve();
+                }
+                return updateSourceMetadata(source, 'isEnabled', enabled);
+            }),
+        )
+            .then(() => onMetaUpdated?.())
+            .catch((e) => makeToast(t('global.error.label.failed_to_save_changes'), 'error', getErrorMessage(e)));
     };
 
     const handleChange = (language: string, selected: boolean) => {

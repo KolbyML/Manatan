@@ -11,7 +11,7 @@ import { useCallback } from 'react';
 import { AppRoutes } from '@/base/AppRoute.constants.ts';
 import { useAppPageHistoryContext } from '@/base/contexts/AppPageHistoryContext.tsx';
 
-const READER_REGEX = /\/manga\/[0-9]+\/chapter\/[0-9]+/g;
+const READER_REGEX = /\/manga\/[0-9]+\/chapter\/[0-9]+/;
 const PAGES_TO_IGNORE: readonly RegExp[] = [READER_REGEX];
 
 export const useBackButton = () => {
@@ -20,6 +20,8 @@ export const useBackButton = () => {
     const history = useAppPageHistoryContext();
 
     return useCallback(() => {
+        const currentPage = `${location.pathname}${location.search}`;
+
         const getDelta = (historyToCheck: string[] = history, delta: number = 0) => {
             const isHistoryEmpty = !historyToCheck.length;
             if (isHistoryEmpty) {
@@ -27,14 +29,14 @@ export const useBackButton = () => {
             }
 
             const isLastPageInHistoryCurrentPage =
-                historyToCheck.length === 1 && historyToCheck[0] === location.pathname;
+                historyToCheck.length === 1 && historyToCheck[0] === currentPage;
             if (isLastPageInHistoryCurrentPage) {
                 return 0;
             }
 
             const previousPage = historyToCheck.slice(-2)[0];
 
-            const isPreviousPageCurrentPage = previousPage === location.pathname;
+            const isPreviousPageCurrentPage = previousPage === currentPage;
             const ignorePreviousPage = PAGES_TO_IGNORE.some((page) => !!previousPage.match(page));
 
             const skipPreviousPage = isPreviousPageCurrentPage || ignorePreviousPage;
@@ -54,5 +56,5 @@ export const useBackButton = () => {
         }
 
         navigate(backDelta);
-    }, [history, location.pathname]);
+    }, [history, location.pathname, location.search, navigate]);
 };

@@ -6,7 +6,7 @@
  * file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
 
-import { useCallback, useMemo } from 'react';
+import { useCallback, useEffect, useMemo, useRef } from 'react';
 import IconButton from '@mui/material/IconButton';
 import TravelExploreIcon from '@mui/icons-material/TravelExplore';
 import { useNavigate } from 'react-router-dom';
@@ -45,10 +45,13 @@ export function Sources({ tabsMenuHeight }: { tabsMenuHeight: number }) {
         error,
         refetch,
     } = requestManager.useGetSourceList({ notifyOnNetworkStatusChange: true });
-    const refreshSources = useCallback(
-        () => refetch().catch(defaultPromiseErrorHandler('Sources::refetch')),
-        [refetch],
-    );
+    const refetchRef = useRef(refetch);
+    useEffect(() => {
+        refetchRef.current = refetch;
+    }, [refetch]);
+    const refreshSources = useCallback(() => {
+        refetchRef.current().catch(defaultPromiseErrorHandler('Sources::refetch'));
+    }, []);
     const sources = data?.sources.nodes;
     const filteredSources = useMemo(
         () =>
@@ -123,10 +126,11 @@ export function Sources({ tabsMenuHeight }: { tabsMenuHeight: number }) {
                     setSelectedLanguages={setShownLangs}
                     languages={sourceLanguages}
                     sources={sourcesForLanguageSelect}
+                    onMetaUpdated={refreshSources}
                 />
             </>
         ),
-        [t, navigate, shownLangs, sourceLanguages, sourcesForLanguageSelect],
+        [t, navigate, shownLangs, sourceLanguages, sourcesForLanguageSelect, refreshSources],
     );
 
     useAppAction(appAction, [appAction]);
@@ -145,6 +149,10 @@ export function Sources({ tabsMenuHeight }: { tabsMenuHeight: number }) {
 
     if (sources?.length === 0) {
         return <EmptyViewAbsoluteCentered message={t('source.error.label.no_sources_found')} />;
+    }
+
+    if (!filteredSources.length) {
+        return <EmptyViewAbsoluteCentered message={t('global.error.label.no_matching_results' as any)} />;
     }
 
     return (

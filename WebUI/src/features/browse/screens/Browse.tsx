@@ -6,7 +6,7 @@
  * file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
 
-import { useCallback, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import Tab from '@mui/material/Tab';
 import { useTranslation } from 'react-i18next';
 import { StringParam, useQueryParam } from 'use-query-params';
@@ -53,9 +53,11 @@ export function Browse() {
     const [tabSearchParam, setTabSearchParam] = useQueryParam(SearchParam.TAB, StringParam, {});
     const tabName = (tabSearchParam as BrowseTab) ?? BrowseTab.MANGA_SOURCES;
 
-    if (!tabSearchParam) {
-        setTabSearchParam(tabName, 'replaceIn');
-    }
+    useEffect(() => {
+        if (!tabSearchParam) {
+            setTabSearchParam(tabName, 'replaceIn');
+        }
+    }, [tabSearchParam, tabName, setTabSearchParam]);
 
     return (
         <TabsWrapper>
