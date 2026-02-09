@@ -1,10 +1,12 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useLayoutEffect, useRef } from 'react';
 import { createRoot } from 'react-dom/client';
 import { ChapterProcessButton } from './ChapterProcessButton';
+import { useLocation } from 'react-router-dom';
 import { useOCR } from '@/Manatan/context/OCRContext';
 import { AuthCredentials, ChapterStatus, buildChapterBaseUrl, checkChaptersStatus } from '@/Manatan/utils/api';
 
 export const ChapterListInjector: React.FC = () => {
+    const location = useLocation();
     const { serverSettings, settings } = useOCR();
     
     const credsRef = useRef<AuthCredentials | undefined>(undefined);
@@ -14,6 +16,17 @@ export const ChapterListInjector: React.FC = () => {
     const pendingRef = useRef<Set<string>>(new Set());
     const fetchTimerRef = useRef<number | null>(null);
     const inFlightRef = useRef(false);
+
+    // When navigating away (reader -> manga page, manga -> reader, etc), the cached OCR chapter
+    // statuses become stale. Clear them so the next chapter list render re-fetches.
+    useLayoutEffect(() => {
+        statusCacheRef.current.clear();
+        pendingRef.current.clear();
+        if (fetchTimerRef.current) {
+            clearTimeout(fetchTimerRef.current);
+            fetchTimerRef.current = null;
+        }
+    }, [location.pathname]);
 
     // Keep the ref updated whenever serverSettings changes
     useEffect(() => {
