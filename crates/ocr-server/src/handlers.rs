@@ -211,6 +211,27 @@ async fn chapter_status(state: &AppState, req: JobRequest) -> Json<serde_json::V
         }
     }
 
+    // If we have cached pages but don't yet know how many pages exist in the chapter,
+    // resolve the total page count via the REST chapter pages endpoint and persist it.
+    // This commonly happens when pages were OCR'd on-demand (per-page) rather than via
+    // a preprocess job that supplies the full page list.
+    if cached_count > 0 && total_expected == 0 {
+        match logic::resolve_total_pages_from_graphql(&req.base_url, req.user.clone(), req.pass.clone()).await {
+            Ok(page_count) if page_count > 0 => {
+                total_expected = page_count;
+                state.set_chapter_pages(&job_key, total_expected);
+            }
+            Ok(_) => {}
+            Err(err) => {
+                warn!(
+                    base_url = req.base_url,
+                    error = %err,
+                    "failed to resolve total pages for chapter"
+                );
+            }
+        }
+    }
+
     if total_expected > 0 && cached_count >= total_expected {
         return Json(serde_json::json!({
             "status": "processed",
