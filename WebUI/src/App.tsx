@@ -36,6 +36,7 @@ import { OCRManager } from '@/Manatan/OCRManager.tsx';
 
 // Manatan Sync Provider
 import { SyncProvider } from '@/features/sync/services/SyncContext';
+import { MembershipPerksPopup } from '@/features/membership/components/MembershipPerksPopup.tsx';
 
 const { Browse } = loadable(() => import('@/features/browse/screens/Browse.tsx'), lazyLoadFallback);
 const { DownloadQueue } = loadable(() => import('@/features/downloads/screens/DownloadQueue.tsx'), lazyLoadFallback);
@@ -376,6 +377,7 @@ export const App: React.FC = () => (
             <ReactRouterSetter />
 
             <CssBaseline enableColorScheme />
+            <MembershipPerksPopup />
             <OCRProvider>
                 <OCRManager />
                 <SyncProvider>

@@ -31,6 +31,7 @@ import { getErrorMessage } from '@/lib/HelperFunctions.ts';
 import { dateFormatter, epochToDate } from '@/base/utils/DateHelper.ts';
 import { useAppTitle } from '@/features/navigation-bar/hooks/useAppTitle.ts';
 import { makeToast } from '@/base/utils/Toast.ts';
+import { KOFI_URL, MEMBERSHIP_PERKS } from '@/features/membership/Membership.constants.ts';
 
 type Contributor = {
     key: string;
@@ -56,17 +57,6 @@ const WEBUI_SINCE_ISO = '2025-12-26T00:00:00Z';
 const MANATAN_REPO_API = 'https://api.github.com/repos/KolbyML/Manatan';
 const WEBUI_REPO_API = 'https://api.github.com/repos/KolbyML/Manatan-WebUI';
 const MAX_GITHUB_PAGES = 10;
-const MEMBERSHIP_PERKS = [
-    '🚀 1 month early access to builds',
-    '📝 Your name in the Manatan About page',
-    '🎖️ Discord role',
-    '📚 More than 1 MDict import (coming soon) - Yomitan dictionaries stay free',
-    '▶️ YouTube support with AI subtitles (coming soon)',
-    '🧠 AI subtitles (coming soon)',
-    '🗂️ AI Anki card enhancement (coming soon)',
-    '🔄 Anki/Manatan SRS cross-sync server (coming soon) - Google Drive sync stays free (without Anki sync)',
-];
-
 const MEMBERSHIP_TIERS: MembershipTier[] = [
     { key: 'diamond', label: '💎 Diamond', backers: [] },
     { key: 'ruby', label: '❤️ Ruby', backers: [] },
@@ -405,12 +395,12 @@ export function About() {
                                 </Typography>
                                 <List dense disablePadding>
                                     <ListItemLink
-                                        to="https://ko-fi.com/manatancom"
+                                        to={KOFI_URL}
                                         target="_blank"
                                         rel="noreferrer"
                                         sx={{ borderRadius: 1, px: 1, py: 0.75 }}
                                     >
-                                        <ListItemText primary="Ko-fi" secondary="https://ko-fi.com/manatancom" />
+                                        <ListItemText primary="Ko-fi" secondary={KOFI_URL} />
                                     </ListItemLink>
                                 </List>
                                 <Divider />

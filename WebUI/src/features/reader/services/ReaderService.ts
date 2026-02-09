@@ -344,11 +344,12 @@ export class ReaderService {
             const { manga } = getReaderStore();
 
             if (!manga) {
-                return () => {};
+                navigate(AppRoutes.library.path());
+                return;
             }
 
-            return navigate(AppRoutes.manga.path(manga.id));
-        }, []);
+            navigate(AppRoutes.manga.path(manga.id));
+        }, [navigate]);
 
         switch (exitMode) {
             case ReaderExitMode.PREVIOUS:

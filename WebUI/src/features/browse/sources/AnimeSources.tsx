@@ -6,7 +6,7 @@
  * file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
 
-import { useCallback, useMemo } from 'react';
+import { useCallback, useEffect, useMemo, useRef } from 'react';
 import Typography from '@mui/material/Typography';
 import { useTranslation } from 'react-i18next';
 import { requestManager } from '@/lib/requests/RequestManager.ts';
@@ -42,10 +42,13 @@ export function AnimeSources({ tabsMenuHeight }: { tabsMenuHeight: number }) {
         error,
         refetch,
     } = requestManager.useGetAnimeSourceList({ notifyOnNetworkStatusChange: true });
-    const refreshSources = useCallback(
-        () => refetch().catch(defaultPromiseErrorHandler('AnimeSources::refetch')),
-        [refetch],
-    );
+    const refetchRef = useRef(refetch);
+    useEffect(() => {
+        refetchRef.current = refetch;
+    }, [refetch]);
+    const refreshSources = useCallback(() => {
+        refetchRef.current().catch(defaultPromiseErrorHandler('AnimeSources::refetch'));
+    }, []);
     const sources = data?.animeSources?.nodes as AnimeSourceInfo[] | undefined;
     const filteredSources = useMemo(
         () =>
@@ -105,9 +108,10 @@ export function AnimeSources({ tabsMenuHeight }: { tabsMenuHeight: number }) {
                 }
                 languages={sourceLanguagesList}
                 sources={sourcesForLanguageSelect}
+                onMetaUpdated={refreshSources}
             />
         ),
-        [animeSourceLanguages, sourceLanguagesList, sourcesForLanguageSelect],
+        [animeSourceLanguages, sourceLanguagesList, sourcesForLanguageSelect, refreshSources],
     );
 
     useAppAction(appAction, [appAction]);
