@@ -42,6 +42,16 @@ import {
 } from '@/features/downloads/services/DownloadStatusStore.ts';
 
 export class Chapters {
+    private static isValidChapterNumber(chapterNumber: unknown): chapterNumber is number {
+        return typeof chapterNumber === 'number' && Number.isFinite(chapterNumber) && chapterNumber >= 0;
+    }
+
+    private static getDuplicateGroupKey(chapter: ChapterIdInfo & ChapterNumberInfo): string {
+        return Chapters.isValidChapterNumber((chapter as any).chapterNumber)
+            ? `chapterNumber:${(chapter as any).chapterNumber}`
+            : `chapterId:${chapter.id}`;
+    }
+
     static getIds(chapters: { id: number }[]): number[] {
         return chapters.map((chapter) => chapter.id);
     }
@@ -296,14 +306,21 @@ export class Chapters {
     /**
      * Returns the provided "uniqueChapters" plus their duplicates found in "allChapters"
      */
-    static addDuplicates<T extends ChapterScanlatorInfo & ChapterNumberInfo>(
+    static addDuplicates<T extends ChapterIdInfo & ChapterScanlatorInfo & ChapterNumberInfo>(
         uniqueChapters: T[],
         allChapters: T[],
     ): T[] {
-        const chapterNumberToChapters = Object.groupBy(allChapters, ({ chapterNumber }) => chapterNumber);
+        const keyToChapters = Object.groupBy(allChapters, (chapter) => Chapters.getDuplicateGroupKey(chapter));
 
         return uniqueChapters
-            .map((uniqueChapter) => chapterNumberToChapters[uniqueChapter.chapterNumber] ?? [uniqueChapter])
+            .map((uniqueChapter) => {
+                const key = Chapters.getDuplicateGroupKey(uniqueChapter);
+                const group = keyToChapters[key];
+
+                // If the chapter number is unknown (e.g. -1), do NOT treat all chapters as duplicates.
+                // In that case the key is based on the chapter id, which yields a group of size 1.
+                return group?.length ? group : [uniqueChapter];
+            })
             .flat();
     }
 
@@ -311,9 +328,9 @@ export class Chapters {
         currentChapter: T,
         chapters: T[],
     ): T[] {
-        const chapterNumberToChapters = Object.groupBy(chapters, ({ chapterNumber }) => chapterNumber);
+        const keyToChapters = Object.groupBy(chapters, (chapter) => Chapters.getDuplicateGroupKey(chapter));
 
-        const uniqueChapters = Object.values(chapterNumberToChapters).map(
+        const uniqueChapters = Object.values(keyToChapters).map(
             (groupedChapters) =>
                 // the result of groupBy can't result in undefined values
                 groupedChapters!.find((chapter) => chapter.id === currentChapter.id) ??
