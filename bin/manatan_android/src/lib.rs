@@ -120,11 +120,403 @@ fn get_external_files_dir(app: &AndroidApp) -> Option<PathBuf> {
     get_external_files_dir_from_context(&mut env, &context)
 }
 
+fn get_external_storage_root(app: &AndroidApp) -> Option<PathBuf> {
+    let vm_ptr = app.vm_as_ptr() as *mut jni::sys::JavaVM;
+    let vm = unsafe { JavaVM::from_raw(vm_ptr).ok()? };
+    let mut env = vm.attach_current_thread().ok()?;
+
+    let env_cls = env.find_class("android/os/Environment").ok()?;
+    let dir_obj = env
+        .call_static_method(
+            env_cls,
+            "getExternalStorageDirectory",
+            "()Ljava/io/File;",
+            &[],
+        )
+        .ok()?
+        .l()
+        .ok()?;
+    if dir_obj.is_null() {
+        return None;
+    }
+
+    let path_obj = env
+        .call_method(&dir_obj, "getAbsolutePath", "()Ljava/lang/String;", &[])
+        .ok()?
+        .l()
+        .ok()?;
+    let path_jstr: JString = path_obj.into();
+    let path_rust: String = env.get_string(&path_jstr).ok()?.into();
+    Some(PathBuf::from(path_rust))
+}
+
+fn get_external_storage_root_from_env(env: &mut jni::JNIEnv) -> Option<PathBuf> {
+    let env_cls = env.find_class("android/os/Environment").ok()?;
+    let dir_obj = env
+        .call_static_method(
+            env_cls,
+            "getExternalStorageDirectory",
+            "()Ljava/io/File;",
+            &[],
+        )
+        .ok()?
+        .l()
+        .ok()?;
+    if dir_obj.is_null() {
+        return None;
+    }
+
+    let path_obj = env
+        .call_method(&dir_obj, "getAbsolutePath", "()Ljava/lang/String;", &[])
+        .ok()?
+        .l()
+        .ok()?;
+    let path_jstr: JString = path_obj.into();
+    let path_rust: String = env.get_string(&path_jstr).ok()?.into();
+    Some(PathBuf::from(path_rust))
+}
+
+fn ensure_nomedia(dir: &Path) {
+    let nomedia = dir.join(".nomedia");
+    if nomedia.exists() {
+        return;
+    }
+    if let Err(err) = File::create(&nomedia) {
+        warn!("Failed to create .nomedia at {}: {err}", nomedia.display());
+    }
+}
+
+fn copy_dir_recursive_merge(src: &Path, dst: &Path) -> io::Result<()> {
+    if !dst.exists() {
+        fs::create_dir_all(dst)?;
+    }
+
+    for entry in fs::read_dir(src)? {
+        let entry = entry?;
+        let file_type = entry.file_type()?;
+        let src_path = entry.path();
+        let dst_path = dst.join(entry.file_name());
+
+        if file_type.is_dir() {
+            copy_dir_recursive_merge(&src_path, &dst_path)?;
+        } else if !dst_path.exists() {
+            // Merge behavior: never overwrite existing files.
+            let _ = fs::copy(&src_path, &dst_path);
+        }
+    }
+
+    Ok(())
+}
+
+fn migrate_legacy_shared_root(legacy_root: &Path, new_root: &Path) {
+    if !legacy_root.exists() {
+        return;
+    }
+
+    if !new_root.exists() {
+        if let Some(parent) = new_root.parent() {
+            if let Err(err) = fs::create_dir_all(parent) {
+                warn!(
+                    "Failed to create shared storage parent {}: {err}",
+                    parent.display()
+                );
+                return;
+            }
+        }
+
+        match fs::rename(legacy_root, new_root) {
+            Ok(()) => {
+                info!(
+                    "Migrated shared storage root from {} to {}",
+                    legacy_root.display(),
+                    new_root.display()
+                );
+                return;
+            }
+            Err(err) => {
+                warn!(
+                    "Failed to rename shared storage root ({} -> {}): {err}. Falling back to copy.",
+                    legacy_root.display(),
+                    new_root.display()
+                );
+                if let Err(copy_err) = copy_dir_recursive(legacy_root, new_root) {
+                    warn!(
+                        "Failed to copy shared storage root ({} -> {}): {copy_err}",
+                        legacy_root.display(),
+                        new_root.display()
+                    );
+                } else {
+                    info!(
+                        "Copied shared storage root from {} to {} (legacy preserved)",
+                        legacy_root.display(),
+                        new_root.display()
+                    );
+                }
+                return;
+            }
+        }
+    }
+
+    // Both exist: try to merge legacy content without overwriting.
+    if let Err(err) = copy_dir_recursive_merge(legacy_root, new_root) {
+        warn!(
+            "Failed to merge legacy shared storage root ({} -> {}): {err}",
+            legacy_root.display(),
+            new_root.display()
+        );
+    } else {
+        info!(
+            "Merged legacy shared storage root into {} (legacy preserved)",
+            new_root.display()
+        );
+    }
+}
+
+fn resolve_manatan_shared_root_with_migration(app: &AndroidApp) -> Option<PathBuf> {
+    let storage_root = get_external_storage_root(app)?;
+    let legacy_root = storage_root.join("Mangatan");
+    let new_root = storage_root.join("Manatan");
+
+    migrate_legacy_shared_root(&legacy_root, &new_root);
+
+    if let Err(err) = fs::create_dir_all(&new_root) {
+        warn!(
+            "Failed to create shared Manatan root {}: {err}",
+            new_root.display()
+        );
+        // Still return the intended path so callers default to external storage.
+    }
+
+    Some(new_root)
+}
+
+fn migrate_internal_dir_to_external(internal: &Path, external: &Path) {
+    if !internal.exists() {
+        return;
+    }
+
+    if let Some(parent) = external.parent() {
+        if let Err(err) = fs::create_dir_all(parent) {
+            warn!(
+                "Failed to create external dir parent {}: {err}",
+                parent.display()
+            );
+            return;
+        }
+    }
+
+    if external.exists() {
+        // Target exists already; merge without overwriting.
+        if let Err(err) = copy_dir_recursive_merge(internal, external) {
+            warn!(
+                "Failed to merge directory ({} -> {}): {err}",
+                internal.display(),
+                external.display()
+            );
+        }
+        return;
+    }
+
+    match fs::rename(internal, external) {
+        Ok(()) => {
+            info!(
+                "Migrated directory from {} to {}",
+                internal.display(),
+                external.display()
+            );
+        }
+        Err(err) => {
+            warn!(
+                "Failed to move directory ({} -> {}): {err}. Falling back to copy.",
+                internal.display(),
+                external.display()
+            );
+            match copy_dir_recursive(internal, external) {
+                Ok(()) => info!(
+                    "Copied directory from {} to {} (internal preserved)",
+                    internal.display(),
+                    external.display()
+                ),
+                Err(copy_err) => warn!(
+                    "Failed to copy directory ({} -> {}): {copy_err}",
+                    internal.display(),
+                    external.display()
+                ),
+            }
+        }
+    }
+}
+
+fn prepare_shared_local_media_dirs(
+    app: &AndroidApp,
+    legacy_bases: &[PathBuf],
+    fallback_base: &Path,
+) -> (PathBuf, PathBuf) {
+    // Prefer shared external storage so users can manage files directly.
+    let shared_root = resolve_manatan_shared_root_with_migration(app);
+
+    let (local_manga_dir, local_anime_dir) = if let Some(shared_root) = shared_root {
+        (shared_root.join("local-manga"), shared_root.join("local-anime"))
+    } else {
+        // Fallback: app data storage.
+        (fallback_base.join("local-manga"), fallback_base.join("local-anime"))
+    };
+
+    // Migrate any existing legacy directories (internal/app-external) to the shared defaults.
+    for base in legacy_bases {
+        migrate_internal_dir_to_external(&base.join("local-manga"), &local_manga_dir);
+        migrate_internal_dir_to_external(&base.join("local-anime"), &local_anime_dir);
+    }
+
+    // Ensure directories exist.
+    if let Err(err) = fs::create_dir_all(&local_manga_dir) {
+        warn!(
+            "Failed to create local-manga directory {}: {err}",
+            local_manga_dir.display()
+        );
+    }
+    if let Err(err) = fs::create_dir_all(&local_anime_dir) {
+        warn!(
+            "Failed to create local-anime directory {}: {err}",
+            local_anime_dir.display()
+        );
+    }
+
+    ensure_nomedia(&local_manga_dir);
+    ensure_nomedia(&local_anime_dir);
+
+    (local_manga_dir, local_anime_dir)
+}
+
+fn should_skip_app_data_entry(name: &str) -> bool {
+    matches!(
+        name,
+        // These are migrated/configured elsewhere.
+        "local-manga" | "local-anime" | "local-sources" |
+        // This is migrated separately so it lives in shared root.
+        TACHI_DATA_DIR_NAME
+    )
+}
+
+fn migrate_app_data_base_to_shared(src_base: &Path, dst_base: &Path) {
+    if src_base == dst_base {
+        return;
+    }
+
+    if !src_base.exists() {
+        return;
+    }
+
+    if let Err(err) = fs::create_dir_all(dst_base) {
+        warn!(
+            "Failed to create shared app data dir {}: {err}",
+            dst_base.display()
+        );
+        return;
+    }
+
+    let entries = match fs::read_dir(src_base) {
+        Ok(e) => e,
+        Err(err) => {
+            warn!(
+                "Failed to read app data dir {}: {err}",
+                src_base.display()
+            );
+            return;
+        }
+    };
+
+    for entry in entries {
+        let entry = match entry {
+            Ok(e) => e,
+            Err(_) => continue,
+        };
+
+        let name = entry.file_name();
+        let name_str = name.to_string_lossy();
+        if should_skip_app_data_entry(&name_str) {
+            continue;
+        }
+
+        let file_type = match entry.file_type() {
+            Ok(t) => t,
+            Err(_) => continue,
+        };
+
+        let src = entry.path();
+        let dst = dst_base.join(&name);
+
+        if dst.exists() {
+            if file_type.is_dir() {
+                let _ = copy_dir_recursive_merge(&src, &dst);
+            }
+            continue;
+        }
+
+        match fs::rename(&src, &dst) {
+            Ok(()) => {
+                // Moved.
+            }
+            Err(_) => {
+                if file_type.is_dir() {
+                    if copy_dir_recursive(&src, &dst).is_ok() {
+                        let _ = fs::remove_dir_all(&src);
+                    }
+                } else {
+                    if fs::copy(&src, &dst).is_ok() {
+                        let _ = fs::remove_file(&src);
+                    }
+                }
+            }
+        }
+    }
+}
+
+fn resolve_shared_app_data_dir_with_migration(app: &AndroidApp, internal_files_dir: &Path) -> PathBuf {
+    // Desired location: shared storage root.
+    let shared_root = resolve_manatan_shared_root_with_migration(app);
+    let shared_app_data = shared_root.map(|root| root.join("app-data"));
+
+    // Legacy location used by some versions: app-specific external.
+    let external_app_data = get_external_files_dir(app);
+
+    // Best effort: prefer shared root, but fall back so the app can still run.
+    if let Some(shared_app_data) = shared_app_data {
+        if fs::create_dir_all(&shared_app_data).is_ok() {
+            migrate_app_data_base_to_shared(internal_files_dir, &shared_app_data);
+            if let Some(external_app_data) = external_app_data.as_ref() {
+                migrate_app_data_base_to_shared(external_app_data, &shared_app_data);
+            }
+            return shared_app_data;
+        }
+        warn!(
+            "Shared root app-data unavailable at {}; falling back",
+            shared_app_data.display()
+        );
+    }
+
+    if let Some(external_app_data) = external_app_data {
+        // Keep older behavior as a fallback.
+        migrate_app_data_base_to_shared(internal_files_dir, &external_app_data);
+        return external_app_data;
+    }
+
+    internal_files_dir.to_path_buf()
+}
+
 fn resolve_tachidesk_data_dir_from_paths(
     internal_base: &Path,
     external_base: Option<PathBuf>,
+    shared_base: Option<PathBuf>,
 ) -> PathBuf {
     let internal_current = internal_base.join(TACHI_DATA_DIR_NAME);
+
+    if let Some(shared_base) = shared_base {
+        let shared_dir = shared_base.join(TACHI_DATA_DIR_NAME);
+        if shared_dir.exists() {
+            return shared_dir;
+        }
+    }
 
     if let Some(external_base) = external_base {
         let external_dir = external_base.join(TACHI_DATA_DIR_NAME);
@@ -144,86 +536,55 @@ fn resolve_tachidesk_data_dir_from_paths(
     }
 }
 
-fn resolve_tachidesk_data_dir_with_migration(app: &AndroidApp, internal_base: &Path) -> PathBuf {
-    let internal_current = internal_base.join(TACHI_DATA_DIR_NAME);
-    let external_base = get_external_files_dir(app);
+fn resolve_tachidesk_data_dir_with_migration(app: &AndroidApp, fallback_base: &Path) -> PathBuf {
+    let internal_base = app
+        .internal_data_path()
+        .unwrap_or_else(|| fallback_base.to_path_buf());
+    let internal_dir = internal_base.join(TACHI_DATA_DIR_NAME);
 
-    let Some(external_base) = external_base else {
-        return if internal_current.exists() {
-            internal_current
-        } else {
-            internal_current
-        };
-    };
+    let external_app_dir = get_external_files_dir(app);
+    let external_dir = external_app_dir
+        .as_ref()
+        .map(|b| b.join(TACHI_DATA_DIR_NAME));
 
-    let external_dir = external_base.join(TACHI_DATA_DIR_NAME);
-    if external_dir.exists() {
+    let shared_root = resolve_manatan_shared_root_with_migration(app);
+    let shared_dir = shared_root
+        .as_ref()
+        .map(|b| b.join(TACHI_DATA_DIR_NAME));
+
+    // Preferred: shared storage root.
+    if let Some(shared_dir) = shared_dir {
+        if shared_dir.exists() {
+            return shared_dir;
+        }
+
+        // Migrate from older locations, preferring app-external.
+        if let Some(external_dir) = external_dir.as_ref() {
+            migrate_internal_dir_to_external(external_dir, &shared_dir);
+        }
+        migrate_internal_dir_to_external(&internal_dir, &shared_dir);
+
+        if let Err(err) = fs::create_dir_all(&shared_dir) {
+            warn!(
+                "Failed to create shared tachidesk data dir {}: {err}",
+                shared_dir.display()
+            );
+        }
+        return shared_dir;
+    }
+
+    // Fallback: app-specific external, then internal.
+    if let Some(external_dir) = external_dir {
+        if external_dir.exists() {
+            return external_dir;
+        }
+        migrate_internal_dir_to_external(&internal_dir, &external_dir);
+        let _ = fs::create_dir_all(&external_dir);
         return external_dir;
     }
 
-    let source_dir = if internal_current.exists() {
-        Some(internal_current.clone())
-    } else {
-        None
-    };
-
-    if let Some(source_dir) = source_dir {
-        if let Some(parent) = external_dir.parent() {
-            if let Err(err) = fs::create_dir_all(parent) {
-                warn!(
-                    "Failed to create external data dir parent {}: {err}",
-                    parent.display()
-                );
-                return source_dir;
-            }
-        }
-
-        match fs::rename(&source_dir, &external_dir) {
-            Ok(()) => {
-                info!(
-                    "Migrated tachidesk data dir from {} to {}",
-                    source_dir.display(),
-                    external_dir.display()
-                );
-                return external_dir;
-            }
-            Err(err) => {
-                warn!(
-                    "Failed to move tachidesk data dir ({} -> {}): {err}. Falling back to copy.",
-                    source_dir.display(),
-                    external_dir.display()
-                );
-                match copy_dir_recursive(&source_dir, &external_dir) {
-                    Ok(()) => {
-                        info!(
-                            "Copied tachidesk data dir from {} to {}",
-                            source_dir.display(),
-                            external_dir.display()
-                        );
-                        return external_dir;
-                    }
-                    Err(copy_err) => {
-                        warn!(
-                            "Failed to copy tachidesk data dir ({} -> {}): {copy_err}",
-                            source_dir.display(),
-                            external_dir.display()
-                        );
-                        return source_dir;
-                    }
-                }
-            }
-        }
-    }
-
-    if let Err(err) = fs::create_dir_all(&external_dir) {
-        warn!(
-            "Failed to create external tachidesk data dir {}: {err}",
-            external_dir.display()
-        );
-        return internal_current;
-    }
-
-    external_dir
+    let _ = fs::create_dir_all(&internal_dir);
+    internal_dir
 }
 
 fn copy_dir_recursive(src: &Path, dst: &Path) -> io::Result<()> {
@@ -556,8 +917,19 @@ fn android_main(app: AndroidApp) {
     // Service ensures the process isn't killed immediately
     start_foreground_service(&app);
 
+    let internal_files_dir = app.internal_data_path().expect("Failed to get data path");
+    let files_dir = resolve_shared_app_data_dir_with_migration(&app, &internal_files_dir);
+
+    let external_app_dir = get_external_files_dir(&app).unwrap_or_else(|| internal_files_dir.clone());
+    let legacy_bases = vec![
+        internal_files_dir.clone(),
+        external_app_dir,
+        files_dir.clone(),
+    ];
+    let (default_local_manga_dir, default_local_anime_dir) =
+        prepare_shared_local_media_dirs(&app, &legacy_bases, &files_dir);
+
     let app_bg = app.clone();
-    let files_dir = app.internal_data_path().expect("Failed to get data path");
     let files_dir_clone = files_dir.clone();
 
     let app_clone_2 = app.clone();
@@ -571,6 +943,8 @@ fn android_main(app: AndroidApp) {
         start_background_services(app_bg, files_dir);
     });
 
+    let default_local_manga_dir_clone = default_local_manga_dir.clone();
+    let default_local_anime_dir_clone = default_local_anime_dir.clone();
     thread::spawn(move || {
         info!("Starting Web Server Runtime...");
         let rt = tokio::runtime::Runtime::new().expect("Failed to build Tokio runtime");
@@ -603,8 +977,16 @@ fn android_main(app: AndroidApp) {
             }
         });
 
+        let internal_runtime_dir = internal_files_dir.clone();
         rt.block_on(async move {
-            if let Err(e) = start_web_server(files_dir_clone).await {
+            if let Err(e) = start_web_server(
+                files_dir_clone,
+                internal_runtime_dir,
+                default_local_manga_dir_clone,
+                default_local_anime_dir_clone,
+            )
+            .await
+            {
                 error!("Web Server Crashed: {:?}", e);
             }
         });
@@ -708,9 +1090,40 @@ fn launch_webview_activity(app: &AndroidApp) {
         .expect("Failed to start Webview Activity");
 }
 
-async fn start_web_server(data_dir: PathBuf) -> Result<(), Box<dyn std::error::Error>> {
+async fn start_web_server(
+    data_dir: PathBuf,
+    internal_runtime_dir: PathBuf,
+    default_local_manga_dir: PathBuf,
+    default_local_anime_dir: PathBuf,
+) -> Result<(), Box<dyn std::error::Error>> {
     info!("🚀 Initializing Manatan Server on port 4568...");
-    let webui_dir = data_dir.join("webui");
+
+    // Pick a WebUI directory that actually contains an index.html.
+    // We also support an extra nested folder level (some tar layouts unpack into a subdir).
+    let candidates = [
+        data_dir.join("webui"),
+        data_dir.join("webui").join("webui"),
+        internal_runtime_dir.join("webui"),
+        internal_runtime_dir.join("webui").join("webui"),
+    ];
+
+    // Wait briefly for background extraction to finish.
+    let mut selected = None;
+    for _ in 0..50 {
+        for dir in candidates.iter() {
+            if dir.join("index.html").exists() {
+                selected = Some(dir.clone());
+                break;
+            }
+        }
+        if selected.is_some() {
+            break;
+        }
+        tokio::time::sleep(Duration::from_millis(200)).await;
+    }
+
+    let webui_dir = selected.unwrap_or_else(|| candidates[0].clone());
+    info!("WebUI directory set to {}", webui_dir.display());
     let _ = WEBUI_DIR.set(webui_dir);
 
     let manatan_db_path = std::env::var("MANATAN_DB_PATH")
@@ -729,10 +1142,12 @@ async fn start_web_server(data_dir: PathBuf) -> Result<(), Box<dyn std::error::E
     let aidoku_enabled = env_bool("MANATAN_AIDOKU_ENABLED", true);
     let aidoku_cache_path = std::env::var("MANATAN_AIDOKU_CACHE")
         .unwrap_or_else(|_| data_dir.join("aidoku").to_string_lossy().to_string());
-    let local_manga_path = std::env::var("MANATAN_LOCAL_MANGA_PATH")
-        .unwrap_or_else(|_| data_dir.join("local-manga").to_string_lossy().to_string());
-    let local_anime_path = std::env::var("MANATAN_LOCAL_ANIME_PATH")
-        .unwrap_or_else(|_| data_dir.join("local-anime").to_string_lossy().to_string());
+    let local_manga_path = std::env::var("MANATAN_LOCAL_MANGA_PATH").unwrap_or_else(|_| {
+        default_local_manga_dir.to_string_lossy().to_string()
+    });
+    let local_anime_path = std::env::var("MANATAN_LOCAL_ANIME_PATH").unwrap_or_else(|_| {
+        default_local_anime_dir.to_string_lossy().to_string()
+    });
     let manatan_config = ManatanServerConfig {
         host: "0.0.0.0".to_string(),
         port: 4568,
@@ -844,24 +1259,36 @@ async fn serve_react_app(uri: Uri) -> impl IntoResponse {
             .into_response();
     }
 
+    let webui_dir_display = webui_dir.display().to_string();
     (
         StatusCode::NOT_FOUND,
-        "404 - WebUI assets not found in internal storage",
+        format!(
+            "404 - WebUI assets not found. Expected index.html under: {}",
+            webui_dir_display
+        ),
     )
         .into_response()
 }
 
 fn start_background_services(app: AndroidApp, files_dir: PathBuf) {
+    // Certain runtime artifacts (notably native libs) must stay in internal storage.
+    let internal_runtime_dir = app
+        .internal_data_path()
+        .unwrap_or_else(|| files_dir.clone());
+
     let apk_time = get_apk_update_time(&app).unwrap_or(i64::MAX);
-    let marker = files_dir.join(".extracted_apk_time");
+    let marker = internal_runtime_dir.join(".extracted_apk_time");
 
     let last_time: i64 = fs::read_to_string(&marker)
         .ok()
         .and_then(|s| s.parse().ok())
         .unwrap_or(0);
 
-    let jre_root = files_dir.join("jre");
-    let webui = files_dir.join("webui");
+    let jre_root = internal_runtime_dir.join("jre");
+
+    // Prefer shared-root app-data for the WebUI, but fall back to internal if extraction fails.
+    let webui_primary = files_dir.join("webui");
+    let webui_fallback = internal_runtime_dir.join("webui");
 
     if apk_time > last_time {
         info!("Extracting assets (APK updated)...");
@@ -869,29 +1296,80 @@ fn start_background_services(app: AndroidApp, files_dir: PathBuf) {
         if jre_root.exists() {
             fs::remove_dir_all(&jre_root).ok();
         }
-        if webui.exists() {
-            fs::remove_dir_all(&webui).ok();
+        if webui_primary.exists() {
+            fs::remove_dir_all(&webui_primary).ok();
+        }
+        if webui_fallback.exists() {
+            fs::remove_dir_all(&webui_fallback).ok();
         }
 
-        if let Err(e) = install_jre(&app, &files_dir) {
+        // Extract WebUI first so the Rust server can serve it even if the JRE fails.
+        let mut webui_extracted = false;
+        if fs::create_dir_all(&webui_primary).is_ok() {
+            if install_webui(&app, &webui_primary).is_ok() {
+                webui_extracted = true;
+            }
+        }
+        if !webui_extracted {
+            warn!(
+                "WebUI extraction to {} failed; falling back to internal {}",
+                webui_primary.display(),
+                webui_fallback.display()
+            );
+            fs::create_dir_all(&webui_fallback).ok();
+            if let Err(e) = install_webui(&app, &webui_fallback) {
+                error!("WebUI extraction failed (fallback): {:?}", e);
+            } else {
+                webui_extracted = true;
+            }
+        }
+
+        if let Err(e) = install_jre(&app, &internal_runtime_dir) {
             error!("JRE extraction failed: {:?}", e);
-            return;
-        }
-
-        fs::create_dir_all(&webui).ok();
-        if let Err(e) = install_webui(&app, &webui) {
-            error!("WebUI extraction failed: {:?}", e);
-            return;
+            // Continue; WebUI may still be usable.
         }
 
         fs::write(&marker, apk_time.to_string()).ok();
         info!("Extraction complete");
     } else {
         info!("Assets up-to-date, skipping extraction");
+
+        let has_webui = webui_primary.join("index.html").exists()
+            || webui_primary.join("webui").join("index.html").exists()
+            || webui_fallback.join("index.html").exists()
+            || webui_fallback.join("webui").join("index.html").exists();
+
+        if !has_webui {
+            info!("WebUI assets missing; re-extracting...");
+            if webui_primary.exists() {
+                fs::remove_dir_all(&webui_primary).ok();
+            }
+            if webui_fallback.exists() {
+                fs::remove_dir_all(&webui_fallback).ok();
+            }
+
+            let mut webui_extracted = false;
+            if fs::create_dir_all(&webui_primary).is_ok() {
+                if install_webui(&app, &webui_primary).is_ok() {
+                    webui_extracted = true;
+                }
+            }
+            if !webui_extracted {
+                warn!(
+                    "WebUI extraction to {} failed; falling back to internal {}",
+                    webui_primary.display(),
+                    webui_fallback.display()
+                );
+                fs::create_dir_all(&webui_fallback).ok();
+                if let Err(e) = install_webui(&app, &webui_fallback) {
+                    error!("WebUI extraction failed (fallback): {:?}", e);
+                }
+            }
+        }
     }
 
     // Create 'bin' directory to satisfy Suwayomi's directory scanner
-    let bin_dir = files_dir.join("bin");
+    let bin_dir = internal_runtime_dir.join("bin");
     if bin_dir.exists() {
         fs::remove_dir_all(&bin_dir).ok();
     }
@@ -899,7 +1377,7 @@ fn start_background_services(app: AndroidApp, files_dir: PathBuf) {
     let jar_path = bin_dir.join("Suwayomi-Server.jar");
 
     let tachidesk_data = resolve_tachidesk_data_dir_with_migration(&app, &files_dir);
-    let tmp_dir = files_dir.join("tmp");
+    let tmp_dir = internal_runtime_dir.join("tmp");
 
     if !tachidesk_data.exists() {
         let _ = fs::create_dir_all(&tachidesk_data);
@@ -1021,93 +1499,56 @@ fn start_background_services(app: AndroidApp, files_dir: PathBuf) {
                 server_conf_exists
             );
 
-            let android_vm = JavaVM::from_raw(app.vm_as_ptr() as *mut jni::sys::JavaVM).unwrap();
-            match android_vm.attach_current_thread() {
-                Ok(mut android_env) => {
-                    let env_cls = android_env.find_class("android/os/Environment").unwrap();
-                    let dir_obj = android_env
-                        .call_static_method(
-                            env_cls,
-                            "getExternalStorageDirectory",
-                            "()Ljava/io/File;",
-                            &[],
-                        )
-                        .unwrap()
-                        .l()
-                        .unwrap();
-                    let path_obj = android_env
-                        .call_method(&dir_obj, "getAbsolutePath", "()Ljava/lang/String;", &[])
-                        .unwrap()
-                        .l()
-                        .unwrap();
-                    let path_jstr: JString = path_obj.into();
-                    let path_rust: String = android_env.get_string(&path_jstr).unwrap().into();
+            if let Some(shared_root) = resolve_manatan_shared_root_with_migration(&app) {
+                let local_sources_dir = shared_root.join("local-sources");
+                let local_anime_dir = shared_root.join("local-anime");
+                let local_manga_dir = shared_root.join("local-manga");
 
-                    let legacy_path = format!("{}/Mangatan/local-sources", path_rust);
-                    let new_path = format!("{}/Manatan/local-sources", path_rust);
-                    let target_path = if Path::new(&legacy_path).exists() {
-                        legacy_path
-                    } else {
-                        new_path
-                    };
-                    let base_dir = Path::new(&target_path)
-                        .parent()
-                        .map(|p| p.to_string_lossy().to_string())
-                        .unwrap_or_else(|| path_rust.clone());
-                    let local_anime_path = format!("{base_dir}/local-anime");
-                    info!("Ensuring local source directory exists: {}", target_path);
-                    let _ = std::fs::create_dir_all(&target_path);
-                    info!(
-                        "Ensuring local anime directory exists: {}",
-                        local_anime_path
-                    );
-                    let _ = std::fs::create_dir_all(&local_anime_path);
+                info!(
+                    "Ensuring local source directory exists: {}",
+                    local_sources_dir.display()
+                );
+                let _ = std::fs::create_dir_all(&local_sources_dir);
+                info!(
+                    "Ensuring local anime directory exists: {}",
+                    local_anime_dir.display()
+                );
+                let _ = std::fs::create_dir_all(&local_anime_dir);
+                info!(
+                    "Ensuring local manga directory exists: {}",
+                    local_manga_dir.display()
+                );
+                let _ = std::fs::create_dir_all(&local_manga_dir);
 
-                    let nomedia_path = format!("{target_path}/.nomedia");
-                    if !std::path::Path::new(&nomedia_path).exists() {
-                        if let Err(err) = std::fs::File::create(&nomedia_path) {
-                            error!("Failed to create .nomedia in local-sources: {err:?}");
-                        } else {
-                            info!("✅ Created .nomedia in local-sources");
-                        }
-                    }
+                ensure_nomedia(&local_sources_dir);
+                ensure_nomedia(&local_anime_dir);
+                ensure_nomedia(&local_manga_dir);
 
-                    let anime_nomedia_path = format!("{local_anime_path}/.nomedia");
-                    if !std::path::Path::new(&anime_nomedia_path).exists() {
-                        if let Err(err) = std::fs::File::create(&anime_nomedia_path) {
-                            error!("Failed to create .nomedia in local-anime: {err:?}");
-                        } else {
-                            info!("✅ Created .nomedia in local-anime");
-                        }
-                    }
+                if !server_conf_exists {
+                    info!("Fresh install detected: Setting localSourcePath flag.");
+                    options_vec.push(format!(
+                        "-Dsuwayomi.tachidesk.config.server.localSourcePath={}",
+                        local_sources_dir.display()
+                    ));
+                    options_vec.push(format!(
+                        "-Dsuwayomi.tachidesk.config.server.localAnimeSourcePath={}",
+                        local_anime_dir.display()
+                    ));
 
-                    if !server_conf_exists {
-                        info!("Fresh install detected: Setting localSourcePath flag.");
-                        options_vec.push(format!(
-                            "-Dsuwayomi.tachidesk.config.server.localSourcePath={}",
-                            target_path
-                        ));
-                        options_vec.push(format!(
-                            "-Dsuwayomi.tachidesk.config.server.localAnimeSourcePath={}",
-                            local_anime_path
-                        ));
-
-                        // --- IMPORTANT: Create pending marker HERE ---
-                        // This ensures we only patch server.conf if this specific code block runs.
-                        let pending_marker = files_dir.join(".pending_local_source_config");
-                        let _ = File::create(&pending_marker);
-                    } else {
-                        info!("Legacy update detected: NOT setting localSourcePath flag.");
-                    }
-
-                    if let Err(e) = std::fs::write(&config_marker, "configured") {
-                        error!("Failed to write config marker: {:?}", e);
-                    }
+                    // --- IMPORTANT: Create pending marker HERE ---
+                    // This ensures we only patch server.conf if this specific code block runs.
+                    let pending_marker = files_dir.join(".pending_local_source_config");
+                    let _ = File::create(&pending_marker);
+                } else {
+                    info!("Legacy update detected: NOT setting localSourcePath flag.");
                 }
-                Err(e) => error!(
-                    "Failed to attach to Android VM for path resolution: {:?}",
-                    e
-                ),
+
+                if let Err(e) = std::fs::write(&config_marker, "configured") {
+                    error!("Failed to write config marker: {:?}", e);
+                }
+            } else {
+                warn!("Shared storage root unavailable; skipping localSourcePath configuration.");
+                let _ = std::fs::write(&config_marker, "configured");
             }
         } else {
             info!("Config marker exists. Skipping localSourcePath configuration.");
@@ -1283,6 +1724,9 @@ fn install_webui(app: &AndroidApp, target_dir: &Path) -> std::io::Result<()> {
         ))?;
 
     let mut archive = Archive::new(BufReader::new(asset));
+    // Shared storage can reject chmod/mtime operations; do not preserve metadata.
+    archive.set_preserve_permissions(false);
+    archive.set_preserve_mtime(false);
     archive.unpack(target_dir)?;
     info!("WebUI extracted successfully to {:?}", target_dir);
     Ok(())
@@ -1301,7 +1745,8 @@ fn install_jre(app: &AndroidApp, target_dir: &Path) -> std::io::Result<()> {
 
     let decoder = GzDecoder::new(BufReader::new(asset));
     let mut archive = Archive::new(decoder);
-
+    archive.set_preserve_permissions(false);
+    archive.set_preserve_mtime(false);
     archive.unpack(target_dir)?;
     Ok(())
 }
@@ -2200,8 +2645,27 @@ fn launch_native_webview_with_cookies(target_url: &str) -> Result<(), Box<dyn st
     let internal_files_dir = get_files_dir_from_context(&mut env, &context_obj)
         .ok_or("Failed to resolve internal files dir")?;
     let external_files_dir = get_external_files_dir_from_context(&mut env, &context_obj);
+
+    let storage_root = get_external_storage_root_from_env(&mut env);
+    let shared_manatan = storage_root.as_ref().map(|p| p.join("Manatan"));
+    let shared_legacy = storage_root.as_ref().map(|p| p.join("Mangatan"));
+    let shared_base = if shared_manatan
+        .as_ref()
+        .map(|p| p.exists())
+        .unwrap_or(false)
+    {
+        shared_manatan
+    } else if shared_legacy
+        .as_ref()
+        .map(|p| p.exists())
+        .unwrap_or(false)
+    {
+        shared_legacy
+    } else {
+        shared_manatan
+    };
     let tachidesk_data_dir =
-        resolve_tachidesk_data_dir_from_paths(&internal_files_dir, external_files_dir);
+        resolve_tachidesk_data_dir_from_paths(&internal_files_dir, external_files_dir, shared_base);
 
     // 2. Parse Cookies
     let cookies_json = read_suwayomi_cookies(&tachidesk_data_dir);
@@ -2328,73 +2792,20 @@ async fn webview_shim_handler() -> impl IntoResponse {
 fn update_server_conf_local_source(app: &AndroidApp, files_dir: &Path) {
     let pending_marker = files_dir.join(".pending_local_source_config");
 
-    // Safety check: Only proceed if the marker exists (meaning we ran the JNI setup logic)
-    if !pending_marker.exists() {
-        return;
+    let is_fresh_install = pending_marker.exists();
+    if is_fresh_install {
+        info!("🔄 Attempting to patch server.conf with localSourcePath (Fresh Install)...");
+    } else {
+        info!("🔄 Checking server.conf for legacy localSourcePath...");
     }
 
-    info!("🔄 Attempting to patch server.conf with localSourcePath (Fresh Install)...");
-
-    // 1. Get Path via JNI
-    let vm_ptr = app.vm_as_ptr() as *mut jni::sys::JavaVM;
-    let vm = unsafe { JavaVM::from_raw(vm_ptr).unwrap() };
-
-    let mut env = match vm.attach_current_thread() {
-        Ok(env) => env,
-        Err(e) => {
-            error!("Failed to attach thread for config patch: {:?}", e);
-            return;
-        }
+    let Some(shared_root) = resolve_manatan_shared_root_with_migration(app) else {
+        warn!("Shared storage root unavailable; skipping server.conf localSourcePath patch.");
+        return;
     };
 
-    let env_cls = match env.find_class("android/os/Environment") {
-        Ok(c) => c,
-        Err(e) => {
-            error!("JNI Error finding Environment: {:?}", e);
-            return;
-        }
-    };
-
-    let dir_obj = match env.call_static_method(
-        env_cls,
-        "getExternalStorageDirectory",
-        "()Ljava/io/File;",
-        &[],
-    ) {
-        Ok(v) => v.l().unwrap(),
-        Err(e) => {
-            error!("JNI Error getExternalStorageDirectory: {:?}", e);
-            return;
-        }
-    };
-
-    let path_obj = match env.call_method(&dir_obj, "getAbsolutePath", "()Ljava/lang/String;", &[]) {
-        Ok(v) => v.l().unwrap(),
-        Err(e) => {
-            error!("JNI Error getAbsolutePath: {:?}", e);
-            return;
-        }
-    };
-
-    let path_jstr: JString = path_obj.into();
-    let path_rust: String = match env.get_string(&path_jstr) {
-        Ok(s) => s.into(),
-        Err(e) => {
-            error!("JNI Error get_string: {:?}", e);
-            return;
-        }
-    };
-
-    // Construct the target directory
-    let legacy_path = format!("{}/Mangatan/local-sources", path_rust);
-    let new_path = format!("{}/Manatan/local-sources", path_rust);
-    let target_path = if Path::new(&legacy_path).exists() {
-        legacy_path
-    } else {
-        new_path
-    };
-
-    if let Err(err) = std::fs::create_dir_all(&target_path) {
+    let local_sources_dir = shared_root.join("local-sources");
+    if let Err(err) = std::fs::create_dir_all(&local_sources_dir) {
         error!("Failed to create local sources dir: {err:?}");
     }
 
@@ -2418,17 +2829,66 @@ fn update_server_conf_local_source(app: &AndroidApp, files_dir: &Path) {
         }
     };
 
-    // 3. Update Line
+    // 3. Update Lines
     let mut new_lines = Vec::new();
     let mut patched = false;
 
+    let legacy_sources_dir = shared_root
+        .parent()
+        .map(|p| p.join("Mangatan").join("local-sources"));
+    let legacy_anime_dir = shared_root
+        .parent()
+        .map(|p| p.join("Mangatan").join("local-anime"));
+
+    let desired_sources = local_sources_dir.to_string_lossy().to_string();
+    let desired_anime = shared_root
+        .join("local-anime")
+        .to_string_lossy()
+        .to_string();
+    let legacy_sources = legacy_sources_dir
+        .as_ref()
+        .map(|p| p.to_string_lossy().to_string());
+    let legacy_anime = legacy_anime_dir
+        .as_ref()
+        .map(|p| p.to_string_lossy().to_string());
+
     for line in content.lines() {
         if line.trim().starts_with("server.localSourcePath =") {
-            new_lines.push(format!(
-                "server.localSourcePath = \"{}\" # Autoconfigured by Manatan",
-                target_path
-            ));
-            patched = true;
+            let should_patch = if is_fresh_install {
+                true
+            } else if let Some(legacy_sources) = legacy_sources.as_ref() {
+                line.contains(legacy_sources) || line.contains("/Mangatan/")
+            } else {
+                line.contains("/Mangatan/")
+            };
+
+            if should_patch {
+                new_lines.push(format!(
+                    "server.localSourcePath = \"{}\" # Autoconfigured by Manatan",
+                    desired_sources
+                ));
+                patched = true;
+            } else {
+                new_lines.push(line.to_string());
+            }
+        } else if line.trim().starts_with("server.localAnimeSourcePath =") {
+            let should_patch = if is_fresh_install {
+                true
+            } else if let Some(legacy_anime) = legacy_anime.as_ref() {
+                line.contains(legacy_anime) || line.contains("/Mangatan/")
+            } else {
+                line.contains("/Mangatan/")
+            };
+
+            if should_patch {
+                new_lines.push(format!(
+                    "server.localAnimeSourcePath = \"{}\" # Autoconfigured by Manatan",
+                    desired_anime
+                ));
+                patched = true;
+            } else {
+                new_lines.push(line.to_string());
+            }
         } else {
             new_lines.push(line.to_string());
         }
@@ -2440,14 +2900,13 @@ fn update_server_conf_local_source(app: &AndroidApp, files_dir: &Path) {
             error!("Failed to write server.conf: {:?}", e);
             return;
         }
-        info!(
-            "✅ Successfully patched server.conf with localSourcePath: {}",
-            target_path
-        );
+        info!("✅ Patched server.conf local source paths");
 
-        // Remove marker so we don't do this again
-        let _ = fs::remove_file(&pending_marker);
+        // Remove marker so we don't do this again (fresh install only)
+        if is_fresh_install {
+            let _ = fs::remove_file(&pending_marker);
+        }
     } else {
-        warn!("Could not find 'server.localSourcePath' key in server.conf");
+        warn!("No local source path changes needed");
     }
 }
