@@ -10,6 +10,7 @@ import { BaseClient } from '@/lib/requests/client/BaseClient.ts';
 import { AuthManager } from '@/features/authentication/AuthManager.ts';
 import { UserRefreshMutation } from '@/lib/requests/types.ts';
 import { AbortableApolloMutationResponse } from '@/lib/requests/RequestManager.ts';
+import { makeToast } from '@/base/utils/Toast.ts';
 
 export enum HttpMethod {
     GET = 'GET',
@@ -104,6 +105,13 @@ export class RestClient
                     break;
                 default:
                     throw new Error(`Unexpected HttpMethod "${httpMethod}"`);
+            }
+
+            const toast = result.headers.get('x-manatan-toast');
+            if (toast) {
+                const variant = (result.headers.get('x-manatan-toast-variant') ?? 'info') as any;
+                const description = result.headers.get('x-manatan-toast-description') ?? undefined;
+                makeToast(toast, variant, description);
             }
 
             if (result.status === 401) {

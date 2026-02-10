@@ -700,6 +700,88 @@ export class RequestManager {
         return items.map((extension: any) => this.normalizeExtensionPayload(extension));
     }
 
+    private normalizeSourcePreferencePayload(raw: any): any | null {
+        if (!raw || typeof raw !== 'object') {
+            return null;
+        }
+
+        // Runtime preference payloads may come in the form: { type: string, props: { ... } }
+        // while the WebUI expects the GraphQL-style union objects.
+        const type = raw?.type ?? raw?.__typename;
+        const props = raw?.props && typeof raw.props === 'object' ? raw.props : raw;
+
+        switch (type) {
+            case 'SwitchPreferenceCompat':
+            case 'SwitchPreference':
+                return {
+                    __typename: 'SwitchPreference',
+                    type: 'SwitchPreference',
+                    key: props?.key ?? null,
+                    summary: props?.summary ?? null,
+                    SwitchPreferenceTitle: props?.title ?? null,
+                    SwitchPreferenceDefault: props?.defaultValue ?? false,
+                    SwitchPreferenceCurrentValue: props?.currentValue ?? null,
+                };
+            case 'CheckBoxPreference':
+                return {
+                    __typename: 'CheckBoxPreference',
+                    type: 'CheckBoxPreference',
+                    key: props?.key ?? null,
+                    summary: props?.summary ?? null,
+                    CheckBoxTitle: props?.title ?? null,
+                    CheckBoxDefault: props?.defaultValue ?? false,
+                    CheckBoxCheckBoxCurrentValue: props?.currentValue ?? null,
+                };
+            case 'ListPreference': {
+                const entries = Array.isArray(props?.entries) ? props.entries : [];
+                const entryValues = Array.isArray(props?.entryValues) ? props.entryValues : entries;
+                return {
+                    __typename: 'ListPreference',
+                    type: 'ListPreference',
+                    key: props?.key ?? null,
+                    summary: props?.summary ?? null,
+                    entries,
+                    entryValues,
+                    ListPreferenceTitle: props?.title ?? null,
+                    ListPreferenceDefault: props?.defaultValue ?? null,
+                    ListPreferenceCurrentValue: props?.currentValue ?? null,
+                };
+            }
+            case 'EditTextPreference':
+                return {
+                    __typename: 'EditTextPreference',
+                    type: 'EditTextPreference',
+                    key: props?.key ?? null,
+                    summary: props?.summary ?? null,
+                    text: props?.text ?? null,
+                    dialogTitle: props?.dialogTitle ?? null,
+                    dialogMessage: props?.dialogMessage ?? null,
+                    EditTextPreferenceTitle: props?.title ?? null,
+                    EditTextPreferenceDefault: props?.defaultValue ?? null,
+                    EditTextPreferenceCurrentValue: props?.currentValue ?? null,
+                };
+            case 'MultiSelectListPreference': {
+                const entries = Array.isArray(props?.entries) ? props.entries : [];
+                const entryValues = Array.isArray(props?.entryValues) ? props.entryValues : entries;
+                return {
+                    __typename: 'MultiSelectListPreference',
+                    type: 'MultiSelectListPreference',
+                    key: props?.key ?? null,
+                    summary: props?.summary ?? null,
+                    dialogTitle: props?.dialogTitle ?? null,
+                    dialogMessage: props?.dialogMessage ?? null,
+                    entries,
+                    entryValues,
+                    MultiSelectListPreferenceTitle: props?.title ?? null,
+                    MultiSelectListPreferenceDefault: props?.defaultValue ?? null,
+                    MultiSelectListPreferenceCurrentValue: props?.currentValue ?? null,
+                };
+            }
+            default:
+                return null;
+        }
+    }
+
     private normalizeSourceMangaPayload(manga: any, sourceId?: string) {
         if (!manga) {
             return manga;
@@ -1992,6 +2074,25 @@ export class RequestManager {
         );
     }
 
+    public useGetAnimeExtension(
+        pkgName: string,
+        options?: QueryHookOptions<any, any>,
+    ): AbortableApolloUseQueryResponse<any, any> {
+        const skip = options?.skip ?? false;
+        return this.useRestQuery(
+            async (signal) => {
+                const response = await this.restClient.fetcher(`/api/v1/anime/extension/${pkgName}`, {
+                    config: { signal },
+                });
+                const payload = await response.json();
+                const extension = this.normalizeExtensionPayload(payload?.extension ?? payload);
+                return { extension };
+            },
+            [pkgName, skip],
+            { ...options, skip },
+        );
+    }
+
     public useGetExtensionList(
         options?: QueryHookOptions<GetExtensionsQuery, GetExtensionsQueryVariables>,
     ): AbortableApolloUseQueryResponse<GetExtensionsQuery, GetExtensionsQueryVariables> {
@@ -2419,6 +2520,35 @@ export class RequestManager {
         );
     }
 
+    public useGetAnimeSourceSettings(
+        id: string,
+        options?: QueryHookOptions<any, any>,
+    ): AbortableApolloUseQueryResponse<any, any> {
+        const skip = options?.skip ?? false;
+        return this.useRestQuery(
+            async (signal) => {
+                const response = await this.restClient.fetcher(`/api/v1/anime/source/${id}/preferences`, {
+                    config: { signal },
+                });
+                const payload = await response.json();
+                const preferencesRaw = Array.isArray(payload)
+                    ? payload
+                    : payload?.preferences ?? payload ?? [];
+                const preferences = (Array.isArray(preferencesRaw) ? preferencesRaw : [])
+                    .map((pref) => this.normalizeSourcePreferencePayload(pref))
+                    .filter(Boolean);
+                return {
+                    source: {
+                        id,
+                        preferences,
+                    },
+                };
+            },
+            [id, skip],
+            { ...options, skip },
+        );
+    }
+
     public useGetSourceMigratable(
         id: string,
         options?: QueryHookOptions<GetSourceMigratableQuery, GetSourceMigratableQueryVariables>,
@@ -2717,6 +2847,25 @@ export class RequestManager {
                     source: { id: source, preferences: [] },
                 },
             } as unknown as UpdateSourcePreferencesMutation;
+        });
+    }
+
+    public setAnimeSourcePreferences(
+        source: string,
+        change: SourcePreferenceChangeInput,
+        options?: MutationOptions<any, any>,
+    ): AbortableApolloMutationResponse<any> {
+        return this.doRestMutation(async (signal) => {
+            await this.restClient.fetcher(`/api/v1/anime/source/${source}/preferences`, {
+                httpMethod: HttpMethod.POST,
+                data: { change },
+                config: { signal },
+            });
+            return {
+                updateSourcePreference: {
+                    source: { id: source, preferences: [] },
+                },
+            };
         });
     }
 

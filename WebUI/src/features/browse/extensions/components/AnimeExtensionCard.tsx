@@ -12,9 +12,15 @@ import Button from '@mui/material/Button';
 import Typography from '@mui/material/Typography';
 import Stack from '@mui/material/Stack';
 import { useTranslation } from 'react-i18next';
+import IconButton from '@mui/material/IconButton';
+import SettingsIcon from '@mui/icons-material/Settings';
 import { requestManager } from '@/lib/requests/RequestManager.ts';
 import { ListCardAvatar } from '@/base/components/lists/cards/ListCardAvatar.tsx';
 import { ListCardContent } from '@/base/components/lists/cards/ListCardContent.tsx';
+import { CustomTooltip } from '@/base/components/CustomTooltip.tsx';
+import { OptionalCardActionAreaLink } from '@/base/components/lists/cards/OptionalCardActionAreaLink.tsx';
+import { AppRoutes } from '@/base/AppRoute.constants.ts';
+import { MUIUtil } from '@/lib/mui/MUI.util.ts';
 import {
     ExtensionAction,
     ExtensionState,
@@ -107,49 +113,64 @@ export function AnimeExtensionCard(props: AnimeExtensionCardProps) {
 
     return (
         <Card>
-            <ListCardContent>
-                <ListCardAvatar
-                    iconUrl={requestManager.getValidImgUrlFor(iconUrl)}
-                    alt={name}
-                    slots={{
-                        spinnerImageProps: {
-                            ignoreQueue: true,
-                        },
-                    }}
-                />
-                <Stack
-                    sx={{
-                        justifyContent: 'center',
-                        flexGrow: 1,
-                        flexShrink: 1,
-                        wordBreak: 'break-word',
-                    }}
-                >
-                    <Typography variant="h6" component="h3">
-                        {name}
-                    </Typography>
-                    <Typography variant="caption">
-                        {installed ? `${languageCodeToName(lang)} ` : ''}
-                        {versionName}
-                        {isNsfw && (
-                            <Typography variant="caption" color="error">
-                                {' 18+'}
-                            </Typography>
-                        )}
-                    </Typography>
-                    {showSourceRepo && !!repo && <Typography variant="caption">{repo}</Typography>}
-                </Stack>
-                <Button
-                    variant="outlined"
-                    sx={{
-                        color: installedState === InstalledState.OBSOLETE ? 'red' : 'inherit',
-                        flexShrink: 0,
-                    }}
-                    onClick={handleButtonClick}
-                >
-                    {t(INSTALLED_STATE_TO_TRANSLATION_KEY_MAP[installedState])}
-                </Button>
-            </ListCardContent>
+            <OptionalCardActionAreaLink
+                disabled={!installed}
+                to={AppRoutes.animeExtension.childRoutes.info.path(pkgName)}
+            >
+                <ListCardContent>
+                    <ListCardAvatar
+                        iconUrl={requestManager.getValidImgUrlFor(iconUrl)}
+                        alt={name}
+                        slots={{
+                            spinnerImageProps: {
+                                ignoreQueue: true,
+                            },
+                        }}
+                    />
+                    <Stack
+                        sx={{
+                            justifyContent: 'center',
+                            flexGrow: 1,
+                            flexShrink: 1,
+                            wordBreak: 'break-word',
+                        }}
+                    >
+                        <Typography variant="h6" component="h3">
+                            {name}
+                        </Typography>
+                        <Typography variant="caption">
+                            {installed ? `${languageCodeToName(lang)} ` : ''}
+                            {versionName}
+                            {isNsfw && (
+                                <Typography variant="caption" color="error">
+                                    {' 18+'}
+                                </Typography>
+                            )}
+                        </Typography>
+                        {showSourceRepo && !!repo && <Typography variant="caption">{repo}</Typography>}
+                    </Stack>
+                    {installed && (
+                        <CustomTooltip title={t('settings.title')}>
+                            <IconButton color="inherit" {...MUIUtil.preventRippleProp()}>
+                                <SettingsIcon />
+                            </IconButton>
+                        </CustomTooltip>
+                    )}
+                    <Button
+                        variant="outlined"
+                        sx={{
+                            color: installedState === InstalledState.OBSOLETE ? 'red' : 'inherit',
+                            flexShrink: 0,
+                        }}
+                        onClick={(e) => {
+                            e.preventDefault();
+                            handleButtonClick();
+                        }}
+                    >
+                        {t(INSTALLED_STATE_TO_TRANSLATION_KEY_MAP[installedState])}
+                    </Button>
+                </ListCardContent>
+            </OptionalCardActionAreaLink>
         </Card>
     );
 }

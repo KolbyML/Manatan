@@ -43,6 +43,19 @@ export const apiRequest = async <T>(
         body: options.body ? JSON.stringify(options.body) : undefined,
     });
 
+    const toast = response.headers.get('x-manatan-toast');
+    if (toast) {
+        try {
+            // Lazy import to avoid circular deps / bundle issues.
+            const { makeToast } = await import('@/base/utils/Toast.ts');
+            const variant = (response.headers.get('x-manatan-toast-variant') ?? 'info') as any;
+            const description = response.headers.get('x-manatan-toast-description') ?? undefined;
+            makeToast(toast, variant, description);
+        } catch {
+            // Ignore toast failures.
+        }
+    }
+
     const text = await response.text();
     
     // Check for HTTP errors

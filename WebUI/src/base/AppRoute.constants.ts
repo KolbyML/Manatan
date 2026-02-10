@@ -153,6 +153,10 @@ export const AppRoutes = {
                 path: (sourceId: string, query?: string | null | undefined) =>
                     UrlUtil.addQueryParam(`/anime-sources/${sourceId}`, query),
             },
+            configure: {
+                match: ':sourceId/configure',
+                path: (sourceId: string) => `/anime-sources/${sourceId}/configure`,
+            },
         },
     },
 
@@ -163,6 +167,17 @@ export const AppRoutes = {
             info: {
                 match: ':pkgName',
                 path: (pkgName: string) => `/extension/${pkgName}`,
+            },
+        },
+    },
+
+    animeExtension: {
+        match: 'anime-extension',
+        path: '/anime-extension',
+        childRoutes: {
+            info: {
+                match: ':pkgName',
+                path: (pkgName: string) => `/anime-extension/${pkgName}`,
             },
         },
     },

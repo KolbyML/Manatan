@@ -6,7 +6,7 @@
  * file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import ListItemText from '@mui/material/ListItemText';
 import Dialog from '@mui/material/Dialog';
 import DialogTitle from '@mui/material/DialogTitle';
@@ -35,6 +35,22 @@ export function EditTextPreference(props: EditTextPreferenceProps) {
     const [internalCurrentValue, setInternalCurrentValue] = useState<string>(currentValue ?? '');
     const [dialogOpen, setDialogOpen] = useState<boolean>(false);
 
+    useEffect(() => {
+        if (dialogOpen) {
+            return;
+        }
+        setInternalCurrentValue(currentValue ?? '');
+    }, [currentValue, dialogOpen]);
+
+    const displaySummary =
+        summary == null || summary === ''
+            ? internalCurrentValue
+            : summary === '%s'
+              ? internalCurrentValue
+              : summary === (currentValue ?? '')
+                ? internalCurrentValue
+                : summary;
+
     const handleDialogCancel = () => {
         setDialogOpen(false);
 
@@ -51,7 +67,7 @@ export function EditTextPreference(props: EditTextPreferenceProps) {
     return (
         <>
             <ListItemButton onClick={() => setDialogOpen(true)}>
-                <ListItemText primary={title} secondary={summary} />
+                <ListItemText primary={title} secondary={displaySummary} />
             </ListItemButton>
             <Dialog open={dialogOpen} onClose={handleDialogCancel}>
                 <DialogTitle>{dialogTitle}</DialogTitle>

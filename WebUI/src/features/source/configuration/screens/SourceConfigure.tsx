@@ -32,6 +32,7 @@ function getPrefComponent(type: string) {
         case 'CheckBoxPreference':
             return CheckBoxPreference;
         case 'SwitchPreference':
+        case 'SwitchPreferenceCompat':
             return SwitchPreferenceCompat;
         case 'ListPreference':
             return ListPreference;
@@ -58,11 +59,10 @@ export function SourceConfigure() {
     const updateValue =
         (position: number): PreferenceProps['updateValue'] =>
         (type, value) => {
-            requestManager
-                .setSourcePreferences(sourceId, { position, [type]: value })
-                .response.catch((e) =>
-                    makeToast(t('global.error.label.failed_to_save_changes'), 'error', getErrorMessage(e)),
-                );
+            const request = requestManager.setSourcePreferences(sourceId, { position, [type]: value });
+            request.response
+                .then(() => refetch().catch(defaultPromiseErrorHandler('SourceConfigure::refetch')))
+                .catch((e) => makeToast(t('global.error.label.failed_to_save_changes'), 'error', getErrorMessage(e)));
         };
 
     if (loading) {
@@ -87,6 +87,7 @@ export function SourceConfigure() {
                 // TypeScript is dumb in detecting extra props
                 // @ts-ignore
                 return createElement(getPrefComponent(it.type), {
+                    key: (props as any)?.key ?? `${it.type}_${index}`,
                     ...props,
                     updateValue: updateValue(index),
                 });

@@ -1,6 +1,6 @@
 use axum::{
     extract::{Query, State},
-    response::Redirect,
+    response::{IntoResponse, Redirect},
     routing::{get, post},
     Json, Router,
 };
@@ -30,7 +30,7 @@ pub struct AuthStatusResponse {
     pub device_id: String,
 }
 
-async fn auth_status(State(state): State<SyncState>) -> Result<Json<AuthStatusResponse>, SyncError> {
+async fn auth_status(State(state): State<SyncState>) -> Result<impl IntoResponse, SyncError> {
     // 1. Get a WRITE lock so we can modify the backend state and refresh tokens
     let mut gdrive = state.google_drive.write().await;
 
@@ -50,6 +50,7 @@ async fn auth_status(State(state): State<SyncState>) -> Result<Json<AuthStatusRe
     }
 
     // 3. Check authentication status and get email
+    let mut did_refresh = false;
     let (connected, email) = if let Some(backend) = gdrive.as_mut() {
         let is_auth = backend.is_authenticated().await;
         
@@ -66,6 +67,7 @@ async fn auth_status(State(state): State<SyncState>) -> Result<Json<AuthStatusRe
                 // Try to get email again with the new token
                 user_email = backend.get_user_info().await.ok().flatten();
                 if user_email.is_some() {
+                    did_refresh = true;
                     tracing::info!("[AUTH] Token refreshed successfully, email: {:?}", user_email);
                 }
             }
@@ -80,13 +82,27 @@ async fn auth_status(State(state): State<SyncState>) -> Result<Json<AuthStatusRe
 
     let config = state.get_sync_config();
 
-    Ok(Json(AuthStatusResponse {
+    let response = Json(AuthStatusResponse {
         connected,
         backend: format!("{:?}", config.backend).to_lowercase(),
         email,
         last_sync: state.get_last_sync(),
         device_id: state.get_device_id(),
-    }))
+    });
+
+    let mut headers = axum::http::HeaderMap::new();
+    if did_refresh {
+        headers.insert(
+            "x-manatan-toast",
+            axum::http::HeaderValue::from_static("Restart the app to apply the new setting."),
+        );
+        headers.insert(
+            "x-manatan-toast-variant",
+            axum::http::HeaderValue::from_static("info"),
+        );
+    }
+
+    Ok((headers, response))
 }
 
 #[derive(Deserialize)]
