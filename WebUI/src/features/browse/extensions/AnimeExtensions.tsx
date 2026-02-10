@@ -115,7 +115,10 @@ export function AnimeExtensions({ tabsMenuHeight }: { tabsMenuHeight: number }) 
     const computeItemKey = VirtuosoUtil.useCreateGroupedComputeItemKey(
         groupCounts,
         useCallback((index) => groupedExtensions[index][LANGUAGE], [groupedExtensions]),
-        useCallback((index) => visibleExtensions[index].pkgName, [visibleExtensions]),
+        useCallback(
+            (index) => `${visibleExtensions[index].pkgName}::${visibleExtensions[index].repo ?? ''}`,
+            [visibleExtensions],
+        ),
     );
 
     const handleExtensionUpdate = useCallback(() => setRefetchExtensions({}), []);

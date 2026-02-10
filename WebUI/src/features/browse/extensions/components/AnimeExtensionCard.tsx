@@ -78,7 +78,7 @@ export function AnimeExtensionCard(props: AnimeExtensionCardProps) {
             setInstalledState(state);
             const patch =
                 action === ExtensionAction.INSTALL
-                    ? { install: true }
+                    ? { install: true, ...(repo ? { repo } : {}) }
                     : action === ExtensionAction.UPDATE
                       ? { update: true }
                       : { uninstall: true };

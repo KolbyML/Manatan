@@ -184,6 +184,13 @@ export class Sources {
                     return false;
                 }
 
+                // Some sources are marked as "all" (not "multi").
+                // When the user enables the "all" language, these should remain visible even
+                // if other languages are selected.
+                if (toComparableLanguage(source.lang) === allLanguage) {
+                    return true;
+                }
+
                 if (!hasOtherLanguages) {
                     return true;
                 }

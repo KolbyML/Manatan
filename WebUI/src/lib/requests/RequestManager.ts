@@ -902,9 +902,20 @@ export class RequestManager {
         const payload = await response.json();
         const extensions = this.normalizeExtensionsPayload(payload);
         const cacheKey = anime ? ANIME_EXTENSION_LIST_CACHE_KEY : EXTENSION_LIST_CACHE_KEY;
+        const settings = (this.serverSettingsSnapshot as any)?.settings;
+        const cacheKeyData = anime
+            ? settings?.animeExtensionRepos ?? settings?.extensionRepos ?? []
+            : settings?.extensionRepos ?? [];
         const data = anime
             ? { fetchAnimeExtensions: { extensions } }
             : { fetchExtensions: { extensions } };
+        this.cache.cacheResponse(cacheKey, cacheKeyData, {
+            data,
+            loading: false,
+            called: true,
+        });
+        // Also cache under a legacy key so pages can update immediately even if settings snapshot
+        // isn't ready yet (e.g. extension install right after page load).
         this.cache.cacheResponse(cacheKey, undefined, {
             data,
             loading: false,
@@ -2022,6 +2033,9 @@ export class RequestManager {
         });
         const [, setUpdatedCache] = useState({});
 
+        const settings = (this.serverSettingsSnapshot as any)?.settings;
+        const cacheKeyData = settings?.extensionRepos ?? [];
+
         useEffect(() => {
             if (result.loading) {
                 return;
@@ -2031,22 +2045,31 @@ export class RequestManager {
                 return;
             }
 
+            this.cache.cacheResponse(EXTENSION_LIST_CACHE_KEY, cacheKeyData, result);
             this.cache.cacheResponse(EXTENSION_LIST_CACHE_KEY, undefined, result);
             setUpdatedCache({});
         }, [result.loading]);
 
-        const cachedResult = this.cache.getResponseFor<typeof result>(
-            EXTENSION_LIST_CACHE_KEY,
-            undefined,
-            d(1).minutes.inWholeMilliseconds,
-        );
+        const cachedResult =
+            this.cache.getResponseFor<typeof result>(
+                EXTENSION_LIST_CACHE_KEY,
+                cacheKeyData,
+                d(1).minutes.inWholeMilliseconds,
+            ) ??
+            this.cache.getResponseFor<typeof result>(
+                EXTENSION_LIST_CACHE_KEY,
+                undefined,
+                d(1).minutes.inWholeMilliseconds,
+            );
         const normalizedCachedResult = useMemo(
             () => (!cachedResult ? result : cachedResult),
-            [this.cache.getFetchTimestampFor(EXTENSION_LIST_CACHE_KEY, undefined), result.loading],
+            [this.cache.getFetchTimestampFor(EXTENSION_LIST_CACHE_KEY, cacheKeyData), result.loading],
         );
 
         const wrappedMutate = async (mutateOptions: Parameters<typeof mutate>[0]) => {
             if (cachedResult) {
+                // Ensure components re-render to pick up cache updates.
+                setUpdatedCache({});
                 return normalizedCachedResult;
             }
 
@@ -2073,6 +2096,11 @@ export class RequestManager {
         });
         const [, setUpdatedCache] = useState({});
 
+        const cacheKeyData =
+            (this.serverSettingsSnapshot as any)?.settings?.animeExtensionRepos ??
+            (this.serverSettingsSnapshot as any)?.settings?.extensionRepos ??
+            [];
+
         useEffect(() => {
             if (result.loading) {
                 return;
@@ -2082,23 +2110,32 @@ export class RequestManager {
                 return;
             }
 
+            this.cache.cacheResponse(ANIME_EXTENSION_LIST_CACHE_KEY, cacheKeyData, result);
             this.cache.cacheResponse(ANIME_EXTENSION_LIST_CACHE_KEY, undefined, result);
             setUpdatedCache({});
         }, [result.loading]);
 
-        const cachedResult = this.cache.getResponseFor<typeof result>(
-            ANIME_EXTENSION_LIST_CACHE_KEY,
-            undefined,
-            d(1).minutes.inWholeMilliseconds,
-        );
+        const cachedResult =
+            this.cache.getResponseFor<typeof result>(
+                ANIME_EXTENSION_LIST_CACHE_KEY,
+                cacheKeyData,
+                d(1).minutes.inWholeMilliseconds,
+            ) ??
+            this.cache.getResponseFor<typeof result>(
+                ANIME_EXTENSION_LIST_CACHE_KEY,
+                undefined,
+                d(1).minutes.inWholeMilliseconds,
+            );
 
         const normalizedCachedResult = useMemo(
             () => (!cachedResult ? result : cachedResult),
-            [this.cache.getFetchTimestampFor(ANIME_EXTENSION_LIST_CACHE_KEY, undefined), result.loading],
+            [this.cache.getFetchTimestampFor(ANIME_EXTENSION_LIST_CACHE_KEY, cacheKeyData), result.loading],
         );
 
         const wrappedMutate = async (mutateOptions: Parameters<typeof mutate>[0]) => {
             if (cachedResult) {
+                // Ensure components re-render to pick up cache updates.
+                setUpdatedCache({});
                 return normalizedCachedResult;
             }
 
@@ -2204,7 +2241,12 @@ export class RequestManager {
         return this.doRestMutation(async (signal) => {
             const action = patch.install ? 'install' : patch.update ? 'update' : patch.uninstall ? 'uninstall' : null;
             if (action) {
-                await this.restClient.fetcher(`/api/v1/anime/extension/${action}/${id}`, {
+                const repo = typeof patch.repo === 'string' ? patch.repo.trim() : '';
+                const url =
+                    action === 'install' && repo
+                        ? `/api/v1/anime/extension/${action}/${id}?repo=${encodeURIComponent(repo)}`
+                        : `/api/v1/anime/extension/${action}/${id}`;
+                await this.restClient.fetcher(url, {
                     config: { signal },
                 });
             }
