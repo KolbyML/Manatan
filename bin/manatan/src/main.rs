@@ -857,34 +857,18 @@ impl eframe::App for MyApp {
             ui.add_space(5.0);
             ui.label("Data Management:");
 
-            // Simplified Grid Layout (Less nesting, safer to copy)
-            ui.horizontal(|ui| {
-                let width = (ui.available_width() - 10.0) / 2.0;
-
-                // Button 1: Manatan Data
-                if ui
-                    .add_sized([width, 30.0], egui::Button::new("📂 Manatan Data"))
-                    .clicked()
-                {
-                    if !self.data_dir.exists() {
-                        let _ = std::fs::create_dir_all(&self.data_dir);
-                    }
-                    let _ = open::that(&self.data_dir);
+            // Single action (keep spacing and avoid cramped bottom).
+            if ui
+                .add_sized([ui.available_width(), 30.0], egui::Button::new("📂 Manatan Data"))
+                .clicked()
+            {
+                if !self.data_dir.exists() {
+                    let _ = std::fs::create_dir_all(&self.data_dir);
                 }
+                let _ = open::that(&self.data_dir);
+            }
 
-                // Button 2: Suwayomi Data
-                if ui
-                    .add_sized([width, 30.0], egui::Button::new("📂 Suwayomi Data"))
-                    .clicked()
-                    && let Some(base_dirs) = BaseDirs::new()
-                {
-                    let dir = base_dirs.data_local_dir().join("Tachidesk");
-                    if !dir.exists() {
-                        let _ = std::fs::create_dir_all(&dir);
-                    }
-                    let _ = open::that(&dir);
-                }
-            });
+            ui.add_space(12.0);
         });
     }
 }
