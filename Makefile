@@ -256,7 +256,7 @@ download_android_natives: bin/manatan_android/assets/natives.tar
 bin/manatan_android/assets/Suwayomi-Server.jar:
 	@echo "Downloading Android Suwayomi Server JAR..."
 	mkdir -p bin/manatan_android/assets
-	curl -L "https://github.com/KolbyML/Suwayomi-Server/releases/download/v1.0.22/Suwayomi-Server-v2.1.2068.jar" -o bin/manatan_android/assets/Suwayomi-Server.jar
+	curl -L "https://github.com/KolbyML/Suwayomi-Server/releases/download/v1.0.23/Suwayomi-Server-v2.1.2071.jar" -o bin/manatan_android/assets/Suwayomi-Server.jar
 
 .PHONY: download_android_jar
 download_android_jar: bin/manatan_android/assets/Suwayomi-Server.jar
@@ -387,7 +387,7 @@ bundle_jre: bin/manatan/resources/jre_bundle.zip
 bin/manatan/resources/Suwayomi-Server.jar:
 	@echo "Downloading Suwayomi Server JAR..."
 	mkdir -p bin/manatan/resources
-	curl -L "https://github.com/KolbyML/Suwayomi-Server/releases/download/v1.0.22/Suwayomi-Server-v2.1.2068.jar" -o $@
+	curl -L "https://github.com/KolbyML/Suwayomi-Server/releases/download/v1.0.23/Suwayomi-Server-v2.1.2071.jar" -o $@
 
 .PHONY: download_jar
 download_jar: bin/manatan/resources/Suwayomi-Server.jar
@@ -446,7 +446,7 @@ bin/manatan_ios/Manatan/jar/suwayomi-server.jar:
 	@echo "Downloading iOS Suwayomi Server JAR..."
 	mkdir -p bin/manatan_ios/Manatan/jar
 	rm -f bin/manatan_ios/Manatan/jar/suwayomi-server.jar
-	curl -L "https://github.com/KolbyML/Suwayomi-Server/releases/download/v1.0.22/Suwayomi-Server-v2.1.2068.jar" -o $@
+	curl -L "https://github.com/KolbyML/Suwayomi-Server/releases/download/v1.0.23/Suwayomi-Server-v2.1.2071.jar" -o $@
 
 .PHONY: download_ios_jar
 download_ios_jar: bin/manatan_ios/Manatan/jar/suwayomi-server.jar
