@@ -14,6 +14,11 @@ import { CategoryIdInfo, CategoryMetadataKeys, ICategoryMetadata } from '@/featu
 import { convertFromGqlMeta } from '@/features/metadata/services/MetadataConverter.ts';
 import { getMetadataFrom } from '@/features/metadata/services/MetadataReader.ts';
 import {
+    getCategoryMetadataOverrides,
+    setCategoryMetadataOverrides,
+    useCategoryMetadataOverrides,
+} from '@/features/category/services/CategoryMetadataOverrides.ts';
+import {
     AllowedMetadataValueTypes,
     GqlMetaHolder,
     Metadata,
@@ -63,14 +68,22 @@ const getMetadata = (
 export const getCategoryMetadata = (
     metaHolder: CategoryIdInfo & GqlMetaHolder,
     defaultMetadata?: ICategoryMetadata,
-): ICategoryMetadata => getMetadata(metaHolder, defaultMetadata);
+): ICategoryMetadata => {
+    const base = getMetadata(metaHolder, defaultMetadata);
+    const overrides = getCategoryMetadataOverrides(metaHolder.id);
+    return overrides ? ({ ...base, ...overrides } as ICategoryMetadata) : base;
+};
 
 export const useGetCategoryMetadata = (
     metaHolder: CategoryIdInfo & GqlMetaHolder,
     defaultMetadata?: ICategoryMetadata,
 ): ICategoryMetadata => {
+    const overrides = useCategoryMetadataOverrides(metaHolder.id);
     const metadata = getMetadata(metaHolder, defaultMetadata, useEffect);
-    return useMemo(() => metadata, [metaHolder, defaultMetadata]);
+    return useMemo(
+        () => (overrides ? ({ ...metadata, ...overrides } as ICategoryMetadata) : metadata),
+        [metadata, overrides],
+    );
 };
 
 export const updateCategoryMetadata = async <
@@ -90,5 +103,14 @@ export const createUpdateCategoryMetadata =
         category: CategoryIdInfo & GqlMetaHolder,
         handleError: (error: any) => void = defaultPromiseErrorHandler('createUpdateCategoryMetadata'),
     ): ((...args: OmitFirst<Parameters<typeof updateCategoryMetadata<Settings>>>) => Promise<void | void[]>) =>
-    (metadataKey, value) =>
-        updateCategoryMetadata(category, metadataKey, value).catch(handleError);
+    async (metadataKey, value) => {
+        const prev = getCategoryMetadata(category)[metadataKey];
+        setCategoryMetadataOverrides(category.id, { [metadataKey]: value } as Partial<ICategoryMetadata>);
+        try {
+            return await updateCategoryMetadata(category, metadataKey, value);
+        } catch (e) {
+            setCategoryMetadataOverrides(category.id, { [metadataKey]: prev } as Partial<ICategoryMetadata>);
+            handleError(e);
+            return undefined;
+        }
+    };
