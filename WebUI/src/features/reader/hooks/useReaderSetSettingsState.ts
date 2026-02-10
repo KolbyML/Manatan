@@ -22,9 +22,16 @@ export const useReaderSetSettingsState = (
     defaultSettings: ReturnType<typeof useDefaultReaderSettings>['settings'],
     defaultSettingsMetadata: ReturnType<typeof useDefaultReaderSettings>['metadata'],
     setSettings: TReaderStateSettingsContext['setSettings'],
+    areSettingsSet: boolean,
     setAreSettingsSet: (areSet: boolean) => void,
 ) => {
     useEffect(() => {
+        // Only initialize settings once per reader mount.
+        // Persisted meta writes can trigger global meta refreshes, which would otherwise overwrite
+        // the user's just-updated local settings with stale mangaResponse meta until a full reload.
+        if (areSettingsSet) {
+            return;
+        }
         const mangaFromResponse = mangaResponse.data?.manga;
         if (!mangaFromResponse || defaultSettingsResponse.loading || defaultSettingsResponse.error) {
             return;
@@ -57,5 +64,5 @@ export const useReaderSetSettingsState = (
         const finalSettings = getReaderSettingsFor(mangaFromResponse, profileSettings);
         setSettings(finalSettings);
         setAreSettingsSet(true);
-    }, [mangaResponse.data?.manga, defaultSettings]);
+    }, [areSettingsSet, mangaResponse.data?.manga, defaultSettings]);
 };

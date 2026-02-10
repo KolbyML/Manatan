@@ -178,7 +178,8 @@ export const useDefaultReaderSettings = (
     const { data, loading } = request;
     const metadata = useMemo(() => convertFromGqlMeta(data?.metas.nodes), [data?.metas.nodes]);
     const metaHolder: MetadataHolder = useMemo(() => ({ meta: metadata }), [metadata]);
-    const tmpSettings = getReaderSettings('global', metaHolder, undefined, useEffect, profile);
+    // Ensure non-global reader settings have sane defaults even when no meta exists.
+    const tmpSettings = getReaderSettings('global', metaHolder, DEFAULT_READER_SETTINGS, useEffect, profile);
     const settings = useMemo(() => tmpSettings, [metaHolder, profile]);
 
     return useMemo(
@@ -204,7 +205,14 @@ export const useDefaultReaderSettingsWithDefaultFlag = (
     const { data, loading } = request;
     const metadata = useMemo(() => convertFromGqlMeta(data?.metas.nodes), [data?.metas.nodes]);
     const metaHolder: MetadataHolder = useMemo(() => ({ meta: metadata }), [metadata]);
-    const tmpSettings = getReaderSettingsWithDefaultValueFallback('global', metaHolder, undefined, useEffect, profile);
+    // Ensure non-global reader settings have sane defaults even when no meta exists.
+    const tmpSettings = getReaderSettingsWithDefaultValueFallback(
+        'global',
+        metaHolder,
+        DEFAULT_READER_SETTINGS,
+        useEffect,
+        profile,
+    );
     const settings = useMemo(() => tmpSettings, [metaHolder, profile]);
 
     return useMemo(

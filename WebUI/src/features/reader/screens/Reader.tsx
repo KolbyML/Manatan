@@ -127,6 +127,7 @@ const BaseReader = ({
         defaultSettings,
         defaultSettingsMetadata,
         setSettings,
+        areSettingsSet,
         setAreSettingsSet,
     );
     useReaderShowSettingPreviewOnChange(

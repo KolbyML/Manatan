@@ -62,7 +62,10 @@ export class ReaderTapZoneService {
     }
 
     private static getRegions(layout: TapZoneLayouts, invertMode: InvertMode): TapZoneRegion[] {
-        const regions = READER_TAP_ZONE_LAYOUTS[layout];
+        const regions =
+            (READER_TAP_ZONE_LAYOUTS as Record<any, TapZoneRegion[]>)[layout] ??
+            READER_TAP_ZONE_LAYOUTS[TapZoneLayouts.RIGHT_LEFT] ??
+            [];
 
         return regions.map(({ type, rect }) => ({ type, rect: this.invertRect(rect, invertMode) }));
     }

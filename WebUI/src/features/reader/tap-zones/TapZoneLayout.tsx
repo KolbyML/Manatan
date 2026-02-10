@@ -7,7 +7,7 @@
  */
 
 import Box from '@mui/material/Box';
-import { useCallback, useLayoutEffect, useState } from 'react';
+import { useCallback, useLayoutEffect, useMemo, useState } from 'react';
 import { useTheme } from '@mui/material/styles';
 import { ReaderTapZoneService } from '@/features/reader/tap-zones/ReaderTapZoneService.ts';
 import { useNavBarContext } from '@/features/navigation-bar/NavbarContext.tsx';
@@ -39,14 +39,31 @@ const BaseTapZoneLayout = ({ readerNavBarWidth }: Pick<NavbarContextType, 'reade
         }, [tapZoneLayoutElement]),
     );
 
-    const canvas = ReaderTapZoneService.getOrCreateCanvas(tapZoneLayout, width, height, theme.typography.h3, {
-        vertical: tapZoneInvertMode.vertical,
-        horizontal: tapZoneInvertMode.horizontal,
-        isRTL: readingDirection === ReadingDirection.RTL,
-    });
+    const canvas = useMemo(() => {
+        // Keep tap zone geometry updated even when preview isn't visible.
+        const safeWidth = Math.max(width, 1);
+        const safeHeight = Math.max(height, 1);
+        return ReaderTapZoneService.getOrCreateCanvas(tapZoneLayout, safeWidth, safeHeight, theme.typography.h3, {
+            vertical: tapZoneInvertMode.vertical,
+            horizontal: tapZoneInvertMode.horizontal,
+            isRTL: readingDirection === ReadingDirection.RTL,
+        });
+    }, [
+        tapZoneLayout,
+        width,
+        height,
+        theme.typography.h3,
+        tapZoneInvertMode.vertical,
+        tapZoneInvertMode.horizontal,
+        readingDirection,
+    ]);
 
     useLayoutEffect(() => {
         const canvasContainerElement = document.getElementById(CANVAS_ID);
+        if (!showPreview) {
+            canvasContainerElement?.replaceChildren();
+            return;
+        }
         canvasContainerElement?.replaceChildren(canvas);
     }, [canvas, showPreview]);
 

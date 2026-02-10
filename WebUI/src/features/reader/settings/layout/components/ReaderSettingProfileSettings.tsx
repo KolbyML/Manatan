@@ -50,6 +50,7 @@ export const ReaderSettingProfileSettings = ({
                 <ReaderLayoutSettings
                     {...props}
                     setShowPreview={() => {}}
+                    isSeriesMode={false}
                     settings={adjustedSettings}
                     updateSetting={(setting, value, commit) => updateSetting(setting, value, commit, true, profile)}
                 />

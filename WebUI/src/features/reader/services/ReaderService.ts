@@ -254,17 +254,19 @@ export class ReaderService {
             return;
         }
         const isGlobalSetting = isGlobal || GLOBAL_READER_SETTING_KEYS.includes(setting);
+        // ReaderStore always stores manga-scoped settings with a { value, isDefault } wrapper,
+        // even when we persist them to global meta (e.g. default/profile settings).
+        const shouldWrapInStore = !GLOBAL_READER_SETTING_KEYS.includes(setting);
         const settingsStore = getReaderSettingsStore();
         if (settingsStore?.setSettings) {
+            const previousValue: any = (settingsStore as any)[setting];
+            const wrappedValue =
+                previousValue && typeof previousValue === 'object' && 'value' in previousValue
+                    ? { ...previousValue, value, isDefault: false }
+                    : { value, isDefault: false };
             const nextSettings = {
                 ...settingsStore,
-                [setting]: isGlobalSetting
-                    ? value
-                    : {
-                          ...(settingsStore[setting] as { value: IReaderSettings[Setting]; isDefault: boolean }),
-                          value,
-                          isDefault: false,
-                      },
+                [setting]: shouldWrapInStore ? wrappedValue : value,
             } as typeof settingsStore;
             settingsStore.setSettings(nextSettings);
         }
@@ -295,16 +297,17 @@ export class ReaderService {
         const key = getMetadataKey(setting, profile !== undefined ? [profile] : undefined);
 
         const isGlobalSetting = isGlobal || GLOBAL_READER_SETTING_KEYS.includes(setting);
+        const shouldWrapInStore = !GLOBAL_READER_SETTING_KEYS.includes(setting);
         const settingsStore = getReaderSettingsStore();
         if (settingsStore?.setSettings) {
             const nextSettings = {
                 ...settingsStore,
-                [setting]: isGlobalSetting
-                    ? DEFAULT_READER_SETTINGS[setting]
-                    : {
+                [setting]: shouldWrapInStore
+                    ? {
                           value: DEFAULT_READER_SETTINGS[setting],
                           isDefault: true,
-                      },
+                      }
+                    : DEFAULT_READER_SETTINGS[setting],
             } as typeof settingsStore;
             settingsStore.setSettings(nextSettings);
         }
