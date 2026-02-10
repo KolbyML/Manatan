@@ -51,6 +51,14 @@ export const useBackButton = () => {
 
         const canNavigateBack = backDelta < 0;
         if (!canNavigateBack) {
+            // If a page was opened directly (no usable in-app history), allow an explicit back target.
+            const params = new URLSearchParams(location.search);
+            const backTo = params.get('back');
+            if (backTo && backTo.startsWith('/') && !backTo.startsWith('//')) {
+                navigate(backTo);
+                return;
+            }
+
             navigate(AppRoutes.library.path());
             return;
         }

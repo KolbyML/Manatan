@@ -112,34 +112,51 @@ export function MultiSelectListPreference(props: MultiSelectListPreferenceProps)
         entryValues,
         entries,
     } = props;
-    const [internalCurrentValue, setInternalCurrentValue] = useState(currentValue ?? defaultValue);
+    // Keep internal state as entryValues (not display labels).
+    const [internalCurrentValue, setInternalCurrentValue] = useState<string[] | null | undefined>(
+        (currentValue ?? defaultValue) as any,
+    );
     const [dialogOpen, setDialogOpen] = useState<boolean>(false);
 
     useEffect(() => {
         setInternalCurrentValue(currentValue);
     }, [currentValue]);
 
+    const safeEntries = Array.isArray(entries) ? entries : [];
+    const safeEntryValues = Array.isArray(entryValues) ? entryValues : safeEntries;
+
     const findEntriesOf = (values?: string[] | null) =>
         values?.map((value) => {
-            const idx = entryValues.indexOf(value);
-            return entries[idx];
+            const idx = safeEntryValues.indexOf(value);
+            if (idx < 0) {
+                return value;
+            }
+            return safeEntries[idx] ?? value;
         }) ?? [];
 
     const findEntryValuesOf = (values?: string[] | null) =>
         values?.map((value) => {
-            const idx = entries.indexOf(value);
-            return entryValues[idx];
+            const idx = safeEntries.indexOf(value);
+            if (idx < 0) {
+                return value;
+            }
+            return safeEntryValues[idx] ?? value;
         }) ?? [];
 
-    const getSummary = () => summary;
+    const getSummary = () => {
+        if (summary === '%s') {
+            return findEntriesOf(internalCurrentValue).join(', ');
+        }
+        return summary;
+    };
 
     const handleDialogClose = (newValue: string[] | null) => {
         if (newValue !== null) {
-            // console.log(newValue);
-            updateValue('multiSelectState', findEntryValuesOf(newValue));
+            const nextEntryValues = findEntryValuesOf(newValue);
+            updateValue('multiSelectState', nextEntryValues);
 
             // appear smooth
-            setInternalCurrentValue(newValue);
+            setInternalCurrentValue(nextEntryValues);
         }
 
         setDialogOpen(false);
@@ -155,7 +172,7 @@ export function MultiSelectListPreference(props: MultiSelectListPreferenceProps)
                 open={dialogOpen}
                 onClose={handleDialogClose}
                 selectedValues={findEntriesOf(internalCurrentValue)}
-                values={entries}
+                values={safeEntries}
             />
         </>
     );

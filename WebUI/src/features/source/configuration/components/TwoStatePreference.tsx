@@ -67,10 +67,11 @@ function TwoSatePreference(props: TwoStatePreferenceProps) {
                     edge: 'end',
                     checked: internalCurrentValue,
                     onChange: () => {
-                        updateValue(twoStateType === 'Switch' ? 'switchState' : 'checkBoxState', !currentValue);
+                        const nextValue = !internalCurrentValue;
+                        updateValue(twoStateType === 'Switch' ? 'switchState' : 'checkBoxState', nextValue);
 
                         // appear smooth
-                        setInternalCurrentValue(!currentValue);
+                        setInternalCurrentValue(nextValue);
                     },
                 }}
             />

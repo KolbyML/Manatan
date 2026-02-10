@@ -96,40 +96,51 @@ export function ListPreference(props: ListPreferenceProps) {
         entryValues,
         entries,
     } = props;
+    // Keep internal state as entryValue (not display label).
     const [internalCurrentValue, setInternalCurrentValue] = useState(currentValue ?? defaultValue ?? '');
     const [dialogOpen, setDialogOpen] = useState<boolean>(false);
 
     useEffect(() => {
         setInternalCurrentValue(currentValue ?? defaultValue ?? '');
-    }, [currentValue]);
+    }, [currentValue, defaultValue]);
+
+    const safeEntries = Array.isArray(entries) ? entries : [];
+    const safeEntryValues = Array.isArray(entryValues) ? entryValues : safeEntries;
 
     const findEntryOf = (value: string) => {
-        const idx = entryValues.indexOf(value);
-        return entries[idx];
+        const idx = safeEntryValues.indexOf(value);
+        if (idx < 0) {
+            return value;
+        }
+        return safeEntries[idx] ?? value;
     };
 
     const findEntryValueOf = (value: string) => {
-        const idx = entries.indexOf(value);
-        return entryValues[idx];
+        const idx = safeEntries.indexOf(value);
+        if (idx < 0) {
+            return value;
+        }
+        return safeEntryValues[idx] ?? value;
     };
 
     const getSummary = () => {
-        if (currentValue == null) {
+        if (internalCurrentValue == null) {
             return '';
         }
 
         if (summary === '%s') {
-            return findEntryOf(currentValue);
+            return findEntryOf(internalCurrentValue);
         }
         return summary;
     };
 
     const handleDialogClose = (newValue: string | null) => {
         if (newValue !== null) {
-            updateValue('listState', findEntryValueOf(newValue));
+            const nextEntryValue = findEntryValueOf(newValue);
+            updateValue('listState', nextEntryValue);
 
             // appear smooth
-            setInternalCurrentValue(newValue);
+            setInternalCurrentValue(nextEntryValue);
         }
 
         setDialogOpen(false);
@@ -145,7 +156,7 @@ export function ListPreference(props: ListPreferenceProps) {
                 open={dialogOpen}
                 onClose={handleDialogClose}
                 value={findEntryOf(internalCurrentValue)}
-                options={entries}
+                options={safeEntries}
             />
         </>
     );

@@ -10,6 +10,7 @@ import { createElement } from 'react';
 import { useParams } from 'react-router-dom';
 import List from '@mui/material/List';
 import { useTranslation } from 'react-i18next';
+
 import { requestManager } from '@/lib/requests/RequestManager.ts';
 import { cloneObject } from '@/base/utils/cloneObject.tsx';
 import {
@@ -45,23 +46,22 @@ function getPrefComponent(type: string) {
     }
 }
 
-export function SourceConfigure() {
+export function AnimeSourceConfigure() {
     const { t } = useTranslation();
-
     useAppTitle(t('source.configuration.title'));
 
     const { sourceId } = useParams<{ sourceId: string }>();
-    const { data, loading, error, refetch } = requestManager.useGetSourceSettings(sourceId, {
+    const { data, loading, error, refetch } = requestManager.useGetAnimeSourceSettings(sourceId ?? '', {
         notifyOnNetworkStatusChange: true,
     });
-    const sourcePreferences = data?.source.preferences ?? [];
+    const sourcePreferences = (data as any)?.source?.preferences ?? [];
 
     const updateValue =
         (position: number): PreferenceProps['updateValue'] =>
         (type, value) => {
-            const request = requestManager.setSourcePreferences(sourceId, { position, [type]: value });
+            const request = requestManager.setAnimeSourcePreferences(sourceId ?? '', { position, [type]: value } as any);
             request.response
-                .then(() => refetch().catch(defaultPromiseErrorHandler('SourceConfigure::refetch')))
+                .then(() => refetch().catch(defaultPromiseErrorHandler('AnimeSourceConfigure::refetch')))
                 .catch((e) => makeToast(t('global.error.label.failed_to_save_changes'), 'error', getErrorMessage(e)));
         };
 
@@ -74,20 +74,18 @@ export function SourceConfigure() {
             <EmptyViewAbsoluteCentered
                 message={t('global.error.label.failed_to_load_data')}
                 messageExtra={getErrorMessage(error)}
-                retry={() => refetch().catch(defaultPromiseErrorHandler('SourceConfigure::refetch'))}
+                retry={() => refetch().catch(defaultPromiseErrorHandler('AnimeSourceConfigure::refetch'))}
             />
         );
     }
 
     return (
         <List sx={{ padding: 0 }}>
-            {sourcePreferences.map((it, index) => {
+            {sourcePreferences.map((it: any, index: number) => {
                 const props = cloneObject(it);
-
-                // TypeScript is dumb in detecting extra props
                 // @ts-ignore
                 return createElement(getPrefComponent(it.type), {
-                    key: (props as any)?.key ?? `${it.type}_${index}`,
+                    key: props?.key ?? `${it.type}_${index}`,
                     ...props,
                     updateValue: updateValue(index),
                 });

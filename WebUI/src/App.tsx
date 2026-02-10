@@ -48,6 +48,10 @@ const { AnimeSourceBrowse } = loadable(
     () => import('@/features/anime/browse/screens/AnimeSourceBrowse.tsx'),
     lazyLoadFallback,
 );
+const { AnimeSourceConfigure } = loadable(
+    () => import('@/features/source/configuration/screens/AnimeSourceConfigure.tsx'),
+    lazyLoadFallback,
+);
 const { Manga } = loadable(() => import('@/features/manga/screens/Manga.tsx'), lazyLoadFallback);
 const { SearchAll } = loadable(() => import('@/features/global-search/screens/SearchAll.tsx'), lazyLoadFallback);
 const { Settings } = loadable(() => import('@/features/settings/screens/Settings.tsx'), lazyLoadFallback);
@@ -64,6 +68,10 @@ const { SourceConfigure } = loadable(
 const { SourceMangas } = loadable(() => import('@/features/source/browse/screens/SourceMangas.tsx'), lazyLoadFallback);
 const { ExtensionInfo } = loadable(
     () => import('@/features/extension/info/screens/ExtensionInfo.tsx'),
+    lazyLoadFallback,
+);
+const { AnimeExtensionInfo } = loadable(
+    () => import('@/features/extension/info/screens/AnimeExtensionInfo.tsx'),
     lazyLoadFallback,
 );
 const { Updates } = loadable(() => import('@/features/updates/screens/Updates.tsx'), lazyLoadFallback);
@@ -298,6 +306,10 @@ const MainApp = () => {
                                 path={AppRoutes.animeSources.childRoutes.browse.match}
                                 element={<AnimeSourceBrowse />}
                             />
+                            <Route
+                                path={AppRoutes.animeSources.childRoutes.configure.match}
+                                element={<AnimeSourceConfigure />}
+                            />
                         </Route>
                         <Route path={AppRoutes.extension.match}>
                             {/* TODO: deprecated - "source" and "extension" page got merged into "browse" */}
@@ -306,6 +318,17 @@ const MainApp = () => {
                                 element={<Navigate to={AppRoutes.browse.path(BrowseTab.MANGA_EXTENSIONS)} replace />}
                             />
                             <Route path={AppRoutes.extension.childRoutes.info.match} element={<ExtensionInfo />} />
+                        </Route>
+
+                        <Route path={AppRoutes.animeExtension.match}>
+                            <Route
+                                index
+                                element={<Navigate to={AppRoutes.browse.path(BrowseTab.ANIME_EXTENSIONS)} replace />}
+                            />
+                            <Route
+                                path={AppRoutes.animeExtension.childRoutes.info.match}
+                                element={<AnimeExtensionInfo />}
+                            />
                         </Route>
                         <Route path={AppRoutes.downloads.match} element={<DownloadQueue />} />
                         <Route path={AppRoutes.manga.match}>
