@@ -13,6 +13,7 @@ import {
     resolveWordAudioUrl,
 } from '@/Manatan/utils/wordAudio';
 import { DictionaryResult, WordAudioSource, WordAudioSourceSelection } from '@/Manatan/types';
+import { PronunciationDisplay } from '@/Manatan/components/pronunciation/PronunciationDisplay';
 import VolumeUpIcon from '@mui/icons-material/VolumeUp';
 import StarIcon from '@mui/icons-material/Star';
 import StarBorderIcon from '@mui/icons-material/StarBorder';
@@ -701,6 +702,10 @@ export const DictionaryView: React.FC<DictionaryViewProps> = ({
                             </button>
                         </div>
                     </div>
+                    {/* Pronunciation Display (Pitch + IPA) */}
+                    {(entry.pitchData?.length || entry.ipaData?.length) && (
+                        <PronunciationDisplay entry={entry} />
+                    )}
                     {entry.frequencies && entry.frequencies.length > 0 && (
                         <div style={{ marginBottom: '10px', display: 'flex', flexWrap: 'wrap', gap: '5px' }}>
                             {entry.frequencies.map((freq, fIdx) => (

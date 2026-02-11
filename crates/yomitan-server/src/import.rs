@@ -1,17 +1,12 @@
-use std::{
-    collections::HashSet,
-    fmt,
-    io::Read,
-    marker::PhantomData,
-};
+use std::{collections::HashSet, fmt, io::Read, marker::PhantomData};
 
-use anyhow::{Result, anyhow};
+use anyhow::{anyhow, Result};
 use serde::de::{DeserializeOwned, DeserializeSeed, SeqAccess, Visitor};
 use serde_json::Value;
-use tracing::info;
+use tracing::{error, info};
 use wordbase_api::{
+    dict::yomitan::{structured, Glossary, GlossaryTag},
     DictionaryId, DictionaryKind, DictionaryMeta, Record,
-    dict::yomitan::{Glossary, GlossaryTag, structured},
 };
 use zip::ZipArchive;
 
@@ -191,9 +186,27 @@ where
             A: SeqAccess<'de>,
         {
             let mut count = 0usize;
-            while let Some(entry) = seq.next_element::<T>()? {
-                (self.on_entry)(entry).map_err(serde::de::Error::custom)?;
-                count += 1;
+            loop {
+                match seq.next_element::<T>() {
+                    Ok(Some(entry)) => {
+                        if let Err(e) = (self.on_entry)(entry) {
+                            return Err(serde::de::Error::custom(format!(
+                                "Entry #{} processing failed: {}",
+                                count + 1,
+                                e
+                            )));
+                        }
+                        count += 1;
+                    }
+                    Ok(None) => break,
+                    Err(e) => {
+                        return Err(serde::de::Error::custom(format!(
+                            "Entry #{} deserialization failed: {}",
+                            count + 1,
+                            e
+                        )));
+                    }
+                }
             }
             Ok(count)
         }
@@ -256,16 +269,14 @@ pub fn import_zip(state: &AppState, data: &[u8]) -> Result<String> {
     // 1. Find index.json
     let mut index_file_name = None;
     for i in 0..zip.len() {
-        if let Ok(file) = zip.by_index(i)
-            && file.name().ends_with("index.json")
-        {
+        let file = zip.by_index(i)?;
+        if file.name().ends_with("index.json") {
             index_file_name = Some(file.name().to_string());
             break;
         }
     }
 
-    let index_file_name =
-        index_file_name.ok_or_else(|| anyhow!("No index.json found in zip"))?;
+    let index_file_name = index_file_name.ok_or_else(|| anyhow!("No index.json found in zip"))?;
 
     let meta = {
         let file = zip.by_name(&index_file_name)?;
@@ -344,7 +355,6 @@ pub fn import_zip(state: &AppState, data: &[u8]) -> Result<String> {
         .collect();
 
     let mut terms_found = 0usize;
-    let mut encoder = snap::raw::Encoder::new();
 
     for name in &file_names {
         // Branch 1: Standard definitions (term_bank)
@@ -411,7 +421,7 @@ pub fn import_zip(state: &AppState, data: &[u8]) -> Result<String> {
                 };
 
                 let json_bytes = serde_json::to_vec(&stored)?;
-                let compressed = encoder.compress_vec(&json_bytes)?;
+                let compressed = snap::raw::Encoder::new().compress_vec(&json_bytes)?;
 
                 stmt.execute(rusqlite::params![headword, dict_id.0, compressed])?;
                 bump_term_count(&mut terms_found)?;
@@ -426,80 +436,109 @@ pub fn import_zip(state: &AppState, data: &[u8]) -> Result<String> {
 
             info!("      Parsed {} term rows from {}", rows, name);
         }
-        // Branch 2: Metadata / frequencies (term_meta_bank)
-        else if name.contains("term_meta_bank") && name.ends_with(".json") {
-            info!("   -> Processing metadata: {}", name);
-            let mut file = zip.by_name(name)?;
+     // Branch 2: Metadata / frequencies (term_meta_bank)
+else if name.contains("term_meta_bank") && name.ends_with(".json") {
+    info!("   -> Processing metadata: {}", name);
+    let mut file = zip.by_name(name)?;
 
-            let mut stmt =
-                tx.prepare("INSERT INTO terms (term, dictionary_id, json) VALUES (?, ?, ?)")?;
+    let mut stmt =
+        tx.prepare("INSERT INTO terms (term, dictionary_id, json) VALUES (?, ?, ?)")?;
 
-            let rows = parse_json_array_stream::<_, Vec<Value>, _>(&mut file, |arr| {
-                if arr.len() < 3 {
-                    return Ok(());
-                }
-
-                let term = arr.first().and_then(|v| v.as_str()).unwrap_or("");
-                let mode = arr.get(1).and_then(|v| v.as_str()).unwrap_or("");
-                if term.is_empty() || mode != "freq" {
-                    return Ok(());
-                }
-
-                let data_blob = arr.get(2).cloned().unwrap_or(Value::Null);
-                let (display_val, specific_reading) = parse_frequency_value(&data_blob);
-
-                let content_str = if let Some(read) = &specific_reading {
-                    if read != term {
-                        format!("Frequency: {} ({})", display_val, read)
-                    } else {
-                        format!("Frequency: {}", display_val)
-                    }
-                } else {
-                    format!("Frequency: {}", display_val)
-                };
-
-                let record = Record::YomitanGlossary(Glossary {
-                    popularity: 0,
-                    tags: vec![],
-                    content: vec![structured::Content::String(content_str)],
-                });
-
-                let stored = StoredRecord {
-                    dictionary_id: dict_id,
-                    record,
-                    term_tags: None,
-                    reading: specific_reading.clone(),
-                    headword: Some(term.to_string()),
-                };
-
-                let json_bytes = serde_json::to_vec(&stored)?;
-                let compressed = encoder.compress_vec(&json_bytes)?;
-
-                stmt.execute(rusqlite::params![term, dict_id.0, compressed])?;
-                bump_term_count(&mut terms_found)?;
-
-                if let Some(r) = &specific_reading
-                    && r != term
-                {
-                    stmt.execute(rusqlite::params![r, dict_id.0, compressed])?;
-                    bump_term_count(&mut terms_found)?;
-                }
-
-                Ok(())
-            })?;
-
-            info!("      Parsed {} metadata rows from {}", rows, name);
+    let rows = parse_json_array_stream::<_, Vec<Value>, _>(&mut file, |arr| {
+        if arr.len() < 3 {
+            return Ok(());
         }
-    }
 
-    tx.commit()?;
-    info!(
-        "💾 [Import] Database transaction committed. Total Terms: {}",
-        terms_found
-    );
+        let term = arr.first().and_then(|v| v.as_str()).unwrap_or("");
+        let mode = arr.get(1).and_then(|v| v.as_str()).unwrap_or("");
+        
+        // Only process pitch and IPA, skip freq
+        if term.is_empty() || (mode != "pitch" && mode != "ipa") {
+            return Ok(());
+        }
+
+        let data_blob = arr.get(2).cloned().unwrap_or(Value::Null);
+
+        // Handle pitch and IPA metadata modes
+        let (content_str, specific_reading) = match mode {
+            "pitch" => {
+                let reading = data_blob
+                    .get("reading")
+                    .and_then(|v| v.as_str())
+                    .map(|s| s.to_string());
+                let content = format!("Pitch: {}", data_blob.to_string());
+                (content, reading)
+            }
+            "ipa" => {
+                let reading = data_blob
+                    .get("reading")
+                    .and_then(|v| v.as_str())
+                    .map(|s| s.to_string());
+                let content = format!("IPA: {}", data_blob.to_string());
+                (content, reading)
+            }
+            _ => return Ok(()), // Skip anything else
+        };
+
+        let record = Record::YomitanGlossary(Glossary {
+            popularity: 0,
+            tags: vec![],
+            content: vec![structured::Content::String(content_str)],
+        });
+
+        let stored = StoredRecord {
+            dictionary_id: dict_id,
+            record,
+            term_tags: None,
+            reading: specific_reading.clone(),
+            headword: Some(term.to_string()),
+        };
+
+        let json_bytes = serde_json::to_vec(&stored)?;
+        
+        // Try compression, but if it fails, use uncompressed
+        let compressed = match snap::raw::Encoder::new().compress_vec(&json_bytes) {
+            Ok(compressed) if compressed.len() < json_bytes.len() => compressed,
+            Ok(_) | Err(_) => {
+                // If compression fails or makes it bigger, use original
+                json_bytes
+            }
+        };
+
+        // Execute with error handling
+        if let Err(e) = stmt.execute(rusqlite::params![term, dict_id.0, compressed]) {
+            info!("⚠️ Skipping entry '{}': {}", term, e);
+            return Ok(()); // Continue processing other entries
+        }
+        bump_term_count(&mut terms_found)?;
+
+        if let Some(r) = specific_reading {
+            if r != term {
+                if let Err(e) = stmt.execute(rusqlite::params![r, dict_id.0, compressed]) {
+                    info!("⚠️ Skipping reading '{}': {}", r, e);
+                    return Ok(());
+                }
+                bump_term_count(&mut terms_found)?;
+            }
+        }
+
+        Ok(())
+    })?;
+
+    info!("      Parsed {} metadata rows from {}", rows, name);
+}
+    } 
+
+    info!("💾 [Import] Committing transaction...");
+    tx.commit().map_err(|e| {
+        error!("❌ [Import] Database commit failed: {}", e);
+        anyhow!("Database commit failed: {}", e)
+    })?;
+    
+    info!("✅ [Import] Successfully imported '{}'. Total terms: {}", dict_name, terms_found);
 
     Ok(format!("Imported '{}'", dict_name))
-}
+} 
 
 #[cfg(test)]
 mod tests {
@@ -510,7 +549,7 @@ mod tests {
         time::{SystemTime, UNIX_EPOCH},
     };
 
-    use zip::{CompressionMethod, ZipWriter, write::SimpleFileOptions};
+    use zip::{write::SimpleFileOptions, CompressionMethod, ZipWriter};
 
     use super::*;
 
@@ -612,7 +651,9 @@ mod tests {
             );
 
             let err = import_zip(state, &zip).expect_err("non-v3 should fail");
-            assert!(err.to_string().contains("Unsupported dictionary format version"));
+            assert!(err
+                .to_string()
+                .contains("Unsupported dictionary format version"));
         });
     }
 

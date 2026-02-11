@@ -172,7 +172,8 @@ export interface DictionaryResult {
     matchLen?: number;
     termTags?: Array<string | { name?: string; label?: string; tag?: string; value?: string }>;
     frequencies?: any[];
-
+    pitchData?: string[];
+    ipaData?: string[];
 }
 
 export interface DictionaryDefinition {

@@ -2,8 +2,8 @@ use std::collections::{HashMap, HashSet};
 
 use tracing::error;
 use wordbase_api::{
-    DictionaryId, FrequencyValue, Record, RecordEntry, RecordId, Span, Term,
-    dict::yomitan::GlossaryTag,
+    dict::yomitan::GlossaryTag, DictionaryId, FrequencyValue, Record, RecordEntry, RecordId, Span,
+    Term,
 };
 
 use crate::{
@@ -72,7 +72,6 @@ impl LookupService {
 
         let search_text = &text[start_index..];
         let chars: Vec<char> = search_text.chars().take(24).collect();
-        let mut decoder = snap::raw::Decoder::new();
 
         for len in (1..=chars.len()).rev() {
             let substring: String = chars[0..len].iter().collect();
@@ -115,7 +114,10 @@ impl LookupService {
                                 }
                             }
 
-                            if let Ok(decompressed) = decoder.decompress_vec(&compressed_data) {
+                            // Create fresh decoder for each decompression to avoid checksum errors
+                            if let Ok(decompressed) =
+                                snap::raw::Decoder::new().decompress_vec(&compressed_data)
+                            {
                                 if let Ok(stored) =
                                     serde_json::from_slice::<StoredRecord>(&decompressed)
                                 {

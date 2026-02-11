@@ -89,6 +89,12 @@ pub struct ApiGroupedResult {
     pub term_tags: Vec<GlossaryTag>,
     // ADDED: Return the length of the match so the frontend can highlight it
     pub match_len: usize,
+    // ADDED: Pitch accent data
+    #[serde(skip_serializing_if = "Vec::is_empty", default)]
+    pub pitch_data: Vec<String>,
+    // ADDED: IPA transcription data
+    #[serde(skip_serializing_if = "Vec::is_empty", default)]
+    pub ipa_data: Vec<String>,
 }
 
 #[derive(Deserialize)]
@@ -925,7 +931,7 @@ pub struct LanguageRequest {
 }
 
 pub fn load_preferred_language(app_state: &AppState) -> Option<DictionaryLanguage> {
-    let mut conn = app_state.pool.get().ok()?;
+    let conn = app_state.pool.get().ok()?;
     let mut stmt = conn
         .prepare("SELECT value FROM metadata WHERE key = ?")
         .ok()?;
@@ -936,7 +942,7 @@ pub fn load_preferred_language(app_state: &AppState) -> Option<DictionaryLanguag
 }
 
 fn store_preferred_language(app_state: &AppState, language: DictionaryLanguage) {
-    if let Ok(mut conn) = app_state.pool.get() {
+    if let Ok(conn) = app_state.pool.get() {
         let _ = conn.execute(
             "INSERT OR REPLACE INTO metadata (key, value) VALUES ('preferred_language', ?)",
             [language.as_str()],
@@ -1423,6 +1429,8 @@ pub async fn lookup_handler(
         furigana: Vec<(String, String)>,
         glossary: Vec<ApiDefinition>,
         frequencies: Vec<ApiFrequency>,
+        pitch_data: Vec<String>,
+        ipa_data: Vec<String>,
         forms_set: Vec<(String, String)>,
         match_len: usize, // Added to aggregator
     }
@@ -1430,6 +1438,8 @@ pub async fn lookup_handler(
     let mut map: Vec<Aggregator> = Vec::new();
 
     let mut freq_map: HashMap<(String, String), Vec<ApiFrequency>> = HashMap::new();
+    let mut pitch_map: HashMap<(String, String), Vec<String>> = HashMap::new();
+    let mut ipa_map: HashMap<(String, String), Vec<String>> = HashMap::new();
 
     let mut flat_results: Vec<ApiGroupedResult> = Vec::new();
 
@@ -1447,11 +1457,15 @@ pub async fn lookup_handler(
         let match_len = entry.0.span_chars.end as usize;
 
         let mut is_freq = false;
+        let mut is_pitch = false;
+        let mut is_ipa = false;
 
         let (content_val, tags) = if let Record::YomitanGlossary(gloss) = &entry.0.record {
             use wordbase_api::dict::yomitan::structured::Content;
             if let Some(Content::String(s)) = gloss.content.first() {
                 is_freq = s.starts_with("Frequency: ");
+                is_pitch = s.starts_with("Pitch: ");
+                is_ipa = s.starts_with("IPA: ");
             }
             // Simply extract the name field as a string
             let t: Vec<String> = gloss.tags.iter().map(|tag| tag.name.clone()).collect();
@@ -1491,6 +1505,32 @@ pub async fn lookup_handler(
                 .entry((headword.clone(), reading.clone()))
                 .or_default()
                 .push(freq_obj);
+        } else if is_pitch {
+            // === PITCH ACCENT DATA ===
+            if let Some(arr) = content_val.as_array() {
+                if let Some(first) = arr.get(0) {
+                    if let Some(raw) = first.as_str() {
+                        let pitch_str = raw.to_string();
+                        pitch_map
+                            .entry((headword.clone(), reading.clone()))
+                            .or_default()
+                            .push(pitch_str);
+                    }
+                }
+            }
+        } else if is_ipa {
+            // === IPA TRANSCRIPTION DATA ===
+            if let Some(arr) = content_val.as_array() {
+                if let Some(first) = arr.get(0) {
+                    if let Some(raw) = first.as_str() {
+                        let ipa_str = raw.to_string();
+                        ipa_map
+                            .entry((headword.clone(), reading.clone()))
+                            .or_default()
+                            .push(ipa_str);
+                    }
+                }
+            }
         } else {
             // === DEFINITION LOGIC ===
             let def_obj = ApiDefinition {
@@ -1518,6 +1558,8 @@ pub async fn lookup_handler(
                         furigana: calculate_furigana(&headword, &reading),
                         glossary: vec![def_obj],
                         frequencies: vec![], // Will be filled in final pass
+                        pitch_data: vec![], // Will be filled in final pass
+                        ipa_data: vec![],   // Will be filled in final pass
                         term_tags: entry.1.unwrap_or_default(),
                         forms_set: vec![(headword.clone(), reading.clone())],
                         match_len,
@@ -1530,6 +1572,8 @@ pub async fn lookup_handler(
                     furigana: calculate_furigana(&headword, &reading),
                     glossary: vec![def_obj],
                     frequencies: vec![], // Will be filled in final pass
+                    pitch_data: vec![], // Will be filled in final pass
+                    ipa_data: vec![],   // Will be filled in final pass
                     term_tags: entry.1.unwrap_or_default(),
                     forms: vec![ApiForm {
                         headword: headword.clone(),
@@ -1549,6 +1593,14 @@ pub async fn lookup_handler(
                 if let Some(freqs) = freq_map.get(&(agg.headword.clone(), agg.reading.clone())) {
                     agg.frequencies.extend(freqs.clone());
                 }
+                // Attach pitch data if they exist for this word
+                if let Some(pitches) = pitch_map.get(&(agg.headword.clone(), agg.reading.clone())) {
+                    agg.pitch_data.extend(pitches.clone());
+                }
+                // Attach IPA data if they exist for this word
+                if let Some(ipas) = ipa_map.get(&(agg.headword.clone(), agg.reading.clone())) {
+                    agg.ipa_data.extend(ipas.clone());
+                }
 
                 ApiGroupedResult {
                     headword: agg.headword,
@@ -1556,6 +1608,8 @@ pub async fn lookup_handler(
                     furigana: agg.furigana,
                     glossary: agg.glossary,
                     frequencies: agg.frequencies,
+                    pitch_data: agg.pitch_data,
+                    ipa_data: agg.ipa_data,
                     term_tags: agg.term_tags,
                     forms: agg
                         .forms_set
@@ -1576,6 +1630,14 @@ pub async fn lookup_handler(
         for res in &mut flat_results {
             if let Some(freqs) = freq_map.get(&(res.headword.clone(), res.reading.clone())) {
                 res.frequencies.extend(freqs.clone());
+            }
+            // Attach pitch data if they exist for this word
+            if let Some(pitches) = pitch_map.get(&(res.headword.clone(), res.reading.clone())) {
+                res.pitch_data.extend(pitches.clone());
+            }
+            // Attach IPA data if they exist for this word
+            if let Some(ipas) = ipa_map.get(&(res.headword.clone(), res.reading.clone())) {
+                res.ipa_data.extend(ipas.clone());
             }
         }
 
