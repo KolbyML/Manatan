@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useCallback } from 'react';
+import React, { useState, useMemo, useCallback, useLayoutEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import { useOCR } from '@/Manatan/context/OCRContext';
 import { findNotes, addNote, guiBrowse, imageUrlToBase64Webp, logAnkiError } from '@/Manatan/utils/anki';
@@ -449,13 +449,35 @@ const AudioMenu: React.FC<AudioMenuProps> = ({
     x, y, entry, wordAudioOptions, wordAudioAvailability, wordAudioAutoAvailable,
     activeWordAudioSelection, onPlayAudio, onSelectSource,
 }) => {
-    return (
+    const menuRef = useRef<HTMLDivElement | null>(null);
+    const [menuPosition, setMenuPosition] = useState({ top: y, left: x });
+
+    useLayoutEffect(() => {
+        const margin = 8;
+        const menuEl = menuRef.current;
+        const rect = menuEl?.getBoundingClientRect();
+        const width = rect?.width ?? 220;
+        const height = rect?.height ?? 180;
+
+        const maxLeft = Math.max(margin, window.innerWidth - width - margin);
+        const maxTop = Math.max(margin, window.innerHeight - height - margin);
+
+        setMenuPosition({
+            left: Math.min(Math.max(x, margin), maxLeft),
+            top: Math.min(Math.max(y, margin), maxTop),
+        });
+    }, [x, y, wordAudioOptions.length]);
+
+    return createPortal(
         <div
+            ref={menuRef}
             data-word-audio-menu="true"
             onMouseDown={(event) => event.stopPropagation()}
             onClick={(event) => event.stopPropagation()}
+            onContextMenu={(event) => { event.preventDefault(); event.stopPropagation(); }}
             style={{
-                position: 'fixed', top: y, left: x, zIndex: 2147483647, background: '#1a1d21',
+                position: 'fixed', top: menuPosition.top, left: menuPosition.left,
+                zIndex: 2147483647, background: '#1a1d21',
                 border: '1px solid rgba(255,255,255,0.12)', borderRadius: '8px', boxShadow: '0 10px 25px rgba(0,0,0,0.45)',
                 padding: '6px', minWidth: '220px',
             }}
@@ -513,7 +535,8 @@ const AudioMenu: React.FC<AudioMenuProps> = ({
                     </button>
                 </div>
             ))}
-        </div>
+        </div>,
+        document.body,
     );
 };
 
