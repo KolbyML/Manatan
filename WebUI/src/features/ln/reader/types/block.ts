@@ -1,5 +1,6 @@
 /**
  * Block-based position tracking types
+ * Unified format for both local reading and cross-device sync
  */
 
 export interface Block {
@@ -47,13 +48,31 @@ export type BlockType =
     | 'figcaption'
     | 'caption';
 
+/**
+ * Flat BlockIndexMap for sync and position tracking
+ * Compatible with Rust backend BlockIndexMap struct
+ */
 export interface BlockIndexMap {
+    /** Block identifier (e.g., "ch4-b12") */
+    blockId: string;
+    
+    /** Character offset where this block starts */
+    startOffset: number;
+    
+    /** Character offset where this block ends */
+    endOffset: number;
+}
+
+/**
+ * Chapter-level block information (for internal processing)
+ */
+export interface ChapterBlockInfo {
     /** All blocks in this chapter */
     blocks: Block[];
-
+    
     /** Total clean characters in chapter */
     totalChars: number;
-
+    
     /** Chapter index (0-indexed) */
     chapterIndex: number;
 }

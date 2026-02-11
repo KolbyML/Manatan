@@ -1,4 +1,4 @@
-import { Block, BlockIndexMap, BlockType } from '../types/block';
+import { Block, BlockIndexMap, ChapterBlockInfo, BlockType } from '../types/block';
 
 // ============================================================================
 // Constants
@@ -265,7 +265,8 @@ export function processChapterHTML(
     chapterIndex: number
 ): {
     processedHtml: string;
-    blockMap: BlockIndexMap;
+    blockMap: BlockIndexMap[];
+    chapterBlockInfo: ChapterBlockInfo;
 } {
     // Parse HTML
     const parser = new DOMParser();
@@ -381,13 +382,24 @@ export function processChapterHTML(
         console.log(`[BlockProcessor] Chapter ${chapterIndex}: ${blocks.length} blocks, ${totalChars} chars, ${significantBlocks} significant, ${imageBlocks} with images`);
     }
 
+    // Convert to flat BlockIndexMap format
+    const blockIndexMap: BlockIndexMap[] = blocks.map(block => ({
+        blockId: block.id,
+        startOffset: block.cleanCharStart,
+        endOffset: block.cleanCharStart + block.cleanCharCount,
+    }));
+
+    // Also return chapter block info for local processing
+    const chapterBlockInfo: ChapterBlockInfo = {
+        blocks,
+        totalChars,
+        chapterIndex,
+    };
+
     return {
         processedHtml: doc.body.innerHTML,
-        blockMap: {
-            blocks,
-            totalChars,
-            chapterIndex,
-        },
+        blockMap: blockIndexMap,
+        chapterBlockInfo,
     };
 }
 
@@ -396,20 +408,20 @@ export function processChapterHTML(
 // ============================================================================
 
 /**
- * Find a block by ID in a block map
+ * Find a block by ID in chapter block info
  */
-export function findBlockById(blockMap: BlockIndexMap, blockId: string): Block | undefined {
-    return blockMap.blocks.find(b => b.id === blockId);
+export function findBlockById(chapterInfo: ChapterBlockInfo, blockId: string): Block | undefined {
+    return chapterInfo.blocks.find(b => b.id === blockId);
 }
 
 /**
  * Find block containing a specific character offset within the chapter
  */
 export function findBlockAtCharOffset(
-    blockMap: BlockIndexMap,
+    chapterInfo: ChapterBlockInfo,
     charOffset: number
 ): Block | undefined {
-    for (const block of blockMap.blocks) {
+    for (const block of chapterInfo.blocks) {
         const blockEnd = block.cleanCharStart + block.cleanCharCount;
         if (charOffset >= block.cleanCharStart && charOffset < blockEnd) {
             return block;
@@ -417,22 +429,22 @@ export function findBlockAtCharOffset(
     }
 
     // If past all blocks, return last block
-    if (blockMap.blocks.length > 0 && charOffset >= blockMap.totalChars) {
-        return blockMap.blocks[blockMap.blocks.length - 1];
+    if (chapterInfo.blocks.length > 0 && charOffset >= chapterInfo.totalChars) {
+        return chapterInfo.blocks[chapterInfo.blocks.length - 1];
     }
 
-    return blockMap.blocks[0]; // Return first block as fallback
+    return chapterInfo.blocks[0]; // Return first block as fallback
 }
 
 /**
- * Calculate character offset from block position
+ * Calculate character offset from block ID and local offset
  */
 export function calculateCharOffsetFromBlock(
-    blockMap: BlockIndexMap,
+    chapterInfo: ChapterBlockInfo,
     blockId: string,
     localOffset: number
 ): number {
-    const block = findBlockById(blockMap, blockId);
+    const block = findBlockById(chapterInfo, blockId);
     if (!block) return 0;
 
     return block.cleanCharStart + Math.min(localOffset, block.cleanCharCount);
@@ -441,18 +453,18 @@ export function calculateCharOffsetFromBlock(
 /**
  * Get the first significant block in a chapter
  */
-export function getFirstSignificantBlock(blockMap: BlockIndexMap): Block | undefined {
-    return blockMap.blocks.find(b => (b as any).isSignificant) || blockMap.blocks[0];
+export function getFirstSignificantBlock(chapterInfo: ChapterBlockInfo): Block | undefined {
+    return chapterInfo.blocks.find(b => (b as any).isSignificant) || chapterInfo.blocks[0];
 }
 
 /**
  * Check if a chapter is image-only
  */
-export function isImageOnlyChapter(blockMap: BlockIndexMap): boolean {
-    if (blockMap.blocks.length === 0) return false;
+export function isImageOnlyChapter(chapterInfo: ChapterBlockInfo): boolean {
+    if (chapterInfo.blocks.length === 0) return false;
 
-    const hasText = blockMap.totalChars > 50;
-    const hasImages = blockMap.blocks.some(b => (b as any).hasImages);
+    const hasText = chapterInfo.totalChars > 50;
+    const hasImages = chapterInfo.blocks.some(b => (b as any).hasImages);
 
     return !hasText && hasImages;
 }
@@ -460,20 +472,15 @@ export function isImageOnlyChapter(blockMap: BlockIndexMap): boolean {
 /**
  * Debug: Log block map statistics
  */
-export function logBlockMapStats(blockMap: BlockIndexMap): void {
-    const significantBlocks = blockMap.blocks.filter(b => (b as any).isSignificant).length;
-    const imageBlocks = blockMap.blocks.filter(b => (b as any).hasImages).length;
-    const fallbackBlocks = blockMap.blocks.filter(b => (b as any).isFallback).length;
+export function logBlockMapStats(chapterInfo: ChapterBlockInfo): void {
+    const totalBlocks = chapterInfo.blocks.length;
+    const significantBlocks = chapterInfo.blocks.filter(b => (b as any).isSignificant).length;
+    const imageBlocks = chapterInfo.blocks.filter(b => (b as any).hasImages).length;
 
-    console.log(`[BlockProcessor] Chapter ${blockMap.chapterIndex}:`, {
-        totalBlocks: blockMap.blocks.length,
-        totalChars: blockMap.totalChars,
+    console.log(`[BlockMap Stats] Chapter ${chapterInfo.chapterIndex}:`, {
+        totalBlocks,
         significantBlocks,
         imageBlocks,
-        fallbackBlocks,
-        blockTypes: blockMap.blocks.reduce((acc, b) => {
-            acc[b.type] = (acc[b.type] || 0) + 1;
-            return acc;
-        }, {} as Record<string, number>),
+        totalChars: chapterInfo.totalChars,
     });
 }

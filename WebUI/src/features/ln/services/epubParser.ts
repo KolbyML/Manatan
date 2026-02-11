@@ -4,7 +4,7 @@ import DOMPurify from 'dompurify';
 import { resolvePath } from '../reader/utils/pathUtils';
 import { BookStats, LNMetadata, LNParsedBook } from '@/lib/storage/AppStorage';
 import { processChapterHTML, getCleanCharacterCount, logBlockMapStats } from '../reader/utils/blockProcessor';
-import { BlockIndexMap } from '../reader/types/block';
+import { BlockIndexMap, ChapterBlockInfo } from '../reader/types/block';
 
 // ============================================================================
 // Types
@@ -524,26 +524,28 @@ export async function parseEpub(
         }
 
         // ====================================================================
-        // 9. Process Chapters into Blocks (NEW)
+        // 9. Process Chapters into Blocks
         // ====================================================================
 
         report('blocks', 70, 'Processing blocks for position tracking...');
 
         const blockMaps: BlockIndexMap[] = [];
         const chapterLengths: number[] = [];
+        const chapterBlockInfos: ChapterBlockInfo[] = [];
 
         for (let i = 0; i < chapters.length; i++) {
             try {
-                const { processedHtml, blockMap } = processChapterHTML(chapters[i], i);
+                const { processedHtml, blockMap, chapterBlockInfo } = processChapterHTML(chapters[i], i);
 
                 // Replace chapter with block-indexed HTML
                 chapters[i] = processedHtml;
-                blockMaps.push(blockMap);
-                chapterLengths.push(blockMap.totalChars);
+                blockMaps.push(...blockMap); // Spread flat array
+                chapterLengths.push(chapterBlockInfo.totalChars);
+                chapterBlockInfos.push(chapterBlockInfo);
 
-                // Log stats for debugging (can be removed in production)
+                // Log stats for debugging
                 if (i < 3 || i === chapters.length - 1) {
-                    logBlockMapStats(blockMap);
+                    logBlockMapStats(chapterBlockInfo);
                 }
             } catch (err) {
                 console.error(`[EPUB Parser] Block processing failed for chapter ${i}:`, err);
@@ -551,11 +553,7 @@ export async function parseEpub(
                 // Fallback: use simple character count without block indexing
                 const fallbackLength = getCleanCharacterCount(chapters[i].replace(/<[^>]*>/g, ''));
                 chapterLengths.push(fallbackLength);
-                blockMaps.push({
-                    blocks: [],
-                    totalChars: fallbackLength,
-                    chapterIndex: i,
-                });
+                // Empty blockMaps for fallback - no blocks to track
             }
 
             if (i % 10 === 0 || i === chapters.length - 1) {
@@ -575,7 +573,7 @@ export async function parseEpub(
         const stats: BookStats = {
             chapterLengths,
             totalLength,
-            blockMaps, // NEW: Include block maps for position tracking
+            blockMaps,
         };
 
         // Log summary
@@ -583,7 +581,7 @@ export async function parseEpub(
             title,
             chapters: chapters.length,
             totalChars: totalLength,
-            totalBlocks: blockMaps.reduce((sum, bm) => sum + bm.blocks.length, 0),
+            totalBlocks: blockMaps.length,
             images: Object.keys(imageBlobs).length / 3, // Divided by 3 due to path variations
         });
 

@@ -184,11 +184,19 @@ function scrollToBlock(
     isVertical: boolean,
     isRTL: boolean
 ): void {
-    block.scrollIntoView({
-        block: isVertical ? 'nearest' : 'start',
-        inline: isVertical ? (isRTL ? 'start' : 'end') : 'nearest',
-        behavior: 'auto',
-    });
+    if (isVertical) {
+        block.scrollIntoView({
+            block: 'end',
+            inline: 'start',
+            behavior: 'auto',
+        });
+    } else {
+        block.scrollIntoView({
+            block: 'start',
+            inline: 'nearest',
+            behavior: 'auto',
+        });
+    }
 }
 
 /**

@@ -9,7 +9,7 @@ export interface BlockTrackerOptions {
     /** Callback when active block changes */
     onActiveBlockChange: (blockId: string, element: Element) => void;
 
-    /** Optional: Callback for any intersection change (for debugging) */
+    /** Optional: Callback for any intersection change */
     onIntersectionChange?: (entries: IntersectionObserverEntry[]) => void;
 }
 
@@ -169,7 +169,7 @@ export class BlockTracker {
     }
 
     /**
-     * Get all visible blocks (for debugging)
+     * Get all visible blocks
      */
     getVisibleBlocks(): BlockVisibility[] {
         return Array.from(this.visibilityMap.values())
