@@ -1,5 +1,14 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode, useMemo, useCallback, useRef } from 'react';
 import { Settings, DEFAULT_SETTINGS, MergeState, OcrBlock, COLOR_THEMES, ServerSettingsData, DictPopupState, OcrStatus, DialogState } from '@/Manatan/types';
+import { useLocation } from 'react-router-dom';
+import {
+    AuthCredentials,
+    ChapterStatus,
+    buildChapterBaseUrl,
+    checkChapterStatus,
+    preprocessChapter,
+    deleteChapterOcr as deleteChapterOcrRequest,
+} from '@/Manatan/utils/api';
 import { requestManager } from '@/lib/requests/RequestManager';
 import { AppStorage } from '@/lib/storage/AppStorage.ts';
 
@@ -19,6 +28,12 @@ interface OCRContextType {
     updateOcrData: (imgSrc: string, data: OcrBlock[]) => void;
     ocrStatusMap: Map<string, OcrStatus>;
     setOcrStatus: (imgSrc: string, status: OcrStatus) => void;    
+
+    chapterOcrStatusMap: Map<string, ChapterStatus>;
+    refreshChapterOcrStatus: (chapterPath: string) => Promise<ChapterStatus>;
+    startChapterOcr: (chapterPath: string) => Promise<void>;
+    deleteChapterOcr: (chapterPath: string, deleteData?: boolean) => Promise<void>;
+
     mergeAnchor: MergeState;
     setMergeAnchor: React.Dispatch<React.SetStateAction<MergeState>>;
     activeImageSrc: string | null;
@@ -47,6 +62,7 @@ interface OCRContextType {
 const OCRContext = createContext<OCRContextType | undefined>(undefined);
 
 export const OCRProvider = ({ children }: { children: ReactNode }) => {
+    const location = useLocation();
     const { data: serverSettingsData } = requestManager.useGetServerSettings();
     const serverSettings: ServerSettingsData | null = serverSettingsData?.settings || null;
 
@@ -94,6 +110,37 @@ export const OCRProvider = ({ children }: { children: ReactNode }) => {
 
     const [ocrCache, setOcrCache] = useState<Map<string, OcrBlock[]>>(new Map());
     const [ocrStatusMap, setOcrStatusMap] = useState<Map<string, OcrStatus>>(new Map());    
+    const [chapterOcrStatusMap, setChapterOcrStatusMap] = useState<Map<string, ChapterStatus>>(new Map());
+
+    const chapterPollTimeoutsRef = useRef<Map<string, number>>(new Map());
+    const chapterPollInFlightRef = useRef<Set<string>>(new Set());
+    const chapterStartingUntilRef = useRef<Map<string, number>>(new Map());
+    const prevPathnameRef = useRef<string>('');
+
+    const stopChapterPolling = useCallback((chapterPath: string) => {
+        const timeout = chapterPollTimeoutsRef.current.get(chapterPath);
+        if (timeout != null) {
+            clearTimeout(timeout);
+            chapterPollTimeoutsRef.current.delete(chapterPath);
+        }
+    }, []);
+
+    const stopAllChapterPolling = useCallback(() => {
+        chapterPollTimeoutsRef.current.forEach((timeout) => {
+            clearTimeout(timeout);
+        });
+        chapterPollTimeoutsRef.current.clear();
+        chapterPollInFlightRef.current.clear();
+        chapterStartingUntilRef.current.clear();
+    }, []);
+
+    const creds = useMemo<AuthCredentials | undefined>(() => {
+        if (!serverSettings?.authUsername) return undefined;
+        return {
+            user: serverSettings.authUsername,
+            pass: serverSettings.authPassword,
+        };
+    }, [serverSettings?.authPassword, serverSettings?.authUsername]);
     const [mergeAnchor, setMergeAnchor] = useState<MergeState>(null);
     const [activeImageSrc, setActiveImageSrc] = useState<string | null>(null);
     const [debugLog, setDebugLog] = useState<string[]>([]);
@@ -131,6 +178,126 @@ export const OCRProvider = ({ children }: { children: ReactNode }) => {
     const setOcrStatus = useCallback((imgSrc: string, status: OcrStatus) => {
          setOcrStatusMap((prev) => new Map(prev).set(imgSrc, status));
     }, []);
+
+    const refreshChapterOcrStatus = useCallback(
+        async (chapterPath: string): Promise<ChapterStatus> => {
+            const baseUrl = buildChapterBaseUrl(chapterPath);
+            const res = await checkChapterStatus(baseUrl, creds, settings.yomitanLanguage);
+            setChapterOcrStatusMap((prev) => new Map(prev).set(chapterPath, res));
+            return res;
+        },
+        [creds, settings.yomitanLanguage],
+    );
+
+    const scheduleChapterPoll = useCallback(
+        (chapterPath: string, fn: () => void, delayMs: number) => {
+            stopChapterPolling(chapterPath);
+            const timeout = window.setTimeout(fn, delayMs);
+            chapterPollTimeoutsRef.current.set(chapterPath, timeout);
+        },
+        [stopChapterPolling],
+    );
+
+    const pollChapterUntilDone = useCallback(
+        async (chapterPath: string) => {
+            if (chapterPollInFlightRef.current.has(chapterPath)) {
+                scheduleChapterPoll(chapterPath, () => {
+                    void pollChapterUntilDone(chapterPath);
+                }, 250);
+                return;
+            }
+
+            chapterPollInFlightRef.current.add(chapterPath);
+            try {
+                const res = await refreshChapterOcrStatus(chapterPath);
+                if (res.status === 'processed') {
+                    stopChapterPolling(chapterPath);
+                    chapterStartingUntilRef.current.delete(chapterPath);
+                    return;
+                }
+
+                const now = Date.now();
+                const startingUntil = chapterStartingUntilRef.current.get(chapterPath) ?? 0;
+                const shouldKeepPolling = res.status === 'processing' || (startingUntil > 0 && now < startingUntil);
+
+                if (shouldKeepPolling) {
+                    scheduleChapterPoll(chapterPath, () => {
+                        void pollChapterUntilDone(chapterPath);
+                    }, 500);
+                } else {
+                    stopChapterPolling(chapterPath);
+                    chapterStartingUntilRef.current.delete(chapterPath);
+                }
+            } finally {
+                chapterPollInFlightRef.current.delete(chapterPath);
+            }
+        },
+        [refreshChapterOcrStatus, scheduleChapterPoll, stopChapterPolling],
+    );
+
+    const startChapterOcr = useCallback(
+        async (chapterPath: string) => {
+            // Give immediate UI feedback and keep polling briefly even if the server still reports idle.
+            chapterStartingUntilRef.current.set(chapterPath, Date.now() + 10_000);
+            setChapterOcrStatusMap((prev) => {
+                const next = new Map(prev);
+                const existing = next.get(chapterPath);
+                const optimisticTotal = (() => {
+                    if (!existing) return 0;
+                    if (existing.status === 'processing') return existing.total;
+                    if (existing.status === 'idle') return existing.total;
+                    return 0;
+                })();
+                next.set(chapterPath, { status: 'processing', progress: 0, total: optimisticTotal });
+                return next;
+            });
+
+            void pollChapterUntilDone(chapterPath);
+
+            const baseUrl = buildChapterBaseUrl(chapterPath);
+            const current = await checkChapterStatus(baseUrl, creds, settings.yomitanLanguage);
+            setChapterOcrStatusMap((prev) => new Map(prev).set(chapterPath, current));
+
+            if (current.status === 'processed') {
+                stopChapterPolling(chapterPath);
+                chapterStartingUntilRef.current.delete(chapterPath);
+                return;
+            }
+
+            if (current.status === 'processing') {
+                // Job already running, polling will pick it up.
+                return;
+            }
+
+            try {
+                await preprocessChapter(baseUrl, chapterPath, creds, settings.yomitanLanguage);
+            } catch (err) {
+                // If enqueue failed, reset status to idle snapshot.
+                console.error(err);
+                chapterStartingUntilRef.current.delete(chapterPath);
+                stopChapterPolling(chapterPath);
+                setChapterOcrStatusMap((prev) => new Map(prev).set(chapterPath, current));
+            }
+        },
+        [creds, pollChapterUntilDone, settings.yomitanLanguage, stopChapterPolling],
+    );
+
+    const deleteChapterOcr = useCallback(
+        async (chapterPath: string, deleteData: boolean = true) => {
+            stopChapterPolling(chapterPath);
+            chapterStartingUntilRef.current.delete(chapterPath);
+
+            const baseUrl = buildChapterBaseUrl(chapterPath);
+            await deleteChapterOcrRequest(baseUrl, creds, settings.yomitanLanguage, deleteData);
+
+            setChapterOcrStatusMap((prev) => {
+                const next = new Map(prev);
+                next.set(chapterPath, { status: 'idle', cached: 0, total: 0 });
+                return next;
+            });
+        },
+        [creds, settings.yomitanLanguage, stopChapterPolling],
+    );
 
     // --- Dialog Helpers ---
     
@@ -182,12 +349,41 @@ export const OCRProvider = ({ children }: { children: ReactNode }) => {
         else document.body.classList.remove('mobile-mode');
     }, [settings]);
 
+    useEffect(() => {
+        // OCR cache keys are language-scoped; invalidate chapter statuses when language changes.
+        setChapterOcrStatusMap(new Map());
+        stopAllChapterPolling();
+    }, [settings.yomitanLanguage, stopAllChapterPolling]);
+
+    useEffect(() => {
+        const prevPathname = prevPathnameRef.current;
+        const nextPathname = location.pathname;
+        prevPathnameRef.current = nextPathname;
+
+        // When leaving the reader, chapter OCR statuses become stale because pages may have been
+        // OCR'd on-demand. Invalidate that manga's chapter statuses so the manga page re-fetches.
+        const prevReaderMatch = prevPathname.match(/^\/manga\/(\d+)\/chapter\//);
+        const nextIsReader = /^\/manga\/\d+\/chapter\//.test(nextPathname);
+        if (prevReaderMatch && !nextIsReader) {
+            const mangaId = prevReaderMatch[1];
+            const prefix = `/manga/${mangaId}/chapter/`;
+            setChapterOcrStatusMap((prev) => {
+                const next = new Map(prev);
+                Array.from(next.keys()).forEach((key) => {
+                    if (key.startsWith(prefix)) next.delete(key);
+                });
+                return next;
+            });
+        }
+    }, [location.pathname]);
+
     const contextValue = useMemo(
         () => ({
             settings, setSettings, serverSettings,
             isSettingsOpen, openSettings, closeSettings,
             isSetupOpen, openSetup, closeSetup,
             ocrCache, updateOcrData, ocrStatusMap, setOcrStatus,
+            chapterOcrStatusMap, refreshChapterOcrStatus, startChapterOcr, deleteChapterOcr,
             mergeAnchor, setMergeAnchor, activeImageSrc, setActiveImageSrc,
             dictPopup, setDictPopup, notifyPopupClosed, wasPopupClosedRecently,
             debugLog, addLog,
@@ -198,6 +394,7 @@ export const OCRProvider = ({ children }: { children: ReactNode }) => {
             isSettingsOpen, openSettings, closeSettings,
             isSetupOpen, openSetup, closeSetup,
             ocrCache, updateOcrData, ocrStatusMap, setOcrStatus, 
+            chapterOcrStatusMap, refreshChapterOcrStatus, startChapterOcr, deleteChapterOcr,
             mergeAnchor, activeImageSrc, dictPopup, notifyPopupClosed, wasPopupClosedRecently,
             debugLog, addLog,
             dialogState, showDialog, closeDialog, showConfirm, showAlert, showProgress

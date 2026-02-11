@@ -14,7 +14,7 @@ import Stack from '@mui/material/Stack';
 import Card from '@mui/material/Card';
 import IconButton from '@mui/material/IconButton';
 import { useTheme } from '@mui/material/styles';
-import React, { memo, MouseEvent, TouchEvent, useRef } from 'react';
+import React, { memo, MouseEvent, TouchEvent, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import PopupState, { bindMenu, bindTrigger } from 'material-ui-popup-state';
@@ -30,6 +30,7 @@ import { applyStyles } from '@/base/utils/ApplyStyles.ts';
 import { ChapterCardMetadata } from '@/features/chapter/components/cards/ChapterCardMetadata.tsx';
 import { MUIUtil } from '@/lib/mui/MUI.util.ts';
 import { ListCardContent } from '@/base/components/lists/cards/ListCardContent.tsx';
+import { useOCR } from '@/Manatan/context/OCRContext.tsx';
 import {
     ChapterBookmarkInfo,
     ChapterDownloadInfo,
@@ -64,6 +65,7 @@ export const ChapterCard = memo((props: IProps) => {
     const { t } = useTranslation();
     const theme = useTheme();
     const preventMobileContextMenu = MediaQuery.usePreventMobileContextMenu();
+    const { chapterOcrStatusMap, refreshChapterOcrStatus } = useOCR();
 
     const menuButtonRef = useRef<HTMLButtonElement>(null);
 
@@ -97,6 +99,28 @@ export const ChapterCard = memo((props: IProps) => {
         secondaryTextParts.push(chapter.scanlator);
     }
     const secondaryText = secondaryTextParts.join(' • ');
+
+    const chapterPath = `/manga/${chapter.mangaId}/chapter/${chapter.sourceOrder}`;
+    const ocrStatus = chapterOcrStatusMap.get(chapterPath);
+
+    useEffect(() => {
+        if (ocrStatus) return;
+        void refreshChapterOcrStatus(chapterPath);
+    }, [chapterPath, ocrStatus, refreshChapterOcrStatus]);
+
+    const ocrLabel = (() => {
+        if (!ocrStatus) return '';
+        if (ocrStatus.status === 'processing') {
+            if (ocrStatus.total > 0) return `OCR PROCESSING (${ocrStatus.progress}/${ocrStatus.total})`;
+            return 'OCR PROCESSING';
+        }
+        if (ocrStatus.status === 'processed') return 'OCR PROCESSED';
+        if (ocrStatus.status === 'idle' && ocrStatus.cached > 0) {
+            if (ocrStatus.total > 0) return `OCR PROCESSED (${ocrStatus.cached}/${ocrStatus.total})`;
+            return `OCR PROCESSED (${ocrStatus.cached})`;
+        }
+        return '';
+    })();
 
     const handleClick = (event: MouseEvent | TouchEvent) => {
         if (!isSelecting) return;
@@ -156,7 +180,7 @@ export const ChapterCard = memo((props: IProps) => {
                                         title
                                     }
                                     secondaryText={secondaryText || undefined}
-                                    ternaryText={`${getDateString(Number(chapter.uploadDate ?? 0), true)}${isDownloaded ? ` • ${t('chapter.status.label.downloaded')}` : ''}`}
+                                    ternaryText={`${getDateString(Number(chapter.uploadDate ?? 0), true)}${isDownloaded ? ` • ${t('chapter.status.label.downloaded')}` : ''}${ocrLabel ? ` • ${ocrLabel}` : ''}`}
                                     infoIcons={
                                         chapter.isBookmarked && (
                                             <BookmarkIcon

@@ -34,6 +34,7 @@ pub fn create_router(cache_dir: PathBuf) -> Router {
             post(handlers::is_chapters_preprocessed_handler),
         )
         .route("/preprocess-chapter", post(handlers::preprocess_handler))
+        .route("/delete-chapter", post(handlers::delete_chapter_handler))
         .route("/purge-cache", post(handlers::purge_cache_handler))
         .route("/export-cache", get(handlers::export_cache_handler))
         .route("/import-cache", post(handlers::import_cache_handler))

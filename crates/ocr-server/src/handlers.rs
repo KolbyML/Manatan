@@ -70,6 +70,21 @@ pub async fn ocr_handler(
         state.requests_processed.fetch_add(1, Ordering::Relaxed);
         return Ok(Json(entry.data));
     }
+
+    // Back-compat: older versions included sourceId in the cache key.
+    // Try to find a matching entry and promote it to the normalized key.
+    if let Some((_legacy_key, legacy_entry)) = state.get_cache_entry_sourceid_variant(&cache_key) {
+        info!(
+            "OCR Handler: Cache HIT via sourceId variant for cache_key={}",
+            cache_key
+        );
+        if let Some(chapter_key) = chapter_key.as_deref() {
+            state.insert_chapter_cache(chapter_key, &cache_key);
+        }
+        state.insert_cache_entry(&cache_key, &legacy_entry);
+        state.requests_processed.fetch_add(1, Ordering::Relaxed);
+        return Ok(Json(legacy_entry.data));
+    }
     info!(
         "OCR Handler: Cache MISS for cache_key={}. Starting processing.",
         cache_key
@@ -323,7 +338,6 @@ pub async fn preprocess_handler(
         Some(p) => p,
         None => return Json(serde_json::json!({ "error": "No pages provided" })),
     };
-    let chapter_key = logic::get_cache_key(&req.base_url, Some(language));
 
     let is_processing = {
         state
@@ -353,6 +367,40 @@ pub async fn preprocess_handler(
     });
 
     Json(serde_json::json!({ "status": "started" }))
+}
+
+#[derive(Deserialize)]
+pub struct DeleteChapterRequest {
+    pub base_url: String,
+    pub delete_data: Option<bool>,
+    pub language: Option<OcrLanguage>,
+}
+
+pub async fn delete_chapter_handler(
+    State(state): State<AppState>,
+    Json(req): Json<DeleteChapterRequest>,
+) -> Json<serde_json::Value> {
+    let language = req.language.unwrap_or_default();
+    let chapter_key = logic::get_cache_key(&req.base_url, Some(language));
+    let delete_data = req.delete_data.unwrap_or(true);
+
+    // If a job is currently tracked, drop the progress entry.
+    // This doesn't cancel the underlying task, but keeps status checks consistent.
+    {
+        let mut locked = state.active_chapter_jobs.write().expect("lock poisoned");
+        locked.remove(&chapter_key);
+    }
+
+    let (chapter_cache_rows, chapter_pages_rows, ocr_cache_rows) =
+        state.delete_chapter_ocr(&chapter_key, delete_data);
+
+    Json(serde_json::json!({
+        "status": "deleted",
+        "chapter_cache_rows": chapter_cache_rows,
+        "chapter_pages_rows": chapter_pages_rows,
+        "ocr_cache_rows": ocr_cache_rows,
+        "delete_data": delete_data,
+    }))
 }
 
 pub async fn purge_cache_handler(State(state): State<AppState>) -> Json<serde_json::Value> {

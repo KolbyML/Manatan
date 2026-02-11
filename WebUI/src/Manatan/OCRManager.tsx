@@ -3,7 +3,6 @@ import { useReaderSettingsStore, useReaderPagesStore } from '@/features/reader/s
 import { useMangaObserver } from './hooks/useMangaObserver';
 import { ImageOverlay } from './components/ImageOverlay';
 import { SettingsModal } from './components/SettingsModal';
-import { ChapterListInjector } from './components/ChapterListInjector'; 
 import { SettingsInjector } from './components/SettingsInjector';
 import { YomitanPopup } from './components/YomitanPopup'; 
 import { useOCR } from './context/OCRContext';
@@ -119,7 +118,6 @@ export const OCRManager = () => {
     return (
         <>
             <SettingsInjector />
-            <ChapterListInjector />
             <GlobalDialog />
             <SetupWizard />
             
