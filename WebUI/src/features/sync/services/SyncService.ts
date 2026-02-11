@@ -112,13 +112,19 @@ export class SyncService {
                 if (metadata) {
                     let needsMigration = false;
                     
-                    // Check if migration is needed (snake_case format)
-                    if (metadata.added_at !== undefined || 
+                    // Check if migration is needed (snake_case format OR wrong blockMaps format)
+                    const hasSnakeCase = metadata.added_at !== undefined || 
                         metadata.is_processing !== undefined || 
-                        metadata.stats?.chapter_lengths !== undefined) {
+                        metadata.stats?.chapter_lengths !== undefined;
+                    
+                    // Check if blockMaps is in old reader format (nested blocks array)
+                    const blockMaps = metadata.stats?.block_maps || metadata.stats?.blockMaps || [];
+                    const hasReaderFormatBlocks = blockMaps.length > 0 && blockMaps[0]?.blocks !== undefined;
+                    
+                    if (hasSnakeCase || hasReaderFormatBlocks) {
                         needsMigration = true;
                         
-                        // Migrate to camelCase
+                        // Migrate to camelCase and fix blockMaps format
                         metadata = {
                             id: metadata.id,
                             title: metadata.title,
@@ -131,13 +137,31 @@ export class SyncService {
                             stats: {
                                 chapterLengths: metadata.stats?.chapter_lengths || metadata.stats?.chapterLengths || [],
                                 totalLength: metadata.stats?.total_length || metadata.stats?.totalLength || 0,
-                                blockMaps: (metadata.stats?.block_maps || metadata.stats?.blockMaps || [])
-                                    .filter((block: any) => block && (block.startOffset !== undefined || block.start_offset !== undefined))
-                                    .map((block: any) => ({
-                                        blockId: block.blockId || block.block_id || `generated-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
-                                        startOffset: block.startOffset || block.start_offset || 0,
-                                        endOffset: block.endOffset || block.end_offset || 0,
-                                    })),
+                                blockMaps: (() => {
+                                    const blockMaps = metadata.stats?.block_maps || metadata.stats?.blockMaps || [];
+                                    
+                                    // Check if it's reader-format (nested blocks array)
+                                    if (blockMaps.length > 0 && blockMaps[0]?.blocks !== undefined) {
+                                        // Convert reader-format to sync-format (flat)
+                                        return blockMaps.flatMap((chapter: any) => {
+                                            if (!chapter.blocks || !Array.isArray(chapter.blocks)) return [];
+                                            return chapter.blocks.map((block: any) => ({
+                                                blockId: block.id || `ch${chapter.chapterIndex}-b${block.order || 0}`,
+                                                startOffset: block.order || 0,
+                                                endOffset: (block.order || 0) + (block.cleanCharCount || 0),
+                                            }));
+                                        });
+                                    }
+                                    
+                                    // Already in sync-format or empty
+                                    return blockMaps
+                                        .filter((block: any) => block && (block.blockId !== undefined || block.block_id !== undefined))
+                                        .map((block: any) => ({
+                                            blockId: block.blockId || block.block_id || `generated-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+                                            startOffset: block.startOffset || block.start_offset || 0,
+                                            endOffset: block.endOffset || block.end_offset || 0,
+                                        }));
+                                })(),
                             },
                             chapterCount: metadata.chapter_count || metadata.chapterCount,
                             toc: (metadata.toc || []).map((toc: any) => ({

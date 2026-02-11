@@ -2,7 +2,7 @@
 
 import { BookStats } from '@/lib/storage/AppStorage';
 import { ReadingPosition } from '../types/progress';
-import { BlockIndexMap } from '../types/block';
+import { ChapterBlockInfo } from '../types/block';
 import {
     getCleanTextContent,
     getCleanCharCount,
@@ -103,7 +103,7 @@ export function detectReadingPosition(
     container: HTMLElement,
     chapterIndex: number,
     isVertical: boolean,
-    blockMap?: BlockIndexMap
+    chapterBlockInfo?: ChapterBlockInfo
 ): {
     blockId: string;
     blockLocalOffset: number;
@@ -128,9 +128,9 @@ export function detectReadingPosition(
     // Calculate chapter character offset
     let chapterCharOffset = blockLocalOffset;
 
-    if (blockMap) {
-        // Use block map for accurate calculation
-        const block = blockMap.blocks.find(b => b.id === blockId);
+    if (chapterBlockInfo) {
+        // Use chapter block info for accurate calculation
+        const block = chapterBlockInfo.blocks.find(b => b.id === blockId);
         if (block) {
             chapterCharOffset = block.cleanCharStart + blockLocalOffset;
         }
@@ -219,7 +219,7 @@ export function calculateProgressFromBlock(
     blockLocalOffset: number,
     chapterIndex: number,
     stats: BookStats,
-    blockMap?: BlockIndexMap
+    chapterBlockInfo?: ChapterBlockInfo
 ): {
     chapterProgress: number;
     totalProgress: number;
@@ -229,8 +229,8 @@ export function calculateProgressFromBlock(
     // Calculate chapter character offset
     let chapterCharOffset = blockLocalOffset;
 
-    if (blockMap) {
-        const block = blockMap.blocks.find(b => b.id === blockId);
+    if (chapterBlockInfo) {
+        const block = chapterBlockInfo.blocks.find(b => b.id === blockId);
         if (block) {
             chapterCharOffset = block.cleanCharStart + Math.min(blockLocalOffset, block.cleanCharCount);
         }
@@ -269,10 +269,10 @@ export function buildReadingPosition(
     stats: BookStats,
     isVertical: boolean,
     isRTL: boolean = false,
-    blockMap?: BlockIndexMap
+    chapterBlockInfo?: ChapterBlockInfo
 ): ReadingPosition | null {
     // Try block-based detection first
-    const blockPosition = detectReadingPosition(container, chapterIndex, isVertical, blockMap);
+    const blockPosition = detectReadingPosition(container, chapterIndex, isVertical, chapterBlockInfo);
 
     let blockId: string | undefined;
     let blockLocalOffset = 0;
