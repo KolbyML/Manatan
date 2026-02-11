@@ -4586,8 +4586,56 @@ export class RequestManager {
     ): AbortableApolloUseQueryResponse<GetMigratableSourcesQuery, GetMigratableSourcesQueryVariables> {
         return this.useRestQuery(
             async (signal) => {
-                const response = await this.restClient.fetcher('/api/v1/migration/sources', { config: { signal } });
-                return (await response.json()) as GetMigratableSourcesQuery;
+                const mangasResponse = await this.restClient.fetcher('/api/v1/manga/library/search?inLibrary=true', {
+                    config: { signal },
+                });
+                const mangasPayload = await mangasResponse.json();
+                const rawMangas = Array.isArray(mangasPayload?.mangas?.nodes) ? mangasPayload.mangas.nodes : [];
+                const mangas = rawMangas.map((manga: any) => this.normalizeMangaPayload(manga));
+
+                const sourceMap = new Map<string, any>();
+                try {
+                    const sourceListResponse = await this.restClient.fetcher('/api/v1/source/list', { config: { signal } });
+                    const sourceListPayload = await sourceListResponse.json();
+                    const rawSources = Array.isArray(sourceListPayload)
+                        ? sourceListPayload
+                        : sourceListPayload?.sources ?? sourceListPayload?.nodes ?? [];
+                    (Array.isArray(rawSources) ? rawSources : [])
+                        .filter((source: any) => source && source.id != null)
+                        .forEach((source: any) => {
+                            const normalized = this.normalizeSourcePayload(source);
+                            sourceMap.set(String(normalized?.id ?? source.id), normalized);
+                        });
+                } catch {
+                    // Fallback is handled per-item below using sourceId only.
+                }
+
+                const nodes = mangas.map((manga: any) => {
+                    const sourceId = String(manga?.sourceId ?? manga?.source_id ?? '');
+                    const source =
+                        sourceMap.get(sourceId) ?? {
+                            id: sourceId,
+                            name: sourceId,
+                            displayName: sourceId,
+                            lang: 'unknown',
+                            iconUrl: '',
+                            extension: { pkgName: '', repo: '' },
+                            filters: [],
+                            preferences: [],
+                            meta: [],
+                        };
+
+                    return {
+                        sourceId,
+                        source,
+                    };
+                });
+
+                return {
+                    mangas: {
+                        nodes,
+                    },
+                } as GetMigratableSourcesQuery;
             },
             [options?.skip],
             options,
