@@ -62,15 +62,24 @@ export default defineConfig(({ command }) => ({
                 runtimeCaching: [
                     {
                         urlPattern: ({ request, url }) => {
-                            if (request.destination === 'image') {
-                                return true;
+                            const { pathname } = url;
+                            if (pathname.includes('/api/v1/media/image')) {
+                                return false;
+                            }
+                            if (pathname.includes('/extension/icon/')) {
+                                return false;
                             }
 
-                            const { pathname } = url;
+                            if (request.destination === 'image') {
+                                return (
+                                    pathname.match(/\/chapter\/[0-9]+\/page\/[0-9]+/g) ||
+                                    pathname.match(/\/manga\/[0-9]+\/thumbnail/g)
+                                );
+                            }
+
                             return (
                                 pathname.match(/\/chapter\/[0-9]+\/page\/[0-9]+/g) ||
-                                pathname.match(/\/manga\/[0-9]+\/thumbnail/g) ||
-                                pathname.includes('/extension/icon/')
+                                pathname.match(/\/manga\/[0-9]+\/thumbnail/g)
                             );
                         },
                         handler: 'CacheFirst',

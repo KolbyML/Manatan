@@ -668,6 +668,8 @@ export class RequestManager {
         let iconUrl = extension?.iconUrl ?? extension?.icon_url ?? '';
         if (!iconUrl && apkName) {
             iconUrl = this.getExtensionIconUrl(apkName);
+        } else if (typeof iconUrl === 'string' && iconUrl.includes('/extension/icon/') && !iconUrl.includes('iconRev=')) {
+            iconUrl = `${iconUrl}${iconUrl.includes('?') ? '&' : '?'}iconRev=2`;
         }
 
         return {
@@ -1910,7 +1912,11 @@ export class RequestManager {
             const isSameOrigin = url.startsWith(baseUrl);
             const isMediaProxy = url.includes('/api/v1/media/image');
             if (!isSameOrigin && !isMediaProxy) {
-                const proxy = UrlUtil.addParams('/api/v1/media/image', { url });
+                const isLikelyExtensionIcon = /\/icon\/[^/?]+\.(png|jpg|jpeg|webp|svg|gif)$/i.test(url);
+                const proxy = UrlUtil.addParams('/api/v1/media/image', {
+                    url,
+                    ...(isLikelyExtensionIcon ? { iconRev: '2' } : {}),
+                });
                 url = this.getValidImgUrlFor(proxy, '');
             }
         }
@@ -2398,7 +2404,8 @@ export class RequestManager {
     }
 
     public getExtensionIconUrl(extension: string): string {
-        return this.getValidImgUrlFor(`extension/icon/${extension}`);
+        // Bust stale service-worker cached 404 responses from older builds.
+        return this.getValidImgUrlFor(`extension/icon/${extension}?iconRev=2`);
     }
 
     public useGetSourceList(
