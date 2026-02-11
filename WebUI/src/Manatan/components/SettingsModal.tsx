@@ -268,10 +268,6 @@ export const SettingsModal: React.FC<{ onClose: () => void }> = ({ onClose }) =>
     const [ankiModels, setAnkiModels] = useState<string[]>([]);
     const [currentModelFields, setCurrentModelFields] = useState<string[]>([]);
 
-    // --- DICT INSTALL STATE ---
-    const [isInstalling, setIsInstalling] = useState(false);
-    const [installMessage, setInstallMessage] = useState('');
-
     // --- UPDATE STATE ---
     const [appVersion, setAppVersion] = useState<string>('...');
     const [updateAvailable, setUpdateAvailable] = useState<any>(null);
@@ -392,38 +388,12 @@ export const SettingsModal: React.FC<{ onClose: () => void }> = ({ onClose }) =>
     };
 
     // --- SETTINGS LOGIC ---
-    const installDictionary = async (language: string) => {
-        try {
-            setIsInstalling(true);
-            setInstallMessage('Checking dictionaries...');
-
-            const res = await apiRequest<{status: string, message: string}>(
-                '/api/yomitan/install-language',
-                { method: 'POST', body: { language } },
-            );
-
-            if (res.status === 'ok' && res.message?.includes('Imported')) {
-                setDictManagerKey(prev => prev + 1);
-            }
-        } catch (e) {
-            console.error("Failed to install dictionary", e);
-        } finally {
-            setIsInstalling(false);
-            setInstallMessage('');
-        }
-    };
-
-    const handleChange = async (key: keyof typeof settings | string, value: any) => {
+    const handleChange = (key: keyof typeof settings | string, value: any) => {
         setLocalSettings((prev) => {
             const next = { ...prev, [key]: value };
             persistSettings(next);
             return next;
         });
-
-        if (key === 'enableYomitan' && value === true) {
-            const language = localSettings.yomitanLanguage || 'japanese';
-            await installDictionary(language);
-        }
     };
 
     const resetPopupWidth = () => {
@@ -727,6 +697,9 @@ ${detail}`,
                             <div style={{ fontSize: '0.85em', color: '#aaa' }}>
                                 Used when installing or resetting default dictionaries.
                             </div>
+                            <div style={{ fontSize: '0.85em', color: '#aaa' }}>
+                                Dictionary import only runs after pressing <b>Finish</b> in Setup Wizard, or from explicit reset/import actions.
+                            </div>
                         </div>
 
                         <div style={{ marginTop: '12px', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
@@ -872,18 +845,6 @@ ${detail}`,
                                     </div>
                                 </label>
 
-                                {isInstalling && (
-                                    <div style={{ fontSize: '0.9em', color: '#aaa', marginBottom: '10px', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                                        <div style={{
-                                            width: '12px', height: '12px', 
-                                            border: '2px solid rgba(255,255,255,0.2)', 
-                                            borderTop: '2px solid white', 
-                                            borderRadius: '50%',
-                                            animation: 'spin 1s linear infinite'
-                                        }} />
-                                        {installMessage}
-                                    </div>
-                                )}
                                 <DictionaryManager key={dictManagerKey} onImportClick={handleImportClick} />
                             </div>
                         </div>

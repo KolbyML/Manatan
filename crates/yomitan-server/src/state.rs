@@ -2,16 +2,17 @@ use std::{
     collections::HashMap,
     path::PathBuf,
     sync::{
-        Arc, RwLock,
         atomic::{AtomicBool, Ordering},
+        Arc, RwLock,
     },
+    time::{Duration, Instant},
 };
 
 use r2d2::Pool;
 use r2d2_sqlite::SqliteConnectionManager;
 use serde::{Deserialize, Serialize};
 use tracing::info;
-use wordbase_api::{DictionaryId, Record, dict::yomitan::GlossaryTag};
+use wordbase_api::{dict::yomitan::GlossaryTag, DictionaryId, Record};
 
 pub type DbPool = Pool<SqliteConnectionManager>;
 
@@ -30,7 +31,13 @@ pub struct AppState {
     pub pool: DbPool,
     pub data_dir: PathBuf,
     pub loading: Arc<AtomicBool>,
+    startup_instant: Instant,
 }
+
+#[cfg(test)]
+const IMPORT_STARTUP_GUARD: Duration = Duration::from_millis(50);
+#[cfg(not(test))]
+const IMPORT_STARTUP_GUARD: Duration = Duration::from_secs(30);
 
 #[derive(Clone, Serialize, Deserialize)]
 pub struct StoredRecord {
@@ -123,6 +130,7 @@ impl AppState {
             pool,
             data_dir,
             loading: Arc::new(AtomicBool::new(false)),
+            startup_instant: Instant::now(),
         }
     }
 
@@ -132,5 +140,62 @@ impl AppState {
 
     pub fn is_loading(&self) -> bool {
         self.loading.load(Ordering::Relaxed)
+    }
+
+    pub fn is_import_startup_guard_active(&self) -> bool {
+        self.startup_instant.elapsed() < IMPORT_STARTUP_GUARD
+    }
+
+    pub fn import_startup_guard_remaining_secs(&self) -> u64 {
+        IMPORT_STARTUP_GUARD
+            .saturating_sub(self.startup_instant.elapsed())
+            .as_secs()
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use std::{
+        fs,
+        path::PathBuf,
+        time::{Duration, SystemTime, UNIX_EPOCH},
+    };
+
+    use super::AppState;
+
+    fn test_data_dir(name: &str) -> PathBuf {
+        let nanos = SystemTime::now()
+            .duration_since(UNIX_EPOCH)
+            .expect("time")
+            .as_nanos();
+        std::env::temp_dir().join(format!(
+            "manatan-yomitan-state-test-{}-{}-{}",
+            name,
+            std::process::id(),
+            nanos
+        ))
+    }
+
+    #[test]
+    fn startup_guard_is_active_immediately() {
+        let dir = test_data_dir("startup-active");
+        let state = AppState::new(dir.clone());
+
+        assert!(state.is_import_startup_guard_active());
+
+        drop(state);
+        let _ = fs::remove_dir_all(dir);
+    }
+
+    #[test]
+    fn startup_guard_expires_after_duration() {
+        let dir = test_data_dir("startup-expire");
+        let state = AppState::new(dir.clone());
+
+        std::thread::sleep(Duration::from_millis(80));
+        assert!(!state.is_import_startup_guard_active());
+
+        drop(state);
+        let _ = fs::remove_dir_all(dir);
     }
 }
