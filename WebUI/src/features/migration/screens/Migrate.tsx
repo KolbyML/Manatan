@@ -88,7 +88,7 @@ export const Migrate = () => {
             hasNextPage={false}
             loadMore={() => {}}
             isLoading={areMangasLoading}
-            mangas={migratableSourceMangasData?.mangas.nodes ?? []}
+            mangas={migratableSourceMangasData?.mangas?.nodes ?? []}
             gridLayout={gridLayout}
             mode="migrate.search"
         />

@@ -90,8 +90,8 @@ export const Migration = ({ tabsMenuHeight }: { tabsMenuHeight: number }) => {
         notifyOnNetworkStatusChange: true,
     });
     const migratableSources = useMemo(
-        () => getMigratableSources(data?.mangas.nodes, migrateSortSettings),
-        [data?.mangas.nodes, migrateSortSettings],
+        () => getMigratableSources(data?.mangas?.nodes, migrateSortSettings),
+        [data?.mangas?.nodes, migrateSortSettings],
     );
 
     if (loading) {
