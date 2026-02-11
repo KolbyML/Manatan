@@ -11,7 +11,7 @@ use scraper::{Html, Selector};
 use serde::{Deserialize, Serialize};
 use serde_json::{Value, Value as JsonValue, json};
 use sha2::{Digest, Sha256};
-use tracing::{error, info};
+use tracing::{error, info, warn};
 use wordbase_api::{DictionaryId, Record, Term, dict::yomitan::GlossaryTag};
 
 use crate::{ServerState, import, state::AppState};
@@ -1085,6 +1085,8 @@ fn dictionary_url(language: DictionaryLanguage) -> &'static str {
 }
 
 async fn download_dictionary_bytes(language: DictionaryLanguage) -> Result<Vec<u8>, String> {
+    const MAX_DOWNLOAD_BYTES: u64 = 384 * 1024 * 1024;
+
     let url = dictionary_url(language);
     let client = Client::new();
     let response = client
@@ -1101,10 +1103,26 @@ async fn download_dictionary_bytes(language: DictionaryLanguage) -> Result<Vec<u
         ));
     }
 
+    if let Some(content_length) = response.content_length()
+        && content_length > MAX_DOWNLOAD_BYTES
+    {
+        return Err(format!(
+            "Dictionary archive is too large ({} bytes, max {}).",
+            content_length, MAX_DOWNLOAD_BYTES
+        ));
+    }
+
     let bytes = response
         .bytes()
         .await
         .map_err(|e| format!("Failed to read dictionary bytes: {e}"))?;
+
+    if bytes.len() as u64 > MAX_DOWNLOAD_BYTES {
+        return Err(format!(
+            "Dictionary archive is too large ({} bytes, max {}).",
+            bytes.len(), MAX_DOWNLOAD_BYTES
+        ));
+    }
 
     Ok(bytes.to_vec())
 }
@@ -1124,6 +1142,17 @@ fn clear_dictionary_state(app_state: &AppState) {
         }
         info!("🧹 [Yomitan] Vacuuming after reset...");
         let _ = conn.execute("VACUUM", []);
+    }
+}
+
+async fn wait_for_startup_guard(app_state: &AppState, operation: &str) {
+    if app_state.is_import_startup_guard_active() {
+        let remaining = app_state.import_startup_guard_remaining_secs();
+        let wait_secs = remaining.max(1);
+        warn!(
+            "⏳ [Yomitan] Delaying {operation} until startup guard expires (remaining: {remaining}s)"
+        );
+        tokio::time::sleep(std::time::Duration::from_secs(wait_secs)).await;
     }
 }
 
@@ -1251,6 +1280,8 @@ pub async fn install_defaults_handler(
     payload: Option<Json<LanguageRequest>>,
 ) -> Json<Value> {
     let app_state = state.app.clone();
+    wait_for_startup_guard(&app_state, "install-defaults").await;
+
     let language = resolve_language(&app_state, payload.and_then(|val| val.0.language));
 
     {
@@ -1285,6 +1316,8 @@ pub async fn install_language_handler(
     payload: Option<Json<LanguageRequest>>,
 ) -> Json<Value> {
     let app_state = state.app.clone();
+    wait_for_startup_guard(&app_state, "install-language").await;
+
     let language = resolve_language(&app_state, payload.and_then(|val| val.0.language));
 
     {
@@ -1319,6 +1352,8 @@ pub async fn reset_db_handler(
     payload: Option<Json<LanguageRequest>>,
 ) -> Json<Value> {
     let app_state = state.app.clone();
+    wait_for_startup_guard(&app_state, "reset").await;
+
     let language = resolve_language(&app_state, payload.and_then(|val| val.0.language));
     info!("🧨 [Yomitan] Resetting Database ({language})...");
     state.app.set_loading(true);
@@ -1595,6 +1630,8 @@ pub async fn import_handler(
     State(state): State<ServerState>,
     mut multipart: Multipart,
 ) -> Json<Value> {
+    wait_for_startup_guard(&state.app, "import").await;
+
     loop {
         match multipart.next_field().await {
             Ok(Some(field)) => {
