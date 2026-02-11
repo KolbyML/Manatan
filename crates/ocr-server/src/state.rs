@@ -219,6 +219,46 @@ impl AppState {
         entry
     }
 
+    pub fn get_cache_entry_sourceid_variant(
+        &self,
+        cache_key: &str,
+    ) -> Option<(String, CacheEntry)> {
+        let Ok(conn) = self.pool.get() else {
+            warn!("Failed to get DB connection for get_cache_entry_sourceid_variant");
+            return None;
+        };
+
+        let like_q = format!("{}?sourceId=%", cache_key);
+        let like_amp = format!("{}&sourceId=%", cache_key);
+
+        let row = conn
+            .query_row(
+                "SELECT cache_key, context, data FROM ocr_cache WHERE cache_key LIKE ? OR cache_key LIKE ? LIMIT 1",
+                params![like_q, like_amp],
+                |row| {
+                    let key: String = row.get(0)?;
+                    let context: String = row.get(1)?;
+                    let data_blob: Vec<u8> = row.get(2)?;
+                    let data = serde_json::from_slice(&data_blob).unwrap_or_default();
+                    Ok((key, CacheEntry { context, data }))
+                },
+            )
+            .optional()
+            .unwrap_or(None);
+
+        if let Some((ref key, _)) = row {
+            let now = now_unix();
+            let _ = conn.execute(
+                "UPDATE ocr_cache
+                 SET last_accessed_at = ?, access_count = access_count + 1
+                 WHERE cache_key = ?",
+                params![now, key],
+            );
+        }
+
+        row
+    }
+
     pub fn insert_cache_entry(&self, cache_key: &str, entry: &CacheEntry) {
         let Ok(conn) = self.pool.get() else {
             warn!("Failed to get DB connection for insert_cache_entry");
@@ -256,6 +296,82 @@ impl AppState {
         let _ = conn.execute("DELETE FROM ocr_cache", []);
         let _ = conn.execute("DELETE FROM chapter_cache", []);
         let _ = conn.execute("DELETE FROM chapter_pages", []);
+    }
+
+    pub fn delete_chapter_ocr(
+        &self,
+        chapter_key: &str,
+        delete_data: bool,
+    ) -> (usize, usize, usize) {
+        let Ok(mut conn) = self.pool.get() else {
+            warn!("Failed to get DB connection for delete_chapter_ocr");
+            return (0, 0, 0);
+        };
+
+        let tx = match conn.transaction() {
+            Ok(tx) => tx,
+            Err(err) => {
+                warn!("Failed to start delete transaction: {err}");
+                return (0, 0, 0);
+            }
+        };
+
+        let mut cache_keys = Vec::<String>::new();
+        if delete_data {
+            let mut stmt =
+                match tx.prepare("SELECT cache_key FROM chapter_cache WHERE chapter_key = ?") {
+                    Ok(stmt) => stmt,
+                    Err(err) => {
+                        warn!("Failed to prepare chapter_cache select: {err}");
+                        return (0, 0, 0);
+                    }
+                };
+
+            if let Ok(rows) = stmt.query_map(params![chapter_key], |row| row.get::<_, String>(0)) {
+                for row in rows.flatten() {
+                    cache_keys.push(row);
+                }
+            }
+        }
+
+        let chapter_cache_rows = tx
+            .execute(
+                "DELETE FROM chapter_cache WHERE chapter_key = ?",
+                params![chapter_key],
+            )
+            .unwrap_or(0) as usize;
+
+        let chapter_pages_rows = tx
+            .execute(
+                "DELETE FROM chapter_pages WHERE chapter_key = ?",
+                params![chapter_key],
+            )
+            .unwrap_or(0) as usize;
+
+        let mut ocr_cache_rows = 0usize;
+        if delete_data {
+            for cache_key in cache_keys {
+                // Delete exact cache_key plus common variants that include sourceId query params.
+                // This mirrors the prefix matching used in chapter_status().
+                let like_q = format!("{}?sourceId=%", cache_key);
+                let like_amp = format!("{}&sourceId=%", cache_key);
+
+                let deleted = tx
+                    .execute(
+                        "DELETE FROM ocr_cache WHERE cache_key = ? OR cache_key LIKE ? OR cache_key LIKE ?",
+                        params![cache_key, like_q, like_amp],
+                    )
+                    .unwrap_or(0);
+                ocr_cache_rows += deleted as usize;
+            }
+        }
+
+        if let Err(err) = tx.commit() {
+            warn!("Failed to commit delete transaction: {err}");
+            return (0, 0, 0);
+        }
+
+        (chapter_cache_rows, chapter_pages_rows, ocr_cache_rows)
     }
 
     pub fn export_cache(&self) -> HashMap<String, CacheEntry> {

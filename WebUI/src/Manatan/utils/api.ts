@@ -298,6 +298,27 @@ export const preprocessChapter = async (
     });
 };
 
+export const deleteChapterOcr = async (
+    baseUrl: string,
+    creds?: AuthCredentials,
+    language?: YomitanLanguage,
+    deleteData: boolean = true,
+): Promise<void> => {
+    const body: any = {
+        base_url: baseUrl,
+        delete_data: deleteData,
+        context: 'Delete Chapter OCR',
+    };
+    if (creds?.user) body.user = creds.user;
+    if (creds?.pass) body.pass = creds.pass;
+    if (language) body.language = language;
+
+    await apiRequest('/api/ocr/delete-chapter', {
+        method: 'POST',
+        body,
+    });
+};
+
 export const logDebug = (msg: string, isDebug: boolean) => {
     if (isDebug) console.log(`[OCR PC Hybrid] ${new Date().toLocaleTimeString()} ${msg}`);
 };

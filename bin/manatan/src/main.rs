@@ -88,7 +88,7 @@ enum UpdateStatus {
     Error(String),
 }
 
-#[derive(Parser, Debug)]
+#[derive(Parser, Debug, Clone)]
 #[command(author, version, about, long_about = None)]
 struct Cli {
     /// Runs the server without the GUI (Fixes Docker/Server deployments)
@@ -106,6 +106,93 @@ struct Cli {
     /// Sets the Port to bind the server to
     #[arg(long, default_value_t = 4568, env = "MANATAN_PORT")]
     port: u16,
+
+    /// Path to the Manatan SQLite database
+    #[arg(long, env = "MANATAN_DB_PATH")]
+    db_path: Option<PathBuf>,
+
+    /// Optional migration directory/file path
+    #[arg(long, env = "MANATAN_MIGRATE_PATH")]
+    migrate_path: Option<PathBuf>,
+
+    /// Run Suwayomi in runtime-only mode
+    #[arg(
+        long,
+        env = "MANATAN_RUNTIME_ONLY",
+        default_value_t = true,
+        action = clap::ArgAction::Set,
+        value_parser = parse_boolish,
+        value_name = "BOOL"
+    )]
+    runtime_only: bool,
+
+    /// Runtime bridge URL used by Manatan server
+    #[arg(long, env = "MANATAN_JAVA_URL")]
+    java_url: Option<String>,
+
+    /// Enable remote tracker search
+    #[arg(
+        long,
+        env = "MANATAN_TRACKER_REMOTE_SEARCH",
+        default_value_t = true,
+        action = clap::ArgAction::Set,
+        value_parser = parse_boolish,
+        value_name = "BOOL"
+    )]
+    tracker_remote_search: bool,
+
+    /// Tracker search cache TTL in seconds
+    #[arg(long, env = "MANATAN_TRACKER_SEARCH_TTL_SECONDS", default_value_t = 3600)]
+    tracker_search_ttl_seconds: i64,
+
+    /// Downloads directory (absolute or relative to data dir)
+    #[arg(long, env = "MANATAN_DOWNLOADS_PATH")]
+    downloads_path: Option<PathBuf>,
+
+    /// Aidoku index URL
+    #[arg(long, env = "MANATAN_AIDOKU_INDEX")]
+    aidoku_index_url: Option<String>,
+
+    /// Enable Aidoku integration
+    #[arg(
+        long,
+        env = "MANATAN_AIDOKU_ENABLED",
+        default_value_t = true,
+        action = clap::ArgAction::Set,
+        value_parser = parse_boolish,
+        value_name = "BOOL"
+    )]
+    aidoku_enabled: bool,
+
+    /// Aidoku cache directory (absolute or relative to data dir)
+    #[arg(long, env = "MANATAN_AIDOKU_CACHE")]
+    aidoku_cache_path: Option<PathBuf>,
+
+    /// Local manga directory (absolute or relative to data dir)
+    #[arg(long, env = "MANATAN_LOCAL_MANGA_PATH")]
+    local_manga_path: Option<PathBuf>,
+
+    /// Local anime directory (absolute or relative to data dir)
+    #[arg(long, env = "MANATAN_LOCAL_ANIME_PATH")]
+    local_anime_path: Option<PathBuf>,
+}
+
+fn parse_boolish(value: &str) -> Result<bool, String> {
+    match value.to_lowercase().as_str() {
+        "1" | "true" | "yes" | "on" => Ok(true),
+        "0" | "false" | "no" | "off" => Ok(false),
+        _ => Err(format!("Invalid boolean value: {value}")),
+    }
+}
+
+fn resolve_path_option(option: Option<&PathBuf>, data_dir: &Path, default_relative: &str) -> String {
+    match option {
+        Some(path) if path.is_absolute() => path.clone(),
+        Some(path) => data_dir.join(path),
+        None => data_dir.join(default_relative),
+    }
+    .to_string_lossy()
+    .to_string()
 }
 
 fn resolve_data_dir() -> PathBuf {
@@ -533,7 +620,7 @@ fn main() -> eframe::Result<()> {
                 let _ = shutdown_tx.send(()).await;
             });
 
-            if let Err(err) = run_server(shutdown_rx, &server_data_dir, host, port).await {
+            if let Err(err) = run_server(shutdown_rx, &server_data_dir, host, port, &args).await {
                 error!("Server crashed: {err}");
             }
         });
@@ -546,6 +633,7 @@ fn main() -> eframe::Result<()> {
     let shutdown_requested = Arc::new(AtomicBool::new(false));
 
     let thread_host = host.clone();
+    let thread_args = args.clone();
     thread::spawn(move || {
         let rt = tokio::runtime::Runtime::new().expect("Failed to create Tokio runtime");
         rt.block_on(async {
@@ -556,7 +644,15 @@ fn main() -> eframe::Result<()> {
             let h = thread_host.clone();
             tokio::spawn(async move { open_webpage_when_ready(h, port).await });
 
-            if let Err(err) = run_server(shutdown_rx, &server_data_dir, thread_host, port).await {
+            if let Err(err) = run_server(
+                shutdown_rx,
+                &server_data_dir,
+                thread_host,
+                port,
+                &thread_args,
+            )
+            .await
+            {
                 error!("Server crashed: {err}");
             }
         });
@@ -878,6 +974,7 @@ async fn run_server(
     data_dir: &PathBuf,
     host: Ipv4Addr,
     port: u16,
+    cli: &Cli,
 ) -> Result<(), Box<anyhow::Error>> {
     info!("🚀 Initializing Manatan Launcher...");
     info!("📂 Data Directory: {}", data_dir.display());
@@ -940,17 +1037,12 @@ async fn run_server(
         .unwrap_or(data_dir);
 
     info!("☕ Spawning Suwayomi...");
-    let manatan_db_path = env::var("MANATAN_DB_PATH").unwrap_or_else(|_| {
-        data_dir
-            .join("manatan.sqlite")
-            .to_string_lossy()
-            .to_string()
-    });
-    let manatan_migrate_path = env::var("MANATAN_MIGRATE_PATH").ok();
-    let migration_marker = format!("{}.migrated", manatan_db_path);
-    let runtime_only = env::var("MANATAN_RUNTIME_ONLY")
-        .map(|value| value == "true")
-        .unwrap_or(true);
+    let manatan_db_path = resolve_path_option(cli.db_path.as_ref(), data_dir, "manatan.sqlite");
+    let manatan_migrate_path = cli
+        .migrate_path
+        .as_ref()
+        .map(|path| path.to_string_lossy().to_string());
+    let runtime_only = cli.runtime_only;
     if runtime_only {
         info!("Suwayomi runtime-only mode enabled");
     }
@@ -1013,7 +1105,7 @@ async fn run_server(
     }
 
     let manatan_runtime_url = if runtime_only {
-        if let Ok(value) = env::var("MANATAN_JAVA_URL")
+        if let Some(value) = cli.java_url.as_deref()
             && value != SUWAYOMI_HTTP_BASE_URL
         {
             warn!(
@@ -1023,37 +1115,18 @@ async fn run_server(
         }
         SUWAYOMI_HTTP_BASE_URL.to_string()
     } else {
-        env::var("MANATAN_JAVA_URL").unwrap_or_else(|_| SUWAYOMI_HTTP_BASE_URL.to_string())
+        cli.java_url
+            .clone()
+            .unwrap_or_else(|| SUWAYOMI_HTTP_BASE_URL.to_string())
     };
-    let tracker_remote_search = env::var("MANATAN_TRACKER_REMOTE_SEARCH")
-        .ok()
-        .and_then(|value| match value.to_lowercase().as_str() {
-            "1" | "true" | "yes" | "on" => Some(true),
-            "0" | "false" | "no" | "off" => Some(false),
-            _ => None,
-        })
-        .unwrap_or(true);
-    let tracker_search_ttl_seconds = env::var("MANATAN_TRACKER_SEARCH_TTL_SECONDS")
-        .ok()
-        .and_then(|value| value.parse::<i64>().ok())
-        .unwrap_or(3600);
-    let downloads_path =
-        env::var("MANATAN_DOWNLOADS_PATH").unwrap_or_else(|_| "downloads".to_string());
-    let aidoku_index_url = env::var("MANATAN_AIDOKU_INDEX").unwrap_or_default();
-    let aidoku_enabled = env::var("MANATAN_AIDOKU_ENABLED")
-        .ok()
-        .and_then(|value| match value.to_lowercase().as_str() {
-            "1" | "true" | "yes" | "on" => Some(true),
-            "0" | "false" | "no" | "off" => Some(false),
-            _ => None,
-        })
-        .unwrap_or(true);
-    let aidoku_cache_path = env::var("MANATAN_AIDOKU_CACHE")
-        .unwrap_or_else(|_| data_dir.join("aidoku").to_string_lossy().to_string());
-    let local_manga_path = env::var("MANATAN_LOCAL_MANGA_PATH")
-        .unwrap_or_else(|_| data_dir.join("local-manga").to_string_lossy().to_string());
-    let local_anime_path = env::var("MANATAN_LOCAL_ANIME_PATH")
-        .unwrap_or_else(|_| local_anime_dir.to_string_lossy().to_string());
+    let tracker_remote_search = cli.tracker_remote_search;
+    let tracker_search_ttl_seconds = cli.tracker_search_ttl_seconds;
+    let downloads_path = resolve_path_option(cli.downloads_path.as_ref(), data_dir, "downloads");
+    let aidoku_index_url = cli.aidoku_index_url.clone().unwrap_or_default();
+    let aidoku_enabled = cli.aidoku_enabled;
+    let aidoku_cache_path = resolve_path_option(cli.aidoku_cache_path.as_ref(), data_dir, "aidoku");
+    let local_manga_path = resolve_path_option(cli.local_manga_path.as_ref(), data_dir, "local-manga");
+    let local_anime_path = resolve_path_option(cli.local_anime_path.as_ref(), data_dir, "local-anime");
     let manatan_config = ManatanServerConfig {
         host: host.to_string(),
         port,

@@ -191,8 +191,20 @@ pub fn get_cache_key(url: &str, language: Option<OcrLanguage>) -> String {
         let mut path = parsed.path().to_string();
         if let Some(query) = parsed.query() {
             if !query.is_empty() {
-                path.push('?');
-                path.push_str(query);
+                // "sourceId" does not affect the actual image bytes for Suwayomi page URLs,
+                // but it does vary between requests. Strip it to keep cache hits stable.
+                let kept_parts: Vec<&str> = query
+                    .split('&')
+                    .filter(|part| {
+                        let key = part.split('=').next().unwrap_or("");
+                        key != "sourceId"
+                    })
+                    .collect();
+
+                if !kept_parts.is_empty() {
+                    path.push('?');
+                    path.push_str(&kept_parts.join("&"));
+                }
             }
         }
         path

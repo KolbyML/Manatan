@@ -8,6 +8,8 @@
 
 import CheckBoxOutlineBlank from '@mui/icons-material/CheckBoxOutlineBlank';
 import Delete from '@mui/icons-material/Delete';
+import DeleteSweep from '@mui/icons-material/DeleteSweep';
+import DocumentScanner from '@mui/icons-material/DocumentScanner';
 import Download from '@mui/icons-material/Download';
 import RemoveDone from '@mui/icons-material/RemoveDone';
 import Done from '@mui/icons-material/Done';
@@ -15,7 +17,7 @@ import { useTranslation } from 'react-i18next';
 import BookmarkRemove from '@mui/icons-material/BookmarkRemove';
 import BookmarkAdd from '@mui/icons-material/BookmarkAdd';
 import DoneAll from '@mui/icons-material/DoneAll';
-import { ComponentProps, useMemo } from 'react';
+import { ComponentProps, useEffect, useMemo } from 'react';
 import { SelectableCollectionReturnType } from '@/base/collection/hooks/useSelectableCollection.ts';
 import { Chapters } from '@/features/chapter/services/Chapters.ts';
 import { MenuItem } from '@/base/components/menu/MenuItem.tsx';
@@ -40,6 +42,7 @@ import {
 } from '@/features/chapter/Chapter.types.ts';
 import { IconWebView } from '@/assets/icons/IconWebView.tsx';
 import { IconBrowser } from '@/assets/icons/IconBrowser.tsx';
+import { useOCR } from '@/Manatan/context/OCRContext.tsx';
 
 type BaseProps = { onClose: () => void; selectable?: boolean };
 
@@ -73,9 +76,38 @@ export const ChapterActionMenuItems = ({
     selectable = true,
 }: Props) => {
     const { t } = useTranslation();
+    const { chapterOcrStatusMap, refreshChapterOcrStatus, startChapterOcr, deleteChapterOcr } = useOCR();
 
     const isSingleMode = !!chapter;
     const { isDownloaded, isRead, isBookmarked } = chapter ?? {};
+
+    const chapterPath = chapter ? `/manga/${chapter.mangaId}/chapter/${chapter.sourceOrder}` : null;
+    const ocrStatus = chapterPath ? chapterOcrStatusMap.get(chapterPath) : undefined;
+    const isOcrProcessed = ocrStatus?.status === 'processed';
+    const isOcrProcessing = ocrStatus?.status === 'processing';
+    const hasOcrData =
+        isOcrProcessed ||
+        isOcrProcessing ||
+        (ocrStatus?.status === 'idle' && ocrStatus.cached > 0);
+
+    useEffect(() => {
+        if (!chapterPath) return;
+        if (ocrStatus) return;
+        void refreshChapterOcrStatus(chapterPath);
+    }, [chapterPath, ocrStatus, refreshChapterOcrStatus]);
+
+    const selectedChapterPaths = useMemo(
+        () => selectedChapters.map((c) => `/manga/${c.mangaId}/chapter/${c.sourceOrder}`),
+        [selectedChapters],
+    );
+
+    useEffect(() => {
+        if (isSingleMode) return;
+        selectedChapterPaths.forEach((path) => {
+            if (chapterOcrStatusMap.has(path)) return;
+            void refreshChapterOcrStatus(path);
+        });
+    }, [chapterOcrStatusMap, isSingleMode, refreshChapterOcrStatus, selectedChapterPaths]);
 
     const mangaChaptersResponse = requestManager.useGetMangaChaptersList(chapter?.mangaId ?? -1, {
         skip: !chapter,
@@ -109,6 +141,52 @@ export const ChapterActionMenuItems = ({
         }),
         [selectedChapters],
     );
+
+    const selectModeOcrState = useMemo(() => {
+        if (isSingleMode) {
+            return {
+                showOcr: false,
+                showDownloadAndOcr: false,
+                showDeleteOcr: false,
+                disableOcrActions: false,
+                chaptersNeedingOcr: [] as TChapter[],
+                chaptersWithOcrData: [] as TChapter[],
+            };
+        }
+
+        const chaptersNeedingOcr: TChapter[] = [];
+        const chaptersWithOcrData: TChapter[] = [];
+        let anyProcessing = false;
+
+        selectedChapters.forEach((c) => {
+            const path = `/manga/${c.mangaId}/chapter/${c.sourceOrder}`;
+            const status = chapterOcrStatusMap.get(path);
+
+            if (status?.status === 'processing') anyProcessing = true;
+
+            const hasData =
+                status?.status === 'processed' ||
+                status?.status === 'processing' ||
+                (status?.status === 'idle' && status.cached > 0);
+            if (hasData) chaptersWithOcrData.push(c);
+
+            const isProcessed = status?.status === 'processed';
+            if (!isProcessed) chaptersNeedingOcr.push(c);
+        });
+
+        const showOcr = chaptersNeedingOcr.length > 0;
+        const showDownloadAndOcr = showOcr && downloadableChapters.length > 0;
+        const showDeleteOcr = chaptersWithOcrData.length > 0;
+
+        return {
+            showOcr,
+            showDownloadAndOcr,
+            showDeleteOcr,
+            disableOcrActions: anyProcessing,
+            chaptersNeedingOcr,
+            chaptersWithOcrData,
+        };
+    }, [chapterOcrStatusMap, downloadableChapters.length, isSingleMode, selectedChapters]);
 
     const handleSelect = () => {
         handleSelection?.(chapter.id, true);
@@ -161,6 +239,20 @@ export const ChapterActionMenuItems = ({
             wasManuallyMarkedAsRead: true,
             trackProgressMangaId: chaptersToUpdate[0]?.mangaId,
         }).catch(defaultPromiseErrorHandler('ChapterActionMenuItems::performAction'));
+
+        // When deleting a downloaded chapter, also delete its OCR cache (including cached OCR data).
+        // This keeps chapter cleanup behavior consistent for OCR users.
+        if (actualAction === 'delete') {
+            const pathsToDelete = chaptersToUpdate.map((c) => `/manga/${c.mangaId}/chapter/${c.sourceOrder}`);
+            pathsToDelete.forEach((path) => {
+                const status = chapterOcrStatusMap.get(path);
+                const shouldDelete =
+                    status?.status === 'processed' ||
+                    status?.status === 'processing' ||
+                    (status?.status === 'idle' && status.cached > 0);
+                if (shouldDelete) void deleteChapterOcr(path, true);
+            });
+        }
         onClose();
     };
 
@@ -201,6 +293,97 @@ export const ChapterActionMenuItems = ({
                     disabled={isMenuItemDisabled(!downloadableChapters.length)}
                     onClick={() => performAction('download', downloadableChapters)}
                     title={getMenuItemTitle('download', downloadableChapters.length)}
+                />
+            )}
+
+            {!isSingleMode && selectModeOcrState.showDownloadAndOcr && (
+                <MenuItem
+                    Icon={Download}
+                    disabled={selectModeOcrState.disableOcrActions}
+                    onClick={() => {
+                        Chapters.performAction('download', Chapters.getIds(downloadableChapters), {
+                            chapters: downloadableChapters,
+                            trackProgressMangaId: downloadableChapters[0]?.mangaId,
+                        }).catch(defaultPromiseErrorHandler('ChapterActionMenuItems::downloadAndOcr'));
+
+                        selectModeOcrState.chaptersNeedingOcr.forEach((c) => {
+                            const path = `/manga/${c.mangaId}/chapter/${c.sourceOrder}`;
+                            void startChapterOcr(path);
+                        });
+                        onClose();
+                    }}
+                    title="Download & OCR"
+                />
+            )}
+
+            {!isSingleMode && selectModeOcrState.showOcr && (
+                <MenuItem
+                    Icon={DocumentScanner}
+                    disabled={selectModeOcrState.disableOcrActions}
+                    onClick={() => {
+                        selectModeOcrState.chaptersNeedingOcr.forEach((c) => {
+                            const path = `/manga/${c.mangaId}/chapter/${c.sourceOrder}`;
+                            void startChapterOcr(path);
+                        });
+                        onClose();
+                    }}
+                    title="OCR"
+                />
+            )}
+
+            {!isSingleMode && selectModeOcrState.showDeleteOcr && (
+                <MenuItem
+                    Icon={DeleteSweep}
+                    disabled={selectModeOcrState.disableOcrActions}
+                    onClick={() => {
+                        selectModeOcrState.chaptersWithOcrData.forEach((c) => {
+                            const path = `/manga/${c.mangaId}/chapter/${c.sourceOrder}`;
+                            void deleteChapterOcr(path, true);
+                        });
+                        onClose();
+                    }}
+                    title="Delete OCR"
+                />
+            )}
+
+            {isSingleMode && chapterPath && !isOcrProcessed && canBeDownloaded && (
+                <MenuItem
+                    Icon={Download}
+                    disabled={isOcrProcessing}
+                    onClick={() => {
+                        // Don't wait for the download to finish; enqueue download then start OCR.
+                        Chapters.performAction('download', [chapter!.id], {
+                            chapters: [chapter!],
+                            trackProgressMangaId: chapter!.mangaId,
+                        }).catch(defaultPromiseErrorHandler('ChapterActionMenuItems::downloadAndOcr'));
+                        void startChapterOcr(chapterPath);
+                        onClose();
+                    }}
+                    title="Download & OCR"
+                />
+            )}
+
+            {isSingleMode && chapterPath && !isOcrProcessed && (
+                <MenuItem
+                    Icon={DocumentScanner}
+                    disabled={isOcrProcessing}
+                    onClick={() => {
+                        void startChapterOcr(chapterPath);
+                        onClose();
+                    }}
+                    title="OCR"
+                />
+            )}
+
+            {isSingleMode && chapterPath && hasOcrData && (
+                <MenuItem
+                    Icon={DeleteSweep}
+                    disabled={isOcrProcessing}
+                    onClick={() => {
+                        void deleteChapterOcr(chapterPath, true);
+                        onClose();
+                    }}
+                    title="Delete OCR"
                 />
             )}
             {shouldShowMenuItem(isDownloaded) && (
