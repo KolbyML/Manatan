@@ -55,7 +55,6 @@ export function SyncStatusCard() {
                                 variant="outlined"
                                 color="error"
                                 onClick={disconnect}
-                                disabled={isSyncing}
                             >
                                 Disconnect
                             </Button>

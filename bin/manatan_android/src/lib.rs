@@ -52,6 +52,7 @@ lazy_static! {
 static WEBUI_DIR: OnceLock<PathBuf> = OnceLock::new();
 
 const TACHI_DATA_DIR_NAME: &str = "tachidesk_data";
+const DEFAULT_GOOGLE_OAUTH_BROKER_ENDPOINT: &str = "https://manatan.com/auth/google";
 
 fn env_bool(key: &str, default: bool) -> bool {
     std::env::var(key)
@@ -62,6 +63,55 @@ fn env_bool(key: &str, default: bool) -> bool {
             _ => None,
         })
         .unwrap_or(default)
+}
+
+fn normalized_env_var(key: &str) -> Option<String> {
+    std::env::var(key)
+        .ok()
+        .map(|value| value.trim().to_string())
+        .filter(|value| !value.is_empty())
+}
+
+fn set_runtime_env_var(key: &str, value: &str) {
+    if normalized_env_var(key).is_some() {
+        return;
+    }
+
+    unsafe {
+        std::env::set_var(key, value);
+    }
+}
+
+fn configure_oauth_broker_env() {
+    let broker_token = normalized_env_var("MANATAN_GOOGLE_OAUTH_BROKER_TOKEN")
+        .or_else(|| {
+            option_env!("MANATAN_GOOGLE_OAUTH_BROKER_TOKEN_COMPILED")
+                .map(|value| value.trim().to_string())
+                .filter(|value| !value.is_empty())
+        });
+
+    let Some(broker_token) = broker_token else {
+        warn!("No OAuth broker token configured for Android runtime");
+        return;
+    };
+
+    let broker_endpoint = normalized_env_var("MANATAN_GOOGLE_OAUTH_BROKER_ENDPOINT")
+        .or_else(|| {
+            option_env!("MANATAN_GOOGLE_OAUTH_BROKER_ENDPOINT_COMPILED")
+                .map(|value| value.trim().to_string())
+                .filter(|value| !value.is_empty())
+        })
+        .unwrap_or_else(|| DEFAULT_GOOGLE_OAUTH_BROKER_ENDPOINT.to_string());
+
+    set_runtime_env_var("MANATAN_GOOGLE_OAUTH_BROKER_TOKEN", &broker_token);
+    set_runtime_env_var("MANATAN_GOOGLE_OAUTH_BROKER_ENDPOINT", &broker_endpoint);
+    set_runtime_env_var("MANATAN_BROKER_TOKEN", &broker_token);
+    set_runtime_env_var("MANATAN_BROKER_ENDPOINT", &broker_endpoint);
+
+    info!(
+        "Configured OAuth broker for Android runtime using endpoint {}",
+        broker_endpoint
+    );
 }
 
 fn get_files_dir_from_context(env: &mut jni::JNIEnv, context: &JObject) -> Option<PathBuf> {
@@ -1097,6 +1147,7 @@ async fn start_web_server(
     default_local_anime_dir: PathBuf,
 ) -> Result<(), Box<dyn std::error::Error>> {
     info!("🚀 Initializing Manatan Server on port 4568...");
+    configure_oauth_broker_env();
 
     // Pick a WebUI directory that actually contains an index.html.
     // We also support an extra nested folder level (some tar layouts unpack into a subdir).
@@ -1166,6 +1217,7 @@ async fn start_web_server(
     };
     let manatan_state = build_state(manatan_config).await?;
     let manatan_router = build_router_without_cors(manatan_state);
+    let sync_router = manatan_sync_server::create_router(data_dir.clone());
 
     let ocr_router = manatan_ocr_server::create_router(data_dir.clone());
     let yomitan_router = manatan_yomitan_server::create_router(data_dir.clone());
@@ -1199,6 +1251,7 @@ async fn start_web_server(
             axum::routing::post(download_update_handler),
         )
         .route("/api/system/install-update", any(install_update_handler))
+        .nest("/api/sync", sync_router)
         .nest_service("/api/ocr", ocr_router)
         .nest_service("/api/yomitan", yomitan_router)
         .nest_service("/api/audio", audio_router)

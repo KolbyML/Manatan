@@ -21,7 +21,7 @@ futures.workspace = true
 bytes.workspace = true
 tower-http.workspace = true
 base64.workspace = true
-reqwest.workspace = true
+reqwest = { workspace = true, features = ["rustls-tls-webpki-roots"] }
 
 # Google Drive v7 (re-exports hyper, hyper_rustls, hyper_util, yup_oauth2)
 google-drive3 = "7"

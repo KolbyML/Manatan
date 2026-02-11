@@ -3729,6 +3729,7 @@ dependencies = [
  "manatan-audio-server",
  "manatan-ocr-server",
  "manatan-server-public",
+ "manatan-sync-server",
  "manatan-yomitan-server",
  "mime_guess",
  "ndk-context",

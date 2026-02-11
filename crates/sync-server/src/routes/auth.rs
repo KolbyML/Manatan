@@ -1,5 +1,6 @@
 use axum::{
     extract::{Query, State},
+    http::{HeaderMap, header::USER_AGENT},
     response::{IntoResponse, Redirect},
     routing::{get, post},
     Json, Router,
@@ -17,7 +18,7 @@ pub fn router() -> Router<SyncState> {
         .route("/google/start", post(google_start))
         .route("/google/callback", get(google_callback))
         .route("/google/callback", post(google_callback_post))
-        .route("/disconnect", post(disconnect))
+        .route("/disconnect", get(disconnect).post(disconnect))
 }
 
 #[derive(Serialize)]
@@ -135,16 +136,39 @@ pub struct CallbackQuery {
 
 async fn google_callback(
     State(state): State<SyncState>,
+    headers: HeaderMap,
     Query(query): Query<CallbackQuery>,
 ) -> Result<Redirect, SyncError> {
+    let ua = headers
+        .get(USER_AGENT)
+        .and_then(|value| value.to_str().ok())
+        .unwrap_or_default();
+    let is_android = ua.contains("Android");
+
+    let success_target = if is_android {
+        format!(
+            "manatan://launch?url={}",
+            urlencoding::encode("http://127.0.0.1:4568/settings/sync")
+        )
+    } else {
+        "/settings/sync".to_string()
+    };
+
     match handle_callback(state, query.code, query.state).await {
-        Ok(_) => Ok(Redirect::to("/settings/sync")),
+        Ok(_) => Ok(Redirect::to(&success_target)),
         Err(e) => {
             tracing::warn!("[AUTH] Google callback failed: {e}");
-            Ok(Redirect::to(&format!(
-                "/settings/sync?error={}",
-                urlencoding::encode(&e.user_message())
-            )))
+            let user_message = e.user_message();
+            let error_message = urlencoding::encode(&user_message);
+            if is_android {
+                let target = format!(
+                    "manatan://launch?url={}",
+                    urlencoding::encode(&format!("http://127.0.0.1:4568/settings/sync?error={error_message}"))
+                );
+                Ok(Redirect::to(&target))
+            } else {
+                Ok(Redirect::to(&format!("/settings/sync?error={error_message}")))
+            }
         }
     }
 }
@@ -226,6 +250,10 @@ async fn disconnect(State(state): State<SyncState>) -> Result<Json<CallbackRespo
 
     if let Some(backend) = gdrive.as_mut() {
         backend.disconnect().await?;
+    } else {
+        // If backend is not currently initialized, we still need to clear any
+        // persisted OAuth tokens from the sync state database.
+        state.clear_tokens()?;
     }
 
     *gdrive = None;

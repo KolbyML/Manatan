@@ -141,6 +141,7 @@ manatan-ocr-server.workspace = true
 manatan-yomitan-server.workspace = true
 manatan-audio-server.workspace = true
 manatan-server-public.workspace = true
+manatan-sync-server.workspace = true
 mime_guess = "2"
 openssl = { version = "0.10", features = ["vendored"] }
 ndk-context = "0.1"

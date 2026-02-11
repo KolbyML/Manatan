@@ -43,9 +43,74 @@ pub enum SyncError {
 }
 
 impl SyncError {
+    fn oauth_detail(message: &str) -> Option<String> {
+        let raw = message
+            .strip_prefix("Token exchange failed:")
+            .map(str::trim)
+            .filter(|value| !value.is_empty())
+            .unwrap_or(message)
+            .trim();
+
+        if raw.is_empty() {
+            return None;
+        }
+
+        if let Ok(json) = serde_json::from_str::<serde_json::Value>(raw) {
+            let error = json
+                .get("error")
+                .and_then(|value| value.as_str())
+                .unwrap_or_default();
+            let description = json
+                .get("error_description")
+                .or_else(|| json.get("message"))
+                .and_then(|value| value.as_str())
+                .unwrap_or_default();
+
+            if !error.is_empty() && !description.is_empty() {
+                return Some(format!("{error}: {description}"));
+            }
+            if !error.is_empty() {
+                return Some(error.to_string());
+            }
+            if !description.is_empty() {
+                return Some(description.to_string());
+            }
+        }
+
+        Some(raw.to_string())
+    }
+
     pub fn user_message(&self) -> String {
         match self {
-            SyncError::OAuthError(_) => {
+            SyncError::OAuthError(message) => {
+                let message_lower = message.to_lowercase();
+
+                if message.contains("Missing or invalid bearer token") {
+                    return "Google OAuth broker rejected the request token. Ensure MANATAN_GOOGLE_OAUTH_BROKER_TOKEN matches the broker's MANATAN_BROKER_TOKEN.".to_string();
+                }
+
+                if message_lower.contains("invalid_client")
+                    || message_lower.contains("unauthorized_client")
+                {
+                    return "Google OAuth client mismatch. Set MANATAN_GDRIVE_CLIENT_ID to the same value as the broker GOOGLE_CLIENT_ID, then reconnect.".to_string();
+                }
+
+                if message_lower.contains("redirect_uri_mismatch") {
+                    return "Google OAuth redirect URI mismatch. Ensure the broker OAuth client allows http://127.0.0.1:4568/api/sync/auth/google/callback.".to_string();
+                }
+
+                if message_lower.contains("invalid_grant") {
+                    return "Google rejected the authorization code. Try reconnecting, and verify MANATAN_GDRIVE_CLIENT_ID matches the broker GOOGLE_CLIENT_ID.".to_string();
+                }
+
+                if message_lower.contains("no refresh token") {
+                    return "Google did not return a refresh token. Remove Manatan app access from your Google account security settings, then reconnect.".to_string();
+                }
+
+                if let Some(detail) = Self::oauth_detail(message) {
+                    return format!("Google Drive authentication failed: {detail}");
+                }
+
                 "Google Drive authentication failed. Please reconnect and try again.".to_string()
             }
             SyncError::DriveError(_) => {

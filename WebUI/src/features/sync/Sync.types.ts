@@ -134,7 +134,6 @@ export interface MergeResponse {
     sync_timestamp: number;
     files_to_upload: string[];
     files_to_download: string[];
-}
     conflicts: ConflictInfo[];
 }
 

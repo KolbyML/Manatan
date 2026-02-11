@@ -220,6 +220,24 @@ public class WebviewActivity extends Activity {
 
     private class NativeCaptureBridge {
         @JavascriptInterface
+        public void openExternalUrl(final String url) {
+            if (url == null || url.isEmpty()) return;
+
+            runOnUiThread(() -> {
+                try {
+                    Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
+                    browserIntent.addCategory(Intent.CATEGORY_BROWSABLE);
+                    startActivity(browserIntent);
+                } catch (ActivityNotFoundException e) {
+                    Log.e("Manatan", "No browser found for OAuth URL", e);
+                    Toast.makeText(WebviewActivity.this, "No browser available for Google sign-in", Toast.LENGTH_SHORT).show();
+                } catch (Exception e) {
+                    Log.e("Manatan", "Failed to open OAuth URL in external browser", e);
+                }
+            });
+        }
+
+        @JavascriptInterface
         public void captureFrame(final String callbackId, final String payloadJson) {
             if (myWebView == null) {
                 sendCaptureCallback(callbackId, null);

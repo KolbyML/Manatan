@@ -3,7 +3,6 @@ import { SyncApi } from './SyncApi';
 import { SyncService } from './SyncService';
 import { AuthStatus, SyncConfig, SyncProgress, ConflictInfo } from '../Sync.types';
 import { DEFAULT_SYNC_CONFIG } from '../Sync.constants';
-import { RequestManager } from '@/lib/requests/RequestManager';
 import { getAppVersion } from '@/Manatan/utils/api';
 
 interface SyncContextValue {
@@ -11,6 +10,7 @@ interface SyncContextValue {
     status: AuthStatus | null;
     config: SyncConfig;
     is_syncing: boolean;
+    isSyncing: boolean;
     lastSyncTime: Date | null;
     error: string | null;
     progress: SyncProgress | null;
@@ -56,6 +56,19 @@ export const SyncProvider: React.FC<{ children: React.ReactNode }> = ({ children
         const authError = urlParams.get('error');
         if (authError) {
             setError(`Authentication failed: ${authError}`);
+
+            // Reset local auth state so users are not stuck in a half-connected state
+            // after OAuth callback errors on mobile/native flows.
+            void (async () => {
+                try {
+                    await SyncApi.disconnect();
+                    const newStatus = await SyncApi.getStatus();
+                    setStatus(newStatus);
+                } catch (disconnectError) {
+                    console.warn('[Sync] Failed to auto-disconnect after auth error:', disconnectError);
+                }
+            })();
+
             // Clean up URL
             urlParams.delete('error');
             const newSearch = urlParams.toString();
@@ -127,13 +140,19 @@ export const SyncProvider: React.FC<{ children: React.ReactNode }> = ({ children
             sessionStorage.setItem('sync_auth_in_progress', 'true');
             
             // Use appropriate redirect method based on platform
-            const requestManager = new RequestManager();
-
             try {
                 const appVersion = await getAppVersion();
                 if (appVersion.variant === 'native-webview') {
-                    const webviewUrl = requestManager.getWebviewUrl(authUrl);
-                    window.location.href = webviewUrl;
+                    const nativeBridge = (window as any).ManatanNative;
+                    if (nativeBridge && typeof nativeBridge.openExternalUrl === 'function') {
+                        nativeBridge.openExternalUrl(authUrl);
+                        return;
+                    }
+
+                    const opened = window.open(authUrl, '_blank', 'noopener,noreferrer');
+                    if (!opened) {
+                        window.location.href = authUrl;
+                    }
                     return;
                 }
 
@@ -152,8 +171,44 @@ export const SyncProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const disconnect = useCallback(async () => {
         try {
             setError(null);
-            await SyncApi.disconnect();
-            await refreshStatus();
+            // Allow users to recover even if a previous sync operation got stuck.
+            setIsSyncing(false);
+
+            const timeoutError = new Error('Disconnect request timed out. Please restart the app and try again.');
+            const runWithTimeout = <T,>(promise: Promise<T>): Promise<T> =>
+                Promise.race([
+                    promise,
+                    new Promise<T>((_, reject) => {
+                        window.setTimeout(() => reject(timeoutError), 8000);
+                    }),
+                ]);
+
+            try {
+                await runWithTimeout(SyncApi.disconnect());
+            } catch (primaryError) {
+                console.warn('[Sync] Primary disconnect request failed, trying GET fallback:', primaryError);
+                const fallback = await runWithTimeout(
+                    fetch(`${window.location.origin}/api/sync/auth/disconnect`, {
+                        method: 'GET',
+                        credentials: 'same-origin',
+                    }),
+                );
+
+                if (!fallback.ok) {
+                    const text = await fallback.text();
+                    throw new Error(text || `HTTP ${fallback.status}: ${fallback.statusText}`);
+                }
+            }
+
+            setStatus((prev) => {
+                if (!prev) return prev;
+                return {
+                    ...prev,
+                    connected: false,
+                    email: undefined,
+                };
+            });
+            void refreshStatus();
         } catch (e) {
             setError(`Disconnect failed: ${e}`);
         }
@@ -241,6 +296,7 @@ export const SyncProvider: React.FC<{ children: React.ReactNode }> = ({ children
             status,
             config,
             is_syncing,
+            isSyncing: is_syncing,
             lastSyncTime,
             error,
             progress,

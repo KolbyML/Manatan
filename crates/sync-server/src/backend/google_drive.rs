@@ -10,7 +10,7 @@ use flate2::Compression;
 use serde::Deserialize;
 use sha2::{Digest, Sha256};
 use std::io::{Read, Write};
-use tracing::{error, info};
+use tracing::{error, info, warn};
 
 // Re-exports from google-drive3
 use google_drive3::api::File;
@@ -38,6 +38,11 @@ fn load_credentials() -> InstalledCredentials {
         .ok()
         .map(|value| value.trim().to_string())
         .filter(|value| !value.is_empty())
+        .or_else(|| {
+            option_env!("MANATAN_GDRIVE_CLIENT_ID_COMPILED")
+                .map(|value| value.trim().to_string())
+                .filter(|value| !value.is_empty())
+        })
         .unwrap_or_else(|| EMBEDDED_GDRIVE_CLIENT_ID.to_string());
 
     InstalledCredentials {
@@ -56,6 +61,7 @@ const SCOPES: &[&str] = &[
 ];
 
 const GOOGLE_OAUTH_AUTH_ENDPOINT: &str = "https://accounts.google.com/o/oauth2/v2/auth";
+const GOOGLE_OAUTH_TOKEN_ENDPOINT: &str = "https://oauth2.googleapis.com/token";
 const DEFAULT_GOOGLE_OAUTH_BROKER_ENDPOINT: &str = "https://manatan.com/auth/google";
 const GOOGLE_OAUTH_BROKER_ENDPOINT_ENV: &str = "MANATAN_GOOGLE_OAUTH_BROKER_ENDPOINT";
 const GOOGLE_OAUTH_BROKER_TOKEN_ENV: &str = "MANATAN_GOOGLE_OAUTH_BROKER_TOKEN";
@@ -63,11 +69,26 @@ const SYNC_FILE_NAME: &str = "manatan_sync.proto.gz";
 const FOLDER_MIME_TYPE: &str = "application/vnd.google-apps.folder";
 
 fn oauth_token_endpoint() -> String {
-    std::env::var(GOOGLE_OAUTH_BROKER_ENDPOINT_ENV)
+    if let Some(configured_endpoint) = std::env::var(GOOGLE_OAUTH_BROKER_ENDPOINT_ENV)
         .ok()
         .map(|value| value.trim().to_string())
         .filter(|value| !value.is_empty())
-        .unwrap_or_else(|| DEFAULT_GOOGLE_OAUTH_BROKER_ENDPOINT.to_string())
+    {
+        return configured_endpoint;
+    }
+
+    if let Some(compiled_endpoint) = option_env!("MANATAN_GOOGLE_OAUTH_BROKER_ENDPOINT_COMPILED")
+        .map(|value| value.trim().to_string())
+        .filter(|value| !value.is_empty())
+    {
+        return compiled_endpoint;
+    }
+
+    if oauth_broker_token().is_some() {
+        DEFAULT_GOOGLE_OAUTH_BROKER_ENDPOINT.to_string()
+    } else {
+        GOOGLE_OAUTH_TOKEN_ENDPOINT.to_string()
+    }
 }
 
 fn oauth_broker_token() -> Option<String> {
@@ -80,7 +101,8 @@ fn oauth_broker_token() -> Option<String> {
         return runtime;
     }
 
-    option_env!("MANATAN_GOOGLE_OAUTH_BROKER_TOKEN")
+    option_env!("MANATAN_GOOGLE_OAUTH_BROKER_TOKEN_COMPILED")
+        .or(option_env!("MANATAN_GOOGLE_OAUTH_BROKER_TOKEN"))
         .map(|value| value.trim().to_string())
         .filter(|value| !value.is_empty())
 }
@@ -122,8 +144,7 @@ impl GoogleDriveBackend {
         };
 
         let connector = google_drive3::hyper_rustls::HttpsConnectorBuilder::new()
-            .with_native_roots()
-            .map_err(|e| SyncError::OAuthError(e.to_string()))?
+            .with_webpki_roots()
             .https_or_http()
             .enable_http2()
             .build();
@@ -147,9 +168,14 @@ impl GoogleDriveBackend {
 
         let endpoint = oauth_token_endpoint();
         let mut request = client.post(&endpoint).form(&params);
-        if endpoint != "https://oauth2.googleapis.com/token" {
-            if let Some(broker_token) = oauth_broker_token() {
-                request = request.bearer_auth(broker_token);
+        if endpoint != GOOGLE_OAUTH_TOKEN_ENDPOINT {
+            match oauth_broker_token() {
+                Some(broker_token) => {
+                    request = request.bearer_auth(broker_token);
+                }
+                None => {
+                    warn!("Google OAuth broker endpoint selected but no broker token is available");
+                }
             }
         }
 
@@ -254,9 +280,14 @@ impl GoogleDriveBackend {
 
         let endpoint = oauth_token_endpoint();
         let mut request = client.post(&endpoint).form(&params);
-        if endpoint != "https://oauth2.googleapis.com/token" {
-            if let Some(broker_token) = oauth_broker_token() {
-                request = request.bearer_auth(broker_token);
+        if endpoint != GOOGLE_OAUTH_TOKEN_ENDPOINT {
+            match oauth_broker_token() {
+                Some(broker_token) => {
+                    request = request.bearer_auth(broker_token);
+                }
+                None => {
+                    warn!("Google OAuth broker endpoint selected but no broker token is available");
+                }
             }
         }
 
