@@ -12,3 +12,8 @@
 - Remove unused workflows (fafad47)
 - Simplify dependencies (5328ced)
 - Fix icons being broken (3ba620d)
+
+## Release v3.0.5
+
+- Fix windows build failing to startup, due to libcef.dll (d939ec1)
+- Clean up discord announcement (3141ca5)
