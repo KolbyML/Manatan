@@ -1,16 +1,11 @@
 name: Docker Publish
 
 on:
-  workflow_run:
-    workflows: ["CI Publish"]
+  release:
     types:
-      - completed
+      - published
   workflow_dispatch:
     inputs:
-      run_id:
-        description: 'Run ID of the "CI Publish" workflow to download artifacts from'
-        required: true
-        type: string
       tag_name:
         description: 'Docker Tag to apply (e.g., v1.0.5)'
         required: true
@@ -23,8 +18,6 @@ env:
 jobs:
   push_to_registry:
     name: Build & Push Docker Image
-    # Only run if the upstream workflow succeeded
-    if: ${{ github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success' }}
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -36,46 +29,37 @@ jobs:
 
       - name: Determine Version
         id: get_version
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          # 1. Try manual input first
           TAG_NAME="${{ inputs.tag_name }}"
-          
-          # 2. If empty, try getting it from the workflow_run event
-          if [[ -z "$TAG_NAME" ]]; then
-            TAG_NAME="${{ github.event.workflow_run.head_branch }}"
-          fi
-          
-          # 3. Fallback validation
+
           if [[ -z "$TAG_NAME" || "$TAG_NAME" == "null" ]]; then
-             TAG_NAME="latest"
+            TAG_NAME="${{ github.event.release.tag_name }}"
           fi
-          
+
+          if [[ -z "$TAG_NAME" || "$TAG_NAME" == "null" ]]; then
+            TAG_NAME="$(gh release list --repo "${{ github.repository }}" --limit 1 --json tagName --jq '.[0].tagName')"
+          fi
+
+          if [[ -z "$TAG_NAME" || "$TAG_NAME" == "null" ]]; then
+            echo "Could not resolve a release tag to build from."
+            exit 1
+          fi
+
           echo "Building for version: $TAG_NAME"
           echo "tag=$TAG_NAME" >> $GITHUB_OUTPUT
 
-      - name: Download Linux AMD64 Artifacts
-        uses: actions/download-artifact@v4
-        with:
-          name: manatan-linux-amd64
-          path: download_amd64
-          run-id: ${{ inputs.run_id || github.event.workflow_run.id }}
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Download Linux ARM64 Artifacts
-        uses: actions/download-artifact@v4
-        with:
-          name: manatan-linux-arm64
-          path: download_arm64
-          run-id: ${{ inputs.run_id || github.event.workflow_run.id }}
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Prepare Context
+      - name: Download Linux Release Assets
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          # Rename files to exactly what the Dockerfile expects
-          # Note: We look in download_amd64 now, not download_x64
-          find download_amd64 -name "*.tar.gz" -exec cp {} manatan-linux-amd64.tar.gz \;
-          find download_arm64 -name "*.tar.gz" -exec cp {} manatan-linux-arm64.tar.gz \;
-          
+          TAG_NAME="${{ steps.get_version.outputs.tag }}"
+          gh release download "$TAG_NAME" --repo "${{ github.repository }}" --pattern "Manatan-${TAG_NAME}-Linux-amd64.tar.gz" --dir .
+          gh release download "$TAG_NAME" --repo "${{ github.repository }}" --pattern "Manatan-${TAG_NAME}-Linux-arm64.tar.gz" --dir .
+          mv "Manatan-${TAG_NAME}-Linux-amd64.tar.gz" manatan-linux-amd64.tar.gz
+          mv "Manatan-${TAG_NAME}-Linux-arm64.tar.gz" manatan-linux-arm64.tar.gz
+
           ls -lh *.tar.gz
 
       - name: Set up QEMU
