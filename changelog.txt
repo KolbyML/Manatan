@@ -1,0 +1,14 @@
+## Release v3.0.4
+
+- Fix publish workflow (bd9e5c8)
+- Update release workflow (6313a6e)
+- Fix local anime returning a 400 error (89261ee)
+- Try to speed up popup dictionary lookups speed (752ad8d)
+- Prompt users to reset popup dictionary database if it is corrupted, instead of crashing (1b016f4)
+- Increase dictionary limits (199c040)
+- Fix Manga Source Configuration (3e86624)
+- Fix anime support (16346b1)
+- Fix regression in playback (893b8b5)
+- Remove unused workflows (fafad47)
+- Simplify dependencies (5328ced)
+- Fix icons being broken (3ba620d)
