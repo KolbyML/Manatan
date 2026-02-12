@@ -9,6 +9,8 @@ permissions:
 jobs:
   announce:
     runs-on: ubuntu-latest
+    env:
+      DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK }}
     steps:
       - uses: actions/checkout@v4
         with:
@@ -39,8 +41,7 @@ jobs:
           fi
 
       - name: Notify Discord
-        if: ${{ secrets.DISCORD_WEBHOOK != '' }}
+        if: ${{ env.DISCORD_WEBHOOK != '' }}
         env:
-          DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK }}
           VERSION_TAG: ${{ steps.tags.outputs.latest_tag }}
         run: python .github/scripts/discord_announce.py

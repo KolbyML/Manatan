@@ -342,6 +342,10 @@ jobs:
     needs: [prepare_version, build_webui]
     name: Build Android APKs
     runs-on: ubuntu-latest
+    env:
+      ANDROID_SIGNING_KEY: ${{ secrets.ANDROID_SIGNING_KEY }}
+      ANDROID_KEY_STORE_PASSWORD: ${{ secrets.ANDROID_KEY_STORE_PASSWORD }}
+      ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -434,11 +438,11 @@ jobs:
           cp $(find ../../target -name "*.apk" | grep "release/apk" | head -n 1) ../../signing_stage/manatan-native-webview-unsigned.apk
 
       - name: Sign APKs
-        if: ${{ secrets.ANDROID_SIGNING_KEY != '' && secrets.ANDROID_KEY_STORE_PASSWORD != '' && secrets.ANDROID_KEY_PASSWORD != '' }}
+        if: ${{ env.ANDROID_SIGNING_KEY != '' && env.ANDROID_KEY_STORE_PASSWORD != '' && env.ANDROID_KEY_PASSWORD != '' }}
         env:
-          SIGNING_KEY_BASE64: ${{ secrets.ANDROID_SIGNING_KEY }}
-          KEY_STORE_PASSWORD: ${{ secrets.ANDROID_KEY_STORE_PASSWORD }}
-          KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
+          SIGNING_KEY_BASE64: ${{ env.ANDROID_SIGNING_KEY }}
+          KEY_STORE_PASSWORD: ${{ env.ANDROID_KEY_STORE_PASSWORD }}
+          KEY_PASSWORD: ${{ env.ANDROID_KEY_PASSWORD }}
           ALIAS: mangatan
         run: |
           echo "$SIGNING_KEY_BASE64" | base64 -d --ignore-garbage > release.keystore
@@ -452,7 +456,7 @@ jobs:
           done
 
       - name: Prepare Unsigned APK Artifacts
-        if: ${{ secrets.ANDROID_SIGNING_KEY == '' || secrets.ANDROID_KEY_STORE_PASSWORD == '' || secrets.ANDROID_KEY_PASSWORD == '' }}
+        if: ${{ env.ANDROID_SIGNING_KEY == '' || env.ANDROID_KEY_STORE_PASSWORD == '' || env.ANDROID_KEY_PASSWORD == '' }}
         run: |
           mkdir -p signed_apks
           cp signing_stage/manatan-browser-unsigned.apk signed_apks/manatan-browser.apk
@@ -469,6 +473,8 @@ jobs:
   release:
     needs: [build_manatan, build_android, prepare_version]
     runs-on: ubuntu-latest
+    env:
+      DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK }}
     steps:
       - uses: actions/checkout@v4
         with:
@@ -534,9 +540,8 @@ jobs:
           files: final_release/*
 
       - name: Notify Discord
-        if: ${{ secrets.DISCORD_WEBHOOK != '' }}
+        if: ${{ env.DISCORD_WEBHOOK != '' }}
         env:
-          DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK }}
           VERSION_TAG: ${{ needs.prepare_version.outputs.version_tag }}
         run: python .github/scripts/discord_announce.py
 
