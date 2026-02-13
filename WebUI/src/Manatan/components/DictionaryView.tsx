@@ -13,6 +13,7 @@ import {
     resolveWordAudioUrl,
 } from '@/Manatan/utils/wordAudio';
 import { DictionaryResult, WordAudioSource, WordAudioSourceSelection } from '@/Manatan/types';
+import { PronunciationSection, extractPronunciationData, getKanaMorae } from './Pronunciation';
 import VolumeUpIcon from '@mui/icons-material/VolumeUp';
 import StarIcon from '@mui/icons-material/Star';
 import StarBorderIcon from '@mui/icons-material/StarBorder';
@@ -270,13 +271,68 @@ const AnkiButtons: React.FC<{
             const sumOfReciprocals = numbers.reduce((sum, n) => sum + (1 / n), 0);
             return Math.round(numbers.length / sumOfReciprocals).toString();
         };
+        const getHarmonicFrequency = (): string => {
+            return getHarmonicMeanFrequency();
+        };
         const getFrequency = (): string => {
             const mode = settings.ankiFreqMode || 'lowest';
             if (mode === 'lowest') return getLowestFrequency();
-            if (mode === 'harmonic') return getHarmonicMeanFrequency();
             const freqEntry = entry.frequencies?.find(f => f.dictionaryName === mode);
             if (freqEntry) return freqEntry.value;
             return getLowestFrequency();
+        };
+        const getPitchAccent = (): string => {
+            const { pitchAccents } = extractPronunciationData(entry);
+            if (!pitchAccents || pitchAccents.length === 0) return '';
+
+            const seenPitches = new Set<string>();
+
+            return pitchAccents.map(pa => {
+                const morae = getKanaMorae(pa.reading || entry.reading);
+                const reading = morae.join('');
+
+                const pitchHtml = pa.pitches.map(p => {
+                    const pos = typeof p.position === 'number' ? p.position : 0;
+                    const pattern = p.pattern || '';
+                    const nasal = p.nasal || [];
+                    const devoice = p.devoice || [];
+                    const tags = p.tags || [];
+
+                    const pitchKey = `${reading}:${pos}:${pattern}:${nasal.join(',')}:${devoice.join(',')}`;
+                    if (seenPitches.has(pitchKey)) {
+                        return '';
+                    }
+                    seenPitches.add(pitchKey);
+
+                    let textHtml = '';
+                    morae.forEach((mora, i) => {
+                        const isHigh = pattern ? pattern[i] === 'H' : (pos === 0 ? i > 0 : (pos === 1 ? i < 1 : (i > 0 && i < pos)));
+                        const hasNasal = nasal.includes(i + 1);
+                        const hasDevoice = devoice.includes(i + 1);
+                        const isDownstep = pattern ? (pattern[i] === 'H' && pattern[i + 1] === 'L') : (isHigh && !((pos === 0 ? (i + 1) > 0 : (pos === 1 ? (i + 1) < 1 : ((i + 1) > 0 && (i + 1) < pos)))));
+
+                        textHtml += `<span style="position:relative;display:inline-flex;flex-direction:column;align-items:center;padding:0 1px;${isHigh ? 'padding-top:0' : 'padding-top:8px'};">`;
+                        if (hasDevoice) textHtml += `<span style="position:absolute;top:-6px;right:0;font-size:8px;color:#888;">°</span>`;
+                        textHtml += `<span style="${hasDevoice ? 'color:#888;' : ''}">${mora}</span>`;
+                        if (hasNasal) textHtml += `<span style="position:absolute;bottom:-3px;left:50%;transform:translateX(-50%);width:4px;height:4px;border-radius:50%;background:#3498db;opacity:0.6;"></span>`;
+                        textHtml += `<span style="position:absolute;top:${isHigh ? '-4px' : '8px'};left:0;right:0;height:2px;background:currentColor;"></span>`;
+                        if (isDownstep) textHtml += `<span style="position:absolute;top:-4px;right:0;width:2px;height:14px;background:#e74c3c;"></span>`;
+                        textHtml += `</span>`;
+                    });
+
+                    const notation = `[${pos}]`;
+
+                    const tagsHtml = tags.length > 0
+                        ? tags.map(t => `<span style="font-size:0.65em;color:#aaa;background:rgba(255,255,255,0.1);padding:1px 4px;border-radius:2px;margin-left:4px;">${t}</span>`).join('')
+                        : '';
+
+                    return `<div style="display:flex;align-items:center;gap:6px;margin-bottom:4px;"><span style="font-family:monospace;font-size:0.85em;color:#e74c3c;font-weight:bold;">${notation}</span><span style="display:inline-flex;align-items:flex-end;">${textHtml}</span>${tagsHtml}</div>`;
+                }).join('');
+
+                if (!pitchHtml) return '';
+
+                return `<div style="margin-bottom:8px;"><span style="font-size:0.7em;color:#888;background:rgba(139,92,246,0.2);padding:2px 6px;border-radius:3px;">${pa.dictionaryName}</span><div style="margin-top:4px;padding:4px 8px;background:rgba(0,0,0,0.2);border-radius:4px;">${pitchHtml}</div></div>`;
+            }).join('');
         };
         const buildGlossaryHtml = (dictionaryName?: string): string => {
             const glossaryEntries = dictionaryName
@@ -332,7 +388,9 @@ const AnkiButtons: React.FC<{
             else if (mapType === 'Reading') fields[ankiField] = entry.reading;
             else if (mapType === 'Furigana') fields[ankiField] = generateAnkiFurigana(entry.furigana || []);
             else if (mapType === 'Definition' || mapType === 'Glossary') fields[ankiField] = buildGlossaryHtml();
-            else if (mapType === 'Frequency') fields[ankiField] = getFrequency(); 
+            else if (mapType === 'Frequency') fields[ankiField] = getFrequency();
+            else if (mapType === 'Harmonic Frequency') fields[ankiField] = getHarmonicFrequency();
+            else if (mapType === 'Pitch Accent') fields[ankiField] = getPitchAccent();
             else if (mapType === 'Sentence') fields[ankiField] = sentence;
             else if (mapType === 'Sentence Furigana') fields[ankiField] = sentenceFurigana;
             else if (mapType === 'Word Audio') fields[ankiField] = '';
@@ -711,6 +769,20 @@ export const DictionaryView: React.FC<DictionaryViewProps> = ({
                             ))}
                         </div>
                     )}
+                    {(() => {
+                        const { pitchAccents, ipa } = extractPronunciationData(entry);
+                        if (pitchAccents.length === 0 && ipa.length === 0) return null;
+                        return (
+                            <PronunciationSection
+                                reading={entry.reading}
+                                pitchAccents={pitchAccents}
+                                ipa={ipa}
+                                showGraph={settings.yomitanShowPitchGraph ?? false}
+                                showText={settings.yomitanShowPitchText ?? true}
+                                showNotation={settings.yomitanShowPitchNotation ?? true}
+                            />
+                        );
+                    })()}
                     {entry.glossary && (
                         <div>
                             {entry.glossary.map((def, defIdx) => (

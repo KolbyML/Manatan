@@ -101,6 +101,9 @@ export interface Settings {
     yomitanPopupWidthPx: number;
     yomitanPopupHeightPx: number;
     yomitanPopupScalePercent: number;
+    yomitanShowPitchGraph: boolean;
+    yomitanShowPitchText: boolean;
+    yomitanShowPitchNotation: boolean;
     debugMode: boolean;
     mobileMode: boolean;
     soloHoverMode: boolean;
@@ -172,7 +175,25 @@ export interface DictionaryResult {
     matchLen?: number;
     termTags?: Array<string | { name?: string; label?: string; tag?: string; value?: string }>;
     frequencies?: any[];
-
+    pitchAccents?: Array<{
+        dictionaryName: string;
+        reading: string;
+        pitches: Array<{
+            position: number;
+            pattern?: string;
+            nasal?: number[];
+            devoice?: number[];
+            tags?: string[];
+        }>;
+    }>;
+    ipa?: Array<{
+        dictionaryName: string;
+        reading: string;
+        transcriptions: Array<{
+            ipa: string;
+            tags?: string[];
+        }>;
+    }>;
 }
 
 export interface DictionaryDefinition {
@@ -272,6 +293,9 @@ export const DEFAULT_SETTINGS: Settings = {
     yomitanPopupWidthPx: 340,
     yomitanPopupHeightPx: 450,
     yomitanPopupScalePercent: 100,
+    yomitanShowPitchGraph: false,
+    yomitanShowPitchText: true,
+    yomitanShowPitchNotation: true,
     debugMode: false,
     mobileMode: false,
     soloHoverMode: true,

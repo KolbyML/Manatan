@@ -77,6 +77,44 @@ pub struct ApiFrequency {
     pub value: String,
 }
 
+#[derive(Serialize, Clone)]
+#[serde(rename_all = "camelCase")]
+pub struct ApiPitchAccent {
+    pub dictionary_name: String,
+    pub reading: String,
+    pub pitches: Vec<ApiPitchInfo>,
+}
+
+#[derive(Serialize, Clone)]
+#[serde(rename_all = "camelCase")]
+pub struct ApiPitchInfo {
+    pub position: i64,
+    #[serde(skip_serializing_if = "String::is_empty")]
+    pub pattern: String,
+    #[serde(skip_serializing_if = "Vec::is_empty")]
+    pub nasal: Vec<i64>,
+    #[serde(skip_serializing_if = "Vec::is_empty")]
+    pub devoice: Vec<i64>,
+    #[serde(skip_serializing_if = "Vec::is_empty")]
+    pub tags: Vec<String>,
+}
+
+#[derive(Serialize, Clone)]
+#[serde(rename_all = "camelCase")]
+pub struct ApiIpa {
+    pub dictionary_name: String,
+    pub reading: String,
+    pub transcriptions: Vec<ApiIpaInfo>,
+}
+
+#[derive(Serialize, Clone)]
+#[serde(rename_all = "camelCase")]
+pub struct ApiIpaInfo {
+    pub ipa: String,
+    #[serde(skip_serializing_if = "Vec::is_empty")]
+    pub tags: Vec<String>,
+}
+
 #[derive(Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct ApiGroupedResult {
@@ -85,9 +123,10 @@ pub struct ApiGroupedResult {
     pub furigana: Vec<(String, String)>,
     pub glossary: Vec<ApiDefinition>,
     pub frequencies: Vec<ApiFrequency>,
+    pub pitch_accents: Vec<ApiPitchAccent>,
+    pub ipa: Vec<ApiIpa>,
     pub forms: Vec<ApiForm>,
     pub term_tags: Vec<GlossaryTag>,
-    // ADDED: Return the length of the match so the frontend can highlight it
     pub match_len: usize,
 }
 
@@ -1423,13 +1462,17 @@ pub async fn lookup_handler(
         furigana: Vec<(String, String)>,
         glossary: Vec<ApiDefinition>,
         frequencies: Vec<ApiFrequency>,
+        pitch_accents: Vec<ApiPitchAccent>,
+        ipa: Vec<ApiIpa>,
         forms_set: Vec<(String, String)>,
-        match_len: usize, // Added to aggregator
+        match_len: usize,
     }
 
     let mut map: Vec<Aggregator> = Vec::new();
 
     let mut freq_map: HashMap<(String, String), Vec<ApiFrequency>> = HashMap::new();
+    let mut pitch_map: HashMap<(String, String), Vec<ApiPitchAccent>> = HashMap::new();
+    let mut ipa_map: HashMap<(String, String), Vec<ApiIpa>> = HashMap::new();
 
     let mut flat_results: Vec<ApiGroupedResult> = Vec::new();
 
@@ -1447,11 +1490,15 @@ pub async fn lookup_handler(
         let match_len = entry.0.span_chars.end as usize;
 
         let mut is_freq = false;
+        let mut is_pitch = false;
+        let mut is_ipa = false;
 
         let (content_val, tags) = if let Record::YomitanGlossary(gloss) = &entry.0.record {
             use wordbase_api::dict::yomitan::structured::Content;
             if let Some(Content::String(s)) = gloss.content.first() {
                 is_freq = s.starts_with("Frequency: ");
+                is_pitch = s.starts_with("Pitch:");
+                is_ipa = s.starts_with("IPA:");
             }
             // Simply extract the name field as a string
             let t: Vec<String> = gloss.tags.iter().map(|tag| tag.name.clone()).collect();
@@ -1491,6 +1538,123 @@ pub async fn lookup_handler(
                 .entry((headword.clone(), reading.clone()))
                 .or_default()
                 .push(freq_obj);
+        } else if is_pitch {
+            // Parse pitch JSON
+            let mut pitch_reading = reading.clone();
+            let mut pitches: Vec<ApiPitchInfo> = vec![];
+
+            if let Some(arr) = content_val.as_array() {
+                if let Some(first) = arr.get(0) {
+                    if let Some(s) = first.as_str() {
+                        if let Ok(pitch_data) = serde_json::from_str::<Value>(s.strip_prefix("Pitch:").unwrap_or("{}")) {
+                            pitch_reading = pitch_data
+                                .get("reading")
+                                .and_then(|v| v.as_str())
+                                .unwrap_or(&reading)
+                                .to_string();
+
+                            pitches = pitch_data
+                                .get("pitches")
+                                .and_then(|v| v.as_array())
+                                .map(|arr| {
+                                    arr.iter()
+                                        .filter_map(|p| {
+                                            let pos_val = p.get("position")?;
+                                            let (position, pattern) = if let Some(n) = pos_val.as_i64() {
+                                                (n, String::new())
+                                            } else if let Some(s) = pos_val.as_str() {
+                                                (-1, s.to_string())
+                                            } else {
+                                                return None;
+                                            };
+
+                                            Some(ApiPitchInfo {
+                                                position,
+                                                pattern,
+                                                nasal: p.get("nasal")
+                                                    .and_then(|v| v.as_array())
+                                                    .map(|a| a.iter().filter_map(|n| n.as_i64()).collect())
+                                                    .unwrap_or_default(),
+                                                devoice: p.get("devoice")
+                                                    .and_then(|v| v.as_array())
+                                                    .map(|a| a.iter().filter_map(|n| n.as_i64()).collect())
+                                                    .unwrap_or_default(),
+                                                tags: p.get("tags")
+                                                    .and_then(|v| v.as_array())
+                                                    .map(|a| a.iter().filter_map(|s| s.as_str().map(String::from)).collect())
+                                                    .unwrap_or_default(),
+                                            })
+                                        })
+                                        .collect()
+                                })
+                                .unwrap_or_default();
+                        }
+                    }
+                }
+            }
+
+            if !pitches.is_empty() {
+                let api_pitch = ApiPitchAccent {
+                    dictionary_name: dict_name,
+                    reading: pitch_reading,
+                    pitches,
+                };
+
+                pitch_map
+                    .entry((headword.clone(), reading.clone()))
+                    .or_default()
+                    .push(api_pitch);
+            }
+        } else if is_ipa {
+            // Parse IPA JSON
+            let mut ipa_reading = reading.clone();
+            let mut transcriptions: Vec<ApiIpaInfo> = vec![];
+
+            if let Some(arr) = content_val.as_array() {
+                if let Some(first) = arr.get(0) {
+                    if let Some(s) = first.as_str() {
+                        if let Ok(ipa_data) = serde_json::from_str::<Value>(s.strip_prefix("IPA:").unwrap_or("{}")) {
+                            ipa_reading = ipa_data
+                                .get("reading")
+                                .and_then(|v| v.as_str())
+                                .unwrap_or(&reading)
+                                .to_string();
+
+                            transcriptions = ipa_data
+                                .get("transcriptions")
+                                .and_then(|v| v.as_array())
+                                .map(|arr| {
+                                    arr.iter()
+                                        .filter_map(|t| {
+                                            let ipa = t.get("ipa")?.as_str()?.to_string();
+                                            Some(ApiIpaInfo {
+                                                ipa,
+                                                tags: t.get("tags")
+                                                    .and_then(|v| v.as_array())
+                                                    .map(|a| a.iter().filter_map(|s| s.as_str().map(String::from)).collect())
+                                                    .unwrap_or_default(),
+                                            })
+                                        })
+                                        .collect()
+                                })
+                                .unwrap_or_default();
+                        }
+                    }
+                }
+            }
+
+            if !transcriptions.is_empty() {
+                let api_ipa = ApiIpa {
+                    dictionary_name: dict_name,
+                    reading: ipa_reading,
+                    transcriptions,
+                };
+
+                ipa_map
+                    .entry((headword.clone(), reading.clone()))
+                    .or_default()
+                    .push(api_ipa);
+            }
         } else {
             // === DEFINITION LOGIC ===
             let def_obj = ApiDefinition {
@@ -1517,7 +1681,9 @@ pub async fn lookup_handler(
                         reading: reading.clone(),
                         furigana: calculate_furigana(&headword, &reading),
                         glossary: vec![def_obj],
-                        frequencies: vec![], // Will be filled in final pass
+                        frequencies: vec![],
+                        pitch_accents: vec![],
+                        ipa: vec![],
                         term_tags: entry.1.unwrap_or_default(),
                         forms_set: vec![(headword.clone(), reading.clone())],
                         match_len,
@@ -1529,7 +1695,9 @@ pub async fn lookup_handler(
                     reading: reading.clone(),
                     furigana: calculate_furigana(&headword, &reading),
                     glossary: vec![def_obj],
-                    frequencies: vec![], // Will be filled in final pass
+                    frequencies: vec![],
+                    pitch_accents: vec![],
+                    ipa: vec![],
                     term_tags: entry.1.unwrap_or_default(),
                     forms: vec![ApiForm {
                         headword: headword.clone(),
@@ -1549,6 +1717,14 @@ pub async fn lookup_handler(
                 if let Some(freqs) = freq_map.get(&(agg.headword.clone(), agg.reading.clone())) {
                     agg.frequencies.extend(freqs.clone());
                 }
+                // Attach pitch accents if they exist for this word
+                if let Some(pitches) = pitch_map.get(&(agg.headword.clone(), agg.reading.clone())) {
+                    agg.pitch_accents.extend(pitches.clone());
+                }
+                // Attach IPA if they exist for this word
+                if let Some(ipas) = ipa_map.get(&(agg.headword.clone(), agg.reading.clone())) {
+                    agg.ipa.extend(ipas.clone());
+                }
 
                 ApiGroupedResult {
                     headword: agg.headword,
@@ -1556,6 +1732,8 @@ pub async fn lookup_handler(
                     furigana: agg.furigana,
                     glossary: agg.glossary,
                     frequencies: agg.frequencies,
+                    pitch_accents: agg.pitch_accents,
+                    ipa: agg.ipa,
                     term_tags: agg.term_tags,
                     forms: agg
                         .forms_set
@@ -1576,6 +1754,12 @@ pub async fn lookup_handler(
         for res in &mut flat_results {
             if let Some(freqs) = freq_map.get(&(res.headword.clone(), res.reading.clone())) {
                 res.frequencies.extend(freqs.clone());
+            }
+            if let Some(pitches) = pitch_map.get(&(res.headword.clone(), res.reading.clone())) {
+                res.pitch_accents.extend(pitches.clone());
+            }
+            if let Some(ipas) = ipa_map.get(&(res.headword.clone(), res.reading.clone())) {
+                res.ipa.extend(ipas.clone());
             }
         }
 
