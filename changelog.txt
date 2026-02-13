@@ -1,3 +1,9 @@
+## Release v3.0.7
+
+- Fix android dictionaries from resetting on app restart (0b2d9b1)
+- Add `Sentence with Bold Word` and `Media Title` Anki Fields (35aa0ed)
+- Update Membership Perks (161796c)
+
 ## Release v3.0.6
 
 - Bump Suwayomi Extension Runtime (7183b51)
