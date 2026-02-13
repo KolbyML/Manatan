@@ -15,8 +15,8 @@ You need to install development headers for GTK, WebKit, and other system librar
 
 ```bash
 sudo apt update
-sudo apt install -y build-essential curl wget unzip zip p7zip-full git
-sudo apt install -y libglib2.0-dev libgtk-3-dev libappindicator3-dev librsvg2-dev libxdo-dev fuse nasm
+sudo apt install -y cmake build-essential curl wget unzip zip p7zip-full git
+sudo apt install -y libglib2.0-dev libgtk-3-dev libappindicator3-dev librsvg2-dev libxdo-dev libbz2-dev libfontconfig1-dev libfreetype-dev fuse yasm nasm
 sudo apt install -y openjdk-21-jdk
 
 ```
