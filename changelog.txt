@@ -1,3 +1,8 @@
+## Release v3.0.8
+
+- build macos release on linux runners (7d1e433)
+- android: add recovery mechanism for v3.0.6 and v3.0.7 (b039e3f)
+
 ## Release v3.0.7
 
 - Fix android dictionaries from resetting on app restart (0b2d9b1)
