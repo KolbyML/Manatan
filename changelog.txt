@@ -1,3 +1,20 @@
+## Release v3.0.6
+
+- Bump Suwayomi Extension Runtime (7183b51)
+- Make manga thumbnails loading even more robust (08c3a3f)
+- Fix flickering when switching between categories and some thumbnails not loading (6aed3c8)
+- Fix changing categories not being responsive (cf65876)
+- Fix local anime covers loading (d0777cd)
+- Fix Manga Preferences page not working on all sources (e198ee8)
+- Prepend to changelog.txt (50da93b)
+- anime player: Fix sentence audio not working and  scrubber bar not sliding smoothly on drag (09188d8)
+- Add easy debug log export button on settings page, to help with fixing user reported issues (b77807c)
+- If anime extension repo isn't present, show nothing, don't show manga extensions (4140e6e)
+- android: add .nomedia to External Manatan folder (1b9bbf5)
+- Cleanup app-data on reinstall (276982f)
+- Make Anime Player Popup Dictionary duplicate check fast like Manga's Popup Dictionary (a27f56c)
+- Fix Linux/MacOS failing due to missing cef library on startup (c923b88)
+
 ## Release v3.0.4
 
 - Fix publish workflow (bd9e5c8)
