@@ -608,11 +608,27 @@ interface DictionaryViewProps {
         sentence?: string;
         spreadData?: any;
     };
+    variant?: 'popup' | 'inline';
 }
 
 export const DictionaryView: React.FC<DictionaryViewProps> = ({ 
-    results, isLoading, systemLoading, onLinkClick, context 
+    results, isLoading, systemLoading, onLinkClick, context, variant = 'inline'
 }) => {
+    const isPopup = variant === 'popup';
+    const colors = {
+        text: isPopup ? '#fff' : 'var(--text-color, inherit)',
+        textSecondary: isPopup ? '#aaa' : 'var(--text-secondary-color, inherit)',
+        textMuted: isPopup ? '#888' : 'var(--text-muted-color, inherit)',
+        border: isPopup ? '#333' : 'var(--border-color, #ddd)',
+        tagBg: isPopup ? '#666' : 'var(--tag-bg-color, #e0e0e0)',
+        tagText: isPopup ? '#fff' : 'var(--tag-text-color, inherit)',
+        freqNameBg: isPopup ? '#2ecc71' : 'var(--accent-color, #2ecc71)',
+        freqNameText: isPopup ? '#000' : 'var(--accent-text-color, #000)',
+        freqValueBg: isPopup ? '#333' : 'var(--card-bg-color, #f5f5f5)',
+        freqValueText: isPopup ? '#eee' : 'var(--card-text-color, inherit)',
+        dictTagBg: isPopup ? '#9b59b6' : 'var(--secondary-accent-color, #9b59b6)',
+        dictTagText: isPopup ? '#fff' : 'var(--secondary-accent-text-color, #fff)',
+    };
     const { settings } = useOCR();
     const [audioMenu, setAudioMenu] = useState<{
         x: number; y: number; entry: DictionaryResult;
@@ -704,24 +720,24 @@ export const DictionaryView: React.FC<DictionaryViewProps> = ({
     const activeWordAudioSelection = audioMenuEntryKey && wordAudioSelectionKey === audioMenuEntryKey ? wordAudioSelection : 'auto';
     return (
         <>
-            {isLoading && <div style={{ textAlign: 'center', padding: '20px', color: '#aaa' }}>Scanning...</div>}
+            {isLoading && <div style={{ textAlign: 'center', padding: '20px', color: colors.textMuted }}>Scanning...</div>}
             {!isLoading && processedEntries.map((entry, i) => (
-                <div key={i} style={{ marginBottom: '16px', paddingBottom: '16px', borderBottom: i < processedEntries.length - 1 ? '1px solid #333' : 'none' }}>
+                <div key={i} style={{ marginBottom: '16px', paddingBottom: '16px', borderBottom: i < processedEntries.length - 1 ? `1px solid ${colors.border}` : 'none' }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '8px' }}>
                         <div style={{ display: 'flex', alignItems: 'flex-end', flexWrap: 'wrap' }}>
-                            <div style={{ fontSize: '1.8em', lineHeight: '1', marginRight: '10px' }}>
+                            <div style={{ fontSize: '1.8em', lineHeight: '1', marginRight: '10px', color: colors.text }}>
                                 {entry.furigana && entry.furigana.length > 0 ? (
                                     <ruby style={{ rubyPosition: 'over' }}>
                                         {entry.furigana.map((seg, idx) => (
                                             <React.Fragment key={idx}>
-                                                {seg[0]}<rt style={{ fontSize: '0.5em', color: '#aaa' }}>{seg[1]}</rt>
+                                                {seg[0]}<rt style={{ fontSize: '0.5em', color: colors.textSecondary }}>{seg[1]}</rt>
                                             </React.Fragment>
                                         ))}
                                     </ruby>
                                 ) : (
                                     <ruby>
                                         {entry.headword}
-                                        <rt style={{ fontSize: '0.5em', color: '#aaa' }}>{entry.reading}</rt>
+                                        <rt style={{ fontSize: '0.5em', color: colors.textSecondary }}>{entry.reading}</rt>
                                     </ruby>
                                 )}
                             </div>
@@ -732,7 +748,7 @@ export const DictionaryView: React.FC<DictionaryViewProps> = ({
                                         if (typeof label !== 'string') return [];
                                         return splitTagString(label);
                                     }).map((label, idx) => (
-                                        <span key={idx} style={{ ...tagStyle, backgroundColor: '#666', marginRight: 0 }}>{label}</span>
+                                        <span key={idx} style={{ ...tagStyle, backgroundColor: colors.tagBg, color: colors.tagText, marginRight: 0 }}>{label}</span>
                                     ))}
                                 </div>
                             )}
@@ -762,9 +778,9 @@ export const DictionaryView: React.FC<DictionaryViewProps> = ({
                     {entry.frequencies && entry.frequencies.length > 0 && (
                         <div style={{ marginBottom: '10px', display: 'flex', flexWrap: 'wrap', gap: '5px' }}>
                             {entry.frequencies.map((freq, fIdx) => (
-                                <div key={fIdx} style={{ display: 'inline-flex', fontSize: '0.75em', borderRadius: '4px', overflow: 'hidden', border: '1px solid rgba(255,255,255,0.2)' }}>
-                                    <div style={{ backgroundColor: '#2ecc71', color: '#000', fontWeight: 'bold', padding: '2px 6px' }}>{freq.dictionaryName}</div>
-                                    <div style={{ backgroundColor: '#333', color: '#eee', padding: '2px 6px', fontWeight: 'bold' }}>{freq.value}</div>
+                                <div key={fIdx} style={{ display: 'inline-flex', fontSize: '0.75em', borderRadius: '4px', overflow: 'hidden', border: `1px solid ${colors.border}` }}>
+                                    <div style={{ backgroundColor: colors.freqNameBg, color: colors.freqNameText, fontWeight: 'bold', padding: '2px 6px' }}>{freq.dictionaryName}</div>
+                                    <div style={{ backgroundColor: colors.freqValueBg, color: colors.freqValueText, padding: '2px 6px', fontWeight: 'bold' }}>{freq.value}</div>
                                 </div>
                             ))}
                         </div>
@@ -787,15 +803,15 @@ export const DictionaryView: React.FC<DictionaryViewProps> = ({
                         <div>
                             {entry.glossary.map((def, defIdx) => (
                                 <div key={defIdx} style={{ display: 'flex', marginBottom: '12px' }}>
-                                    <div style={{ flexShrink: 0, width: '24px', color: '#888', fontWeight: 'bold' }}>{defIdx + 1}.</div>
+                                    <div style={{ flexShrink: 0, width: '24px', color: colors.textMuted, fontWeight: 'bold' }}>{defIdx + 1}.</div>
                                     <div style={{ flexGrow: 1 }}>
                                         <div style={{ marginBottom: '4px' }}>
                                             {normalizeTagList(def.tags || []).map((t, ti) => (
-                                                <span key={ti} style={{ ...tagStyle, backgroundColor: '#666' }}>{t}</span>
+                                                <span key={ti} style={{ ...tagStyle, backgroundColor: colors.tagBg, color: colors.tagText }}>{t}</span>
                                             ))}
-                                            <span style={{ ...tagStyle, backgroundColor: '#9b59b6' }}>{def.dictionaryName}</span>
+                                            <span style={{ ...tagStyle, backgroundColor: colors.dictTagBg, color: colors.dictTagText }}>{def.dictionaryName}</span>
                                         </div>
-                                        <div style={{ color: '#ddd' }}>
+                                        <div style={{ color: colors.text }}>
                                             {def.content.map((jsonString, idx) => (
                                                 <div key={idx} style={{ marginBottom: '2px' }}>
                                                     <StructuredContent contentString={jsonString} onLinkClick={onLinkClick} />
@@ -809,7 +825,7 @@ export const DictionaryView: React.FC<DictionaryViewProps> = ({
                     )}
                 </div>
             ))}
-            {!isLoading && results.length === 0 && <div style={{ padding: '10px', textAlign: 'center', color: '#777' }}>No results found</div>}
+            {!isLoading && results.length === 0 && <div style={{ padding: '10px', textAlign: 'center', color: colors.textMuted }}>No results found</div>}
             {audioMenu && (
                 <AudioMenu
                     x={audioMenu.x} y={audioMenu.y} entry={audioMenu.entry}

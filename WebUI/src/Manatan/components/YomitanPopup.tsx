@@ -343,6 +343,7 @@ export const YomitanPopup = () => {
                     systemLoading={dictPopup.systemLoading ?? false}
                     onLinkClick={handleDefinitionLink}
                     context={dictPopup.context}
+                    variant="popup"
                 />
             </div>
         </>,
