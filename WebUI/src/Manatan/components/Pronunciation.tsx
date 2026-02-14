@@ -220,74 +220,87 @@ const CSS = `
     border-radius: 4px;
 }
 .pronunciation-text {
-    display: inline-flex;
-    align-items: flex-end;
+    display: inline;
 }
 .pronunciation-mora {
     display: inline-block;
     position: relative;
     text-align: center;
-    padding: 0.15em 0;
-}
-.pronunciation-mora[data-pitch="high"] {
-    padding-top: 0;
-}
-.pronunciation-mora[data-pitch="low"] {
-    padding-top: 0.5em;
 }
 .pronunciation-mora-line {
-    position: absolute;
-    left: 0;
-    right: 0;
-    height: 0.125em;
-    background-color: currentColor;
+    display: none;
 }
 .pronunciation-mora[data-pitch="high"] .pronunciation-mora-line {
-    top: 0;
-}
-.pronunciation-mora[data-pitch="low"] .pronunciation-mora-line {
-    top: 0.375em;
+    display: block;
+    position: absolute;
+    top: 0.1em;
+    left: 0;
+    right: 0;
+    height: 0;
+    border-top-width: 0.1em;
+    border-top-style: solid;
+    border-color: currentColor;
 }
 .pronunciation-mora[data-pitch="high"][data-pitch-next="low"] .pronunciation-mora-line {
-    right: 0;
-    border-right: 0.125em solid var(--pitch-downstep-color, #e74c3c);
-    height: 0.5em;
+    right: -0.1em;
+    height: 0.4em;
+    border-right-width: 0.1em;
+    border-right-style: solid;
+    border-color: var(--pitch-downstep-color, #e74c3c);
+}
+.pronunciation-mora[data-pitch="high"][data-pitch-next="low"] {
+    padding-right: 0.1em;
+    margin-right: 0.1em;
 }
 .pronunciation-character {
     display: inline;
+}
+.pronunciation-character-group {
+    display: inline-block;
+    position: relative;
 }
 .pronunciation-mora[data-devoice="true"] {
     color: #888;
 }
 .pronunciation-devoice-indicator {
-    position: absolute;
-    top: -0.25em;
-    right: 0;
-    font-size: 0.5em;
+    display: none;
 }
-.pronunciation-devoice-indicator::before {
-    content: "°";
+.pronunciation-mora[data-devoice="true"] .pronunciation-devoice-indicator {
+    display: block;
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    width: 1.125em;
+    height: 1.125em;
+    border: 0.1em dotted var(--pitch-devoice-color, #e74c3c);
+    border-radius: 50%;
+    box-sizing: border-box;
+    z-index: 1;
+    transform: translate(-50%, -50%);
+}
+.pronunciation-nasal-diacritic {
+    position: absolute;
+    width: 0;
+    height: 0;
+    opacity: 0;
 }
 .pronunciation-mora[data-nasal="true"] .pronunciation-character-group {
     position: relative;
 }
-.pronunciation-nasal-diacritic {
-    position: absolute;
-    top: -0.3em;
-    left: 0.5em;
-    font-size: 0.8em;
-    color: var(--pitch-nasal-color, #3498db);
-}
 .pronunciation-nasal-indicator {
+    display: none;
+}
+.pronunciation-mora[data-nasal="true"] .pronunciation-nasal-indicator {
+    display: block;
     position: absolute;
-    bottom: -0.2em;
-    left: 50%;
-    transform: translateX(-50%);
-    width: 0.3em;
-    height: 0.3em;
+    right: -0.125em;
+    top: 0.125em;
+    width: 0.375em;
+    height: 0.375em;
+    border: 0.1em solid var(--pitch-nasal-color, #3498db);
     border-radius: 50%;
-    background: var(--pitch-nasal-color, #3498db);
-    opacity: 0.6;
+    box-sizing: border-box;
+    z-index: 1;
 }
 .pronunciation-downstep-notation {
     font-family: monospace;
