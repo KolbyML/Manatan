@@ -82,12 +82,15 @@ export const LNReaderScreen: React.FC = () => {
     }, [exportToJson, downloadFile]);
 
     const handleJumpToHighlight = useCallback((hl: LNHighlight) => {
-        setHighlightsOpen(false);
-        setSavedProgress({
+        setSavedProgress((prev: any) => ({
+            ...prev,
             chapterIndex: hl.chapterIndex,
             pageNumber: 0,
             blockId: hl.blockId,
-        });
+            blockLocalOffset: hl.startOffset,
+        }));
+        setCurrentChapter(hl.chapterIndex);
+        setHighlightsOpen(false);
     }, []);
 
     // Helper: Check if chapter is Art (image-only)

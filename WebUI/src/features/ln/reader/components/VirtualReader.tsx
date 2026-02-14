@@ -112,6 +112,14 @@ export const VirtualReader: React.FC<VirtualReaderProps> = ({
     );
     const [pendingRemount, setPendingRemount] = useState(false);
 
+    useEffect(() => {
+        if (externalInitialProgress) {
+            setActiveProgress(externalInitialProgress);
+            setCurrentIndex(externalInitialProgress.chapterIndex ?? initialIndex);
+            setCurrentPage(externalInitialProgress.pageIndex ?? initialPage);
+        }
+    }, [externalInitialProgress, initialIndex, initialPage]);
+
     const isPaged = settings.lnPaginationMode === 'paginated';
     const isVertical = settings.lnReadingDirection?.includes('vertical');
     const isRTL = settings.lnReadingDirection === 'vertical-rtl';
