@@ -11,7 +11,10 @@ import ClearIcon from '@mui/icons-material/Clear';
 import FormatAlignLeftIcon from '@mui/icons-material/FormatAlignLeft';
 import FormatAlignCenterIcon from '@mui/icons-material/FormatAlignCenter';
 import FormatAlignJustifyIcon from '@mui/icons-material/FormatAlignJustify';
+import UploadFileIcon from '@mui/icons-material/UploadFile';
+import DeleteIcon from '@mui/icons-material/Delete';
 import { Settings } from '@/Manatan/types';
+import { importFontFile, saveCustomFont, loadCustomFonts, CustomFont, deleteCustomFont } from '../utils/fontUtils';
 
 const THEMES = {
     light: { name: 'Light', bg: '#FFFFFF', fg: '#1a1a1a', preview: '#FFFFFF' },
@@ -19,7 +22,6 @@ const THEMES = {
     dark: { name: 'Dark', bg: '#2B2B2B', fg: '#E0E0E0', preview: '#2B2B2B' },
     black: { name: 'Black', bg: '#000000', fg: '#CCCCCC', preview: '#000000' },
 } as const;
-const CUSTOM_FONT_VALUE = '__custom__';
 
 // A safe cross-language fallback stack 
 const UNIVERSAL_FALLBACK_STACK =
@@ -35,25 +37,6 @@ const FONT_PRESETS = [
     { label: 'System', value: UNIVERSAL_FALLBACK_STACK },
 ];
 
-function getPrimaryFontName(fontFamily: string): string {
-    const first = (fontFamily || '').split(',')[0]?.trim() ?? '';
-    return first.replace(/^["']|["']$/g, '');
-}
-
-function buildFontFamilyFromCustomName(name: string): string {
-    const raw = (name || '').trim();
-    if (!raw) return UNIVERSAL_FALLBACK_STACK;
-    const safe = raw.replace(/,/g, '').trim();
-    if (!safe) return UNIVERSAL_FALLBACK_STACK;
-    const needsQuotes = /\s/.test(safe);
-    const font = needsQuotes ? `"${safe.replace(/"/g, '')}"` : safe;
-    return `${font}, ${UNIVERSAL_FALLBACK_STACK}`;
-}
-
-function findMatchingPreset(value: string): string | null {
-    const match = FONT_PRESETS.find(p => p.value === value);
-    return match ? match.value : null;
-}
 
 interface Props {
     open: boolean;
@@ -129,6 +112,17 @@ export const ReaderControls: React.FC<Props> = ({
     const [lineHeightInput, setLineHeightInput] = useState(settings.lnLineHeight.toFixed(1));
     const [letterSpacingInput, setLetterSpacingInput] = useState(settings.lnLetterSpacing.toString());
     const [pageMarginInput, setPageMarginInput] = useState(settings.lnPageMargin.toString());
+    
+    // Custom fonts state
+    const [customFonts, setCustomFonts] = useState<CustomFont[]>([]);
+    const fileInputRef = React.useRef<HTMLInputElement>(null);
+
+    // Load custom fonts on mount
+    React.useEffect(() => {
+        loadCustomFonts().then(fonts => {
+            setCustomFonts(fonts);
+        });
+    }, []);
 
     // Sync local state when settings change
     React.useEffect(() => {
@@ -218,6 +212,63 @@ export const ReaderControls: React.FC<Props> = ({
         }
     };
 
+    const handleImportFont = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    try {
+        
+        const font = await importFontFile(file);
+        
+        
+        
+        // Check for duplicate
+        if (customFonts.some(f => f.family === font.family)) {
+            alert(`Font "${font.family}" is already imported.`);
+            if (fileInputRef.current) {
+                fileInputRef.current.value = '';
+            }
+            return;
+        }
+        
+        await saveCustomFont(font);
+        
+        const updatedFonts = [...customFonts, font];
+        setCustomFonts(updatedFonts);
+        
+        const fontFamilyWithFallback = `"${font.family}", sans-serif`;
+        onUpdateSettings('lnFontFamily', fontFamilyWithFallback);
+        
+        
+    } catch (error) {
+        alert('Failed to import font: ' + (error instanceof Error ? error.message : 'Unknown error'));
+    }
+    
+    // Reset input
+    if (fileInputRef.current) {
+        fileInputRef.current.value = '';
+    }
+};
+
+    const handleDeleteFont = async (font: CustomFont) => {
+        if (!confirm(`Delete font "${font.name.replace(/\.(ttf|otf|woff|woff2)$/i, '')}"?`)) return;
+        
+        try {
+            await deleteCustomFont(font.family);
+            const updatedFonts = customFonts.filter(f => f.family !== font.family);
+            setCustomFonts(updatedFonts);
+            
+            // Reset to default if current font was deleted
+            const currentPrimaryFont = settings.lnFontFamily.split(',')[0].trim().replace(/['"]/g, '');
+            if (currentPrimaryFont === font.family) {
+                onUpdateSettings('lnFontFamily', FONT_PRESETS[0].value);
+            }
+        } catch (error) {
+            console.error('[ReaderControls] Failed to delete font:', error);
+            alert('Failed to delete font');
+        }
+    };
+
     return (
         <Drawer
             anchor="bottom"
@@ -294,74 +345,127 @@ export const ReaderControls: React.FC<Props> = ({
                     </Typography>
 
                     {/* Font Family */}
-                    <Box sx={{ mb: 2 }}>
-                        {(() => {
-                            const presetMatch = findMatchingPreset(settings.lnFontFamily);
-                            const selectValue = presetMatch ?? CUSTOM_FONT_VALUE;
-                            const customName = getPrimaryFontName(settings.lnFontFamily);
-
-                            return (
-                                <>
-                                    <FormControl fullWidth size="small" sx={{ mb: 1 }}>
-                                        <InputLabel sx={{ color: theme.fg, '&.Mui-focused': { color: theme.fg } }}>
-                                            Font Family
-                                        </InputLabel>
-                                        <Select
-                                            value={selectValue}
-                                            label="Font Family"
-                                            onChange={(e: SelectChangeEvent) => {
-                                                const v = e.target.value;
-                                                if (v === CUSTOM_FONT_VALUE) {
-                                                    const primary = getPrimaryFontName(settings.lnFontFamily);
-                                                    onUpdateSettings('lnFontFamily', buildFontFamilyFromCustomName(primary));
-                                                } else {
-                                                    onUpdateSettings('lnFontFamily', v);
-                                                }
-                                            }}
-                                            sx={selectStyles}
-                                            MenuProps={menuProps}
-                                        >
-                                            <MenuItem value={CUSTOM_FONT_VALUE}>Custom…</MenuItem>
-                                            {FONT_PRESETS.map(p => (
-                                                <MenuItem key={p.label} value={p.value}>
-                                                    <span style={{ fontFamily: p.value }}>{p.label}</span>
-                                                </MenuItem>
-                                            ))}
-                                        </Select>
-                                    </FormControl>
-
-                                    {selectValue === CUSTOM_FONT_VALUE && (
-                                        <TextField
-                                            size="small"
-                                            fullWidth
-                                            label="Custom font name"
-                                            value={customName}
-                                            onChange={(e) => {
-                                                onUpdateSettings('lnFontFamily', buildFontFamilyFromCustomName(e.target.value));
-                                            }}
-                                            placeholder='Example: Ridibatang'
-                                            helperText="Font must be installed on your device"
-                                            InputLabelProps={{ style: { color: theme.fg } }}
-                                            InputProps={{
-                                                endAdornment: customName ? (
-                                                    <InputAdornment position="end">
-                                                        <IconButton
-                                                            size="small"
-                                                            onClick={() => onUpdateSettings('lnFontFamily', UNIVERSAL_FALLBACK_STACK)}
-                                                            sx={{ color: theme.fg }}
-                                                        >
-                                                            <ClearIcon fontSize="small" />
-                                                        </IconButton>
-                                                    </InputAdornment>
-                                                ) : null
-                                            }}
-                                            sx={selectStyles}
-                                        />
-                                    )}
-                                </>
-                            );
-                        })()}
+                    {/* Font Family */}
+<Box sx={{ mb: 2 }}>
+    <FormControl fullWidth size="small" sx={{ mb: 1 }}>
+        <InputLabel sx={{ color: theme.fg, '&.Mui-focused': { color: theme.fg } }}>
+            Font Family
+        </InputLabel>
+        <Select
+            value={(() => {
+                const currentFont = settings.lnFontFamily;
+                const primaryFont = currentFont.split(',')[0].trim().replace(/['"]/g, '');
+                
+                // Check if it's a custom font
+                const customFont = customFonts.find(f => f.family === primaryFont);
+                if (customFont) {
+                    return customFont.family;
+                }
+                
+                // Check if it's a preset (exact match)
+                const matchingPreset = FONT_PRESETS.find(p => p.value === currentFont);
+                if (matchingPreset) {
+                    return matchingPreset.value;
+                }
+                
+                // Fallback to first preset
+                return FONT_PRESETS[0].value;
+            })()}
+            label="Font Family"
+           onChange={(e: SelectChangeEvent) => {
+    const v = e.target.value;
+    
+    const selectedCustomFont = customFonts.find(f => f.family === v);
+    
+    if (selectedCustomFont) {
+        const currentFont = settings.lnFontFamily;
+        const currentPrimary = currentFont.split(',')[0].trim().replace(/['"]/g, '');
+        
+        if (currentPrimary === v && currentFont.includes('sans-serif')) {
+            return;
+        }
+        
+        const fontStack = `"${v}", sans-serif`; 
+        onUpdateSettings('lnFontFamily', fontStack);
+    } else {
+        onUpdateSettings('lnFontFamily', v);
+    }
+}}
+            sx={selectStyles}
+            MenuProps={menuProps}
+        >
+            {/* Presets */}
+            {FONT_PRESETS.map(p => (
+                <MenuItem key={p.label} value={p.value}>
+                    <span style={{ fontFamily: p.value }}>{p.label}</span>
+                </MenuItem>
+            ))}
+            
+            {/* Divider - only if custom fonts exist */}
+            {customFonts.length > 0 && (
+                <Divider key="custom-divider" sx={{ my: 1, borderColor: `${theme.fg}22` }} />
+            )}
+            
+            {/* Custom fonts */}
+            {customFonts.map(font => (
+                <MenuItem 
+                    key={`custom-${font.family}`} 
+                    value={font.family}
+                >
+                    <Box sx={{ 
+                        display: 'flex', 
+                        alignItems: 'center', 
+                        width: '100%', 
+                        justifyContent: 'space-between' 
+                    }}>
+                        <span style={{ fontFamily: `"${font.family}", serif` }}>
+                            {font.name.replace(/\.(ttf|otf|woff|woff2)$/i, '')}
+                        </span>
+                        <IconButton
+                            size="small"
+                            onMouseDown={(e) => {
+                                e.stopPropagation();
+                                e.preventDefault();
+                            }}
+                            onClick={(e) => {
+                                e.stopPropagation();
+                                e.preventDefault();
+                                handleDeleteFont(font);
+                            }}
+                            sx={{ color: theme.fg, opacity: 0.6, ml: 1 }}
+                        >
+                            <DeleteIcon fontSize="small" />
+                        </IconButton>
                     </Box>
+                </MenuItem>
+            ))}
+        </Select>
+    </FormControl>
+
+    {/* Import Font Button */}
+    <Button
+        variant="outlined"
+        size="small"
+        fullWidth
+        startIcon={<UploadFileIcon />}
+        onClick={() => fileInputRef.current?.click()}
+        sx={{ 
+            mb: 1, 
+            borderColor: `${theme.fg}44`, 
+            color: theme.fg,
+            '&:hover': { borderColor: theme.fg, bgcolor: `${theme.fg}11` }
+        }}
+    >
+        Import Font File
+    </Button>
+    <input
+        ref={fileInputRef}
+        type="file"
+        accept=".ttf,.otf,.woff,.woff2"
+        style={{ display: 'none' }}
+        onChange={handleImportFont}
+    />
+</Box>
 
                     {/* Font Size */}
                     <Box sx={{ mb: 2 }}>

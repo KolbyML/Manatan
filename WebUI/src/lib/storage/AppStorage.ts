@@ -217,6 +217,13 @@ export class AppStorage {
         description: 'Reading progress',
     });
 
+    // Custom imported fonts
+    static readonly customFonts = localforage.createInstance({
+        name: 'Manatan',
+        storeName: 'custom_fonts',
+        description: 'User-imported font files',
+    });
+
     // ========================================================================
     // Private Helpers
     // ========================================================================
