@@ -1,3 +1,9 @@
+## Release v3.0.11
+
+- Fix "Sentence Furigana with Bold Word" (b32e99c)
+- Try to fix android app not being able to connect to Suwayomi Extension backend on some devices (1fea305)
+- Update NavBar title from Suwayomi to Manatan (ae62596)
+
 ## Release v3.0.10
 
 - Add "Sentence Furigana with Bold Word" field (9172a70)
