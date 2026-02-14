@@ -8,7 +8,7 @@ use std::{
 use anyhow::{Result, anyhow};
 use serde::de::{DeserializeOwned, DeserializeSeed, SeqAccess, Visitor};
 use serde_json::Value;
-use tracing::info;
+use tracing::{info, warn};
 use wordbase_api::{
     DictionaryId, DictionaryKind, DictionaryMeta, Record,
     dict::yomitan::{Glossary, GlossaryTag, structured},
@@ -95,6 +95,19 @@ fn validate_zip_archive<R: Read + std::io::Seek>(zip: &mut ZipArchive<R>) -> Res
     Ok(())
 }
 
+fn open_zip_file_safe<'a, R: std::io::Read + std::io::Seek>(zip: &'a mut ZipArchive<R>, name: &str) -> Option<zip::read::ZipFile<'a, R>> {
+    match zip.by_name(name) {
+        Ok(f) => Some(f),
+        Err(e) => {
+            let error_str = format!("{:?}", e);
+            if error_str.contains("checksum") || error_str.contains("CRC") || error_str.contains("InvalidArchive") {
+                tracing::warn!("File has checksum error, skipping: {}", name);
+            }
+            None
+        }
+    }
+}
+
 fn bump_term_count(terms_found: &mut usize) -> Result<()> {
     *terms_found += 1;
     if *terms_found > MAX_TERMS_INSERTED {
@@ -158,6 +171,134 @@ fn parse_frequency_value(data_blob: &Value) -> (String, Option<String>) {
     }
 
     (display_val, specific_reading)
+}
+
+fn parse_position_array(value: Option<&Value>) -> Vec<i64> {
+    match value {
+        Some(Value::Number(n)) => n.as_i64().map(|v| vec![v]).unwrap_or_default(),
+        Some(Value::Array(arr)) => arr.iter().filter_map(|v| v.as_i64()).collect(),
+        _ => Vec::new(),
+    }
+}
+
+fn parse_pitch_meta(data_blob: &Value) -> (String, Option<String>) {
+    let obj = match data_blob.as_object() {
+        Some(o) => o,
+        None => return ("Pitch:{}".to_string(), None),
+    };
+
+    let reading = obj
+        .get("reading")
+        .and_then(|v| v.as_str())
+        .unwrap_or("")
+        .to_string();
+
+    let pitches_raw = obj
+        .get("pitches")
+        .and_then(|v| v.as_array())
+        .cloned()
+        .unwrap_or_default();
+
+    let mut pitches = Vec::new();
+    for pitch_val in pitches_raw {
+        let pitch_obj = match pitch_val.as_object() {
+            Some(o) => o,
+            None => continue,
+        };
+
+        let position = pitch_obj.get("position").cloned().unwrap_or(Value::Null);
+        let nasal = parse_position_array(pitch_obj.get("nasal"));
+        let devoice = parse_position_array(pitch_obj.get("devoice"));
+
+        let tags: Vec<String> = pitch_obj
+            .get("tags")
+            .and_then(|v| v.as_array())
+            .map(|arr| {
+                arr.iter()
+                    .filter_map(|v| v.as_str().map(|s| s.to_string()))
+                    .collect()
+            })
+            .unwrap_or_default();
+
+        pitches.push(serde_json::json!({
+            "position": position,
+            "nasal": nasal,
+            "devoice": devoice,
+            "tags": tags
+        }));
+    }
+
+    let pitch_data = serde_json::json!({
+        "reading": reading,
+        "pitches": pitches
+    });
+
+    let content = format!("Pitch:{}", pitch_data.to_string());
+    let reading_opt = if reading.is_empty() { None } else { Some(reading) };
+
+    (content, reading_opt)
+}
+
+fn parse_ipa_meta(data_blob: &Value) -> (String, Option<String>) {
+    let obj = match data_blob.as_object() {
+        Some(o) => o,
+        None => return ("IPA:{}".to_string(), None),
+    };
+
+    let reading = obj
+        .get("reading")
+        .and_then(|v| v.as_str())
+        .unwrap_or("")
+        .to_string();
+
+    let transcriptions_raw = obj
+        .get("transcriptions")
+        .and_then(|v| v.as_array())
+        .cloned()
+        .unwrap_or_default();
+
+    let mut transcriptions = Vec::new();
+    for trans_val in transcriptions_raw {
+        let trans_obj = match trans_val.as_object() {
+            Some(o) => o,
+            None => continue,
+        };
+
+        let ipa = trans_obj
+            .get("ipa")
+            .and_then(|v| v.as_str())
+            .unwrap_or("")
+            .to_string();
+
+        if ipa.is_empty() {
+            continue;
+        }
+
+        let tags: Vec<String> = trans_obj
+            .get("tags")
+            .and_then(|v| v.as_array())
+            .map(|arr| {
+                arr.iter()
+                    .filter_map(|v| v.as_str().map(|s| s.to_string()))
+                    .collect()
+            })
+            .unwrap_or_default();
+
+        transcriptions.push(serde_json::json!({
+            "ipa": ipa,
+            "tags": tags
+        }));
+    }
+
+    let ipa_data = serde_json::json!({
+        "reading": reading,
+        "transcriptions": transcriptions
+    });
+
+    let content = format!("IPA:{}", ipa_data.to_string());
+    let reading_opt = if reading.is_empty() { None } else { Some(reading) };
+
+    (content, reading_opt)
 }
 
 fn parse_json_array_stream<R, T, F>(reader: R, mut on_entry: F) -> Result<usize>
@@ -347,148 +488,205 @@ pub fn import_zip(state: &AppState, data: &[u8]) -> Result<String> {
     let mut encoder = snap::raw::Encoder::new();
 
     for name in &file_names {
-        // Branch 1: Standard definitions (term_bank)
         if name.contains("term_bank") && !name.contains("term_meta") && name.ends_with(".json") {
             info!("   -> Processing definitions: {}", name);
-            let mut file = zip.by_name(name)?;
 
-            let mut stmt =
-                tx.prepare("INSERT INTO terms (term, dictionary_id, json) VALUES (?, ?, ?)")?;
+            let parse_result = (|| -> Result<usize> {
+                let mut file = match open_zip_file_safe(&mut zip, name) {
+                    Some(f) => f,
+                    None => return Ok(0),
+                };
 
-            let rows = parse_json_array_stream::<_, Vec<Value>, _>(&mut file, |arr| {
-                if arr.len() < 8 {
-                    return Ok(());
-                }
+                let mut stmt =
+                    tx.prepare("INSERT INTO terms (term, dictionary_id, json) VALUES (?, ?, ?)")?;
 
-                let headword = arr.first().and_then(|v| v.as_str()).unwrap_or("");
-                let reading = arr.get(1).and_then(|v| v.as_str()).unwrap_or("");
-                if headword.is_empty() {
-                    return Ok(());
-                }
+                let rows = parse_json_array_stream::<_, Vec<Value>, _>(&mut file, |arr| {
+                    if arr.len() < 8 {
+                        return Ok(());
+                    }
 
-                let mut definition_tags = Vec::new();
-                let mut term_tags = Vec::new();
-                let mut seen_tags = HashSet::new();
-                parse_space_separated_tags(&arr, 2, &mut definition_tags, &mut seen_tags);
-                parse_space_separated_tags(&arr, 7, &mut term_tags, &mut seen_tags);
+                    let headword = arr.first().and_then(|v| v.as_str()).unwrap_or("");
+                    let reading = arr.get(1).and_then(|v| v.as_str()).unwrap_or("");
+                    if headword.is_empty() {
+                        return Ok(());
+                    }
 
-                let mut content_list = Vec::new();
-                if let Some(defs) = arr.get(5).and_then(|v| v.as_array()) {
-                    for d in defs {
-                        if let Some(str_def) = d.as_str() {
-                            content_list.push(structured::Content::String(str_def.to_string()));
-                        } else if d.is_object() || d.is_array() {
-                            let json_str = serde_json::to_string(d).unwrap_or_default();
-                            content_list.push(structured::Content::String(json_str));
+                    let mut definition_tags = Vec::new();
+                    let mut term_tags = Vec::new();
+                    let mut seen_tags = HashSet::new();
+                    parse_space_separated_tags(&arr, 2, &mut definition_tags, &mut seen_tags);
+                    parse_space_separated_tags(&arr, 7, &mut term_tags, &mut seen_tags);
+
+                    let mut content_list = Vec::new();
+                    if let Some(defs) = arr.get(5).and_then(|v| v.as_array()) {
+                        for d in defs {
+                            if let Some(str_def) = d.as_str() {
+                                content_list.push(structured::Content::String(str_def.to_string()));
+                            } else if d.is_object() || d.is_array() {
+                                let json_str = serde_json::to_string(d).unwrap_or_default();
+                                content_list.push(structured::Content::String(json_str));
+                            }
                         }
                     }
-                }
 
-                let record = Record::YomitanGlossary(Glossary {
-                    popularity: arr.get(4).and_then(|v| v.as_i64()).unwrap_or(0),
-                    tags: definition_tags,
-                    content: content_list,
-                });
+                    let record = Record::YomitanGlossary(Glossary {
+                        popularity: arr.get(4).and_then(|v| v.as_i64()).unwrap_or(0),
+                        tags: definition_tags,
+                        content: content_list,
+                    });
 
-                let stored_reading = if !reading.is_empty() && reading != headword {
-                    Some(reading.to_string())
-                } else {
-                    None
-                };
+                    let stored_reading = if !reading.is_empty() && reading != headword {
+                        Some(reading.to_string())
+                    } else {
+                        None
+                    };
 
-                let term_tags = if term_tags.is_empty() {
-                    None
-                } else {
-                    Some(term_tags)
-                };
+                    let term_tags = if term_tags.is_empty() {
+                        None
+                    } else {
+                        Some(term_tags)
+                    };
 
-                let stored = StoredRecord {
-                    dictionary_id: dict_id,
-                    record,
-                    term_tags,
-                    reading: stored_reading.clone(),
-                    headword: Some(headword.to_string()),
-                };
+                    let stored = StoredRecord {
+                        dictionary_id: dict_id,
+                        record,
+                        term_tags,
+                        reading: stored_reading.clone(),
+                        headword: Some(headword.to_string()),
+                    };
 
-                let json_bytes = serde_json::to_vec(&stored)?;
-                let compressed = encoder.compress_vec(&json_bytes)?;
+                    let json_bytes = serde_json::to_vec(&stored)?;
+                    let compressed = encoder.compress_vec(&json_bytes)?;
 
-                stmt.execute(rusqlite::params![headword, dict_id.0, compressed])?;
-                bump_term_count(&mut terms_found)?;
-
-                if let Some(r) = stored_reading {
-                    stmt.execute(rusqlite::params![r, dict_id.0, compressed])?;
+                    stmt.execute(rusqlite::params![headword, dict_id.0, compressed])?;
                     bump_term_count(&mut terms_found)?;
+
+                    if let Some(r) = stored_reading {
+                        stmt.execute(rusqlite::params![r, dict_id.0, compressed])?;
+                        bump_term_count(&mut terms_found)?;
+                    }
+
+                    Ok(())
+                })?;
+
+                Ok(rows)
+            })();
+
+            let rows = match parse_result {
+                Ok(count) => count,
+                Err(e) => {
+                    let error_str = format!("{:?}", e);
+                    if error_str.contains("checksum") || error_str.contains("CRC") || error_str.contains("InvalidArchive") {
+                        warn!("Term bank file had checksum error but data was read successfully: {}", name);
+                        continue;
+                    } else {
+                        return Err(e);
+                    }
                 }
+            };
 
-                Ok(())
-            })?;
-
-            info!("      Parsed {} term rows from {}", rows, name);
+            if rows > 0 {
+                info!("      Parsed {} term rows from {}", rows, name);
+            }
         }
-        // Branch 2: Metadata / frequencies (term_meta_bank)
+        // Branch 2: Metadata / frequencies / pitch / IPA (term_meta_bank)
         else if name.contains("term_meta_bank") && name.ends_with(".json") {
             info!("   -> Processing metadata: {}", name);
-            let mut file = zip.by_name(name)?;
 
-            let mut stmt =
-                tx.prepare("INSERT INTO terms (term, dictionary_id, json) VALUES (?, ?, ?)")?;
+            let parse_result = (|| -> Result<usize> {
+                let mut file = match open_zip_file_safe(&mut zip, name) {
+                    Some(f) => f,
+                    None => return Ok(0),
+                };
 
-            let rows = parse_json_array_stream::<_, Vec<Value>, _>(&mut file, |arr| {
-                if arr.len() < 3 {
-                    return Ok(());
-                }
+                let mut stmt =
+                    tx.prepare("INSERT INTO terms (term, dictionary_id, json) VALUES (?, ?, ?)")?;
 
-                let term = arr.first().and_then(|v| v.as_str()).unwrap_or("");
-                let mode = arr.get(1).and_then(|v| v.as_str()).unwrap_or("");
-                if term.is_empty() || mode != "freq" {
-                    return Ok(());
-                }
-
-                let data_blob = arr.get(2).cloned().unwrap_or(Value::Null);
-                let (display_val, specific_reading) = parse_frequency_value(&data_blob);
-
-                let content_str = if let Some(read) = &specific_reading {
-                    if read != term {
-                        format!("Frequency: {} ({})", display_val, read)
-                    } else {
-                        format!("Frequency: {}", display_val)
+                let rows = parse_json_array_stream::<_, Vec<Value>, _>(&mut file, |arr| {
+                    if arr.len() < 3 {
+                        return Ok(());
                     }
-                } else {
-                    format!("Frequency: {}", display_val)
-                };
 
-                let record = Record::YomitanGlossary(Glossary {
-                    popularity: 0,
-                    tags: vec![],
-                    content: vec![structured::Content::String(content_str)],
-                });
+                    let term = arr.first().and_then(|v| v.as_str()).unwrap_or("");
+                    let mode = arr.get(1).and_then(|v| v.as_str()).unwrap_or("");
+                    if term.is_empty() || !["freq", "pitch", "ipa"].contains(&mode) {
+                        return Ok(());
+                    }
 
-                let stored = StoredRecord {
-                    dictionary_id: dict_id,
-                    record,
-                    term_tags: None,
-                    reading: specific_reading.clone(),
-                    headword: Some(term.to_string()),
-                };
+                    let data_blob = arr.get(2).cloned().unwrap_or(Value::Null);
 
-                let json_bytes = serde_json::to_vec(&stored)?;
-                let compressed = encoder.compress_vec(&json_bytes)?;
+                    let (content_str, specific_reading) = match mode {
+                        "freq" => {
+                            let (display_val, reading) = parse_frequency_value(&data_blob);
+                            let content = if let Some(ref r) = reading {
+                                if r != term {
+                                    format!("Frequency: {} ({})", display_val, r)
+                                } else {
+                                    format!("Frequency: {}", display_val)
+                                }
+                            } else {
+                                format!("Frequency: {}", display_val)
+                            };
+                            (content, reading)
+                        }
+                        "pitch" => {
+                            parse_pitch_meta(&data_blob)
+                        }
+                        "ipa" => {
+                            parse_ipa_meta(&data_blob)
+                        }
+                        _ => return Ok(()),
+                    };
 
-                stmt.execute(rusqlite::params![term, dict_id.0, compressed])?;
-                bump_term_count(&mut terms_found)?;
+                    let record = Record::YomitanGlossary(Glossary {
+                        popularity: 0,
+                        tags: vec![],
+                        content: vec![structured::Content::String(content_str)],
+                    });
 
-                if let Some(r) = &specific_reading
-                    && r != term
-                {
-                    stmt.execute(rusqlite::params![r, dict_id.0, compressed])?;
+                    let stored = StoredRecord {
+                        dictionary_id: dict_id,
+                        record,
+                        term_tags: None,
+                        reading: specific_reading.clone(),
+                        headword: Some(term.to_string()),
+                    };
+
+                    let json_bytes = serde_json::to_vec(&stored)?;
+                    let compressed = encoder.compress_vec(&json_bytes)?;
+
+                    stmt.execute(rusqlite::params![term, dict_id.0, compressed])?;
                     bump_term_count(&mut terms_found)?;
+
+                    if let Some(r) = &specific_reading
+                        && r != term
+                    {
+                        stmt.execute(rusqlite::params![r, dict_id.0, compressed])?;
+                        bump_term_count(&mut terms_found)?;
+                    }
+
+                    Ok(())
+                })?;
+
+                Ok(rows)
+            })();
+
+            let rows = match parse_result {
+                Ok(count) => count,
+                Err(e) => {
+                    let error_str = format!("{:?}", e);
+                    if error_str.contains("checksum") || error_str.contains("CRC") || error_str.contains("InvalidArchive") {
+                        warn!("Metadata file had checksum error but data was read successfully: {}", name);
+                        continue;
+                    } else {
+                        return Err(e);
+                    }
                 }
+            };
 
-                Ok(())
-            })?;
-
-            info!("      Parsed {} metadata rows from {}", rows, name);
+            if rows > 0 {
+                info!("      Parsed {} metadata rows from {}", rows, name);
+            }
         }
     }
 

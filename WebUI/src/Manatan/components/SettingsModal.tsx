@@ -134,6 +134,8 @@ const BASE_MAPPING_OPTIONS = [
     'Word (Again)',
     'Glossary',
     'Frequency',
+    'Harmonic Frequency',
+    'Pitch Accent',
     'x',
 ];
 
@@ -790,6 +792,42 @@ ${detail}`,
                         </div>
                         <div style={{ fontSize: '0.85em', color: '#aaa', marginTop: '6px' }}>
                             Adjust the popup dictionary size and scale.
+                        </div>
+
+                        {/* Pitch Accent Display Settings */}
+                        <div style={{ marginTop: '16px', paddingTop: '12px', borderTop: '1px solid #333' }}>
+                            <div style={{ fontSize: '0.9em', fontWeight: 'bold', marginBottom: '10px', color: '#ccc' }}>
+                                Pitch Accent Display
+                            </div>
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                                <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }}>
+                                    <input
+                                        type="checkbox"
+                                        checked={localSettings.yomitanShowPitchText ?? true}
+                                        onChange={(e) => handleChange('yomitanShowPitchText', e.target.checked)}
+                                        style={{ width: '16px', height: '16px' }}
+                                    />
+                                    <span style={{ fontSize: '0.85em', color: '#aaa' }}>Show pitch text (character high/low)</span>
+                                </label>
+                                <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }}>
+                                    <input
+                                        type="checkbox"
+                                        checked={localSettings.yomitanShowPitchNotation ?? true}
+                                        onChange={(e) => handleChange('yomitanShowPitchNotation', e.target.checked)}
+                                        style={{ width: '16px', height: '16px' }}
+                                    />
+                                    <span style={{ fontSize: '0.85em', color: '#aaa' }}>Show pitch notation ([0], [1], etc.)</span>
+                                </label>
+                                <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }}>
+                                    <input
+                                        type="checkbox"
+                                        checked={localSettings.yomitanShowPitchGraph ?? false}
+                                        onChange={(e) => handleChange('yomitanShowPitchGraph', e.target.checked)}
+                                        style={{ width: '16px', height: '16px' }}
+                                    />
+                                    <span style={{ fontSize: '0.85em', color: '#aaa' }}>Show pitch graph (SVG diagram)</span>
+                                </label>
+                            </div>
                         </div>
                         
                         <div style={{
