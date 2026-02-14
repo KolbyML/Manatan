@@ -238,6 +238,7 @@ export const Dictionary = () => {
                                         maxWidth: 900,
                                         mx: 'auto',
                                         backgroundColor: muiTheme.palette.background.paper,
+                                        color: muiTheme.palette.text.primary,
                                         backdropFilter: 'blur(10px)',
                                         borderRadius: '16px',
                                         border: `1px solid ${muiTheme.palette.divider}`,
