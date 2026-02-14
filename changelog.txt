@@ -1,3 +1,10 @@
+## Release v3.0.10
+
+- Add "Sentence Furigana with Bold Word" field (9172a70)
+- android: try fixing importing multiple dictionaries at once (8468dc8)
+- android: allow filepicker to restore backup files (1257287)
+- Attempt to fix local source not showing up on weird ereader (63f72d9)
+
 ## Release v3.0.9
 
 - Bump Suwayomi Extension interface (f57fef5)
