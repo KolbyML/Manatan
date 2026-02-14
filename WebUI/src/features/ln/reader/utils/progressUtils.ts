@@ -17,8 +17,8 @@ import { detectCurrentBlock } from './blockTracker';
 // Constants
 // ============================================================================
 
-// Whitespace regex (matches blockProcessor.ts)
-const WHITESPACE_REGEX = /[\s\u200B-\u200D\uFEFF\u00A0\t\r\n]+/gu;
+// Non-countable regex (matches blockProcessor.ts)
+const NON_COUNTABLE_REGEX = /[\s\u200B-\u200D\uFEFF\u00A0\t\r\n\p{P}\p{S}]+/gu;
 
 // ============================================================================
 // Text Position Detection (Legacy Support)
@@ -551,7 +551,7 @@ export function restoreReadingPosition(
  */
 export function getCharacterCount(text: string): number {
     if (!text) return 0;
-    const clean = text.replace(WHITESPACE_REGEX, '');
+    const clean = text.replace(NON_COUNTABLE_REGEX, '');
     return Array.from(clean).length;
 }
 
