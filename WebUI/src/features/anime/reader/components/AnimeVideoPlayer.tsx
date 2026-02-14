@@ -76,6 +76,7 @@ import {
 } from '@/Manatan/utils/wordAudio';
 import { DictionaryResult, WordAudioSource, WordAudioSourceSelection } from '@/Manatan/types.ts';
 import { StructuredContent } from '@/Manatan/components/DictionaryView.tsx';
+import { PronunciationSection, extractPronunciationData } from '@/Manatan/components/Pronunciation.tsx';
 import { makeToast } from '@/base/utils/Toast.ts';
 import { MediaQuery } from '@/base/utils/MediaQuery.tsx';
 import { addNote, findNotes, guiBrowse, updateLastCard } from '@/Manatan/utils/anki.ts';
@@ -4440,6 +4441,20 @@ export const AnimeVideoPlayer = ({
                                             </IconButton>
                                         </Stack>
                                     </Stack>
+                                    {(() => {
+                                        const { pitchAccents, ipa } = extractPronunciationData(entry);
+                                        if (pitchAccents.length === 0 && ipa.length === 0) return null;
+                                        return (
+                                            <PronunciationSection
+                                                reading={entry.reading || entry.headword}
+                                                pitchAccents={pitchAccents}
+                                                ipa={ipa}
+                                                showGraph={true}
+                                                showText={true}
+                                                showNotation={true}
+                                            />
+                                        );
+                                    })()}
                                     {entry.frequencies && entry.frequencies.length > 0 && (
                                         <Box
                                             sx={{

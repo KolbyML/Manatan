@@ -194,8 +194,8 @@ function getKanaDiacriticInfo(char: string) {
 const CSS = `
 .pronunciation-group {
     display: flex;
-    align-items: flex-start;
-    gap: 8px;
+    flex-direction: column;
+    gap: 4px;
     margin-bottom: 6px;
 }
 .pronunciation-group-tag {
