@@ -1,3 +1,18 @@
+## Release v3.0.9
+
+- Bump Suwayomi Extension interface (f57fef5)
+- Fixed bug where if you added manga to category, it would always be added to the default category as well, even if checked off (1796499)
+- List Setting Menu links alphabetically (10234ff)
+- Fix Settings Server page not loading (8a81318)
+- Fix Save button doesn't work with filters (85e0db3)
+- Use <b> instead of <strong> for `Sentence with Bold Word` (0a25b8e)
+- android: write suwayomi log to external drive (dc9e53a)
+- LN reader: Add custom fonts and TOC enhancements (#187) (c4fd6ce)
+- Add pagenated anime source page (f6e3f33)
+- feature: Pitch Support (#185) (517d426)
+- Add Mihon Backup Restore support (af24c77)
+- Expose old Tachibk backups (8a79997)
+
 ## Release v3.0.8
 
 - build macos release on linux runners (7d1e433)
