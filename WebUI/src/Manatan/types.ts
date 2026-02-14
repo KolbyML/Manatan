@@ -156,6 +156,8 @@ export interface Settings {
     lnEnableSwipe?: boolean;   
     // Dropdown setting for grouping behavior
     resultGroupingMode: 'grouped' | 'flat';
+    yomitanLookupNavigationMode: 'tabs' | 'stacked';
+    yomitanLookupMaxHistory: number;
 
 }
 
@@ -307,6 +309,8 @@ export const DEFAULT_SETTINGS: Settings = {
     enableYomitan: ENABLE_YOMITAN_DEFAULT,
     // Default to grouped
     resultGroupingMode: 'grouped',
+    yomitanLookupNavigationMode: 'stacked',
+    yomitanLookupMaxHistory: 10,
     deleteModifierKey: 'Alt',
     mergeModifierKey: 'Control',
     site: {
