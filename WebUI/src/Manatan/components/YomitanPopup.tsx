@@ -361,6 +361,7 @@ export const YomitanPopup = () => {
         if (!el || !dictPopup.visible) return;
 
         const closePopup = () => {
+            window.getSelection()?.removeAllRanges();
             notifyPopupClosed();
             setDictPopup(prev => ({ ...prev, visible: false }));
         };
