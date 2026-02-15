@@ -1,14 +1,23 @@
-import React, { useCallback, useRef, useLayoutEffect } from 'react';
+import React, { useCallback, useRef, useLayoutEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { useOCR } from '@/Manatan/context/OCRContext';
 import { cleanPunctuation, lookupYomitan } from '@/Manatan/utils/api';
 import { DictionaryView } from '@/Manatan/components/DictionaryView';
+import { DictionaryResult } from '@/Manatan/types';
 
 const POPUP_GAP = 10;
 const POPUP_MIN_WIDTH_PX = 280;
 const POPUP_MAX_WIDTH_PX = 1920;
 const POPUP_MIN_HEIGHT_PX = 200;
 const POPUP_MAX_HEIGHT_PX = 1080;
+
+
+interface LookupHistoryEntry {
+    term: string;
+    results: DictionaryResult[];
+    isLoading: boolean;
+    systemLoading: boolean;
+}
 
 const isRTL = (text: string): boolean => {
     const rtlRegex = /[\u0591-\u07FF\u200f\u202b\u202e\uFB1D-\uFDFD\uFE70-\uFEFC]/;
@@ -56,6 +65,13 @@ export const YomitanPopup = () => {
     const popupRef = useRef<HTMLDivElement>(null);
     const backdropRef = useRef<HTMLDivElement>(null);
     const [posStyle, setPosStyle] = React.useState<React.CSSProperties>({});
+    const [history, setHistory] = useState<LookupHistoryEntry[]>([]);
+    const [historyIndex, setHistoryIndex] = useState(-1);
+
+    const maxHistory = settings.yomitanLookupMaxHistory || 10;
+    const navMode = settings.yomitanLookupNavigationMode || 'stacked';
+
+    const currentEntry = historyIndex >= 0 && historyIndex < history.length ? history[historyIndex] : null;
 
     const popupWidthPxRaw = Number.isFinite(settings.yomitanPopupWidthPx)
         ? settings.yomitanPopupWidthPx
@@ -72,7 +88,23 @@ export const YomitanPopup = () => {
     const popupHeightPx = Math.min(Math.max(popupHeightPxRaw, POPUP_MIN_HEIGHT_PX), POPUP_MAX_HEIGHT_PX);
     const popupWidthStyle = `${popupWidthPx}px`;
 
-    const processedEntries = dictPopup.results;
+    const processedEntries = currentEntry ? currentEntry.results : dictPopup.results;
+    const isLoading = currentEntry ? currentEntry.isLoading : dictPopup.isLoading;
+    const systemLoading = currentEntry ? currentEntry.systemLoading : dictPopup.systemLoading ?? false;
+
+    // Sync history when initial lookup completes
+    React.useEffect(() => {
+        if (!dictPopup.visible) {
+            setHistory([]);
+            setHistoryIndex(-1);
+            return;
+        }
+        if (dictPopup.results.length > 0 && !dictPopup.isLoading) {
+            const term = dictPopup.results[0]?.headword || dictPopup.context?.sentence?.trim() || '';
+            setHistory([{ term, results: dictPopup.results, isLoading: false, systemLoading: false }]);
+            setHistoryIndex(0);
+        }
+    }, [dictPopup.visible, dictPopup.results, dictPopup.isLoading, dictPopup.systemLoading, dictPopup.context?.sentence]);
 
     const handleDefinitionLink = useCallback(async (href: string, text: string) => {
         // Extract lookup text from href
@@ -122,45 +154,117 @@ export const YomitanPopup = () => {
         const cleanText = cleanPunctuation(lookupText, true).trim();
         if (!cleanText) return;
 
-        setDictPopup((prev) => ({
-            ...prev,
-            visible: true,
-            results: [],
-            isLoading: true,
-            systemLoading: false,
-            highlight: prev.highlight,
-        }));
+        const newEntry: LookupHistoryEntry = { term: cleanText, results: [], isLoading: true, systemLoading: false };
+
+        if (navMode === 'tabs') {
+            setHistory(prev => {
+                const newHistory = prev.slice(0, historyIndex + 1);
+                newHistory.push(newEntry);
+                if (newHistory.length > maxHistory) newHistory.shift();
+                return newHistory;
+            });
+            setHistoryIndex(prev => Math.min(prev + 1, maxHistory - 1));
+        } else {
+            setHistory(prev => {
+                const newHistory = prev.slice(0, historyIndex + 1);
+                newHistory.push(newEntry);
+                if (newHistory.length > maxHistory) newHistory.shift();
+                return newHistory;
+            });
+            setHistoryIndex(prev => Math.min(prev + 1, maxHistory - 1));
+        }
 
         try {
             const results = await lookupYomitan(cleanText, 0, 'grouped', 'japanese');
-            if (results === 'loading') {
-                setDictPopup((prev) => ({
-                    ...prev,
-                    results: [],
-                    isLoading: false,
-                    systemLoading: true,
-                    highlight: prev.highlight,
-                }));
-                return;
-            }
-            setDictPopup((prev) => ({
-                ...prev,
-                results: results || [],
-                isLoading: false,
-                systemLoading: false,
-                highlight: prev.highlight,
-            }));
+            const loadedResults = results === 'loading' ? [] : (results || []);
+            const isSystemLoading = results === 'loading';
+
+            setHistory(prev => {
+                const newHistory = [...prev];
+                const idx = Math.min(historyIndex + 1, maxHistory - 1);
+                if (newHistory[idx]) {
+                    newHistory[idx] = { ...newHistory[idx], results: loadedResults, isLoading: false, systemLoading: isSystemLoading };
+                }
+                return newHistory;
+            });
         } catch (err) {
             console.warn('Failed to lookup link definition', err);
-            setDictPopup((prev) => ({
-                ...prev,
-                results: [],
-                isLoading: false,
-                systemLoading: false,
-                highlight: prev.highlight,
-            }));
+            setHistory(prev => {
+                const newHistory = [...prev];
+                const idx = Math.min(historyIndex + 1, maxHistory - 1);
+                if (newHistory[idx]) {
+                    newHistory[idx] = { ...newHistory[idx], results: [], isLoading: false, systemLoading: false };
+                }
+                return newHistory;
+            });
         }
-    }, [setDictPopup]);
+    }, [setDictPopup, navMode, historyIndex, maxHistory]);
+
+    const handleWordClick = useCallback(async (text: string, position: number) => {
+        const textEncoder = new TextEncoder();
+        const prefixBytes = textEncoder.encode(text.slice(0, position)).length;
+        
+        const cleanText = cleanPunctuation(text, true).trim();
+        if (!cleanText) return;
+
+        const newEntry: LookupHistoryEntry = { term: cleanText, results: [], isLoading: true, systemLoading: false };
+
+        if (navMode === 'tabs') {
+            setHistory(prev => {
+                const newHistory = prev.slice(0, historyIndex + 1);
+                newHistory.push(newEntry);
+                if (newHistory.length > maxHistory) newHistory.shift();
+                return newHistory;
+            });
+            setHistoryIndex(prev => Math.min(prev + 1, maxHistory - 1));
+        } else {
+            setHistory(prev => {
+                const newHistory = prev.slice(0, historyIndex + 1);
+                newHistory.push(newEntry);
+                if (newHistory.length > maxHistory) newHistory.shift();
+                return newHistory;
+            });
+            setHistoryIndex(prev => Math.min(prev + 1, maxHistory - 1));
+        }
+
+        try {
+            const results = await lookupYomitan(cleanText, prefixBytes, 'grouped', 'japanese');
+            const loadedResults = results === 'loading' ? [] : (results || []);
+            const isSystemLoading = results === 'loading';
+
+            setHistory(prev => {
+                const newHistory = [...prev];
+                const idx = Math.min(historyIndex + 1, maxHistory - 1);
+                if (newHistory[idx]) {
+                    const matchedTerm = loadedResults[0]?.headword || cleanText;
+                    newHistory[idx] = { ...newHistory[idx], term: matchedTerm, results: loadedResults, isLoading: false, systemLoading: isSystemLoading };
+                }
+                return newHistory;
+            });
+        } catch (err) {
+            console.warn('Failed to lookup word', err);
+            setHistory(prev => {
+                const newHistory = [...prev];
+                const idx = Math.min(historyIndex + 1, maxHistory - 1);
+                if (newHistory[idx]) {
+                    newHistory[idx] = { ...newHistory[idx], results: [], isLoading: false, systemLoading: false };
+                }
+                return newHistory;
+            });
+        }
+    }, [navMode, historyIndex, maxHistory]);
+
+    const navigateToHistory = useCallback((index: number) => {
+        if (index >= 0 && index < history.length) {
+            setHistoryIndex(index);
+        }
+    }, [history.length]);
+
+    const goBack = useCallback(() => {
+        if (historyIndex > 0) {
+            setHistoryIndex(prev => prev - 1);
+        }
+    }, [historyIndex]);
 
     useLayoutEffect(() => {
         if (!dictPopup.visible) return;
@@ -317,6 +421,8 @@ export const YomitanPopup = () => {
         backgroundColor: '#1a1d21', color: '#eee', border: '1px solid #444',
         borderRadius: '8px', boxShadow: '0 8px 24px rgba(0,0,0,0.5)',
         padding: '16px', fontFamily: 'sans-serif', fontSize: '14px', lineHeight: '1.5',
+        direction: textDirection,
+        textAlign: textDirection === 'rtl' ? 'right' : 'left',
         transform: `scale(${popupScale})`,
         transformOrigin: 'top left',
         ...posStyle
@@ -348,11 +454,67 @@ export const YomitanPopup = () => {
                 onClick={e => e.stopPropagation()}
                 onWheel={e => e.stopPropagation()}
             >
+                {(navMode === 'tabs' ? history.length > 1 : historyIndex > 0) && (
+                    <div className="lookup-history-nav" style={{ marginBottom: '8px' }}>
+                        {navMode === 'tabs' ? (
+                            <div style={{ display: 'flex', gap: '4px', overflowX: 'auto', paddingBottom: '4px', flexDirection: textDirection === 'rtl' ? 'row-reverse' : 'row', alignItems: 'center' }}>
+                                {history.map((entry, i) => (
+                                    <React.Fragment key={i}>
+                                        {i > 0 && (
+                                            <span style={{ color: '#888', fontSize: '0.7em', flexShrink: 0 }}>
+                                                {textDirection === 'rtl' ? '←' : '→'}
+                                            </span>
+                                        )}
+                                        <button
+                                            onClick={() => navigateToHistory(i)}
+                                            style={{
+                                                padding: '4px 8px',
+                                                borderRadius: '4px',
+                                                border: 'none',
+                                                background: i === historyIndex ? '#9b59b6' : '#333',
+                                                color: 'white',
+                                                cursor: 'pointer',
+                                                fontSize: '0.75em',
+                                                maxWidth: '100px',
+                                                overflow: 'hidden',
+                                                textOverflow: 'ellipsis',
+                                                whiteSpace: 'nowrap',
+                                                flexShrink: 0,
+                                            }}
+                                            title={entry.term}
+                                        >
+                                            {entry.term.slice(0, 12)}
+                                            {entry.term.length > 12 ? '...' : ''}
+                                        </button>
+                                    </React.Fragment>
+                                ))}
+                            </div>
+                        ) : (
+                            historyIndex > 0 ? (
+                                <button
+                                    onClick={goBack}
+                                    style={{
+                                        padding: '4px 8px',
+                                        borderRadius: '4px',
+                                        border: 'none',
+                                        background: '#9b59b6',
+                                        color: 'white',
+                                        cursor: 'pointer',
+                                        fontSize: '0.75em',
+                                    }}
+                                >
+                                    ← Back
+                                </button>
+                            ) : null
+                        )}
+                    </div>
+                )}
                 <DictionaryView
                     results={processedEntries}
-                    isLoading={dictPopup.isLoading}
-                    systemLoading={dictPopup.systemLoading ?? false}
+                    isLoading={isLoading}
+                    systemLoading={systemLoading}
                     onLinkClick={handleDefinitionLink}
+                    onWordClick={handleWordClick}
                     context={dictPopup.context}
                     variant="popup"
                 />

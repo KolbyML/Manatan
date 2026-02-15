@@ -313,14 +313,36 @@ export const LNReaderScreen: React.FC = () => {
     };
 
     const handleSearchResultClick = (result: {chapterIndex: number; text: string; position: number}) => {
+        // Use existing blockMaps from metadata to find the block
+        let blockId: string | undefined;
+        let blockLocalOffset: number = 0;
+        
+        const blockMaps = content?.stats?.blockMaps;
+        if (blockMaps) {
+            // Find block for this specific chapter
+            // BlockId format: "ch{chapterIndex}-b{blockOrder}"
+            const chapterBlock = blockMaps.find(b => {
+                const match = b.blockId.match(/ch(\d+)-b\d+/);
+                if (!match) return false;
+                const blockChapterIndex = parseInt(match[1], 10);
+                return blockChapterIndex === result.chapterIndex && 
+                       result.position >= b.startOffset && 
+                       result.position < b.endOffset;
+            });
+            if (chapterBlock) {
+                blockId = chapterBlock.blockId;
+                blockLocalOffset = result.position - chapterBlock.startOffset;
+            }
+        }
+        
         setSavedProgress((prev: any) => ({
             ...prev,
             chapterIndex: result.chapterIndex,
             pageNumber: 0,
             chapterCharOffset: result.position,
             sentenceText: result.text,
-            blockId: undefined,
-            blockLocalOffset: 0,
+            blockId: blockId,
+            blockLocalOffset: blockLocalOffset,
             contextSnippet: result.text,
         }));
         setCurrentChapter(result.chapterIndex);

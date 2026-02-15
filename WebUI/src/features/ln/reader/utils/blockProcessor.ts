@@ -4,7 +4,7 @@ import { Block, BlockIndexMap, ChapterBlockInfo, BlockType } from '../types/bloc
 // Constants
 // ============================================================================
 
-const WHITESPACE_REGEX = /[\s\u200B-\u200D\uFEFF\u00A0\t\r\n]+/gu;
+const NON_COUNTABLE_REGEX = /[\s\u200B-\u200D\uFEFF\u00A0\t\r\n\p{P}\p{S}]+/gu;
 
 // Primary block selectors (high priority)
 const PRIMARY_SELECTORS = [
@@ -47,7 +47,7 @@ const SIGNIFICANT_BLOCK_THRESHOLD = 50;
  */
 export function getCleanCharacterCount(text: string): number {
     if (!text) return 0;
-    const clean = text.replace(WHITESPACE_REGEX, '');
+    const clean = text.replace(NON_COUNTABLE_REGEX, '');
     return Array.from(clean).length;
 }
 

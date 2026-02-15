@@ -849,10 +849,42 @@ ${detail}`,
                                           <option value="grouped">Group by Term</option>
                                           <option value="flat">No Grouping</option>
                                       </select>
-                                      <div style={{ fontSize: '0.85em', color: '#aaa' }}>
-                                          Group results by term or list every entry.
-                                      </div>
-                                   </div>
+                                       <div style={{ fontSize: '0.85em', color: '#aaa' }}>
+                                           Group results by term or list every entry.
+                                       </div>
+                                    </div>
+                                    {/* Lookup Navigation Mode */}
+                                    <div style={{ marginBottom: '15px', display: 'flex', flexDirection: 'column', gap: '5px' }}>
+                                        <label htmlFor="lookupNavMode" style={{fontSize: '0.9em', color: '#ccc'}}>Lookup Navigation</label>
+                                        <select
+                                            id="lookupNavMode"
+                                            value={localSettings.yomitanLookupNavigationMode || 'stacked'}
+                                            onChange={(e) => handleChange('yomitanLookupNavigationMode', e.target.value)}
+                                            style={{ padding: '6px', borderRadius: '4px', border: '1px solid #444', background: '#222', color: 'white' }}
+                                        >
+                                            <option value="stacked">Stacked (Back button)</option>
+                                            <option value="tabs">Tabs (Browser-like)</option>
+                                        </select>
+                                        <div style={{ fontSize: '0.85em', color: '#aaa' }}>
+                                            How to navigate between lookups in the popup.
+                                        </div>
+                                    </div>
+                                    {/* Max History */}
+                                    <div style={{ marginBottom: '15px', display: 'flex', flexDirection: 'column', gap: '5px' }}>
+                                        <label htmlFor="maxHistory" style={{fontSize: '0.9em', color: '#ccc'}}>Max Lookup History</label>
+                                        <input
+                                            id="maxHistory"
+                                            type="number"
+                                            min="1"
+                                            max="50"
+                                            value={localSettings.yomitanLookupMaxHistory ?? 10}
+                                            onChange={(e) => handleChange('yomitanLookupMaxHistory', parseInt(e.target.value) || 10)}
+                                            style={{ padding: '6px', borderRadius: '4px', border: '1px solid #444', background: '#222', color: 'white' }}
+                                        />
+                                        <div style={{ fontSize: '0.85em', color: '#aaa' }}>
+                                            Maximum number of lookups to keep in history.
+                                        </div>
+                                    </div>
                                     <label style={checkboxLabelStyle}>
                                         <input
                                             type="checkbox"
