@@ -1,5 +1,6 @@
 import React, { useState, useMemo, useCallback, useLayoutEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
+import { useTheme } from '@mui/material/styles';
 import { useOCR } from '@/Manatan/context/OCRContext';
 import { findNotes, addNote, guiBrowse, imageUrlToBase64Webp, logAnkiError } from '@/Manatan/utils/anki';
 import { lookupYomitan } from '@/Manatan/utils/api';
@@ -615,19 +616,36 @@ export const DictionaryView: React.FC<DictionaryViewProps> = ({
     results, isLoading, systemLoading, onLinkClick, context, variant = 'inline'
 }) => {
     const isPopup = variant === 'popup';
-    const colors = {
-        text: isPopup ? '#fff' : 'var(--text-color, inherit)',
-        textSecondary: isPopup ? '#aaa' : 'var(--text-secondary-color, inherit)',
-        textMuted: isPopup ? '#888' : 'var(--text-muted-color, inherit)',
-        border: isPopup ? '#333' : 'var(--border-color, #ddd)',
-        tagBg: isPopup ? '#666' : 'var(--tag-bg-color, #e0e0e0)',
-        tagText: isPopup ? '#fff' : 'var(--tag-text-color, inherit)',
-        freqNameBg: isPopup ? '#2ecc71' : 'var(--accent-color, #2ecc71)',
-        freqNameText: isPopup ? '#000' : 'var(--accent-text-color, #000)',
-        freqValueBg: isPopup ? '#333' : 'var(--card-bg-color, #f5f5f5)',
-        freqValueText: isPopup ? '#eee' : 'var(--card-text-color, inherit)',
-        dictTagBg: isPopup ? '#9b59b6' : 'var(--secondary-accent-color, #9b59b6)',
-        dictTagText: isPopup ? '#fff' : 'var(--secondary-accent-text-color, #fff)',
+    const muiTheme = useTheme();
+    const isDark = muiTheme.palette.mode === 'dark';
+    const colors = isPopup ? {
+        // Popup colors (dark background)
+        text: '#fff',
+        textSecondary: '#aaa',
+        textMuted: '#888',
+        border: '#333',
+        tagBg: '#666',
+        tagText: '#fff',
+        freqNameBg: '#2ecc71',
+        freqNameText: '#000',
+        freqValueBg: '#333',
+        freqValueText: '#eee',
+        dictTagBg: '#9b59b6',
+        dictTagText: '#fff',
+    } : {
+        // Inline colors using MUI theme
+        text: muiTheme.palette.text.primary,
+        textSecondary: muiTheme.palette.text.secondary,
+        textMuted: isDark ? '#888' : '#666',
+        border: muiTheme.palette.divider,
+        tagBg: isDark ? '#666' : '#e0e0e0',
+        tagText: isDark ? '#fff' : '#000',
+        freqNameBg: '#2ecc71',
+        freqNameText: '#000',
+        freqValueBg: isDark ? '#333' : '#f5f5f5',
+        freqValueText: isDark ? '#eee' : '#000',
+        dictTagBg: '#9b59b6',
+        dictTagText: '#fff',
     };
     const { settings } = useOCR();
     const [audioMenu, setAudioMenu] = useState<{

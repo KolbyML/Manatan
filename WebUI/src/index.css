@@ -13,7 +13,7 @@
     --ocr-opacity: 0.3;
     --ocr-scale: 1.05;
     
-    /* Dictionary View Theme Variables - Light Mode */
+    /* Dictionary View Theme Variables */
     --text-color: #000000;
     --text-secondary-color: #666666;
     --text-muted-color: #888888;
@@ -26,24 +26,6 @@
     --card-text-color: #000000;
     --secondary-accent-color: #9b59b6;
     --secondary-accent-text-color: #ffffff;
-}
-
-@media (prefers-color-scheme: dark) {
-    :root {
-        /* Dictionary View Theme Variables - Dark Mode */
-        --text-color: #ffffff;
-        --text-secondary-color: #aaaaaa;
-        --text-muted-color: #888888;
-        --border-color: #333333;
-        --tag-bg-color: #666666;
-        --tag-text-color: #ffffff;
-        --accent-color: #2ecc71;
-        --accent-text-color: #000000;
-        --card-bg-color: #333333;
-        --card-text-color: #eeeeee;
-        --secondary-accent-color: #9b59b6;
-        --secondary-accent-text-color: #ffffff;
-    }
 }
 
 /* --- SCROLLING LOGIC --- */
