@@ -1,3 +1,12 @@
+## Release v3.0.15
+
+- Bump Suwayomi Extension Runtime (a2b492e)
+- Fix Local Manga page not reflecting local changes on page refresh (12c7bae)
+- Attempt to fix local manga cover resolution (bab7b7a)
+- Fix sentence audio not working for local anime (bf44e8b)
+- Try to make anime player more robust (d7433cc)
+- Fix bugs in category logic and fix in library bug for source page (cd15bf5)
+
 ## Release v3.0.14
 
 - Add ability to set custom TextBox Context menu trigger (a178e29)
