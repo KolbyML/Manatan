@@ -1,3 +1,18 @@
+## Release v3.0.13
+
+- increased the dictionary ZIP entry cap again to 65536 (bf9f46b)
+- Pitch: add pitch to anime player and fixes (#192) (135c31f)
+- feature: reclusive lookup and improving ln reader lookup speed (#191) (b49087d)
+- Fix: dict. screen themes (#190) (51a3163)
+- Ln Reader: add context menu and highlight (#189) (bcd8a24)
+- Make runtime more robust (9f1ecf0)
+- Fix "with Bold Word" bug (25e8882)
+- Increase max dictionary entry import limit (8544aee)
+- Update iOS project for new release (89fde20)
+- Integrate Aidoku extension settings (90ba91d)
+- Fix position being reset when clicking the back button from the manga to source page (c9781e8)
+- Make manga downloader more robust (baa6d34)
+
 ## Release v3.0.12
 
 - Fixed resume button not showing on manga page (96bfbe9)
