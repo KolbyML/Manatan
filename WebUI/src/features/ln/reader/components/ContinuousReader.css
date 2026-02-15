@@ -497,3 +497,17 @@
 .chapter-block .font-2em   { font-size: 2em !important; }
 .chapter-block .font-small { font-size: 0.8em !important; }
 .chapter-block .font-large { font-size: 1.2em !important; }
+
+/* =====================================================
+   HIGHLIGHTS
+   ===================================================== */
+
+.chapter-block mark.highlight {
+    background-color: rgba(255, 235, 59, 0.45);
+    border-radius: 2px;
+    padding: 0 1px;
+}
+
+[data-dark-mode="true"] .chapter-block mark.highlight {
+    background-color: rgba(255, 235, 59, 0.25);
+}

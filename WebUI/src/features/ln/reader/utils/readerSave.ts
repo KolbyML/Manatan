@@ -95,6 +95,7 @@ export async function saveReadingPosition(
     }
 
     try {
+        const existing = await AppStorage.getLnProgress(bookId);
         await AppStorage.saveLnProgress(bookId, {
             chapterIndex: position.chapterIndex,
             pageNumber: position.pageIndex || 0,
@@ -106,12 +107,7 @@ export async function saveReadingPosition(
             blockId: position.blockId,
             blockLocalOffset: position.blockLocalOffset,
             contextSnippet: position.contextSnippet,
-        });
-
-        console.log('[readerSave] Position saved:', {
-            blockId: position.blockId,
-            chapter: position.chapterIndex,
-            progress: `${position.totalProgress.toFixed(1)}%`,
+            highlights: existing?.highlights ?? [],
         });
 
         return true;

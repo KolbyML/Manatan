@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import {
     Box,
@@ -10,12 +10,13 @@ import {
     List,
     ListItemButton,
     ListItemText,
+    Button,
+    Divider,
     Dialog,
     DialogTitle,
     DialogContent,
     DialogContentText,
     DialogActions,
-    Button,
     TextField
 } from '@mui/material';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
@@ -25,11 +26,13 @@ import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import ExpandLessIcon from '@mui/icons-material/ExpandLess';
 import ImageIcon from '@mui/icons-material/Image';
 import SearchIcon from '@mui/icons-material/Search';
+import FormatQuoteIcon from '@mui/icons-material/FormatQuote';
 
 import { useOCR } from '@/Manatan/context/OCRContext';
 import ManatanLogo from '@/Manatan/assets/manatan_logo.png';
-import { AppStorage } from '@/lib/storage/AppStorage';
+import { AppStorage, LNHighlight } from '@/lib/storage/AppStorage';
 import { useBookContent } from '../hooks/useBookContent';
+import { useHighlights } from '../hooks/useHighlights';
 import { VirtualReader } from '../components/VirtualReader';
 import { ReaderControls } from '../components/ReaderControls';
 import { YomitanPopup } from '@/Manatan/components/YomitanPopup';
@@ -51,12 +54,44 @@ export const LNReaderScreen: React.FC = () => {
     const [settingsOpen, setSettingsOpen] = useState(false);
     const [tocOpen, setTocOpen] = useState(false);
     const [searchOpen, setSearchOpen] = useState(false);
+    const [highlightsOpen, setHighlightsOpen] = useState(false);
     const [searchQuery, setSearchQuery] = useState('');
     const [searchResults, setSearchResults] = useState<{chapterIndex: number; text: string; position: number}[]>([]);
     const [progressLoaded, setProgressLoaded] = useState(false);
     const [currentChapter, setCurrentChapter] = useState(0);
     const [showMigrationDialog, setShowMigrationDialog] = useState(false);
     const [expandedToc, setExpandedToc] = useState<Set<number>>(new Set());
+
+    const bookId = id || '';
+    const { highlights, loading: highlightsLoading, addHighlight, removeHighlight, exportToTxt, exportToJson, downloadFile, refresh } = useHighlights(bookId);
+
+    useEffect(() => {
+        if (highlightsOpen) {
+            refresh();
+        }
+    }, [highlightsOpen, refresh]);
+
+    const handleExportTxt = useCallback((title: string, toc: any[]) => {
+        const txt = exportToTxt(toc?.map((t: any) => t.label) || []);
+        downloadFile(txt, `${title || 'highlights'}.txt`, 'text/plain');
+    }, [exportToTxt, downloadFile]);
+
+    const handleExportJson = useCallback((title: string) => {
+        const json = exportToJson();
+        downloadFile(json, `${title || 'highlights'}.json`, 'application/json');
+    }, [exportToJson, downloadFile]);
+
+    const handleJumpToHighlight = useCallback((hl: LNHighlight) => {
+        setSavedProgress((prev: any) => ({
+            ...prev,
+            chapterIndex: hl.chapterIndex,
+            pageNumber: 0,
+            blockId: hl.blockId,
+            blockLocalOffset: hl.startOffset,
+        }));
+        setCurrentChapter(hl.chapterIndex);
+        setHighlightsOpen(false);
+    }, []);
 
     // Helper: Check if chapter is Art (image-only)
     const isArtChapter = (chapterHtml: string): boolean => {
@@ -390,6 +425,8 @@ export const LNReaderScreen: React.FC = () => {
                         }
                         : undefined
                 }
+                highlights={highlights}
+                onAddHighlight={addHighlight}
                 onUpdateSettings={(key, value) => setSettings(prev => ({ ...prev, [key]: value }))}
                 onChapterChange={handleChapterChange}
                 renderHeader={(showUI, toggleUI) => (
@@ -440,6 +477,10 @@ export const LNReaderScreen: React.FC = () => {
 
                                 <IconButton onClick={() => setSearchOpen(true)} sx={{ color: theme.fg }}>
                                     <SearchIcon />
+                                </IconButton>
+
+                                <IconButton onClick={() => setHighlightsOpen(true)} sx={{ color: theme.fg }}>
+                                    <FormatQuoteIcon />
                                 </IconButton>
 
                                 <IconButton onClick={() => setTocOpen(true)} sx={{ color: theme.fg }}>
@@ -743,6 +784,76 @@ export const LNReaderScreen: React.FC = () => {
                 }}
                 theme={theme}
             />
+
+            <Drawer
+                anchor="right"
+                open={highlightsOpen}
+                onClose={() => setHighlightsOpen(false)}
+                PaperProps={{
+                    sx: {
+                        width: '85%',
+                        maxWidth: 360,
+                        bgcolor: theme.bg,
+                        color: theme.fg,
+                    },
+                }}
+            >
+                <Box sx={{ p: 2, borderBottom: `1px solid ${theme.fg}22` }}>
+                    <Typography variant="h6" sx={{ color: theme.fg, fontWeight: 600 }}>
+                        Highlights
+                    </Typography>
+                </Box>
+                <Box sx={{ p: 2, display: 'flex', gap: 1 }}>
+                    <Button
+                        variant="outlined"
+                        size="small"
+                        onClick={() => handleExportTxt(content?.metadata?.title || 'highlights', content?.metadata?.toc || [])}
+                        sx={{ color: theme.fg, borderColor: theme.fg }}
+                    >
+                        Export TXT
+                    </Button>
+                    <Button
+                        variant="outlined"
+                        size="small"
+                        onClick={() => handleExportJson(content?.metadata?.title || 'highlights')}
+                        sx={{ color: theme.fg, borderColor: theme.fg }}
+                    >
+                        Export JSON
+                    </Button>
+                </Box>
+                <Divider sx={{ borderColor: theme.fg + '22' }} />
+                {highlightsLoading ? (
+                    <Box sx={{ p: 3, textAlign: 'center' }}>
+                        <CircularProgress size={24} sx={{ color: theme.fg }} />
+                    </Box>
+                ) : highlights.length === 0 ? (
+                    <Box sx={{ p: 3, textAlign: 'center' }}>
+                        <Typography sx={{ color: theme.fg, opacity: 0.6 }}>
+                            No highlights yet
+                        </Typography>
+                        <Typography sx={{ color: theme.fg, opacity: 0.4, fontSize: '0.8rem', mt: 1 }}>
+                            Select text and tap "Highlight" to save
+                        </Typography>
+                    </Box>
+                ) : (
+                    <List sx={{ py: 0 }}>
+                        {highlights.map((hl) => (
+                            <ListItemButton
+                                key={hl.id}
+                                onClick={() => handleJumpToHighlight(hl)}
+                                sx={{ py: 1.5, borderBottom: `1px solid ${theme.fg}11` }}
+                            >
+                                <ListItemText
+                                    primary={hl.text.slice(0, 100) + (hl.text.length > 100 ? '...' : '')}
+                                    secondary={`${content?.metadata?.toc?.[hl.chapterIndex]?.label || `Chapter ${hl.chapterIndex + 1}`} • ${new Date(hl.createdAt).toLocaleDateString()}`}
+                                    primaryTypographyProps={{ sx: { color: theme.fg, fontSize: '0.9rem' } }}
+                                    secondaryTypographyProps={{ sx: { color: theme.fg, opacity: 0.5, fontSize: '0.75rem' } }}
+                                />
+                            </ListItemButton>
+                        ))}
+                    </List>
+                )}
+            </Drawer>
 
             <YomitanPopup />
 
