@@ -10,6 +10,11 @@ const POPUP_MAX_WIDTH_PX = 1920;
 const POPUP_MIN_HEIGHT_PX = 200;
 const POPUP_MAX_HEIGHT_PX = 1080;
 
+const isRTL = (text: string): boolean => {
+    const rtlRegex = /[\u0591-\u07FF\u200f\u202b\u202e\uFB1D-\uFDFD\uFE70-\uFEFC]/;
+    return rtlRegex.test(text);
+};
+
 const HighlightOverlay = () => {
     const { dictPopup } = useOCR();
     if (!dictPopup.visible || !dictPopup.highlight?.rects) return null;
@@ -298,6 +303,11 @@ export const YomitanPopup = () => {
 
     if (!dictPopup.visible) return null;
 
+    const popupText = processedEntries.length > 0
+        ? processedEntries.map(e => e.headword + ' ' + e.reading).join(' ')
+        : dictPopup.context?.sentence || '';
+    const textDirection = isRTL(popupText) ? 'rtl' : 'ltr';
+
     const popupStyle: React.CSSProperties = {
         position: 'fixed',
         zIndex: 2147483647,
@@ -331,6 +341,7 @@ export const YomitanPopup = () => {
             <div
                 ref={popupRef}
                 className="yomitan-popup"
+                dir={textDirection}
                 style={popupStyle}
                 onMouseDown={e => e.stopPropagation()}
                 onTouchStart={e => e.stopPropagation()}
