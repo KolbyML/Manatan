@@ -560,16 +560,33 @@ export const PronunciationSection: React.FC<PronunciationSectionProps> = ({
         <div className="pronunciation-section">
             {pitchAccents.map((pa, i) => {
                 const effectiveReading = pa.reading || reading;
+                
+                // Skip if reading is invalid
+                if (!effectiveReading || typeof effectiveReading !== 'string') {
+                    return null;
+                }
+                
                 const morae = getKanaMorae(effectiveReading);
+                
+                // Skip if morae is empty (invalid data)
+                if (!morae || morae.length === 0) {
+                    return null;
+                }
 
                 return (
                     <div key={i} className="pronunciation-group" data-dictionary={pa.dictionaryName}>
                         <span className="pronunciation-group-tag">{pa.dictionaryName}</span>
                         <div className="pronunciation-list">
                             {pa.pitches.map((pitch, j) => {
+                                // Skip if pitch data is invalid
                                 const pos = pitch.pattern && pitch.pattern.length > 0
                                     ? pitch.pattern
                                     : pitch.position;
+                                
+                                if (pos === undefined || pos === null) {
+                                    return null;
+                                }
+
                                 const nasalPositions = pitch.nasal || [];
                                 const devoicePositions = pitch.devoice || [];
 
@@ -604,18 +621,24 @@ export const PronunciationSection: React.FC<PronunciationSectionProps> = ({
                 <div key={i} className="pronunciation-group" data-dictionary={ipaData.dictionaryName}>
                     <span className="pronunciation-group-tag">{ipaData.dictionaryName}</span>
                     <div className="pronunciation-list">
-                        {ipaData.transcriptions.map((t, j) => (
-                            <div key={j} className="pronunciation">
-                                <span className="pronunciation-ipa">{t.ipa}</span>
-                                {t.tags && t.tags.length > 0 && (
-                                    <div className="pronunciation-tag-list">
-                                        {t.tags.map((tag, k) => (
-                                            <span key={k} className="pronunciation-tag">{tag}</span>
-                                        ))}
-                                    </div>
-                                )}
-                            </div>
-                        ))}
+                        {ipaData.transcriptions?.map((t, j) => {
+                            // Skip if IPA data is invalid
+                            if (!t?.ipa) {
+                                return null;
+                            }
+                            return (
+                                <div key={j} className="pronunciation">
+                                    <span className="pronunciation-ipa">{t.ipa}</span>
+                                    {t.tags && t.tags.length > 0 && (
+                                        <div className="pronunciation-tag-list">
+                                            {t.tags.map((tag, k) => (
+                                                <span key={k} className="pronunciation-tag">{tag}</span>
+                                            ))}
+                                        </div>
+                                    )}
+                                </div>
+                            );
+                        })}
                     </div>
                 </div>
             ))}
