@@ -579,6 +579,24 @@
     margin: 0 0.1em !important;
 }
 
+/* =====================================================
+   HIGHLIGHTS
+   ===================================================== */
+
+.paged-content mark.highlight,
+.continuous-content mark.highlight,
+.chapter-block mark.highlight {
+    background-color: rgba(255, 235, 59, 0.45);
+    border-radius: 2px;
+    padding: 0 1px;
+}
+
+[data-dark-mode="true"] .paged-content mark.highlight,
+[data-dark-mode="true"] .continuous-content mark.highlight,
+[data-dark-mode="true"] .chapter-block mark.highlight {
+    background-color: rgba(255, 235, 59, 0.25);
+}
+
 /* Invert inline glyph images in dark mode */
 [data-dark-mode="true"] .paged-content img.gaiji,
 [data-dark-mode="true"] .paged-content img.gaiji-line,

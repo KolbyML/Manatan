@@ -66,6 +66,23 @@ pub struct LNProgress {
 
     #[serde(skip_serializing_if = "Option::is_none")]
     pub device_id: Option<String>,
+
+    // Highlights
+    #[serde(default)]
+    #[serde(skip_serializing_if = "Vec::is_empty")]
+    pub highlights: Vec<LNHighlight>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct LNHighlight {
+    pub id: String,
+    pub chapter_index: i32,
+    pub block_id: String,
+    pub text: String,
+    pub start_offset: i32,
+    pub end_offset: i32,
+    pub created_at: i64,
 }
 
 impl LNProgress {
