@@ -506,8 +506,15 @@
     background-color: rgba(255, 235, 59, 0.45);
     border-radius: 2px;
     padding: 0 1px;
+    color: inherit;
 }
 
-[data-dark-mode="true"] .chapter-block mark.highlight {
-    background-color: rgba(255, 235, 59, 0.25);
+[data-dark-mode="true"][data-theme="dark"] .chapter-block mark.highlight {
+    background-color: rgba(0, 200, 200, 0.5);
+    color: inherit;
+}
+
+[data-dark-mode="true"][data-theme="black"] .chapter-block mark.highlight {
+    background-color: rgba(0, 255, 255, 0.5);
+    color: inherit;
 }

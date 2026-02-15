@@ -195,27 +195,27 @@ const CSS = `
 .pronunciation-group {
     display: flex;
     flex-direction: column;
-    gap: 4px;
-    margin-bottom: 6px;
+    gap: 2px;
+    margin-bottom: 4px;
 }
 .pronunciation-group-tag {
     font-size: 0.7em;
     color: #888;
     background: rgba(139, 92, 246, 0.2);
-    padding: 2px 6px;
+    padding: 1px 4px;
     border-radius: 3px;
     flex-shrink: 0;
 }
 .pronunciation-list {
     display: flex;
     flex-wrap: wrap;
-    gap: 8px;
+    gap: 4px;
 }
 .pronunciation {
     display: flex;
     align-items: center;
-    gap: 6px;
-    padding: 4px 8px;
+    gap: 4px;
+    padding: 2px 6px;
     background: rgba(0, 0, 0, 0.2);
     border-radius: 4px;
 }

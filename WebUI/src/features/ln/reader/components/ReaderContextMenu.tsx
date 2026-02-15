@@ -19,6 +19,10 @@ export const ReaderContextMenu: React.FC<ReaderContextMenuProps> = ({
 }) => {
     if (!visible) return null;
 
+    const menuHeight = 90;
+    const spaceAbove = y;
+    const showBeside = spaceAbove < menuHeight;
+
     const handleAction = (action: () => void) => {
         action();
         onClose();
@@ -39,7 +43,9 @@ export const ReaderContextMenu: React.FC<ReaderContextMenuProps> = ({
                     position: 'fixed',
                     left: x,
                     top: y,
-                    transform: 'translate(-50%, -100%)',
+                    transform: showBeside 
+                        ? 'translate(10px, 0%)' 
+                        : 'translate(-50%, -100%)',
                     backgroundColor: 'rgba(30, 30, 30, 0.95)',
                     borderRadius: '8px',
                     padding: '4px',
