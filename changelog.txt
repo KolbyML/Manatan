@@ -1,3 +1,8 @@
+## Release v3.0.14
+
+- Add ability to set custom TextBox Context menu trigger (a178e29)
+- Add ability to change lookup hotkey (bf3e192)
+
 ## Release v3.0.13
 
 - increased the dictionary ZIP entry cap again to 65536 (bf9f46b)
