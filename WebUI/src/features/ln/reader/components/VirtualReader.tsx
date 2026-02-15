@@ -1,11 +1,12 @@
 
 
-import React, { ReactNode, useRef, useEffect, useState, useCallback } from 'react';
+import React, { ReactNode, useRef, useEffect, useState, useCallback, useMemo } from 'react';
 import { Settings } from '@/Manatan/types';
 import { PagedReader } from './PagedReader';
 import { ContinuousReader } from './ContinuousReader';
 import { useUIVisibility } from '../hooks/useUIVisibility';
-import { BookStats, AppStorage } from '@/lib/storage/AppStorage';
+import { injectHighlightsIntoHtml } from '../utils/injectHighlights';
+import { BookStats, AppStorage, LNHighlight } from '@/lib/storage/AppStorage';
 
 interface VirtualReaderProps {
     bookId: string;
@@ -39,6 +40,8 @@ interface VirtualReaderProps {
         blockLocalOffset?: number;
         contextSnippet?: string;
     }) => void;
+    highlights?: LNHighlight[];
+    onAddHighlight?: (chapterIndex: number, blockId: string, text: string, startOffset: number, endOffset: number) => void;
 }
 
 interface SharedPosition {
@@ -68,6 +71,8 @@ export const VirtualReader: React.FC<VirtualReaderProps> = ({
     chapterFilenames = [],
     onChapterChange,
     onPositionUpdate: externalPositionUpdate,
+    highlights = [],
+    onAddHighlight,
 
 }) => {
     const { showUI, toggleUI } = useUIVisibility({
@@ -107,9 +112,31 @@ export const VirtualReader: React.FC<VirtualReaderProps> = ({
     );
     const [pendingRemount, setPendingRemount] = useState(false);
 
+    useEffect(() => {
+        if (externalInitialProgress) {
+            setActiveProgress(externalInitialProgress);
+            setCurrentIndex(externalInitialProgress.chapterIndex ?? initialIndex);
+            setCurrentPage(externalInitialProgress.pageIndex ?? initialPage);
+        }
+    }, [externalInitialProgress, initialIndex, initialPage]);
+
     const isPaged = settings.lnPaginationMode === 'paginated';
     const isVertical = settings.lnReadingDirection?.includes('vertical');
     const isRTL = settings.lnReadingDirection === 'vertical-rtl';
+
+    const getHighlightsForChapter = useCallback((chapterIndex: number): LNHighlight[] => {
+        return highlights?.filter(h => h.chapterIndex === chapterIndex) ?? [];
+    }, [highlights]);
+
+    const chaptersWithHighlights = useMemo(() => {
+        return items.map((html, index) => {
+            const chapterHighlights = getHighlightsForChapter(index);
+            if (chapterHighlights.length === 0) {
+                return html;
+            }
+            return injectHighlightsIntoHtml(html, chapterHighlights);
+        });
+    }, [items, highlights, getHighlightsForChapter]);
 
 
     const handlePositionUpdate = useCallback(
@@ -189,6 +216,7 @@ export const VirtualReader: React.FC<VirtualReaderProps> = ({
                 });
 
                 if (pos.sentenceText || pos.chapterCharOffset > 0) {
+                    const existing = await AppStorage.getLnProgress(bookId);
                     await AppStorage.saveLnProgress(bookId, {
                         chapterIndex: pos.chapterIndex,
                         pageNumber: pos.pageIndex,
@@ -201,6 +229,7 @@ export const VirtualReader: React.FC<VirtualReaderProps> = ({
                         blockId: pos.blockId,
                         blockLocalOffset: pos.blockLocalOffset,
                         contextSnippet: pos.contextSnippet,
+                        highlights: existing?.highlights ?? [],
                     });
                 }
 
@@ -245,7 +274,7 @@ export const VirtualReader: React.FC<VirtualReaderProps> = ({
 
     const commonProps = {
         bookId,
-        chapters: items,
+        chapters: chaptersWithHighlights,
         stats,
         settings,
         isVertical: !!isVertical,
@@ -259,6 +288,8 @@ export const VirtualReader: React.FC<VirtualReaderProps> = ({
         onOpenToc: onOpenToc,
         onUpdateSettings,
         chapterFilenames,
+        highlights,
+        onAddHighlight,
     };
 
     return (

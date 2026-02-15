@@ -157,6 +157,19 @@ export interface LNProgress {
     lastModified?: number;
     syncVersion?: number;
     deviceId?: string; // Track which device saved this
+
+    // Highlights
+    highlights?: LNHighlight[];
+}
+
+export interface LNHighlight {
+    id: string;
+    chapterIndex: number;
+    blockId: string;
+    text: string;
+    startOffset: number;
+    endOffset: number;
+    createdAt: number;
 }
 
 export interface LNParsedBook {

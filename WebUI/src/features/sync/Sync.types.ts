@@ -18,6 +18,17 @@ export interface LNProgress {
     lastModified?: number;
     syncVersion?: number;
     deviceId?: string;
+    highlights?: LNHighlight[];
+}
+
+export interface LNHighlight {
+    id: string;
+    chapterIndex: number;
+    blockId: string;
+    text: string;
+    startOffset: number;
+    endOffset: number;
+    createdAt: number;
 }
 
 export interface BlockIndexMap {
