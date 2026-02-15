@@ -25,7 +25,8 @@ import { CropperModal } from '@/Manatan/components/CropperModal';
 export const StructuredContent: React.FC<{
     contentString: string;
     onLinkClick?: (href: string, text: string) => void;
-}> = ({ contentString, onLinkClick }) => {
+    onWordClick?: (text: string, position: number) => void;
+}> = ({ contentString, onLinkClick, onWordClick }) => {
     const parsedData = useMemo(() => {
         if (!contentString) return null;
         try {
@@ -36,7 +37,7 @@ export const StructuredContent: React.FC<{
     }, [contentString]);
 
     if (parsedData === null || parsedData === undefined) return null;
-    return <ContentNode node={parsedData} onLinkClick={onLinkClick} />;
+    return <ContentNode node={parsedData} onLinkClick={onLinkClick} onWordClick={onWordClick} />;
 };
 
 const getNodeText = (node: any): string => {
@@ -54,11 +55,53 @@ const tagStyle: React.CSSProperties = {
     color: '#fff', verticalAlign: 'middle', lineHeight: '1.2'
 };
 
-const ContentNode: React.FC<{ node: any; onLinkClick?: (href: string, text: string) => void }> = ({ node, onLinkClick }) => {
+const ContentNode: React.FC<{ node: any; onLinkClick?: (href: string, text: string) => void; onWordClick?: (text: string, position: number) => void }> = ({ node, onLinkClick, onWordClick }) => {
     if (node === null || node === undefined) return null;
-    if (typeof node === 'string' || typeof node === 'number') return <>{node}</>;
-    if (Array.isArray(node)) return <>{node.map((item, i) => <ContentNode key={i} node={item} onLinkClick={onLinkClick} />)}</>;
-    if (node.type === 'structured-content') return <ContentNode node={node.content} onLinkClick={onLinkClick} />;
+    if (typeof node === 'string' || typeof node === 'number') {
+        const text = String(node);
+        if (onWordClick && text.trim()) {
+            const handleClick = (e: React.MouseEvent) => {
+                e.stopPropagation();
+                let charOffset = 0;
+                if (document.caretRangeFromPoint) {
+                    const range = document.caretRangeFromPoint(e.clientX, e.clientY);
+                    if (range && range.startContainer.nodeType === Node.TEXT_NODE) {
+                        charOffset = range.startOffset;
+                        if (charOffset > 0) {
+                            const checkRange = document.createRange();
+                            checkRange.setStart(range.startContainer, charOffset - 1);
+                            checkRange.setEnd(range.startContainer, charOffset);
+                            const rect = checkRange.getBoundingClientRect();
+                            if (e.clientX >= rect.left && e.clientX <= rect.right &&
+                                e.clientY >= rect.top && e.clientY <= rect.bottom) {
+                                charOffset -= 1;
+                            }
+                        }
+                    }
+                } else if ((document as any).caretPositionFromPoint) {
+                    const pos = (document as any).caretPositionFromPoint(e.clientX, e.clientY);
+                    if (pos && pos.offsetNode.nodeType === Node.TEXT_NODE) {
+                        charOffset = pos.offset;
+                        if (charOffset > 0) {
+                            const checkRange = document.createRange();
+                            checkRange.setStart(pos.offsetNode, charOffset - 1);
+                            checkRange.setEnd(pos.offsetNode, charOffset);
+                            const rect = checkRange.getBoundingClientRect();
+                            if (e.clientX >= rect.left && e.clientX <= rect.right &&
+                                e.clientY >= rect.top && e.clientY <= rect.bottom) {
+                                charOffset -= 1;
+                            }
+                        }
+                    }
+                }
+                onWordClick(text, charOffset);
+            };
+            return <span onClick={handleClick}>{node}</span>;
+        }
+        return <>{node}</>;
+    }
+    if (Array.isArray(node)) return <>{node.map((item, i) => <ContentNode key={i} node={item} onLinkClick={onLinkClick} onWordClick={onWordClick} />)}</>;
+    if (node.type === 'structured-content') return <ContentNode node={node.content} onLinkClick={onLinkClick} onWordClick={onWordClick} />;
 
     if (node?.data?.content === 'attribution') return null;
 
@@ -78,7 +121,7 @@ const ContentNode: React.FC<{ node: any; onLinkClick?: (href: string, text: stri
         width: '100%' 
     };
     
-    const listStyle: React.CSSProperties = { paddingLeft: '20px', margin: '2px 0', listStyleType: 'disc' };
+    const listStyle: React.CSSProperties = { paddingInlineStart: '20px', margin: '2px 0', listStyleType: 'disc' };
 
     const handleLinkClick = (event: React.MouseEvent) => {
         if (!onLinkClick) return;
@@ -89,15 +132,15 @@ const ContentNode: React.FC<{ node: any; onLinkClick?: (href: string, text: stri
     };
 
     switch (tag) {
-        case 'ul': return <ul style={{ ...s, ...listStyle }}><ContentNode node={content} onLinkClick={onLinkClick} /></ul>;
-        case 'ol': return <ol style={{ ...s, ...listStyle, listStyleType: 'decimal' }}><ContentNode node={content} onLinkClick={onLinkClick} /></ol>;
-        case 'li': return <li style={{ ...s }}><ContentNode node={content} onLinkClick={onLinkClick} /></li>;
-        case 'table': return <table style={{ ...s, ...tableStyle }}><tbody><ContentNode node={content} onLinkClick={onLinkClick} /></tbody></table>;
-        case 'tr': return <tr style={s}><ContentNode node={content} onLinkClick={onLinkClick} /></tr>;
-        case 'th': return <th style={{ ...s, ...cellStyle, fontWeight: 'bold' }}><ContentNode node={content} onLinkClick={onLinkClick} /></th>;
-        case 'td': return <td style={{ ...s, ...cellStyle }}><ContentNode node={content} onLinkClick={onLinkClick} /></td>;
-        case 'span': return <span style={spanStyle} title={titleAttr}><ContentNode node={content} onLinkClick={onLinkClick} /></span>;
-        case 'div': return <div style={s}><ContentNode node={content} onLinkClick={onLinkClick} /></div>;
+        case 'ul': return <ul style={{ ...s, ...listStyle }}><ContentNode node={content} onLinkClick={onLinkClick} onWordClick={onWordClick} /></ul>;
+        case 'ol': return <ol style={{ ...s, ...listStyle, listStyleType: 'decimal' }}><ContentNode node={content} onLinkClick={onLinkClick} onWordClick={onWordClick} /></ol>;
+        case 'li': return <li style={{ ...s }}><ContentNode node={content} onLinkClick={onLinkClick} onWordClick={onWordClick} /></li>;
+        case 'table': return <table style={{ ...s, ...tableStyle }}><tbody><ContentNode node={content} onLinkClick={onLinkClick} onWordClick={onWordClick} /></tbody></table>;
+        case 'tr': return <tr style={s}><ContentNode node={content} onLinkClick={onLinkClick} onWordClick={onWordClick} /></tr>;
+        case 'th': return <th style={{ ...s, ...cellStyle, fontWeight: 'bold' }}><ContentNode node={content} onLinkClick={onLinkClick} onWordClick={onWordClick} /></th>;
+        case 'td': return <td style={{ ...s, ...cellStyle }}><ContentNode node={content} onLinkClick={onLinkClick} onWordClick={onWordClick} /></td>;
+        case 'span': return <span style={spanStyle} title={titleAttr}><ContentNode node={content} onLinkClick={onLinkClick} onWordClick={onWordClick} /></span>;
+        case 'div': return <div style={s}><ContentNode node={content} onLinkClick={onLinkClick} onWordClick={onWordClick} /></div>;
         case 'a':
             return (
                 <a
@@ -107,10 +150,10 @@ const ContentNode: React.FC<{ node: any; onLinkClick?: (href: string, text: stri
                     rel={onLinkClick ? undefined : 'noreferrer'}
                     onClick={onLinkClick ? handleLinkClick : undefined}
                 >
-                    <ContentNode node={content} onLinkClick={onLinkClick} />
+                    <ContentNode node={content} onLinkClick={onLinkClick} onWordClick={onWordClick} />
                 </a>
             );
-        default: return <ContentNode node={content} onLinkClick={onLinkClick} />;
+        default: return <ContentNode node={content} onLinkClick={onLinkClick} onWordClick={onWordClick} />;
     }
 };
 
@@ -468,7 +511,7 @@ const AnkiButtons: React.FC<{
                 style={{
                     background: 'none', border: 'none', cursor: 'pointer', padding: '2px',
                     display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
-                    lineHeight: 1, color: '#2ecc71', opacity: status === 'loading' ? 0.5 : 1, marginLeft: '10px'
+                    lineHeight: 1, color: '#2ecc71', opacity: status === 'loading' ? 0.5 : 1, marginInlineStart: '10px'
                 }}
                 title={status === 'exists' ? "Open in Anki" : "Add to Anki"}
             >
@@ -604,6 +647,7 @@ interface DictionaryViewProps {
     isLoading: boolean;
     systemLoading: boolean;
     onLinkClick?: (href: string, text: string) => void;
+    onWordClick?: (text: string, position: number) => void;
     context?: {
         imgSrc?: string;
         sentence?: string;
@@ -613,7 +657,7 @@ interface DictionaryViewProps {
 }
 
 export const DictionaryView: React.FC<DictionaryViewProps> = ({ 
-    results, isLoading, systemLoading, onLinkClick, context, variant = 'inline'
+    results, isLoading, systemLoading, onLinkClick, onWordClick, context, variant = 'inline'
 }) => {
     const isPopup = variant === 'popup';
     const muiTheme = useTheme();
@@ -832,7 +876,7 @@ export const DictionaryView: React.FC<DictionaryViewProps> = ({
                                         <div style={{ color: colors.text }}>
                                             {def.content.map((jsonString, idx) => (
                                                 <div key={idx} style={{ marginBottom: '2px' }}>
-                                                    <StructuredContent contentString={jsonString} onLinkClick={onLinkClick} />
+                                                    <StructuredContent contentString={jsonString} onLinkClick={onLinkClick} onWordClick={onWordClick} />
                                                 </div>
                                             ))}
                                         </div>
