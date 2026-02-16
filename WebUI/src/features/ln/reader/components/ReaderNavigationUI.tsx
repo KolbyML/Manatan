@@ -77,7 +77,7 @@ export const ReaderNavigationUI: React.FC<ReaderNavigationUIProps> = ({
         }
     }, [isSaving, onSaveNow]);
 
-    if (!visible && !isLocked) return null;
+    const isVisible = visible || isLocked;
 
     const displayProgress = totalBookProgress !== undefined ? totalBookProgress : progress;
 
@@ -93,7 +93,7 @@ export const ReaderNavigationUI: React.FC<ReaderNavigationUIProps> = ({
     const showNavButtons = visible && !(settings?.lnHideNavButtons ?? false);
 
     return (
-        <div className="reader-navigation-ui">
+        <div className={`reader-navigation-ui ${isVisible ? 'visible' : 'hidden'}`}>
             {showNavButtons && (
                 <>
                     <button

@@ -154,6 +154,7 @@ export interface Settings {
     lnClickZoneCoverage?: number;
     lnClickZonePlacement?: 'horizontal' | 'vertical';
     lnEnableSwipe?: boolean;   
+    lnDragThreshold?: number;   
     // Dropdown setting for grouping behavior
     resultGroupingMode: 'grouped' | 'flat';
     yomitanLookupNavigationMode: 'tabs' | 'stacked';
@@ -360,6 +361,7 @@ export const DEFAULT_SETTINGS: Settings = {
     lnClickZoneCoverage: 60,
     lnClickZonePlacement: 'vertical',
     lnEnableSwipe: true,
+    lnDragThreshold: 10,
 };
 
 export const COLOR_THEMES: Record<ColorTheme, { accent: string; background: string }> = {

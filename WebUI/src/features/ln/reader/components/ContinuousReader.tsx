@@ -409,14 +409,15 @@ export const ContinuousReader: React.FC<ContinuousReaderProps> = ({
     }, []);
 
     const handlePointerMove = useCallback((e: React.PointerEvent) => {
+        const threshold = settings.lnDragThreshold ?? 10;
         if (!isDraggingRef.current) {
             const dx = Math.abs(e.clientX - startPosRef.current.x);
             const dy = Math.abs(e.clientY - startPosRef.current.y);
-            if (dx > DRAG_THRESHOLD || dy > DRAG_THRESHOLD) {
+            if (dx > threshold || dy > threshold) {
                 isDraggingRef.current = true;
             }
         }
-    }, []);
+    }, [settings.lnDragThreshold]);
 
     const handleContentClick = useCallback(async (e: React.MouseEvent) => {
         if (isDraggingRef.current) return;
