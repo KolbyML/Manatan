@@ -1,3 +1,19 @@
+## Release v3.0.18
+
+- Load thumbnails through api (44296a8)
+- Have longer timeout for polling if server started on desktop (b895fa2)
+- Add start/resume button for anime page like manga page has (67b7cb6)
+- Fix set show episode as watched not working, will set episode as watched if user watches 95% of the video (69d7261)
+- Fix Novel overlay overlapping clock on iOS (e014c9a)
+- Add custom CSS field for the Popup Dictionary or Anime Popup Dictionary (946e439)
+- Fix "Media Title" Field (63d8f55)
+- Fix local macos build (cee366e)
+- Try to fix horizontal chinese text (5f2c5eb)
+- LN Reader: various fixes (#198) (650629f)
+- Bump Suwayomi Runtime (457bd92)
+- Fix "Sentence Audio" Failing for local anime using opus audio codec (9a5563b)
+- Fix bug where anime popup dictionary didn't show if, popup dictionary setting was off (c2a01b0)
+
 ## Release v3.0.17
 
 - Fix iOS build failing (42d31a7)
