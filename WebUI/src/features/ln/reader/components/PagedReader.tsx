@@ -676,14 +676,15 @@ export const PagedReader: React.FC<PagedReaderProps> = ({
     }, []);
 
     const handlePointerMove = useCallback((e: React.PointerEvent) => {
+        const threshold = settings.lnDragThreshold ?? 10;
         if (!isDraggingRef.current) {
             const dx = Math.abs(e.clientX - startPosRef.current.x);
             const dy = Math.abs(e.clientY - startPosRef.current.y);
-            if (dx > DRAG_THRESHOLD || dy > DRAG_THRESHOLD) {
+            if (dx > threshold || dy > threshold) {
                 isDraggingRef.current = true;
             }
         }
-    }, []);
+    }, [settings.lnDragThreshold]);
 
     const handleTouchStart = useCallback((e: React.TouchEvent) => {
         if (e.touches.length === 1) {
@@ -701,6 +702,14 @@ export const PagedReader: React.FC<PagedReaderProps> = ({
         if (!(settings.lnEnableSwipe ?? true)) return;
 
         const touch = touchStartRef.current;
+        
+        // Ignore swipes starting from bottom edge (system gesture area)
+        const BOTTOM_EDGE_THRESHOLD = 100;
+        if (touch.y > window.innerHeight - BOTTOM_EDGE_THRESHOLD) {
+            touchStartRef.current = null;
+            return;
+        }
+        
         touchStartRef.current = null;
 
         // Don't handle swipe if touching UI elements

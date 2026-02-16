@@ -54,6 +54,18 @@ export function useHighlights(bookId: string) {
         startOffset: number,
         endOffset: number
     ) => {
+        // Check for duplicate or overlapping highlight in the same block
+        const hasOverlap = highlights.some(h => 
+            h.chapterIndex === chapterIndex &&
+            h.blockId === blockId &&
+            !(endOffset <= h.startOffset || startOffset >= h.endOffset)
+        );
+        
+        if (hasOverlap) {
+            console.warn('[useHighlights] Overlapping highlight ignored');
+            return null;
+        }
+
         const newHighlight: LNHighlight = {
             id: generateId(),
             chapterIndex,
