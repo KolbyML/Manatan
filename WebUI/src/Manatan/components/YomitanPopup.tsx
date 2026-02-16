@@ -19,11 +19,6 @@ interface LookupHistoryEntry {
     systemLoading: boolean;
 }
 
-const isRTL = (text: string): boolean => {
-    const rtlRegex = /[\u0591-\u07FF\u200f\u202b\u202e\uFB1D-\uFDFD\uFE70-\uFEFC]/;
-    return rtlRegex.test(text);
-};
-
 const HighlightOverlay = () => {
     const { dictPopup } = useOCR();
     if (!dictPopup.visible || !dictPopup.highlight?.rects) return null;
@@ -366,6 +361,7 @@ export const YomitanPopup = () => {
         if (!el || !dictPopup.visible) return;
 
         const closePopup = () => {
+            window.getSelection()?.removeAllRanges();
             notifyPopupClosed();
             setDictPopup(prev => ({ ...prev, visible: false }));
         };
@@ -407,11 +403,6 @@ export const YomitanPopup = () => {
 
     if (!dictPopup.visible) return null;
 
-    const popupText = processedEntries.length > 0
-        ? processedEntries.map(e => e.headword + ' ' + e.reading).join(' ')
-        : dictPopup.context?.sentence || '';
-    const textDirection = isRTL(popupText) ? 'rtl' : 'ltr';
-
     const popupStyle: React.CSSProperties = {
         position: 'fixed',
         zIndex: 2147483647,
@@ -421,8 +412,6 @@ export const YomitanPopup = () => {
         backgroundColor: '#1a1d21', color: '#eee', border: '1px solid #444',
         borderRadius: '8px', boxShadow: '0 8px 24px rgba(0,0,0,0.5)',
         padding: '16px', fontFamily: 'sans-serif', fontSize: '14px', lineHeight: '1.5',
-        direction: textDirection,
-        textAlign: textDirection === 'rtl' ? 'right' : 'left',
         transform: `scale(${popupScale})`,
         transformOrigin: 'top left',
         ...posStyle
@@ -447,7 +436,6 @@ export const YomitanPopup = () => {
             <div
                 ref={popupRef}
                 className="yomitan-popup"
-                dir={textDirection}
                 style={popupStyle}
                 onMouseDown={e => e.stopPropagation()}
                 onTouchStart={e => e.stopPropagation()}
@@ -457,12 +445,12 @@ export const YomitanPopup = () => {
                 {(navMode === 'tabs' ? history.length > 1 : historyIndex > 0) && (
                     <div className="lookup-history-nav" style={{ marginBottom: '8px' }}>
                         {navMode === 'tabs' ? (
-                            <div style={{ display: 'flex', gap: '4px', overflowX: 'auto', paddingBottom: '4px', flexDirection: textDirection === 'rtl' ? 'row-reverse' : 'row', alignItems: 'center' }}>
+                            <div style={{ display: 'flex', gap: '4px', overflowX: 'auto', paddingBottom: '4px', alignItems: 'center' }}>
                                 {history.map((entry, i) => (
                                     <React.Fragment key={i}>
                                         {i > 0 && (
                                             <span style={{ color: '#888', fontSize: '0.7em', flexShrink: 0 }}>
-                                                {textDirection === 'rtl' ? '←' : '→'}
+                                                →
                                             </span>
                                         )}
                                         <button
