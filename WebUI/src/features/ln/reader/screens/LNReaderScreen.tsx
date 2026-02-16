@@ -27,6 +27,7 @@ import ExpandLessIcon from '@mui/icons-material/ExpandLess';
 import ImageIcon from '@mui/icons-material/Image';
 import SearchIcon from '@mui/icons-material/Search';
 import FormatQuoteIcon from '@mui/icons-material/FormatQuote';
+import DeleteIcon from '@mui/icons-material/Delete';
 
 import { useOCR } from '@/Manatan/context/OCRContext';
 import ManatanLogo from '@/Manatan/assets/manatan_logo.png';
@@ -92,6 +93,11 @@ export const LNReaderScreen: React.FC = () => {
         setCurrentChapter(hl.chapterIndex);
         setHighlightsOpen(false);
     }, []);
+
+    const handleDeleteHighlight = useCallback((e: React.MouseEvent, hl: LNHighlight) => {
+        e.stopPropagation();
+        removeHighlight(hl.id);
+    }, [removeHighlight]);
 
     // Helper: Check if chapter is Art (image-only)
     const isArtChapter = (chapterHtml: string): boolean => {
@@ -434,10 +440,13 @@ export const LNReaderScreen: React.FC = () => {
                         <Box
                             sx={{
                                 position: 'fixed',
-                                top: 0,
+                                top: 'calc(0px + env(safe-area-inset-top, 0px))',
                                 left: 0,
                                 right: 0,
-                                p: 1.5,
+                                pt: 'calc(12px + env(safe-area-inset-top, 0px))',
+                                pb: 1.5,
+                                px: 'calc(12px + env(safe-area-inset-left, 0px))',
+                                pr: 'calc(12px + env(safe-area-inset-right, 0px))',
                                 background: `linear-gradient(to bottom, ${theme.bg}ee, ${theme.bg}00)`,
                                 display: 'flex',
                                 alignItems: 'center',
@@ -849,6 +858,13 @@ export const LNReaderScreen: React.FC = () => {
                                     primaryTypographyProps={{ sx: { color: theme.fg, fontSize: '0.9rem' } }}
                                     secondaryTypographyProps={{ sx: { color: theme.fg, opacity: 0.5, fontSize: '0.75rem' } }}
                                 />
+                                <IconButton
+                                    size="small"
+                                    onClick={(e) => handleDeleteHighlight(e, hl)}
+                                    sx={{ color: theme.fg, opacity: 0.5, '&:hover': { opacity: 1, color: '#f44336' } }}
+                                >
+                                    <DeleteIcon fontSize="small" />
+                                </IconButton>
                             </ListItemButton>
                         ))}
                     </List>

@@ -774,6 +774,24 @@ export const ReaderControls: React.FC<Props> = ({
         sx={{ mb: 2, width: '100%' }}
     />
 
+    {/* Drag Threshold */}
+    <Box sx={{ mb: 3, width: '100%' }}>
+        <Typography variant="body2" sx={{ mb: 1 }}>
+            Drag Threshold: {settings.lnDragThreshold ?? 10}px
+        </Typography>
+        <Slider
+            value={settings.lnDragThreshold ?? 10}
+            min={1}
+            max={50}
+            step={1}
+            onChange={(_, v) => onUpdateSettings('lnDragThreshold', v as number)}
+            sx={{ color: theme.fg }}
+        />
+        <Typography variant="caption" sx={{ opacity: 0.6 }}>
+            Higher = requires more movement to detect drag
+        </Typography>
+    </Box>
+
     {/* Click Zones - Only show in paginated mode */}
     {settings.lnPaginationMode === 'paginated' && (
         <>

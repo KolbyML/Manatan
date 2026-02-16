@@ -7,6 +7,12 @@
     inset: 0;
     z-index: 100;
     pointer-events: none;
+    opacity: 1;
+    transition: opacity 0.2s ease-in-out;
+}
+
+.reader-navigation-ui.hidden {
+    opacity: 0;
 }
 
 .reader-navigation-ui>* {
