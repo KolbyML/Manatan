@@ -1,3 +1,7 @@
+## Release v3.0.17
+
+- Fix iOS build failing (42d31a7)
+
 ## Release v3.0.16
 
 - Add iOS publish workflow back (e7949e2)
