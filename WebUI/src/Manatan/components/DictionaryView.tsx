@@ -114,6 +114,8 @@ const ContentNode: React.FC<{ node: any; onLinkClick?: (href: string, text: stri
     const isTagClass = classNames.includes('tag');
     const tagBgColor = colors?.tagBg ?? '#666';
     const spanStyle = isTagClass ? { ...tagStyle, backgroundColor: tagBgColor, ...s } : s;
+    const tagTextColor = colors?.tagText ?? '#fff';
+    const spanStyle = isTagClass ? { ...tagStyle, backgroundColor: tagBgColor, color: tagTextColor, ...s } : s;
 
     const borderColor = colors?.border ?? '#777';
     const cellStyle: React.CSSProperties = { border: `1px solid ${borderColor}`, padding: '2px 8px', textAlign: 'center' };
@@ -846,7 +848,7 @@ export const DictionaryView: React.FC<DictionaryViewProps> = ({
                                 style={{
                                     background: 'none', border: 'none',
                                     cursor: wordAudioOptions.length ? 'pointer' : 'not-allowed', padding: '2px',
-                                    color: wordAudioOptions.length ? '#7cc8ff' : '#555', lineHeight: 1,
+                                    color: wordAudioOptions.length ? (popupTheme ? popupTheme.accent : '#7cc8ff') : (popupTheme ? popupTheme.secondary : '#555'), lineHeight: 1,
                                     display: 'flex', alignItems: 'center', justifyContent: 'center',
                                 }}
                                 disabled={!wordAudioOptions.length}
