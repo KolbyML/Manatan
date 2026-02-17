@@ -101,6 +101,8 @@ export interface Settings {
     yomitanPopupWidthPx: number;
     yomitanPopupHeightPx: number;
     yomitanPopupScalePercent: number;
+    yomitanPopupTheme: 'dark' | 'light';
+    animePopupTheme: 'dark' | 'light';
     yomitanShowPitchGraph: boolean;
     yomitanShowPitchText: boolean;
     yomitanShowPitchNotation: boolean;
@@ -296,6 +298,8 @@ export const DEFAULT_SETTINGS: Settings = {
     yomitanPopupWidthPx: 340,
     yomitanPopupHeightPx: 450,
     yomitanPopupScalePercent: 100,
+    yomitanPopupTheme: 'dark',
+    animePopupTheme: 'dark',
     yomitanShowPitchGraph: false,
     yomitanShowPitchText: true,
     yomitanShowPitchNotation: true,

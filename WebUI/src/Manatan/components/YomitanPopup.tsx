@@ -4,6 +4,7 @@ import { useOCR } from '@/Manatan/context/OCRContext';
 import { cleanPunctuation, lookupYomitan } from '@/Manatan/utils/api';
 import { DictionaryView } from '@/Manatan/components/DictionaryView';
 import { DictionaryResult } from '@/Manatan/types';
+import { getPopupTheme } from '@/features/ln/reader/utils/themes';
 
 const POPUP_GAP = 10;
 const POPUP_MIN_WIDTH_PX = 280;
@@ -403,13 +404,15 @@ export const YomitanPopup = () => {
 
     if (!dictPopup.visible) return null;
 
+    const theme = getPopupTheme(settings.yomitanPopupTheme);
+
     const popupStyle: React.CSSProperties = {
         position: 'fixed',
         zIndex: 2147483647,
         width: popupWidthStyle,
         maxWidth: `calc((100% - ${POPUP_GAP * 2}px) / ${popupScale})`,
         overflowY: 'auto',
-        backgroundColor: '#1a1d21', color: '#eee', border: '1px solid #444',
+        backgroundColor: theme.bg, color: theme.fg, border: `1px solid ${theme.border}`,
         borderRadius: '8px', boxShadow: '0 8px 24px rgba(0,0,0,0.5)',
         padding: '16px', fontFamily: 'sans-serif', fontSize: '14px', lineHeight: '1.5',
         transform: `scale(${popupScale})`,
@@ -449,7 +452,7 @@ export const YomitanPopup = () => {
                                 {history.map((entry, i) => (
                                     <React.Fragment key={i}>
                                         {i > 0 && (
-                                            <span style={{ color: '#888', fontSize: '0.7em', flexShrink: 0 }}>
+                                            <span style={{ color: theme.secondary, fontSize: '0.7em', flexShrink: 0 }}>
                                                 →
                                             </span>
                                         )}
@@ -459,8 +462,8 @@ export const YomitanPopup = () => {
                                                 padding: '4px 8px',
                                                 borderRadius: '4px',
                                                 border: 'none',
-                                                background: i === historyIndex ? '#9b59b6' : '#333',
-                                                color: 'white',
+                                                background: i === historyIndex ? theme.accent : theme.hoverBg,
+                                                color: i === historyIndex ? 'white' : theme.fg,
                                                 cursor: 'pointer',
                                                 fontSize: '0.75em',
                                                 maxWidth: '100px',
@@ -485,7 +488,7 @@ export const YomitanPopup = () => {
                                         padding: '4px 8px',
                                         borderRadius: '4px',
                                         border: 'none',
-                                        background: '#9b59b6',
+                                        background: theme.accent,
                                         color: 'white',
                                         cursor: 'pointer',
                                         fontSize: '0.75em',
@@ -505,6 +508,7 @@ export const YomitanPopup = () => {
                     onWordClick={handleWordClick}
                     context={dictPopup.context}
                     variant="popup"
+                    popupTheme={theme}
                 />
             </div>
         </>,

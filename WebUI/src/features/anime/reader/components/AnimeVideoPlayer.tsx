@@ -87,6 +87,7 @@ import {
     ANIME_HOTKEY_LABELS,
     DEFAULT_ANIME_HOTKEYS,
 } from '@/Manatan/hotkeys/AnimeHotkeys.ts';
+import { getPopupTheme } from '@/features/ln/reader/utils/themes';
 
 type SubtitleTrack = {
     url: string;
@@ -629,6 +630,7 @@ export const AnimeVideoPlayer = ({
     const shouldShowVolume = isDesktopPlatform;
     const infoButtonLabel = isDesktopPlatform ? 'Show keyboard shortcuts' : 'Show tap zone';
     const { wasPopupClosedRecently, settings, openSettings, showAlert } = useOCR();
+    const popupTheme = getPopupTheme(settings.animePopupTheme);
     const { enableScope, disableScope } = useHotkeysContext();
     const animeHotkeys = useMemo(() => ({
         ...DEFAULT_ANIME_HOTKEYS,
@@ -4300,8 +4302,8 @@ export const AnimeVideoPlayer = ({
                             transform: popupTransform,
                             width: popupWidthStyle,
                             height: popupHeightStyle,
-                            backgroundColor: 'rgba(26,29,33,0.96)',
-                            color: '#eee',
+                            backgroundColor: popupTheme.bg,
+                            color: popupTheme.fg,
                             p: 2,
                             overflowY: 'auto',
                             zIndex: 4,
@@ -4313,7 +4315,7 @@ export const AnimeVideoPlayer = ({
                     >
                         <Stack spacing={1}>
                             {dictionaryLoading && (
-                                <Typography variant="body2" sx={{ textAlign: 'center', color: '#aaa', py: 2 }}>
+                                <Typography variant="body2" sx={{ textAlign: 'center', color: popupTheme.secondary, py: 2 }}>
                                     Scanning…
                                 </Typography>
                             )}
@@ -4323,7 +4325,7 @@ export const AnimeVideoPlayer = ({
                                     sx={{
                                         mb: 2,
                                         pb: 2,
-                                        borderBottom: i < dictionaryResults.length - 1 ? '1px solid #333' : 'none',
+                                        borderBottom: i < dictionaryResults.length - 1 ? `1px solid ${popupTheme.border}` : 'none',
                                     }}
                                 >
                                     <Stack
@@ -4337,7 +4339,7 @@ export const AnimeVideoPlayer = ({
                                                 {entry.headword}
                                             </Typography>
                                             {entry.reading && (
-                                                <Typography variant="caption" sx={{ color: '#aaa' }}>
+                                                <Typography variant="caption" sx={{ color: popupTheme.secondary }}>
                                                     {entry.reading}
                                                 </Typography>
                                             )}
@@ -4351,7 +4353,8 @@ export const AnimeVideoPlayer = ({
                                                             py: 0.1,
                                                             borderRadius: 0.5,
                                                             fontSize: '0.7rem',
-                                                            backgroundColor: '#666',
+                                                            backgroundColor: popupTheme.secondary,
+                                                                color: popupTheme.bg,
                                                         }}
                                                     >
                                                         {label}
@@ -4538,8 +4541,18 @@ export const AnimeVideoPlayer = ({
                                                     </Box>
                                                     <Box
                                                         sx={{
-                                                            backgroundColor: '#333',
-                                                            color: '#eee',
+                                                            backgroundColor: popupTheme.hoverBg,
+                                                            color: popupTheme.fg,
+                                                            px: 0.75,
+                                                            py: 0.2,
+                                                        }}
+                                                    >
+                                                        {freq.dictionaryName}
+                                                    </Box>
+                                                    <Box
+                                                        sx={{
+                                                            backgroundColor: popupTheme.hoverBg,
+                                                            color: popupTheme.fg,
                                                             px: 0.75,
                                                             py: 0.2,
                                                             fontWeight: 'bold',
@@ -4551,44 +4564,63 @@ export const AnimeVideoPlayer = ({
                                             ))}
                                         </Box>
                                     )}
-                                    {entry.glossary?.map((def, defIndex) => (
-                                        <Stack key={`${entry.headword}-def-${defIndex}`} sx={{ mb: 1 }}>
-                                            <Stack direction="row" spacing={1} sx={{ mb: 0.5 }}>
-                                                {normalizeTagList(def.tags ?? []).map((tag, tagIndex) => (
+                                    {(() => {
+                                        const { pitchAccents, ipa } = extractPronunciationData(entry);
+                                        if (pitchAccents.length === 0 && ipa.length === 0) return null;
+                                        return (
+                                            <PronunciationSection
+                                                reading={entry.reading || entry.headword}
+                                                pitchAccents={pitchAccents}
+                                                ipa={ipa}
+                                                showGraph={settings.yomitanShowPitchGraph ?? true}
+                                                showText={settings.yomitanShowPitchText ?? true}
+                                                showNotation={settings.yomitanShowPitchNotation ?? true}
+                                            />
+                                        );
+                                    })()}
+                                    <Box class="gloss-list definition-list">
+                                        {entry.glossary?.map((def, defIndex) => (
+                                            <Stack key={`${entry.headword}-def-${defIndex}`} sx={{ mb: 1 }} class="gloss-item definition-item" data-dictionary={def.dictionaryName}>
+                                                <Stack direction="row" spacing={1} sx={{ mb: 0.5 }} class="definition-tag-list tag-list">
+                                                    <span class="gloss-separator" style={{ color: popupTheme.secondary, fontWeight: 'bold' }}>{defIndex + 1}.</span>
+                                                    {normalizeTagList(def.tags ?? []).map((tag, tagIndex) => (
+                                                        <Box
+                                                            key={`${entry.headword}-def-${defIndex}-tag-${tagIndex}`}
+                                                            class="tag"
+                                                            sx={{
+                                                                px: 0.5,
+                                                                py: 0.1,
+                                                                borderRadius: 0.5,
+                                                                fontSize: '0.7rem',
+                                                                backgroundColor: '#666',
+                                                            }}
+                                                        >
+                                                            <span class="tag-label">{tag}</span>
+                                                        </Box>
+                                                    ))}
                                                     <Box
-                                                        key={`${entry.headword}-def-${defIndex}-tag-${tagIndex}`}
+                                                        class="tag tag-label"
                                                         sx={{
                                                             px: 0.5,
                                                             py: 0.1,
                                                             borderRadius: 0.5,
                                                             fontSize: '0.7rem',
-                                                            backgroundColor: '#666',
+                                                            backgroundColor: '#9b59b6',
                                                         }}
                                                     >
-                                                        {tag}
+                                                        {def.dictionaryName}
                                                     </Box>
-                                                ))}
-                                                <Box
-                                                    sx={{
-                                                        px: 0.5,
-                                                        py: 0.1,
-                                                        borderRadius: 0.5,
-                                                        fontSize: '0.7rem',
-                                                        backgroundColor: '#9b59b6',
-                                                    }}
-                                                >
-                                                    {def.dictionaryName}
+                                                </Stack>
+                                                <Box sx={{ color: '#ddd', whiteSpace: 'pre-wrap' }} class="definition-item-inner definition-item-content gloss-content">
+                                                    {def.content.map((jsonString, idx) => (
+                                                        <Box key={`${entry.headword}-def-${defIndex}-${idx}`} sx={{ mb: 0.5 }}>
+                                                            <StructuredContent contentString={jsonString} dictionaryName={def.dictionaryName} />
+                                                        </Box>
+                                                    ))}
                                                 </Box>
                                             </Stack>
-                                            <Box sx={{ color: '#ddd' }}>
-                                                {def.content.map((jsonString, idx) => (
-                                                    <Box key={`${entry.headword}-def-${defIndex}-${idx}`} sx={{ mb: 0.5 }}>
-                                                        <StructuredContent contentString={jsonString} />
-                                                    </Box>
-                                                ))}
-                                            </Box>
-                                        </Stack>
-                                    ))}
+                                        ))}
+                                    </Box>
                                 </Box>
                             ))}
                             {!dictionaryLoading && dictionaryResults.length === 0 && (

@@ -15,6 +15,7 @@ import {
 } from '@/Manatan/utils/wordAudio';
 import { DictionaryResult, WordAudioSource, WordAudioSourceSelection } from '@/Manatan/types';
 import { PronunciationSection, extractPronunciationData, getKanaMorae } from './Pronunciation';
+import { PopupTheme } from '@/features/ln/reader/utils/themes';
 import VolumeUpIcon from '@mui/icons-material/VolumeUp';
 import StarIcon from '@mui/icons-material/Star';
 import StarBorderIcon from '@mui/icons-material/StarBorder';
@@ -26,7 +27,8 @@ export const StructuredContent: React.FC<{
     contentString: string;
     onLinkClick?: (href: string, text: string) => void;
     onWordClick?: (text: string, position: number) => void;
-}> = ({ contentString, onLinkClick, onWordClick }) => {
+    colors?: typeof colors;
+}> = ({ contentString, onLinkClick, onWordClick, colors }) => {
     const parsedData = useMemo(() => {
         if (!contentString) return null;
         try {
@@ -37,7 +39,7 @@ export const StructuredContent: React.FC<{
     }, [contentString]);
 
     if (parsedData === null || parsedData === undefined) return null;
-    return <ContentNode node={parsedData} onLinkClick={onLinkClick} onWordClick={onWordClick} />;
+    return <ContentNode node={parsedData} onLinkClick={onLinkClick} onWordClick={onWordClick} colors={colors} />;
 };
 
 const getNodeText = (node: any): string => {
@@ -55,7 +57,7 @@ const tagStyle: React.CSSProperties = {
     color: '#fff', verticalAlign: 'middle', lineHeight: '1.2'
 };
 
-const ContentNode: React.FC<{ node: any; onLinkClick?: (href: string, text: string) => void; onWordClick?: (text: string, position: number) => void }> = ({ node, onLinkClick, onWordClick }) => {
+const ContentNode: React.FC<{ node: any; onLinkClick?: (href: string, text: string) => void; onWordClick?: (text: string, position: number) => void; colors?: typeof colors }> = ({ node, onLinkClick, onWordClick, colors }) => {
     if (node === null || node === undefined) return null;
     if (typeof node === 'string' || typeof node === 'number') {
         const text = String(node);
@@ -100,8 +102,8 @@ const ContentNode: React.FC<{ node: any; onLinkClick?: (href: string, text: stri
         }
         return <>{node}</>;
     }
-    if (Array.isArray(node)) return <>{node.map((item, i) => <ContentNode key={i} node={item} onLinkClick={onLinkClick} onWordClick={onWordClick} />)}</>;
-    if (node.type === 'structured-content') return <ContentNode node={node.content} onLinkClick={onLinkClick} onWordClick={onWordClick} />;
+    if (Array.isArray(node)) return <>{node.map((item, i) => <ContentNode key={i} node={item} onLinkClick={onLinkClick} onWordClick={onWordClick} colors={colors} />)}</>;
+    if (node.type === 'structured-content') return <ContentNode node={node.content} onLinkClick={onLinkClick} onWordClick={onWordClick} colors={colors} />;
 
     if (node?.data?.content === 'attribution') return null;
 
@@ -110,12 +112,14 @@ const ContentNode: React.FC<{ node: any; onLinkClick?: (href: string, text: stri
     const titleAttr = typeof title === 'string' ? title : undefined;
     const classNames = typeof data?.class === 'string' ? data.class.split(/\s+/) : [];
     const isTagClass = classNames.includes('tag');
-    const spanStyle = isTagClass ? { ...tagStyle, backgroundColor: '#666', ...s } : s;
+    const tagBgColor = colors?.tagBg ?? '#666';
+    const spanStyle = isTagClass ? { ...tagStyle, backgroundColor: tagBgColor, ...s } : s;
 
-    const cellStyle: React.CSSProperties = { border: '1px solid #777', padding: '2px 8px', textAlign: 'center' };
+    const borderColor = colors?.border ?? '#777';
+    const cellStyle: React.CSSProperties = { border: `1px solid ${borderColor}`, padding: '2px 8px', textAlign: 'center' };
     const tableStyle: React.CSSProperties = { 
         borderCollapse: 'collapse', 
-        border: '1px solid #555', 
+        border: `1px solid ${borderColor}`, 
         margin: '4px 0', 
         fontSize: '0.9em', 
         width: '100%' 
@@ -132,15 +136,15 @@ const ContentNode: React.FC<{ node: any; onLinkClick?: (href: string, text: stri
     };
 
     switch (tag) {
-        case 'ul': return <ul style={{ ...s, ...listStyle }}><ContentNode node={content} onLinkClick={onLinkClick} onWordClick={onWordClick} /></ul>;
-        case 'ol': return <ol style={{ ...s, ...listStyle, listStyleType: 'decimal' }}><ContentNode node={content} onLinkClick={onLinkClick} onWordClick={onWordClick} /></ol>;
-        case 'li': return <li style={{ ...s }}><ContentNode node={content} onLinkClick={onLinkClick} onWordClick={onWordClick} /></li>;
-        case 'table': return <table style={{ ...s, ...tableStyle }}><tbody><ContentNode node={content} onLinkClick={onLinkClick} onWordClick={onWordClick} /></tbody></table>;
-        case 'tr': return <tr style={s}><ContentNode node={content} onLinkClick={onLinkClick} onWordClick={onWordClick} /></tr>;
-        case 'th': return <th style={{ ...s, ...cellStyle, fontWeight: 'bold' }}><ContentNode node={content} onLinkClick={onLinkClick} onWordClick={onWordClick} /></th>;
-        case 'td': return <td style={{ ...s, ...cellStyle }}><ContentNode node={content} onLinkClick={onLinkClick} onWordClick={onWordClick} /></td>;
-        case 'span': return <span style={spanStyle} title={titleAttr}><ContentNode node={content} onLinkClick={onLinkClick} onWordClick={onWordClick} /></span>;
-        case 'div': return <div style={s}><ContentNode node={content} onLinkClick={onLinkClick} onWordClick={onWordClick} /></div>;
+        case 'ul': return <ul style={{ ...s, ...listStyle }}><ContentNode node={content} onLinkClick={onLinkClick} onWordClick={onWordClick} colors={colors} /></ul>;
+        case 'ol': return <ol style={{ ...s, ...listStyle, listStyleType: 'decimal' }}><ContentNode node={content} onLinkClick={onLinkClick} onWordClick={onWordClick} colors={colors} /></ol>;
+        case 'li': return <li style={{ ...s }}><ContentNode node={content} onLinkClick={onLinkClick} onWordClick={onWordClick} colors={colors} /></li>;
+        case 'table': return <table style={{ ...s, ...tableStyle }}><tbody><ContentNode node={content} onLinkClick={onLinkClick} onWordClick={onWordClick} colors={colors} /></tbody></table>;
+        case 'tr': return <tr style={s}><ContentNode node={content} onLinkClick={onLinkClick} onWordClick={onWordClick} colors={colors} /></tr>;
+        case 'th': return <th style={{ ...s, ...cellStyle, fontWeight: 'bold' }}><ContentNode node={content} onLinkClick={onLinkClick} onWordClick={onWordClick} colors={colors} /></th>;
+        case 'td': return <td style={{ ...s, ...cellStyle }}><ContentNode node={content} onLinkClick={onLinkClick} onWordClick={onWordClick} colors={colors} /></td>;
+        case 'span': return <span style={spanStyle} title={titleAttr}><ContentNode node={content} onLinkClick={onLinkClick} onWordClick={onWordClick} colors={colors} /></span>;
+        case 'div': return <div style={s}><ContentNode node={content} onLinkClick={onLinkClick} onWordClick={onWordClick} colors={colors} /></div>;
         case 'a':
             return (
                 <a
@@ -150,10 +154,10 @@ const ContentNode: React.FC<{ node: any; onLinkClick?: (href: string, text: stri
                     rel={onLinkClick ? undefined : 'noreferrer'}
                     onClick={onLinkClick ? handleLinkClick : undefined}
                 >
-                    <ContentNode node={content} onLinkClick={onLinkClick} onWordClick={onWordClick} />
+                    <ContentNode node={content} onLinkClick={onLinkClick} onWordClick={onWordClick} colors={colors} />
                 </a>
             );
-        default: return <ContentNode node={content} onLinkClick={onLinkClick} onWordClick={onWordClick} />;
+        default: return <ContentNode node={content} onLinkClick={onLinkClick} onWordClick={onWordClick} colors={colors} />;
     }
 };
 
@@ -579,23 +583,23 @@ const AudioMenu: React.FC<AudioMenuProps> = ({
             onContextMenu={(event) => { event.preventDefault(); event.stopPropagation(); }}
             style={{
                 position: 'fixed', top: menuPosition.top, left: menuPosition.left,
-                zIndex: 2147483647, background: '#1a1d21',
-                border: '1px solid rgba(255,255,255,0.12)', borderRadius: '8px', boxShadow: '0 10px 25px rgba(0,0,0,0.45)',
+                zIndex: 2147483647, background: popupTheme ? popupTheme.bg : '#1a1d21',
+                border: `1px solid ${popupTheme ? popupTheme.border : 'rgba(255,255,255,0.12)'}`, borderRadius: '8px', boxShadow: '0 10px 25px rgba(0,0,0,0.45)',
                 padding: '6px', minWidth: '220px',
             }}
         >
-            <div style={{ fontSize: '0.75em', color: '#aaa', padding: '4px 8px' }}>Word audio sources</div>
+            <div style={{ fontSize: '0.75em', color: popupTheme ? popupTheme.secondary : '#aaa', padding: '4px 8px' }}>Word audio sources</div>
             <div
                 role="button" tabIndex={0}
                 onClick={() => onPlayAudio('auto')}
                 style={{
                     display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-                    padding: '6px 8px', borderRadius: '6px', cursor: 'pointer', color: '#fff',
+                    padding: '6px 8px', borderRadius: '6px', cursor: 'pointer', color: popupTheme ? popupTheme.fg : '#fff',
                 }}
             >
                 <span style={{
                     textDecoration: wordAudioAutoAvailable === false ? 'line-through' : 'none',
-                    color: wordAudioAutoAvailable === false ? '#777' : '#fff',
+                    color: wordAudioAutoAvailable === false ? (popupTheme ? popupTheme.secondary : '#777') : (popupTheme ? popupTheme.fg : '#fff'),
                 }}>Auto (first available)</span>
                 <button
                     type="button"
@@ -603,7 +607,7 @@ const AudioMenu: React.FC<AudioMenuProps> = ({
                     title="Use this source for cards"
                     style={{
                         background: 'transparent', border: 'none',
-                        color: wordAudioAutoAvailable === false ? '#555' : activeWordAudioSelection === 'auto' ? '#f1c40f' : '#777',
+                        color: wordAudioAutoAvailable === false ? (popupTheme ? popupTheme.secondary : '#555') : activeWordAudioSelection === 'auto' ? '#f1c40f' : (popupTheme ? popupTheme.secondary : '#777'),
                         cursor: 'pointer', fontSize: '0.9em',
                     }}
                 >
@@ -616,12 +620,12 @@ const AudioMenu: React.FC<AudioMenuProps> = ({
                     onClick={() => onPlayAudio(source)}
                     style={{
                         display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-                        padding: '6px 8px', borderRadius: '6px', cursor: 'pointer', color: '#fff',
+                        padding: '6px 8px', borderRadius: '6px', cursor: 'pointer', color: popupTheme ? popupTheme.fg : '#fff',
                     }}
                 >
                     <span style={{
                         textDecoration: wordAudioAvailability?.[source] === false ? 'line-through' : 'none',
-                        color: wordAudioAvailability?.[source] === false ? '#777' : '#fff',
+                        color: wordAudioAvailability?.[source] === false ? (popupTheme ? popupTheme.secondary : '#777') : (popupTheme ? popupTheme.fg : '#fff'),
                     }}>{getWordAudioSourceLabel(source)}</span>
                     <button
                         type="button"
@@ -629,7 +633,7 @@ const AudioMenu: React.FC<AudioMenuProps> = ({
                         title="Use this source for cards"
                         style={{
                             background: 'transparent', border: 'none',
-                            color: wordAudioAvailability?.[source] === false ? '#555' : activeWordAudioSelection === source ? '#f1c40f' : '#777',
+                            color: wordAudioAvailability?.[source] === false ? (popupTheme ? popupTheme.secondary : '#555') : activeWordAudioSelection === source ? '#f1c40f' : (popupTheme ? popupTheme.secondary : '#777'),
                             cursor: 'pointer', fontSize: '0.9em',
                         }}
                     >
@@ -654,16 +658,31 @@ interface DictionaryViewProps {
         spreadData?: any;
     };
     variant?: 'popup' | 'inline';
+    popupTheme?: PopupTheme;
 }
 
 export const DictionaryView: React.FC<DictionaryViewProps> = ({ 
-    results, isLoading, systemLoading, onLinkClick, onWordClick, context, variant = 'inline'
+    results, isLoading, systemLoading, onLinkClick, onWordClick, context, variant = 'inline', popupTheme
 }) => {
     const isPopup = variant === 'popup';
     const muiTheme = useTheme();
     const isDark = muiTheme.palette.mode === 'dark';
-    const colors = isPopup ? {
-        // Popup colors (dark background)
+    const colors = isPopup ? popupTheme ? {
+        // Popup colors from theme
+        text: popupTheme.fg,
+        textSecondary: popupTheme.secondary,
+        textMuted: popupTheme.secondary,
+        border: popupTheme.border,
+        tagBg: popupTheme.secondary,
+        tagText: popupTheme.bg,
+        freqNameBg: '#2ecc71',
+        freqNameText: '#000',
+        freqValueBg: popupTheme.hoverBg,
+        freqValueText: popupTheme.fg,
+        dictTagBg: popupTheme.accent,
+        dictTagText: '#fff',
+    } : {
+        // Popup colors (dark background - fallback)
         text: '#fff',
         textSecondary: '#aaa',
         textMuted: '#888',
@@ -876,7 +895,7 @@ export const DictionaryView: React.FC<DictionaryViewProps> = ({
                                         <div style={{ color: colors.text }}>
                                             {def.content.map((jsonString, idx) => (
                                                 <div key={idx} style={{ marginBottom: '2px' }}>
-                                                    <StructuredContent contentString={jsonString} onLinkClick={onLinkClick} onWordClick={onWordClick} />
+                                                    <StructuredContent contentString={jsonString} onLinkClick={onLinkClick} onWordClick={onWordClick} colors={colors} />
                                                 </div>
                                             ))}
                                         </div>
