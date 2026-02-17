@@ -3692,6 +3692,7 @@ dependencies = [
  "base64",
  "bytes",
  "futures",
+ "mime_guess",
  "r2d2",
  "r2d2_sqlite",
  "regex",
