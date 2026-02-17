@@ -1,3 +1,7 @@
+## Release v3.0.21
+
+- Attempt to fix iOS startup time regression (5792d72)
+
 ## Release v3.0.20
 
 - Fix anime source icon (08e9ee6)
