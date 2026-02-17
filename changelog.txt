@@ -1,3 +1,7 @@
+## Release v3.0.19
+
+- fix(sentence audio): handle ADTS decode edge cases in sentence clip fallback (aefce15)
+
 ## Release v3.0.18
 
 - Load thumbnails through api (44296a8)
