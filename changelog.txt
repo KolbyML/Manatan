@@ -1,3 +1,7 @@
+## Release v3.0.22
+
+- fix(audio): make local sentence-audio clip generation work for MKV sources (eca0968)
+
 ## Release v3.0.21
 
 - Attempt to fix iOS startup time regression (5792d72)
