@@ -1,3 +1,13 @@
+## Release v3.0.20
+
+- Fix anime source icon (08e9ee6)
+- Fix anime page Status code to word map (bff577e)
+- Attempt to fix bug on iOS where after resuming from sleep the app is stuck on loading page (a6e416d)
+- Fix "Add to Library" for anime not working (484038a)
+- Fix build error (90ee98d)
+- Fix novel reader overlapping dynamic island on iOS (bdb809d)
+- fix(audio): add pure-rust fallback for multi-frame ADTS sentence clips (8c67492)
+
 ## Release v3.0.19
 
 - fix(sentence audio): handle ADTS decode edge cases in sentence clip fallback (aefce15)
