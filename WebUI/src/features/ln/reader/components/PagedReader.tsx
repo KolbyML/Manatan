@@ -52,6 +52,8 @@ export const PagedReader: React.FC<PagedReaderProps> = ({
     initialProgress,
     onToggleUI,
     showNavigation = false,
+    safeAreaTopInset,
+    safeAreaTopOffsetPx = 0,
     onPositionUpdate,
     onRegisterSave,
     onUpdateSettings,
@@ -213,7 +215,7 @@ export const PagedReader: React.FC<PagedReaderProps> = ({
         const padding = settings.lnPageMargin || 24;
 
         const contentW = dimensions.width - (padding * 2);
-        const contentH = dimensions.height - (padding * 2);
+        const contentH = dimensions.height - (padding * 2) - safeAreaTopOffsetPx;
 
         const columnWidth = isVertical ? contentH : contentW;
 
@@ -226,7 +228,7 @@ export const PagedReader: React.FC<PagedReaderProps> = ({
             contentH,
             columnWidth,
         };
-    }, [dimensions, settings.lnPageMargin, isVertical]);
+    }, [dimensions, settings.lnPageMargin, isVertical, safeAreaTopOffsetPx]);
 
     const currentHtml = useMemo(
         () => chapters[currentSection] || '',
@@ -1132,7 +1134,10 @@ useEffect(() => {
                     inset: 0,
                     overflow: 'hidden',
                     clipPath: 'inset(0px)',
-                    padding: `${layout.padding}px`,
+                    paddingTop: `calc(${layout.padding}px + ${safeAreaTopInset ?? '0px'})`,
+                    paddingRight: `${layout.padding}px`,
+                    paddingBottom: `${layout.padding}px`,
+                    paddingLeft: `${layout.padding}px`,
                 }}
                 onClick={handleContentClick}
                 onPointerDown={handlePointerDown}

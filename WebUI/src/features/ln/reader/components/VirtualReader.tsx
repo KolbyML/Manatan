@@ -42,6 +42,8 @@ interface VirtualReaderProps {
     }) => void;
     highlights?: LNHighlight[];
     onAddHighlight?: (chapterIndex: number, blockId: string, text: string, startOffset: number, endOffset: number) => void;
+    safeAreaTopInset?: string;
+    safeAreaTopOffsetPx?: number;
 }
 
 interface SharedPosition {
@@ -73,6 +75,8 @@ export const VirtualReader: React.FC<VirtualReaderProps> = ({
     onPositionUpdate: externalPositionUpdate,
     highlights = [],
     onAddHighlight,
+    safeAreaTopInset,
+    safeAreaTopOffsetPx,
 
 }) => {
     const { showUI, toggleUI } = useUIVisibility({
@@ -290,6 +294,8 @@ export const VirtualReader: React.FC<VirtualReaderProps> = ({
         chapterFilenames,
         highlights,
         onAddHighlight,
+        safeAreaTopInset,
+        safeAreaTopOffsetPx,
     };
 
     return (

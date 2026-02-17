@@ -62,6 +62,12 @@ export const LNReaderScreen: React.FC = () => {
     const [currentChapter, setCurrentChapter] = useState(0);
     const [showMigrationDialog, setShowMigrationDialog] = useState(false);
     const [expandedToc, setExpandedToc] = useState<Set<number>>(new Set());
+    const isIOS = typeof navigator !== 'undefined' && /iPhone|iPad|iPod/i.test(navigator.userAgent);
+    const readerSafeTopOffsetPx = isIOS ? 24 : 0;
+    const readerSafeTopInset = `${readerSafeTopOffsetPx}px`;
+    const headerSafeTopInset = isIOS
+        ? 'min(env(safe-area-inset-top, 0px), 44px)'
+        : 'env(safe-area-inset-top, 0px)';
 
     const bookId = id || '';
     const { highlights, loading: highlightsLoading, addHighlight, removeHighlight, exportToTxt, exportToJson, downloadFile, refresh } = useHighlights(bookId);
@@ -435,15 +441,17 @@ export const LNReaderScreen: React.FC = () => {
                 onAddHighlight={addHighlight}
                 onUpdateSettings={(key, value) => setSettings(prev => ({ ...prev, [key]: value }))}
                 onChapterChange={handleChapterChange}
+                safeAreaTopInset={readerSafeTopInset}
+                safeAreaTopOffsetPx={readerSafeTopOffsetPx}
                 renderHeader={(showUI, toggleUI) => (
                     <Fade in={showUI}>
                         <Box
                             sx={{
                                 position: 'fixed',
-                                top: 'calc(0px + env(safe-area-inset-top, 0px))',
+                                top: 0,
                                 left: 0,
                                 right: 0,
-                                pt: 'calc(12px + env(safe-area-inset-top, 0px))',
+                                pt: `calc(10px + ${headerSafeTopInset})`,
                                 pb: 1.5,
                                 px: 'calc(12px + env(safe-area-inset-left, 0px))',
                                 pr: 'calc(12px + env(safe-area-inset-right, 0px))',
