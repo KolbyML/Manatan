@@ -308,6 +308,19 @@ export async function parseEpub(
 
         const title = opfDoc.querySelector('metadata > title, metadata title')?.textContent || 'Unknown Title';
         const author = opfDoc.querySelector('metadata > creator, metadata creator')?.textContent || 'Unknown Author';
+        
+        // Extract language from dc:language or metadata > language
+        let language = opfDoc.querySelector('metadata > language, dc\\:language')?.textContent || '';
+        if (!language) {
+            // Try getting from html element's lang attribute
+            const htmlElement = opfDoc.querySelector('package > metadata > *[name="language"], package > metadata > [namespace*="language"]');
+            language = htmlElement?.textContent || '';
+        }
+        // Normalize language code (handle cases like "en-US" -> "en")
+        if (language) {
+            language = language.split('-')[0].split('_')[0].toLowerCase();
+        }
+        const bookLanguage = language || 'unknown';
 
         // ====================================================================
         // 3. Extract Cover
@@ -601,6 +614,8 @@ export async function parseEpub(
             stats,
             chapterCount: chapters.length,
             toc: tocItems,
+            language: bookLanguage,
+            categoryIds: [],
         };
 
         const parsedBook: LNParsedBook = {
