@@ -113,7 +113,6 @@ const ContentNode: React.FC<{ node: any; onLinkClick?: (href: string, text: stri
     const classNames = typeof data?.class === 'string' ? data.class.split(/\s+/) : [];
     const isTagClass = classNames.includes('tag');
     const tagBgColor = colors?.tagBg ?? '#666';
-    const spanStyle = isTagClass ? { ...tagStyle, backgroundColor: tagBgColor, ...s } : s;
     const tagTextColor = colors?.tagText ?? '#fff';
     const spanStyle = isTagClass ? { ...tagStyle, backgroundColor: tagBgColor, color: tagTextColor, ...s } : s;
 
