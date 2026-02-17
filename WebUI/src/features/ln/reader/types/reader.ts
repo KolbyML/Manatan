@@ -24,6 +24,8 @@ export interface BaseReaderProps {
     };
     onToggleUI?: () => void;
     showNavigation?: boolean;
+    safeAreaTopInset?: string;
+    safeAreaTopOffsetPx?: number;
     onPositionUpdate?: (position: {
         chapterIndex: number;
         pageIndex?: number;
