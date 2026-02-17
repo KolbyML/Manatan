@@ -141,6 +141,9 @@ export interface Settings {
     lnTextAlign: 'left' | 'center' | 'justify';
     lnLetterSpacing: number;
     lnParagraphSpacing: number;
+    lnFontWeight: number;
+    lnSecondaryFontFamily: string;
+    lnTextBrightness: number;
     lnDisableAnimations: boolean;
     lnLockProgressBar?: boolean;
     lnShowCharProgress?: boolean;
@@ -197,6 +200,7 @@ export interface DictionaryResult {
             tags?: string[];
         }>;
     }>;
+    styles?: Record<string, string>;
 }
 
 export interface DictionaryDefinition {
@@ -348,6 +352,9 @@ export const DEFAULT_SETTINGS: Settings = {
     lnTextAlign: 'justify',
     lnLetterSpacing: 0,
     lnParagraphSpacing: 1.5,
+    lnFontWeight: 400,
+    lnSecondaryFontFamily: '',
+    lnTextBrightness: 100,
     lnDisableAnimations: true,
     lnLockProgressBar: false,
     lnShowCharProgress: false,
