@@ -4344,8 +4344,11 @@ export const AnimeVideoPlayer = ({
                         }, {} as Record<string, string>);
                         const cssParts = Object.entries(stylesMap).map(([dictName, css]) => {
                             if (!css) return '';
-                            const selector = `[data-dictionary="${dictName.replace(/"/g, '\\"')}"]`;
-                            return css.replace(/^([^{]+)\{/gm, `${selector} $1 {`);
+                            // Escape quotes in dictionary name for CSS selector
+                            const escapedName = dictName.replace(/"/g, '\\"');
+                            const selector = `[data-dictionary="${escapedName}"]`;
+                            // Use CSS nesting to scope all rules - wrap the entire CSS block
+                            return `${selector} {\n${css}\n}`;
                         }).join('\n');
                         return cssParts ? <style>{cssParts}</style> : null;
                     })()}

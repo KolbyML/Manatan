@@ -183,6 +183,22 @@ const ContentNode: React.FC<{
                     <ContentNode node={content} dictionaryName={dictionaryName} onLinkClick={onLinkClick} onWordClick={onWordClick} colors={colors} />
                 </a>
             );
+        case 'ruby':
+            return <ruby style={s}><ContentNode node={content} dictionaryName={dictionaryName} onLinkClick={onLinkClick} onWordClick={onWordClick} colors={colors} /></ruby>;
+        case 'rt':
+            return <rt style={s}><ContentNode node={content} dictionaryName={dictionaryName} onLinkClick={onLinkClick} onWordClick={onWordClick} colors={colors} /></rt>;
+        case 'br':
+            return <br />;
+        case 'p':
+            return <p style={{ ...s, margin: '0.5em 0' }}><ContentNode node={content} dictionaryName={dictionaryName} onLinkClick={onLinkClick} onWordClick={onWordClick} colors={colors} /></p>;
+        case 'strong':
+            return <strong style={{ ...s, fontWeight: 'bold' }}><ContentNode node={content} dictionaryName={dictionaryName} onLinkClick={onLinkClick} onWordClick={onWordClick} colors={colors} /></strong>;
+        case 'em':
+            return <em style={{ ...s, fontStyle: 'italic' }}><ContentNode node={content} dictionaryName={dictionaryName} onLinkClick={onLinkClick} onWordClick={onWordClick} colors={colors} /></em>;
+        case 'b':
+            return <b style={{ ...s, fontWeight: 'bold' }}><ContentNode node={content} dictionaryName={dictionaryName} onLinkClick={onLinkClick} onWordClick={onWordClick} colors={colors} /></b>;
+        case 'i':
+            return <i style={{ ...s, fontStyle: 'italic' }}><ContentNode node={content} dictionaryName={dictionaryName} onLinkClick={onLinkClick} onWordClick={onWordClick} colors={colors} /></i>;
         default: return <ContentNode node={content} dictionaryName={dictionaryName} onLinkClick={onLinkClick} onWordClick={onWordClick} colors={colors} />;
     }
 };
@@ -845,8 +861,11 @@ export const DictionaryView: React.FC<DictionaryViewProps> = ({
         const cssParts: string[] = [];
         for (const [dictName, css] of Object.entries(allStyles)) {
             if (!css) continue;
-            const selector = `[data-dictionary="${dictName.replace(/"/g, '\\"')}"]`;
-            const scopedCss = css.replace(/^([^{]+)\{/gm, `${selector} $1 {`);
+            // Escape quotes in dictionary name for CSS selector
+            const escapedName = dictName.replace(/"/g, '\\"');
+            const selector = `[data-dictionary="${escapedName}"]`;
+            // Use CSS nesting to scope all rules - wrap the entire CSS block
+            const scopedCss = `${selector} {\n${css}\n}`;
             cssParts.push(scopedCss);
         }
         return cssParts.join('\n');
