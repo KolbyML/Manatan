@@ -507,20 +507,60 @@ export class AppStorage {
         const keys = await this.lnMetadata.keys();
         
         for (const key of keys) {
-            const metadata = await this.lnMetadata.getItem<LNMetadata>(key as string);
+            const metadata = await this.lnMetadata.getItem<any>(key as string);
             if (!metadata) continue;
 
             let needsUpdate = false;
             const migrated = { ...metadata };
 
+            // Migrate language field
             if (migrated.language === undefined) {
                 migrated.language = 'unknown';
                 needsUpdate = true;
             }
 
+            // Migrate categoryIds field
             if (!migrated.categoryIds) {
-                migrated.categoryIds = [];
+                migrated.categoryIds = migrated.category_ids || [];
                 needsUpdate = true;
+            }
+
+            // Migrate snake_case to camelCase for stats
+            if (migrated.stats?.chapter_lengths !== undefined) {
+                migrated.stats = {
+                    chapterLengths: migrated.stats.chapter_lengths || migrated.stats.chapterLengths || [],
+                    totalLength: migrated.stats.total_length || migrated.stats.totalLength || 0,
+                    blockMaps: migrated.stats.block_maps || migrated.stats.blockMaps || [],
+                };
+                needsUpdate = true;
+            }
+
+            // Migrate old reader-format blockMaps (nested blocks array) to flat format
+            const blockMaps = migrated.stats?.blockMaps || [];
+            if (blockMaps.length > 0 && blockMaps[0]?.blocks !== undefined) {
+                console.log(`[Migration] Converting reader-format blockMaps for ${key}`);
+                migrated.stats.blockMaps = blockMaps.flatMap((chapter: any) => {
+                    if (!chapter.blocks || !Array.isArray(chapter.blocks)) return [];
+                    return chapter.blocks.map((block: any) => ({
+                        blockId: block.id || `ch${chapter.chapterIndex}-b${block.order || 0}`,
+                        startOffset: block.cleanCharStart || 0,
+                        endOffset: (block.cleanCharStart || 0) + (block.cleanCharCount || 0),
+                    }));
+                });
+                needsUpdate = true;
+            }
+
+            if (blockMaps.length > 1 && typeof blockMaps[0]?.startOffset === 'number') {
+                const firstBlock = blockMaps[0];
+                const secondBlock = blockMaps[1];
+                
+                // If startOffset looks like it's using order (0, 1, 2...) instead of character offsets
+                if (firstBlock.startOffset === 0 && secondBlock.startOffset === (blockMaps[0]?.endOffset || 0)) {
+                    // This looks correct - endOffset of first = startOffset of second
+                } else if (firstBlock.startOffset === 0 && secondBlock.startOffset < 100 && blockMaps[0]?.endOffset > 100) {
+                    // Suspicious: startOffset is small but endOffset is large
+                    console.warn(`[Migration] BlockMaps for ${key} may have incorrect offsets. Consider re-importing the book.`);
+                }
             }
 
             if (needsUpdate) {
