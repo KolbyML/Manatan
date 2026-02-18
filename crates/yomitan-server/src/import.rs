@@ -1,6 +1,7 @@
 use std::{
     collections::HashSet,
     fmt,
+    fs,
     io::Read,
     marker::PhantomData,
 };
@@ -475,8 +476,66 @@ pub fn import_zip(state: &AppState, data: &[u8]) -> Result<String> {
                 name: dict_name.clone(),
                 priority: 0,
                 enabled: true,
+                styles: None,
             },
         );
+    }
+
+    // 3.5. Extract CSS and Images from ZIP
+    let dict_media_dir = state.data_dir.join("dict_media").join(&dict_name);
+    fs::create_dir_all(&dict_media_dir)?;
+
+    let mut styles_content: Option<String> = None;
+
+    for i in 0..zip.len() {
+        let mut file = match zip.by_index(i) {
+            Ok(f) => f,
+            Err(_) => continue,
+        };
+        let file_name = file.name().to_string();
+
+        // Extract styles.css
+        if file_name == "styles.css" {
+            let mut contents = String::new();
+            if let Ok(_) = file.read_to_string(&mut contents) {
+                styles_content = Some(contents);
+            }
+            continue;
+        }
+
+        // Skip JSON files (they're term banks, handled separately)
+        if file_name.ends_with(".json") || file_name.ends_with(".json.gz") {
+            continue;
+        }
+
+        // Skip other metadata files
+        if file_name.contains("index") || file_name.contains("meta") {
+            continue;
+        }
+
+        // Extract as media file
+        let media_path = dict_media_dir.join(&file_name);
+        if let Some(parent) = media_path.parent() {
+            let _ = fs::create_dir_all(parent);
+        }
+        let mut buffer = Vec::new();
+        if file.read_to_end(&mut buffer).is_ok() {
+            if fs::write(&media_path, &buffer).is_ok() {
+                info!("      Extracted media: {}", file_name);
+            }
+        }
+    }
+
+    // Update dictionary with styles
+    if let Some(styles) = styles_content {
+        tx.execute(
+            "UPDATE dictionaries SET styles = ? WHERE id = ?",
+            rusqlite::params![styles, dict_id.0],
+        )?;
+        let mut dicts = state.dictionaries.write().expect("lock");
+        if let Some(d) = dicts.get_mut(&dict_id) {
+            d.styles = Some(styles);
+        }
     }
 
     // 4. Scan for term banks and insert

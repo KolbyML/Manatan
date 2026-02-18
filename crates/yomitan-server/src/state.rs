@@ -22,6 +22,7 @@ pub struct DictionaryData {
     pub name: String,
     pub priority: i64,
     pub enabled: bool,
+    pub styles: Option<String>,
 }
 
 #[derive(Clone)]
@@ -71,7 +72,8 @@ impl AppState {
                 id INTEGER PRIMARY KEY,
                 name TEXT NOT NULL,
                 priority INTEGER DEFAULT 0,
-                enabled BOOLEAN DEFAULT 1
+                enabled BOOLEAN DEFAULT 1,
+                styles TEXT
              );
 
              CREATE TABLE IF NOT EXISTS terms (
@@ -90,13 +92,16 @@ impl AppState {
         )
         .expect("Failed to initialize database tables");
 
+        // Migration: Add styles column if it doesn't exist (ignore errors for existing columns)
+        let _ = conn.execute("ALTER TABLE dictionaries ADD COLUMN styles TEXT", []);
+
         // 2. Load Dictionaries from DB
         let mut dicts = HashMap::new();
         let mut max_id = 0;
 
         {
             let mut stmt = conn
-                .prepare("SELECT id, name, priority, enabled FROM dictionaries")
+                .prepare("SELECT id, name, priority, enabled, styles FROM dictionaries")
                 .unwrap();
             let rows = stmt
                 .query_map([], |row| {
@@ -105,6 +110,7 @@ impl AppState {
                         name: row.get(1)?,
                         priority: row.get(2)?,
                         enabled: row.get(3)?,
+                        styles: row.get(4)?,
                     })
                 })
                 .unwrap();
