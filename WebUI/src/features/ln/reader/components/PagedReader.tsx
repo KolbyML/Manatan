@@ -27,6 +27,31 @@ import {
 import './PagedReader.css';
 
 // ============================================================================
+// Helpers
+
+function adjustBrightness(hexColor: string, brightness: number): string {
+    // Handle rgba format
+    if (hexColor.startsWith('rgba')) {
+        const match = hexColor.match(/rgba?\((\d+),\s*(\d+),\s*(\d+)/);
+        if (match) {
+            const [, r, g, b] = match;
+            const factor = brightness / 100;
+            return `rgba(${Math.round(Number(r) * factor)}, ${Math.round(Number(g) * factor)}, ${Math.round(Number(b) * factor)})`;
+        }
+        return hexColor;
+    }
+    
+    // Handle hex format
+    const hex = hexColor.replace('#', '');
+    const r = parseInt(hex.substring(0, 2), 16);
+    const g = parseInt(hex.substring(2, 4), 16);
+    const b = parseInt(hex.substring(4, 6), 16);
+    
+    const factor = brightness / 100;
+    return `rgb(${Math.round(r * factor)}, ${Math.round(g * factor)}, ${Math.round(b * factor)})`;
+}
+
+// ============================================================================
 // Constants
 // ============================================================================
 
@@ -254,8 +279,16 @@ export const PagedReader: React.FC<PagedReaderProps> = ({
     // Memoized content style to prevent re-renders on UI toggle
     const contentStyle = useMemo(() => {
         if (!layout) return {};
+        
+        // Calculate text color with brightness
+        const brightness = settings.lnTextBrightness ?? 100;
+        const textColor = brightness === 100 
+            ? theme.fg 
+            : adjustBrightness(theme.fg, brightness);
+        
         return {
             ...typographyStyles,
+            color: textColor,
             columnWidth: `${layout.columnWidth}px`,
             columnGap: `${layout.gap}px`,
             columnFill: 'auto',
@@ -287,6 +320,8 @@ export const PagedReader: React.FC<PagedReaderProps> = ({
         layout,
         transform,
         settings.lnDisableAnimations,
+        settings.lnTextBrightness,
+        theme.fg,
         isVertical
     ]);
 
@@ -1108,11 +1143,16 @@ useEffect(() => {
 
     const handleUpdateSettings = onUpdateSettings ?? (() => {});
 
+    const wrapperStyle = {
+        backgroundColor: theme.bg,
+        color: theme.fg,
+    };
+
     return (
         <div
     ref={wrapperRef}
     className="paged-reader-wrapper"
-    style={{ backgroundColor: theme.bg, color: theme.fg }}
+    style={wrapperStyle}
     data-dark-mode={settings.lnTheme === 'dark' || settings.lnTheme === 'black'}
 >
             {/* Dynamic image sizing */}

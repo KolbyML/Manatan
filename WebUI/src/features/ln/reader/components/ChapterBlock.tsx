@@ -25,6 +25,12 @@ export const ChapterBlock: React.FC<ChapterBlockProps> = React.memo(
             );
         }
 
+        // Build font family with secondary font
+        let fontFamily = settings.lnFontFamily || "'Noto Serif JP', serif";
+        if (settings.lnSecondaryFontFamily) {
+            fontFamily = `${fontFamily}, ${settings.lnSecondaryFontFamily}`;
+        }
+
         return (
             <section
                 className={`chapter-block ${isVertical ? 'vertical' : 'horizontal'} ${!settings.lnEnableFurigana ? 'furigana-hidden' : ''
@@ -34,6 +40,8 @@ export const ChapterBlock: React.FC<ChapterBlockProps> = React.memo(
                     padding: `${settings.lnPageMargin || 20}px`,
                     maxWidth: !isVertical ? `${settings.lnPageWidth || 800}px` : undefined,
                     textAlign: (settings.lnTextAlign as any) || 'justify',
+                    fontFamily,
+                    fontWeight: settings.lnFontWeight || 400,
                 }}
             >
                 <div

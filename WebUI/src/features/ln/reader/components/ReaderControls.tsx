@@ -111,7 +111,6 @@ export const ReaderControls: React.FC<Props> = ({
     const [fontSizeInput, setFontSizeInput] = useState(settings.lnFontSize.toString());
     const [lineHeightInput, setLineHeightInput] = useState(settings.lnLineHeight.toFixed(1));
     const [letterSpacingInput, setLetterSpacingInput] = useState(settings.lnLetterSpacing.toString());
-    const [pageMarginInput, setPageMarginInput] = useState(settings.lnPageMargin.toString());
     
     // Custom fonts state
     const [customFonts, setCustomFonts] = useState<CustomFont[]>([]);
@@ -124,13 +123,18 @@ export const ReaderControls: React.FC<Props> = ({
         });
     }, []);
 
+    // Font weight options
+    const FONT_WEIGHTS = [
+        { label: 'Normal', value: 400 },
+        { label: 'Bold', value: 700 },
+    ];
+
     // Sync local state when settings change
     React.useEffect(() => {
         setFontSizeInput(settings.lnFontSize.toString());
         setLineHeightInput(settings.lnLineHeight.toFixed(1));
         setLetterSpacingInput(settings.lnLetterSpacing.toString());
-        setPageMarginInput(settings.lnPageMargin.toString());
-    }, [settings.lnFontSize, settings.lnLineHeight, settings.lnLetterSpacing, settings.lnPageMargin]);
+    }, [settings.lnFontSize, settings.lnLineHeight, settings.lnLetterSpacing]);
 
     const handleFontSizeChange = (value: string) => {
         setFontSizeInput(value);
@@ -190,25 +194,6 @@ export const ReaderControls: React.FC<Props> = ({
             onUpdateSettings('lnLetterSpacing', 5);
         } else {
             setLetterSpacingInput(num.toString());
-        }
-    };
-
-    const handlePageMarginChange = (value: string) => {
-        setPageMarginInput(value);
-        const num = parseInt(value, 10);
-        if (!isNaN(num) && num >= 0 && num <= 80) {
-            onUpdateSettings('lnPageMargin', num);
-        }
-    };
-
-    const handlePageMarginBlur = () => {
-        const num = parseInt(pageMarginInput, 10);
-        if (isNaN(num) || num < 0) {
-            setPageMarginInput('0');
-            onUpdateSettings('lnPageMargin', 0);
-        } else if (num > 80) {
-            setPageMarginInput('80');
-            onUpdateSettings('lnPageMargin', 80);
         }
     };
 
@@ -302,15 +287,15 @@ export const ReaderControls: React.FC<Props> = ({
                     <Typography variant="subtitle2" sx={{ mb: 1.5, fontWeight: 600, opacity: 0.8 }}>
                         Theme
                     </Typography>
-                    <Box sx={{ display: 'flex', gap: 1.5 }}>
+                    <Box sx={{ display: 'flex', gap: 1.5, mb: 2 }}>
                         {Object.entries(THEMES).map(([key, t]) => (
                             <Box
                                 key={key}
                                 onClick={() => onUpdateSettings('lnTheme', key)}
                                 sx={{
                                     flex: 1,
-                                    height: 60,
-                                    borderRadius: 2,
+                                    height: 48,
+                                    borderRadius: 1.5,
                                     bgcolor: t.preview,
                                     border: settings.lnTheme === key
                                         ? '3px solid #4890ff'
@@ -325,14 +310,45 @@ export const ReaderControls: React.FC<Props> = ({
                                     '&:hover': { transform: 'scale(1.05)', boxShadow: 2 },
                                 }}
                             >
-                                <Typography sx={{ fontSize: '0.75rem', fontWeight: 600, color: t.fg }}>
+                                <Typography sx={{ fontSize: '0.7rem', fontWeight: 600, color: t.fg }}>
                                     {t.name}
                                 </Typography>
-                                <Typography sx={{ fontSize: '1.2rem', fontWeight: 600, color: t.fg }}>
+                                <Typography sx={{ fontSize: '1rem', fontWeight: 600, color: t.fg }}>
                                     Aa
                                 </Typography>
                             </Box>
                         ))}
+                    </Box>
+
+                    {/* Text Brightness */}
+                    <Box>
+                        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 0.5 }}>
+                            <Typography variant="caption" sx={{ opacity: 0.8 }}>Text Brightness</Typography>
+                            <TextField
+                                size="small"
+                                value={settings.lnTextBrightness ?? 100}
+                                onChange={(e) => {
+                                    const val = parseInt(e.target.value, 10);
+                                    if (!isNaN(val) && val >= 0 && val <= 200) {
+                                        onUpdateSettings('lnTextBrightness', val);
+                                    }
+                                }}
+                                type="number"
+                                inputProps={{ min: 0, max: 200, step: 10 }}
+                                sx={getInputStyles(theme)}
+                                InputProps={{
+                                    endAdornment: <InputAdornment position="end" sx={{ color: theme.fg }}>%</InputAdornment>
+                                }}
+                            />
+                        </Box>
+                        <Slider
+                            value={settings.lnTextBrightness ?? 100}
+                            min={0}
+                            max={200}
+                            step={10}
+                            onChange={(_, v) => onUpdateSettings('lnTextBrightness', v)}
+                            sx={{ color: theme.fg }}
+                        />
                     </Box>
                 </Box>
 
@@ -465,6 +481,58 @@ export const ReaderControls: React.FC<Props> = ({
         style={{ display: 'none' }}
         onChange={handleImportFont}
     />
+
+    {/* Font Weight */}
+    <Box sx={{ mb: 2 }}>
+        <FormControl fullWidth size="small" sx={{ mb: 1 }}>
+            <InputLabel sx={{ color: theme.fg, '&.Mui-focused': { color: theme.fg } }}>
+                Font Weight
+            </InputLabel>
+            <Select
+                value={settings.lnFontWeight ?? 400}
+                label="Font Weight"
+                onChange={(e: SelectChangeEvent) => onUpdateSettings('lnFontWeight', Number(e.target.value))}
+                sx={selectStyles}
+                MenuProps={menuProps}
+            >
+                {FONT_WEIGHTS.map(fw => (
+                    <MenuItem key={fw.value} value={fw.value}>
+                        {fw.label}
+                    </MenuItem>
+                ))}
+            </Select>
+        </FormControl>
+    </Box>
+
+    {/* Secondary Font (Group 2) */}
+    <Box sx={{ mb: 2 }}>
+        <FormControl fullWidth size="small" sx={{ mb: 1 }}>
+            <InputLabel sx={{ color: theme.fg, '&.Mui-focused': { color: theme.fg } }}>
+                Font Family (Group 2)
+            </InputLabel>
+            <Select
+                value={settings.lnSecondaryFontFamily || ''}
+                label="Font Family (Group 2)"
+                onChange={(e: SelectChangeEvent) => onUpdateSettings('lnSecondaryFontFamily', e.target.value)}
+                sx={selectStyles}
+                MenuProps={menuProps}
+            >
+                <MenuItem value="">None</MenuItem>
+                {FONT_PRESETS.map(p => (
+                    <MenuItem key={p.label} value={p.value}>
+                        <span style={{ fontFamily: p.value }}>{p.label}</span>
+                    </MenuItem>
+                ))}
+                {customFonts.map(font => (
+                    <MenuItem key={`custom2-${font.family}`} value={`"${font.family}", sans-serif`}>
+                        <span style={{ fontFamily: `"${font.family}", serif` }}>
+                            {font.name.replace(/\.(ttf|otf|woff|woff2)$/i, '')}
+                        </span>
+                    </MenuItem>
+                ))}
+            </Select>
+        </FormControl>
+    </Box>
 </Box>
 
                     {/* Font Size */}
@@ -614,14 +682,18 @@ export const ReaderControls: React.FC<Props> = ({
                     </FormControl>
 
                     {/* Page Margin */}
-                    <Box>
-                        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1 }}>
+                    <Box sx={{ mb: 2 }}>
+                        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 0.5 }}>
                             <Typography variant="caption" sx={{ opacity: 0.8 }}>Page Margin</Typography>
                             <TextField
                                 size="small"
-                                value={pageMarginInput}
-                                onChange={(e) => handlePageMarginChange(e.target.value)}
-                                onBlur={handlePageMarginBlur}
+                                value={settings.lnPageMargin ?? 40}
+                                onChange={(e) => {
+                                    const val = parseInt(e.target.value, 10);
+                                    if (!isNaN(val) && val >= 0 && val <= 80) {
+                                        onUpdateSettings('lnPageMargin', val);
+                                    }
+                                }}
                                 type="number"
                                 inputProps={{ min: 0, max: 80, step: 4 }}
                                 sx={getInputStyles(theme)}
@@ -631,7 +703,7 @@ export const ReaderControls: React.FC<Props> = ({
                             />
                         </Box>
                         <Slider
-                            value={settings.lnPageMargin}
+                            value={settings.lnPageMargin ?? 40}
                             min={0}
                             max={80}
                             step={4}

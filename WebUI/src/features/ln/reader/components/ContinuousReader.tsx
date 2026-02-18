@@ -679,19 +679,54 @@ export const ContinuousReader: React.FC<ContinuousReaderProps> = ({
     // Render
     // ========================================================================
 
+    // Helper to adjust brightness
+    const adjustBrightness = (hexColor: string, brightness: number): string => {
+        if (hexColor.startsWith('rgba')) {
+            const match = hexColor.match(/rgba?\((\d+),\s*(\d+),\s*(\d+)/);
+            if (match) {
+                const [, r, g, b] = match;
+                const factor = brightness / 100;
+                return `rgba(${Math.round(Number(r) * factor)}, ${Math.round(Number(g) * factor)}, ${Math.round(Number(b) * factor)})`;
+            }
+            return hexColor;
+        }
+        const hex = hexColor.replace('#', '');
+        const r = parseInt(hex.substring(0, 2), 16);
+        const g = parseInt(hex.substring(2, 4), 16);
+        const b = parseInt(hex.substring(4, 6), 16);
+        const factor = brightness / 100;
+        return `rgb(${Math.round(r * factor)}, ${Math.round(g * factor)}, ${Math.round(b * factor)})`;
+    };
+
     // Memoized wrapper style to prevent re-renders on UI toggle
-    const wrapperStyle = useMemo(() => ({
-        backgroundColor: theme.bg,
-        color: theme.fg,
-        direction: isRTL ? 'rtl' : 'ltr',
-    }), [theme.bg, theme.fg, isRTL]);
+    const wrapperStyle = useMemo(() => {
+        const brightness = settings.lnTextBrightness ?? 100;
+        const textColor = brightness === 100 
+            ? theme.fg 
+            : adjustBrightness(theme.fg, brightness);
+        
+        return {
+            backgroundColor: theme.bg,
+            color: textColor,
+            direction: isRTL ? 'rtl' : 'ltr',
+        };
+    }, [theme.bg, theme.fg, isRTL, settings.lnTextBrightness]);
 
     // Memoized content style to prevent re-renders on UI toggle
-    const contentStyle = useMemo(() => ({
-        writingMode: isVertical ? 'vertical-rl' : 'horizontal-tb',
-        textOrientation: isVertical ? 'mixed' : undefined,
-        direction: 'ltr',
-    }), [isVertical]);
+    const contentStyle = useMemo(() => {
+        let fontFamily = settings.lnFontFamily || "'Noto Serif JP', serif";
+        if (settings.lnSecondaryFontFamily) {
+            fontFamily = `${fontFamily}, ${settings.lnSecondaryFontFamily}`;
+        }
+        
+        return {
+            writingMode: isVertical ? 'vertical-rl' : 'horizontal-tb',
+            textOrientation: isVertical ? 'mixed' : undefined,
+            direction: 'ltr',
+            fontFamily,
+            fontWeight: settings.lnFontWeight || 400,
+        };
+    }, [isVertical, settings.lnFontFamily, settings.lnSecondaryFontFamily, settings.lnFontWeight]);
 
     const handleUpdateSettings = onUpdateSettings ?? (() => {});
 

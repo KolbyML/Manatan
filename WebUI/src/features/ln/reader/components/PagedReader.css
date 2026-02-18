@@ -649,7 +649,22 @@
     font-family: "Hiragino Mincho ProN", "Yu Mincho", "MS Mincho", "Noto Serif JP", serif !important;
 }
 
-/* Bold */
+/* Base elements inherit font-weight from parent */
+.paged-content {
+    font-weight: inherit;
+}
+
+.paged-content h1,
+.paged-content h2,
+.paged-content h3,
+.paged-content h4,
+.paged-content h5,
+.paged-content h6,
+.paged-content th,
+.paged-content strong {
+    font-weight: inherit;
+}
+
 .paged-content .bold,
 .paged-content .b,
 .paged-content .strong,
@@ -660,6 +675,16 @@
 /* Normal weight */
 .paged-content .font-weight-normal {
     font-weight: normal !important;
+}
+
+/* Light weight */
+.paged-content .font-weight-light {
+    font-weight: 300 !important;
+}
+
+/* Thin weight */
+.paged-content .font-weight-thin {
+    font-weight: 100 !important;
 }
 
 /* Italic */
