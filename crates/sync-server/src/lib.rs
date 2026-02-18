@@ -23,7 +23,6 @@ pub fn create_router(data_dir: PathBuf) -> Router {
 
     routes::router()
         .layer(cors)
-        // Allow up to 100MB request bodies for large LN data
-        .layer(DefaultBodyLimit::max(100 * 1024 * 1024))
+        .layer(DefaultBodyLimit::disable())
         .with_state(state)
 }
