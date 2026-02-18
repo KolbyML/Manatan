@@ -64,6 +64,21 @@ export interface LNMetadata {
     hasProgress?: boolean;
     lastModified?: number;
     syncVersion?: number;
+    language?: string;
+    categoryIds: string[];
+}
+
+export interface LnCategory {
+    id: string;
+    name: string;
+    order: number;
+    createdAt: number;
+    lastModified: number;
+}
+
+export interface LnCategoryMetadata {
+    sortBy: string;
+    sortDesc: boolean;
 }
 
 export interface LNParsedBook {
@@ -89,6 +104,8 @@ export interface SyncPayload {
     lnMetadata: Record<string, LNMetadata>;
     lnContent?: Record<string, LNParsedBook>;
     lnFiles?: Record<string, string>;
+    lnCategories?: Record<string, LnCategory>;
+    lnCategoryMetadata?: Record<string, LnCategoryMetadata>;
     deletedBookIds?: string[];
     deletedFileRefs?: FileReference[];
 }

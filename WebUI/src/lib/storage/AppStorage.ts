@@ -135,6 +135,10 @@ export interface LNMetadata {
 
     // For library display
     hasProgress?: boolean;
+
+    // Language and categories
+    language?: string;
+    categoryIds: string[];
 }
 
 export interface LNProgress {
@@ -176,6 +180,19 @@ export interface LNParsedBook {
     chapters: string[];
     imageBlobs: Record<string, Blob>;
     chapterFilenames: string[];
+}
+
+export interface LnCategory {
+    id: string;
+    name: string;
+    order: number;
+    createdAt: number;
+    lastModified: number;
+}
+
+export interface LnCategoryMetadata {
+    sortBy: string;
+    sortDesc: boolean;
 }
 
 // ============================================================================
@@ -228,6 +245,20 @@ export class AppStorage {
         name: 'Manatan',
         storeName: 'ln_progress',
         description: 'Reading progress',
+    });
+
+    // LN Categories
+    static readonly lnCategories = localforage.createInstance({
+        name: 'Manatan',
+        storeName: 'ln_categories',
+        description: 'Light Novel categories',
+    });
+
+    // LN Category metadata (sort settings per category)
+    static readonly lnCategoryMetadata = localforage.createInstance({
+        name: 'Manatan',
+        storeName: 'ln_category_metadata',
+        description: 'Light Novel category metadata',
     });
 
     // Custom imported fonts
@@ -466,5 +497,132 @@ export class AppStorage {
         if (!metadata) return false;
 
         return metadata.stats.blockMaps && metadata.stats.blockMaps.length > 0;
+    }
+
+    // ========================================================================
+    // Migration Methods
+    // ========================================================================
+
+    static async migrateLnMetadata(): Promise<void> {
+        const keys = await this.lnMetadata.keys();
+        
+        for (const key of keys) {
+            const metadata = await this.lnMetadata.getItem<LNMetadata>(key as string);
+            if (!metadata) continue;
+
+            let needsUpdate = false;
+            const migrated = { ...metadata };
+
+            if (migrated.language === undefined) {
+                migrated.language = 'unknown';
+                needsUpdate = true;
+            }
+
+            if (!migrated.categoryIds) {
+                migrated.categoryIds = [];
+                needsUpdate = true;
+            }
+
+            if (needsUpdate) {
+                await this.lnMetadata.setItem(key as string, migrated);
+            }
+        }
+    }
+
+    // ========================================================================
+    // Category Methods
+    // ========================================================================
+
+    static async getLnCategories(): Promise<LnCategory[]> {
+        const keys = await this.lnCategories.keys();
+        const categories: LnCategory[] = [];
+
+        for (const key of keys) {
+            const category = await this.lnCategories.getItem<LnCategory>(key as string);
+            if (category) {
+                categories.push(category);
+            }
+        }
+
+        return categories.sort((a, b) => a.order - b.order);
+    }
+
+    static async getLnCategory(categoryId: string): Promise<LnCategory | null> {
+        try {
+            return await this.lnCategories.getItem<LnCategory>(categoryId);
+        } catch {
+            return null;
+        }
+    }
+
+    static async saveLnCategory(category: LnCategory): Promise<void> {
+        await this.lnCategories.setItem(category.id, category);
+    }
+
+    static async createLnCategory(name: string): Promise<LnCategory> {
+        const categories = await this.getLnCategories();
+        const maxOrder = categories.reduce((max, c) => Math.max(max, c.order), -1);
+        
+        const newCategory: LnCategory = {
+            id: `lncat_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+            name,
+            order: maxOrder + 1,
+            createdAt: Date.now(),
+            lastModified: Date.now(),
+        };
+
+        await this.saveLnCategory(newCategory);
+        return newCategory;
+    }
+
+    static async updateLnCategory(categoryId: string, updates: Partial<LnCategory>): Promise<void> {
+        const existing = await this.getLnCategory(categoryId);
+        if (!existing) return;
+
+        await this.lnCategories.setItem(categoryId, {
+            ...existing,
+            ...updates,
+            lastModified: Date.now(),
+        });
+    }
+
+    static async deleteLnCategory(categoryId: string): Promise<void> {
+        await this.lnCategories.removeItem(categoryId);
+        await this.lnCategoryMetadata.removeItem(categoryId);
+
+        const keys = await this.lnMetadata.keys();
+        for (const key of keys) {
+            const metadata = await this.lnMetadata.getItem<LNMetadata>(key as string);
+            if (metadata && metadata.categoryIds?.includes(categoryId)) {
+                metadata.categoryIds = metadata.categoryIds.filter(id => id !== categoryId);
+                await this.lnMetadata.setItem(key as string, metadata);
+            }
+        }
+    }
+
+    static async getLnCategoryMetadata(categoryId: string): Promise<LnCategoryMetadata | null> {
+        try {
+            return await this.lnCategoryMetadata.getItem<LnCategoryMetadata>(categoryId);
+        } catch {
+            return null;
+        }
+    }
+
+    static async setLnCategoryMetadata(categoryId: string, metadata: LnCategoryMetadata): Promise<void> {
+        await this.lnCategoryMetadata.setItem(categoryId, metadata);
+    }
+
+    static async getAllLnCategoryMetadata(): Promise<Record<string, LnCategoryMetadata>> {
+        const keys = await this.lnCategoryMetadata.keys();
+        const metadata: Record<string, LnCategoryMetadata> = {};
+
+        for (const key of keys) {
+            const catMeta = await this.lnCategoryMetadata.getItem<LnCategoryMetadata>(key as string);
+            if (catMeta) {
+                metadata[key as string] = catMeta;
+            }
+        }
+
+        return metadata;
     }
 }
