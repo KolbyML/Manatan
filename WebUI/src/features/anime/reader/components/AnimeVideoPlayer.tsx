@@ -18,6 +18,7 @@ import DialogTitle from '@mui/material/DialogTitle';
 import MenuItem from '@mui/material/MenuItem';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
+import { Fragment } from 'react';
 import Slider from '@mui/material/Slider';
 import Menu from '@mui/material/Menu';
 import CircularProgress from '@mui/material/CircularProgress';
@@ -75,7 +76,7 @@ import {
     resolveWordAudioUrl,
 } from '@/Manatan/utils/wordAudio';
 import { DictionaryResult, WordAudioSource, WordAudioSourceSelection } from '@/Manatan/types.ts';
-import { StructuredContent } from '@/Manatan/components/DictionaryView.tsx';
+import { StructuredContent, DictionaryView } from '@/Manatan/components/DictionaryView.tsx';
 import { PronunciationSection, extractPronunciationData } from '@/Manatan/components/Pronunciation.tsx';
 import { makeToast } from '@/base/utils/Toast.ts';
 import { MediaQuery } from '@/base/utils/MediaQuery.tsx';
@@ -727,7 +728,7 @@ export const AnimeVideoPlayer = ({
     const [dictionaryVisible, setDictionaryVisible] = useState(false);
     const [dictionaryResults, setDictionaryResults] = useState<DictionaryResult[]>([]);
     const [dictionaryLoading, setDictionaryLoading] = useState(false);
-    const [, setDictionarySystemLoading] = useState(false);
+    const [dictionarySystemLoading, setDictionarySystemLoading] = useState(false);
     const [, setDictionaryQuery] = useState('');
     const [dictionaryHistory, setDictionaryHistory] = useState<{ term: string; results: DictionaryResult[]; isLoading: boolean; systemLoading: boolean }[]>([]);
     const [dictionaryHistoryIndex, setDictionaryHistoryIndex] = useState(-1);
@@ -2942,6 +2943,10 @@ export const AnimeVideoPlayer = ({
             setIsOverlayVisible(false);
             dictionaryOpenedByHoverRef.current = source === 'hover';
 
+            const newEntry = { term: text, results: [], isLoading: true, systemLoading: false };
+            setDictionaryHistory([newEntry]);
+            setDictionaryHistoryIndex(0);
+
             const requestId = dictionaryRequestRef.current + 1;
             dictionaryRequestRef.current = requestId;
 
@@ -2954,6 +2959,17 @@ export const AnimeVideoPlayer = ({
             if (dictionaryRequestRef.current !== requestId) {
                 return;
             }
+            const loadedResults = results === 'loading' ? [] : (results || []);
+            const isSystemLoading = results === 'loading';
+            
+            setDictionaryHistory(prev => {
+                const newHistory = [...prev];
+                if (newHistory.length > 0) {
+                    newHistory[0] = { ...newHistory[0], results: loadedResults, isLoading: false, systemLoading: isSystemLoading };
+                }
+                return newHistory;
+            });
+            
             const maxHistory = settings.yomitanLookupMaxHistory || 10;
             const cleanText = cleanPunctuation(text, true).trim();
             if (results === 'loading') {
@@ -3258,6 +3274,163 @@ export const AnimeVideoPlayer = ({
         }
     }, [dictionaryVisible, hoverLookupEnabled, settings.animeSubtitleHoverAutoResume]);
 
+    const cleanPunctuation = (text: string, aggressive = false): string => {
+        const punctuation = aggressive
+            ? /[【】《》「」『』［］〔〕｛｝()（）〈〉≪≫「」『』【】〖〗〘〙〚〛°′″℃￥＄€£¥、。…‥・：；！？・\s]/g
+            : /[【】《》「」『』［］〔〕｛｝()（）〈〉≪≫「」『』【】〖〗〘〙〚〛]/g;
+        return text.replace(punctuation, '');
+    };
+
+    const handleDefinitionLink = useCallback(async (href: string, text: string) => {
+        const safeFallback = text.trim();
+        const trimmedHref = href.trim();
+        let lookupText = safeFallback;
+
+        if (trimmedHref) {
+            const extractQuery = (params: URLSearchParams) =>
+                params.get('query') || params.get('text') || params.get('term') || params.get('q') || '';
+
+            if (trimmedHref.startsWith('http://') || trimmedHref.startsWith('https://')) {
+                try {
+                    const parsed = new URL(trimmedHref);
+                    const queryText = extractQuery(parsed.searchParams);
+                    if (queryText) lookupText = queryText;
+                } catch (err) {
+                    console.warn('Failed to parse http link', err);
+                }
+            } else if (trimmedHref.startsWith('?') || trimmedHref.includes('?')) {
+                const queryString = trimmedHref.startsWith('?')
+                    ? trimmedHref.slice(1)
+                    : trimmedHref.slice(trimmedHref.indexOf('?') + 1);
+                const params = new URLSearchParams(queryString);
+                const queryText = extractQuery(params);
+                if (queryText) lookupText = queryText;
+            } else if (trimmedHref.startsWith('term://')) {
+                lookupText = decodeURIComponent(trimmedHref.slice('term://'.length));
+            } else if (trimmedHref.startsWith('yomitan://')) {
+                try {
+                    const parsed = new URL(trimmedHref);
+                    const queryText = extractQuery(parsed.searchParams);
+                    if (queryText) lookupText = queryText;
+                    else lookupText = decodeURIComponent(parsed.pathname.replace(/^\//, ''));
+                } catch (err) {
+                    console.warn('Failed to parse yomitan link', err);
+                }
+            } else if (trimmedHref.startsWith('/lookup?text=')) {
+                const match = trimmedHref.match(/\/lookup\?text=([^&]+)/);
+                if (match) lookupText = decodeURIComponent(match[1]);
+            } else {
+                try {
+                    lookupText = decodeURIComponent(trimmedHref);
+                } catch (err) {
+                    lookupText = safeFallback || trimmedHref;
+                }
+            }
+        }
+
+        const cleanText = cleanPunctuation(lookupText, true).trim();
+        if (!cleanText) return;
+
+        const maxHistory = settings.yomitanLookupMaxHistory || 10;
+        const newEntry = { term: cleanText, results: [], isLoading: true, systemLoading: false };
+        setDictionaryHistory(prev => {
+            const newHistory = prev.slice(0, dictionaryHistoryIndex + 1);
+            newHistory.push(newEntry);
+            if (newHistory.length > maxHistory) newHistory.shift();
+            return newHistory;
+        });
+        setDictionaryHistoryIndex(prev => Math.min(prev + 1, maxHistory - 1));
+
+        dictionaryRequestRef.current += 1;
+        const requestId = dictionaryRequestRef.current;
+        
+        setDictionaryVisible(true);
+        setIsOverlayVisible(false);
+        dictionaryOpenedByHoverRef.current = false;
+        setDictionaryResults([]);
+        setDictionaryLoading(true);
+        setDictionarySystemLoading(false);
+        
+        const results = await lookupYomitan(
+            cleanText,
+            0,
+            settings.resultGroupingMode,
+            settings.yomitanLanguage
+        );
+        if (dictionaryRequestRef.current !== requestId) {
+            return;
+        }
+        const loadedResults = results === 'loading' ? [] : (results || []);
+        const isSystemLoading = results === 'loading';
+
+        setDictionaryHistory(prev => {
+            const newHistory = [...prev];
+            const idx = newHistory.findIndex(e => e.term === cleanText && e.isLoading);
+            if (idx >= 0) {
+                newHistory[idx] = { ...newHistory[idx], results: loadedResults, isLoading: false, systemLoading: isSystemLoading };
+            }
+            return newHistory;
+        });
+        setDictionaryResults(loadedResults);
+        setDictionaryLoading(false);
+        setDictionarySystemLoading(isSystemLoading);
+        if (loadedResults.length > 0) {
+            applyDictionaryHighlight(loadedResults[0]?.matchLen);
+        }
+    }, [settings.resultGroupingMode, settings.yomitanLanguage, settings.yomitanLookupMaxHistory, dictionaryHistoryIndex]);
+
+    const handleWordClick = useCallback(async (text: string, position: number) => {
+        const cleanText = text.trim();
+        if (!cleanText) return;
+
+        const maxHistory = settings.yomitanLookupMaxHistory || 10;
+        const newEntry = { term: cleanText, results: [], isLoading: true, systemLoading: false };
+        setDictionaryHistory(prev => {
+            const newHistory = prev.slice(0, dictionaryHistoryIndex + 1);
+            newHistory.push(newEntry);
+            if (newHistory.length > maxHistory) newHistory.shift();
+            return newHistory;
+        });
+        setDictionaryHistoryIndex(prev => Math.min(prev + 1, maxHistory - 1));
+
+        dictionaryRequestRef.current += 1;
+        const requestId = dictionaryRequestRef.current;
+        
+        setDictionaryVisible(true);
+        setIsOverlayVisible(false);
+        dictionaryOpenedByHoverRef.current = false;
+        setDictionaryResults([]);
+        setDictionaryLoading(true);
+        setDictionarySystemLoading(false);
+        
+        const results = await lookupYomitan(
+            cleanText,
+            position,
+            settings.resultGroupingMode,
+            settings.yomitanLanguage
+        );
+        if (dictionaryRequestRef.current !== requestId) {
+            return;
+        }
+        const loadedResults = results === 'loading' ? [] : (results || []);
+        const isSystemLoading = results === 'loading';
+
+        setDictionaryHistory(prev => {
+            const newHistory = [...prev];
+            const idx = newHistory.findIndex(e => e.term === cleanText && e.isLoading);
+            if (idx >= 0) {
+                newHistory[idx] = { ...newHistory[idx], results: loadedResults, isLoading: false, systemLoading: isSystemLoading };
+            }
+            return newHistory;
+        });
+        setDictionaryResults(loadedResults);
+        setDictionaryLoading(false);
+        setDictionarySystemLoading(isSystemLoading);
+        if (loadedResults.length > 0) {
+            applyDictionaryHighlight(loadedResults[0]?.matchLen);
+        }
+    }, [settings.resultGroupingMode, settings.yomitanLanguage, settings.yomitanLookupMaxHistory, dictionaryHistoryIndex]);
+
     useEffect(() => {
         return () => {
             if (hoverLookupTimerRef.current !== null) {
@@ -3295,6 +3468,8 @@ export const AnimeVideoPlayer = ({
         setHighlightedSubtitle(null);
         closeWordAudioMenu();
         dictionaryOpenedByHoverRef.current = false;
+        setDictionaryHistory([]);
+        setDictionaryHistoryIndex(-1);
         if (!video || !shouldResume) {
             setIsOverlayVisible(previousOverlayVisible);
             return;
@@ -4490,6 +4665,7 @@ export const AnimeVideoPlayer = ({
                     <Typography variant="body2">{statusMessage}</Typography>
                 </Box>
             )}
+            </Box>
             <Stack
                 sx={{
                     position: 'absolute',
@@ -4576,377 +4752,218 @@ export const AnimeVideoPlayer = ({
                             p: 2,
                             overflowY: 'auto',
                             zIndex: 4,
-                            outline: 'none',
+                            border: `1px solid ${popupTheme.border}`,
+                            borderRadius: '8px',
+                            boxShadow: '0 8px 24px rgba(0,0,0,0.5)',
                         }}
                         onClick={(event) => {
                             event.stopPropagation();
                             closeWordAudioMenu();
                         }}
                     >
-                        <Stack spacing={1}>
-                            {(settings.yomitanLookupNavigationMode === 'tabs' ? dictionaryHistory.length > 1 : dictionaryHistoryIndex > 0) && (
-                                <Box sx={{ mb: 1 }}>
-                                    {settings.yomitanLookupNavigationMode === 'tabs' ? (
-                                        <Box sx={{ display: 'flex', gap: 0.5, overflowX: 'auto', pb: 0.5, alignItems: 'center' }}>
-                                            {dictionaryHistory.map((entry, i) => (
-                                                <Fragment key={i}>
-                                                    {i > 0 && (
-                                                        <Typography sx={{ color: popupTheme.secondary, fontSize: '0.7em', flexShrink: 0 }}>
-                                                            →
-                                                        </Typography>
-                                                    )}
-                                                    <Button
-                                                        size="small"
-                                                        onClick={() => navigateToDictionaryHistory(i)}
+                        <DictionaryView
+                            results={processedDictionaryResults}
+                            isLoading={dictionaryLoading}
+                            systemLoading={dictionarySystemLoading}
+                            onLinkClick={handleDefinitionLink}
+                            onWordClick={handleWordClick}
+                            context={dictionaryContext}
+                            variant="popup"
+                            popupTheme={popupTheme}
+                            layout="horizontal"
+                            renderHistoryNav={() => {
+                                if (!settings.yomitanLookupNavigationMode || dictionaryHistory.length <= 1) return null;
+                                const navMode = settings.yomitanLookupNavigationMode;
+                                if (navMode === 'tabs') {
+                                    return (
+                                        <div style={{ display: 'flex', gap: '3px', alignItems: 'center', flexWrap: 'wrap' }}>
+                                            {dictionaryHistory.map((h, hi) => (
+                                                <Fragment key={hi}>
+                                                    {hi > 0 && <span style={{ color: popupTheme.secondary, fontSize: '0.65rem' }}>→</span>}
+                                                    <Box
+                                                        component="button"
+                                                        onClick={() => navigateToDictionaryHistory(hi)}
                                                         sx={{
-                                                            px: 1,
+                                                            px: 0.5,
                                                             py: 0.25,
-                                                            borderRadius: 1,
+                                                            borderRadius: '3px',
                                                             border: 'none',
-                                                            background: i === dictionaryHistoryIndex ? popupTheme.accent : popupTheme.hoverBg,
-                                                            color: i === dictionaryHistoryIndex ? '#fff' : popupTheme.fg,
+                                                            background: hi === dictionaryHistoryIndex ? popupTheme.accent : popupTheme.hoverBg,
+                                                            color: hi === dictionaryHistoryIndex ? '#fff' : popupTheme.fg,
                                                             cursor: 'pointer',
-                                                            fontSize: '0.75em',
-                                                            minWidth: 'auto',
-                                                            maxWidth: '100px',
+                                                            fontSize: '0.7rem',
+                                                            maxWidth: '60px',
                                                             overflow: 'hidden',
                                                             textOverflow: 'ellipsis',
                                                             whiteSpace: 'nowrap',
-                                                            flexShrink: 0,
-                                                            '&:hover': {
-                                                                background: i === dictionaryHistoryIndex ? popupTheme.accent : popupTheme.hoverBg,
-                                                            },
                                                         }}
+                                                        title={h.term}
                                                     >
-                                                        {entry.term.slice(0, 12)}
-                                                        {entry.term.length > 12 ? '...' : ''}
-                                                    </Button>
+                                                        {h.term.slice(0, 8)}
+                                                        {h.term.length > 8 ? '…' : ''}
+                                                    </Box>
                                                 </Fragment>
                                             ))}
-                                        </Box>
-                                    ) : (
-                                        dictionaryHistoryIndex > 0 ? (
-                                            <Button
-                                                size="small"
-                                                onClick={goBackDictionary}
-                                                sx={{
-                                                    px: 1,
-                                                    py: 0.25,
-                                                    borderRadius: 1,
-                                                    border: 'none',
-                                                    background: popupTheme.accent,
-                                                    color: '#fff',
-                                                    cursor: 'pointer',
-                                                    fontSize: '0.75em',
-                                                }}
-                                            >
-                                                ← Back
-                                            </Button>
-                                        ) : null
-                                    )}
-                                </Box>
-                            )}
-                            {isDictionaryLoading && (
-                                <Typography variant="body2" sx={{ textAlign: 'center', color: popupTheme.secondary, py: 2 }}>
-                                    Scanning…
-                                </Typography>
-                            )}
-                            {!isDictionaryLoading && processedDictionaryResults.map((entry, i) => (
-                                <Box
-                                    key={`${entry.headword}-${entry.reading}-${i}`}
-                                    sx={{
-                                        mb: 2,
-                                        pb: 2,
-                                        borderBottom: i < processedDictionaryResults.length - 1
-                                            ? `1px solid ${popupTheme.border}`
-                                            : 'none',
-                                    }}
-                                    class="entry"
-                                >
-                                    <Stack
-                                        direction="row"
-                                        justifyContent="space-between"
-                                        alignItems="flex-start"
-                                        sx={{ mb: 1 }}
-                                    >
-                                        <Box sx={{ display: 'flex', flexWrap: 'wrap', alignItems: 'flex-end', gap: 1 }} class="headword headword-text-container">
-                                            <Typography variant="h5" sx={{ lineHeight: 1 }} class="headword-term">
-                                                {entry.headword}
-                                            </Typography>
-                                            {entry.reading && (
-                                                <Typography variant="caption" sx={{ color: popupTheme.secondary }} class="headword-reading">
-                                                    {entry.reading}
-                                                </Typography>
-                                            )}
-                                            {entry.termTags && entry.termTags.length > 0 && (
-                                                <Box class="headword-list-tag-list tag-list" sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
-                                                    {entry.termTags
-                                                        .flatMap((tag) => splitTagString(getTermTagLabel(tag)))
-                                                        .map((label, tagIndex) => (
-                                                            <Box
-                                                                key={`${entry.headword}-tag-${tagIndex}`}
-                                                                class="tag"
-                                                                sx={{
-                                                                    px: 0.5,
-                                                                    py: 0.1,
-                                                                    borderRadius: 0.5,
-                                                                    fontSize: '0.7rem',
-                                                                    backgroundColor: popupTheme.secondary,
-                                                                    color: popupTheme.bg,
-                                                                }}
-                                                            >
-                                                                <span class="tag-label">{label}</span>
-                                                            </Box>
-                                                        ))}
-                                                </Box>
-                                            )}
-                                        </Box>
-                                        <Stack direction="row" spacing={1} alignItems="center">
-                                            {settings.ankiConnectEnabled && (
-                                                <>
-                                                    {(!settings.ankiDeck || !settings.ankiModel) ? (
-                                                        <IconButton
-                                                            size="small"
-                                                            onClick={(event) => {
-                                                                event.stopPropagation();
-                                                                showAlert(
-                                                                    'Anki Settings Missing',
-                                                                    'Select a target Deck and Card Type in settings.',
-                                                                );
-                                                            }}
-                                                            title="Anki settings missing"
-                                                            sx={{ color: '#d04a4a' }}
-                                                            aria-label="Anki settings missing"
-                                                        >
-                                                            <CloseIcon fontSize="small" />
-                                                        </IconButton>
-                                                    ) : (
-                                                        settings.enableYomitan
-                                                            ? (() => {
-                                                                const entryKey = getDictionaryEntryKey(entry);
-                                                                if (ankiActionPending[entryKey]) {
-                                                                    return (
-                                                                        <IconButton
-                                                                            size="small"
-                                                                            disabled
-                                                                            title="Adding card..."
-                                                                            sx={{ color: '#888' }}
-                                                                            aria-label="Adding card"
-                                                                        >
-                                                                            <HourglassEmptyIcon fontSize="small" />
-                                                                        </IconButton>
-                                                                    );
-                                                                }
-                                                                const status = getAnkiEntryStatus(entry);
-                                                                if (status === 'exists') {
-                                                                    return (
-                                                                        <IconButton
-                                                                            size="small"
-                                                                            onClick={(event) => {
-                                                                                event.stopPropagation();
-                                                                                handleAnkiOpen(entry);
-                                                                            }}
-                                                                            title="Open in Anki"
-                                                                            sx={{ color: '#2ecc71' }}
-                                                                            aria-label="Open in Anki"
-                                                                        >
-                                                                            <MenuBookIcon sx={{ fontSize: 22, transform: 'translateY(-0.5px)' }} />
-                                                                        </IconButton>
-                                                                    );
-                                                                }
-                                                                if (status === 'missing') {
-                                                                    return (
-                                                                        <IconButton
-                                                                            size="small"
-                                                                            onClick={(event) => {
-                                                                                event.stopPropagation();
-                                                                                handleAnkiAdd(entry);
-                                                                            }}
-                                                                            title="Add to Anki"
-                                                                            sx={{ color: '#2ecc71' }}
-                                                                            aria-label="Add to Anki"
-                                                                        >
-                                                                            <AddCircleOutlineIcon
-                                                                                sx={{
-                                                                                    fontSize: 22,
-                                                                                    '& path': {
-                                                                                        transform: 'scale(0.9167)',
-                                                                                        transformOrigin: 'center',
-                                                                                        transformBox: 'fill-box',
-                                                                                    },
-                                                                                }}
-                                                                            />
-                                                                        </IconButton>
-                                                                    );
-                                                                }
-                                                                return (
-                                                                    <IconButton
-                                                                        size="small"
-                                                                        disabled
-                                                                        title="Checking duplicates"
-                                                                        sx={{ color: '#888' }}
-                                                                        aria-label="Checking duplicates"
-                                                                    >
-                                                                        <HourglassEmptyIcon fontSize="small" />
-                                                                    </IconButton>
-                                                                );
-                                                            })()
-                                                            : (() => {
-                                                                const entryKey = getDictionaryEntryKey(entry);
-                                                                const isPending = ankiActionPending[entryKey];
-                                                                return (
-                                                                    <IconButton
-                                                                        size="small"
-                                                                        onClick={(event) => {
-                                                                            event.stopPropagation();
-                                                                            if (isPending) {
-                                                                                return;
-                                                                            }
-                                                                            handleAnkiReplaceLast(entry);
-                                                                        }}
-                                                                        title={isPending ? 'Updating card...' : 'Update last card'}
-                                                                        sx={{ color: isPending ? '#888' : '#4fb0ff' }}
-                                                                        disabled={isPending}
-                                                                        aria-label={isPending ? 'Updating card' : 'Update last card'}
-                                                                    >
-                                                                        <NoteAddIcon fontSize="small" />
-                                                                    </IconButton>
-                                                                );
-                                                            })()
-                                                    )}
-                                                </>
-                                            )}
-                                            <IconButton
-                                                size="small"
-                                                onClick={(event) => {
-                                                    event.stopPropagation();
-                                                    handlePlayWordAudio(entry);
-                                                }}
-                                                onContextMenu={(event) => openWordAudioMenu(event, entry)}
-                                                title="Play word audio (right-click for sources)"
-                                                aria-label="Play word audio"
-                                                disabled={!wordAudioOptions.length}
-                                                sx={{
-                                                    color: wordAudioOptions.length ? popupTheme.accent : popupTheme.secondary,
-                                                }}
-                                            >
-                                                <VolumeUpIcon sx={{ fontSize: 22 }} />
-                                            </IconButton>
-                                        </Stack>
-                                    </Stack>
-                                    {entry.frequencies && entry.frequencies.length > 0 && (
+                                        </div>
+                                    );
+                                }
+                                if (dictionaryHistoryIndex > 0) {
+                                    return (
                                         <Box
-                                            class="entry-body frequency-group-list"
+                                            component="button"
+                                            onClick={() => navigateToDictionaryHistory(dictionaryHistoryIndex - 1)}
                                             sx={{
-                                                display: 'flex',
-                                                flexWrap: 'wrap',
-                                                gap: 0.75,
-                                                mb: 1,
+                                                px: 0.5,
+                                                py: 0.25,
+                                                borderRadius: '3px',
+                                                border: 'none',
+                                                background: popupTheme.accent,
+                                                color: '#fff',
+                                                cursor: 'pointer',
+                                                fontSize: '0.7rem',
                                             }}
                                         >
-                                            {entry.frequencies.map((freq, freqIndex) => (
-                                                <Box
-                                                    key={`${entry.headword}-freq-${freqIndex}`}
-                                                    class="frequency-item"
-                                                    sx={{
-                                                        display: 'inline-flex',
-                                                        fontSize: '0.7rem',
-                                                        borderRadius: 0.75,
-                                                        overflow: 'hidden',
-                                                        border: `1px solid ${popupTheme.border}`,
+                                            ←
+                                        </Box>
+                                    );
+                                }
+                                return null;
+                            }}
+                            renderAnkiButtons={(entry) => (
+                                <Stack direction="row" spacing={1} alignItems="center">
+                                    {settings.ankiConnectEnabled && (
+                                        <>
+                                            {(!settings.ankiDeck || !settings.ankiModel) ? (
+                                                <IconButton
+                                                    size="small"
+                                                    onClick={(event) => {
+                                                        event.stopPropagation();
+                                                        showAlert(
+                                                            'Anki Settings Missing',
+                                                            'Select a target Deck and Card Type in settings.',
+                                                        );
                                                     }}
+                                                    title="Anki settings missing"
+                                                    sx={{ color: '#d04a4a' }}
+                                                    aria-label="Anki settings missing"
                                                 >
-                                                    <Box
-                                                        sx={{
-                                                            backgroundColor: '#2ecc71',
-                                                            color: '#000',
-                                                            fontWeight: 'bold',
-                                                            px: 0.75,
-                                                            py: 0.2,
-                                                        }}
-                                                    >
-                                                        {freq.dictionaryName}
-                                                    </Box>
-                                                    <Box
-                                                        sx={{
-                                                            backgroundColor: popupTheme.hoverBg,
-                                                            color: popupTheme.fg,
-                                                            px: 0.75,
-                                                            py: 0.2,
-                                                            fontWeight: 'bold',
-                                                        }}
-                                                    >
-                                                        {freq.value}
-                                                    </Box>
-                                                </Box>
-                                            ))}
-                                        </Box>
-                                    )}
-                                    {(() => {
-                                        const { pitchAccents, ipa } = extractPronunciationData(entry);
-                                        if (pitchAccents.length === 0 && ipa.length === 0) return null;
-                                        return (
-                                            <PronunciationSection
-                                                reading={entry.reading || entry.headword}
-                                                pitchAccents={pitchAccents}
-                                                ipa={ipa}
-                                                showGraph={settings.yomitanShowPitchGraph ?? true}
-                                                showText={settings.yomitanShowPitchText ?? true}
-                                                showNotation={settings.yomitanShowPitchNotation ?? true}
-                                            />
-                                        );
-                                    })()}
-                                    {entry.glossary && entry.glossary.length > 0 && (
-                                        <Box class="entry-body gloss-list definition-list">
-                                            {entry.glossary.map((def, defIndex) => (
-                                                <Stack key={`${entry.headword}-def-${defIndex}`} sx={{ mb: 1 }} class="gloss-item definition-item" data-dictionary={def.dictionaryName}>
-                                                    <Stack direction="row" spacing={1} sx={{ mb: 0.5 }} class="definition-tag-list tag-list">
-                                                        <span class="gloss-separator" style={{ fontWeight: 'bold' }}>{defIndex + 1}.</span>
-                                                        {normalizeTagList(def.tags ?? []).map((tag, tagIndex) => (
-                                                            <Box
-                                                                key={`${entry.headword}-def-${defIndex}-tag-${tagIndex}`}
-                                                                class="tag"
-                                                                sx={{
-                                                                    px: 0.5,
-                                                                    py: 0.1,
-                                                                    borderRadius: 0.5,
-                                                                    fontSize: '0.7rem',
-                                                                }}
+                                                    <CloseIcon fontSize="small" />
+                                                </IconButton>
+                                            ) : (
+                                                settings.enableYomitan
+                                                    ? (() => {
+                                                        const entryKey = getDictionaryEntryKey(entry);
+                                                        if (ankiActionPending[entryKey]) {
+                                                            return (
+                                                                <IconButton
+                                                                    size="small"
+                                                                    disabled
+                                                                    title="Adding card..."
+                                                                    sx={{ color: '#888' }}
+                                                                    aria-label="Adding card"
+                                                                >
+                                                                    <HourglassEmptyIcon fontSize="small" />
+                                                                </IconButton>
+                                                            );
+                                                        }
+                                                        const status = getAnkiEntryStatus(entry);
+                                                        if (status === 'exists') {
+                                                            return (
+                                                                <IconButton
+                                                                    size="small"
+                                                                    onClick={(event) => {
+                                                                        event.stopPropagation();
+                                                                        handleAnkiOpen(entry);
+                                                                    }}
+                                                                    title="Open in Anki"
+                                                                    sx={{ color: '#2ecc71' }}
+                                                                    aria-label="Open in Anki"
+                                                                >
+                                                                    <MenuBookIcon sx={{ fontSize: 22, transform: 'translateY(-0.5px)' }} />
+                                                                </IconButton>
+                                                            );
+                                                        }
+                                                        if (status === 'missing') {
+                                                            return (
+                                                                <IconButton
+                                                                    size="small"
+                                                                    onClick={(event) => {
+                                                                        event.stopPropagation();
+                                                                        handleAnkiAdd(entry);
+                                                                    }}
+                                                                    title="Add to Anki"
+                                                                    sx={{ color: '#2ecc71' }}
+                                                                    aria-label="Add to Anki"
+                                                                >
+                                                                    <AddCircleOutlineIcon
+                                                                        sx={{
+                                                                            fontSize: 22,
+                                                                            '& path': {
+                                                                                transform: 'scale(0.9167)',
+                                                                                transformOrigin: 'center',
+                                                                                transformBox: 'fill-box',
+                                                                            },
+                                                                        }}
+                                                                    />
+                                                                </IconButton>
+                                                            );
+                                                        }
+                                                        return (
+                                                            <IconButton
+                                                                size="small"
+                                                                disabled
+                                                                title="Checking duplicates"
+                                                                sx={{ color: '#888' }}
+                                                                aria-label="Checking duplicates"
                                                             >
-                                                                <span class="tag-label">{tag}</span>
-                                                            </Box>
-                                                        ))}
-                                                        <Box
-                                                            class="tag tag-label"
-                                                            sx={{
-                                                                px: 0.5,
-                                                                py: 0.1,
-                                                                borderRadius: 0.5,
-                                                                fontSize: '0.7rem',
-                                                            }}
-                                                        >
-                                                            {def.dictionaryName}
-                                                        </Box>
-                                                    </Stack>
-                                                    <Box sx={{ whiteSpace: 'pre-wrap' }} class="definition-item-inner definition-item-content gloss-content">
-                                                        {def.content.map((jsonString, idx) => (
-                                                            <Box key={`${entry.headword}-def-${defIndex}-${idx}`} sx={{ mb: 0.5 }}>
-                                                                <StructuredContent contentString={jsonString} dictionaryName={def.dictionaryName} onLinkClick={handleDictionaryDefinitionLink} onWordClick={handleDictionaryWordClick} />
-                                                            </Box>
-                                                        ))}
-                                                    </Box>
-                                                </Stack>
-                                            ))}
-                                        </Box>
+                                                                <HourglassEmptyIcon fontSize="small" />
+                                                            </IconButton>
+                                                        );
+                                                    })()
+                                                    : (() => {
+                                                        const entryKey = getDictionaryEntryKey(entry);
+                                                        const isPending = ankiActionPending[entryKey];
+                                                        return (
+                                                            <IconButton
+                                                                size="small"
+                                                                onClick={(event) => {
+                                                                    event.stopPropagation();
+                                                                    if (isPending) {
+                                                                        return;
+                                                                    }
+                                                                    handleAnkiReplaceLast(entry);
+                                                                }}
+                                                                title={isPending ? 'Updating card...' : 'Update last card'}
+                                                                sx={{ color: isPending ? '#888' : '#4fb0ff' }}
+                                                                disabled={isPending}
+                                                                aria-label={isPending ? 'Updating card' : 'Update last card'}
+                                                            >
+                                                                <NoteAddIcon fontSize="small" />
+                                                            </IconButton>
+                                                        );
+                                                    })()
+                                            )}
+                                        </>
                                     )}
-                                </Box>
-                            ))}
-                            {!isDictionaryLoading && processedDictionaryResults.length === 0 && (
-                                <Typography variant="body2" sx={{ textAlign: 'center', color: popupTheme.secondary }}>
-                                    No results found
-                                </Typography>
+                                    <IconButton
+                                        size="small"
+                                        onClick={(event) => {
+                                            event.stopPropagation();
+                                            handlePlayWordAudio(entry);
+                                        }}
+                                        onContextMenu={(event) => openWordAudioMenu(event, entry)}
+                                        title="Play word audio (right-click for sources)"
+                                        aria-label="Play word audio"
+                                        disabled={!wordAudioOptions.length}
+                                        sx={{
+                                            color: wordAudioOptions.length ? '#7cc8ff' : '#555',
+                                        }}
+                                    >
+                                        <VolumeUpIcon sx={{ fontSize: 22 }} />
+                                    </IconButton>
+                                </Stack>
                             )}
-                        </Stack>
+                        />
                     </Box>
                 </>
             )}
@@ -5777,7 +5794,6 @@ export const AnimeVideoPlayer = ({
                     </Dialog>
                 </Box>
             )}
-                </Box>
             </Box>
         </Box>
     );

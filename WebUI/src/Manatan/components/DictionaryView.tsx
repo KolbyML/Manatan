@@ -82,6 +82,28 @@ const tagStyle: React.CSSProperties = {
     color: '#fff', verticalAlign: 'middle', lineHeight: '1.2'
 };
 
+const getTagStyle = (layout: 'vertical' | 'horizontal', tagBg: string, tagText: string): React.CSSProperties => {
+    if (layout === 'horizontal') {
+        return {
+            display: 'inline-block',
+            padding: '2px 4px',
+            borderRadius: '4px',
+            fontSize: '0.7rem',
+            fontWeight: 'bold',
+            marginRight: '4px',
+            color: tagText,
+            backgroundColor: tagBg,
+            verticalAlign: 'middle',
+            lineHeight: '1.2'
+        };
+    }
+    return {
+        ...tagStyle,
+        backgroundColor: tagBg,
+        color: tagText,
+    };
+};
+
 type StructuredContentColors = {
     tagBg?: string;
     tagText?: string;
@@ -760,10 +782,13 @@ interface DictionaryViewProps {
     };
     variant?: 'popup' | 'inline';
     popupTheme?: PopupTheme;
+    layout?: 'vertical' | 'horizontal';
+    renderAnkiButtons?: (entry: DictionaryResult) => React.ReactNode;
+    renderHistoryNav?: () => React.ReactNode;
 }
 
 export const DictionaryView: React.FC<DictionaryViewProps> = ({ 
-    results, isLoading, systemLoading, onLinkClick, onWordClick, context, variant = 'inline', popupTheme
+    results, isLoading, systemLoading, onLinkClick, onWordClick, context, variant = 'inline', popupTheme, layout = 'vertical', renderAnkiButtons, renderHistoryNav
 }) => {
     const isPopup = variant === 'popup';
     const muiTheme = useTheme();
@@ -782,6 +807,8 @@ export const DictionaryView: React.FC<DictionaryViewProps> = ({
         freqValueText: popupTheme.fg,
         dictTagBg: popupTheme.accent,
         dictTagText: '#fff',
+        accent: popupTheme.accent,
+        hoverBg: popupTheme.hoverBg,
     } : {
         // Popup colors (dark background - fallback)
         text: '#fff',
@@ -796,6 +823,8 @@ export const DictionaryView: React.FC<DictionaryViewProps> = ({
         freqValueText: '#eee',
         dictTagBg: '#9b59b6',
         dictTagText: '#fff',
+        accent: '#7cc8ff',
+        hoverBg: '#333',
     } : {
         // Inline colors using MUI theme
         text: muiTheme.palette.text.primary,
@@ -810,6 +839,8 @@ export const DictionaryView: React.FC<DictionaryViewProps> = ({
         freqValueText: isDark ? '#eee' : '#000',
         dictTagBg: '#9b59b6',
         dictTagText: '#fff',
+        accent: muiTheme.palette.primary.main,
+        hoverBg: isDark ? '#333' : '#f5f5f5',
     };
     const { settings } = useOCR();
     const [audioMenu, setAudioMenu] = useState<{
@@ -937,23 +968,33 @@ export const DictionaryView: React.FC<DictionaryViewProps> = ({
             )}
             {isLoading && <div style={{ textAlign: 'center', padding: '20px', color: colors.textMuted }}>Scanning...</div>}
             {!isLoading && processedEntries.map((entry, i) => (
-                <div key={i} class="entry" style={{ marginBottom: '16px', paddingBottom: '16px', borderBottom: i < processedEntries.length - 1 ? `1px solid ${colors.border}` : 'none' }}>
+                <div key={i} class="entry" style={{ marginBottom: layout === 'horizontal' ? '8px' : '16px', paddingBottom: layout === 'horizontal' ? '8px' : '16px', borderBottom: i < processedEntries.length - 1 ? `1px solid ${colors.border}` : 'none' }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '8px' }}>
-                        <div style={{ display: 'flex', alignItems: 'flex-end', flexWrap: 'wrap' }}>
-                            <div style={{ fontSize: '1.8em', lineHeight: '1', marginRight: '10px', color: colors.text }} class="headword">
-                                {entry.furigana && entry.furigana.length > 0 ? (
-                                    <ruby style={{ rubyPosition: 'over' }} class="headword-text-container">
-                                        {entry.furigana.map((seg, idx) => (
-                                            <React.Fragment key={idx}>
-                                                <span class="headword-term">{seg[0]}</span><rt style={{ fontSize: '0.5em', color: colors.textSecondary }} class="headword-reading">{seg[1]}</rt>
-                                            </React.Fragment>
-                                        ))}
-                                    </ruby>
-                                ) : (
-                                    <ruby class="headword-text-container">
+                        <div style={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: layout === 'horizontal' ? '6px' : '0' }}>
+                            {i === 0 && layout === 'horizontal' && renderHistoryNav && renderHistoryNav()}
+                            <div style={{ fontSize: layout === 'horizontal' ? '1.5rem' : '1.8em', lineHeight: '1', marginRight: layout === 'horizontal' ? '8px' : '10px', color: colors.text }} class="headword">
+                                {layout === 'horizontal' ? (
+                                    <>
                                         <span class="headword-term">{entry.headword}</span>
-                                        <rt style={{ fontSize: '0.5em', color: colors.textSecondary }} class="headword-reading">{entry.reading}</rt>
-                                    </ruby>
+                                        {entry.reading && (
+                                            <span style={{ fontSize: '0.75rem', color: colors.textSecondary, marginLeft: '4px' }} class="headword-reading">({entry.reading})</span>
+                                        )}
+                                    </>
+                                ) : (
+                                    entry.furigana && entry.furigana.length > 0 ? (
+                                        <ruby style={{ rubyPosition: 'over' }} class="headword-text-container">
+                                            {entry.furigana.map((seg, idx) => (
+                                                <React.Fragment key={idx}>
+                                                    <span class="headword-term">{seg[0]}</span><rt style={{ fontSize: '0.5em', color: colors.textSecondary }} class="headword-reading">{seg[1]}</rt>
+                                                </React.Fragment>
+                                            ))}
+                                        </ruby>
+                                    ) : (
+                                        <ruby class="headword-text-container">
+                                            <span class="headword-term">{entry.headword}</span>
+                                            <rt style={{ fontSize: '0.5em', color: colors.textSecondary }} class="headword-reading">{entry.reading}</rt>
+                                        </ruby>
+                                    )
                                 )}
                             </div>
                             {entry.termTags && entry.termTags.length > 0 && (
@@ -963,14 +1004,18 @@ export const DictionaryView: React.FC<DictionaryViewProps> = ({
                                         if (typeof label !== 'string') return [];
                                         return splitTagString(label);
                                     }).map((label, idx) => (
-                                        <span key={idx} class="tag" style={{ ...tagStyle, backgroundColor: colors.tagBg, color: colors.tagText, marginRight: 0 }}><span class="tag-label">{label}</span></span>
+                                        <span key={idx} class="tag" style={getTagStyle(layout, colors.tagBg, colors.tagText)}><span class="tag-label">{label}</span></span>
                                     ))}
                                 </div>
                             )}
                         </div>
                         <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
                             {settings.ankiConnectEnabled && (
-                                <AnkiButtons entry={entry} wordAudioSelection={wordAudioSelection} wordAudioSelectionKey={wordAudioSelectionKey} />
+                                renderAnkiButtons ? (
+                                    renderAnkiButtons(entry)
+                                ) : (
+                                    <AnkiButtons entry={entry} wordAudioSelection={wordAudioSelection} wordAudioSelectionKey={wordAudioSelectionKey} />
+                                )
                             )}
                             <button
                                 type="button"
@@ -1005,6 +1050,7 @@ export const DictionaryView: React.FC<DictionaryViewProps> = ({
                         if (pitchAccents.length === 0 && ipa.length === 0) return null;
                         return (
                             <PronunciationSection
+                                layout={layout}
                                 reading={entry.reading || entry.headword}
                                 pitchAccents={pitchAccents}
                                 ipa={ipa}
@@ -1022,9 +1068,9 @@ export const DictionaryView: React.FC<DictionaryViewProps> = ({
                                     <div style={{ flexGrow: 1 }} class="definition-item-inner definition-item-content">
                                         <div style={{ marginBottom: '4px' }} class="definition-tag-list tag-list">
                                             {normalizeTagList(def.tags || []).map((t, ti) => (
-                                                <span key={ti} class="tag" style={{ ...tagStyle, backgroundColor: colors.tagBg, color: colors.tagText }}><span class="tag-label">{t}</span></span>
+                                                <span key={ti} class="tag" style={getTagStyle(layout, colors.tagBg, colors.tagText)}><span class="tag-label">{t}</span></span>
                                             ))}
-                                            <span class="tag tag-label" style={{ ...tagStyle, backgroundColor: colors.dictTagBg, color: colors.dictTagText }}>{def.dictionaryName}</span>
+                                            <span class="tag tag-label" style={getTagStyle(layout, colors.dictTagBg, colors.dictTagText)}>{def.dictionaryName}</span>
                                         </div>
                                         <div style={{ color: colors.text, whiteSpace: 'pre-wrap' }} class="gloss-content">
                                             {def.content.map((jsonString, idx) => (
