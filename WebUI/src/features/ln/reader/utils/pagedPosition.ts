@@ -1,9 +1,11 @@
 
+import { BlockIndexMap } from '../types/block';
 import {
     getCleanTextContent,
     getCleanCharCount,
     extractContextSnippet
 } from './blockPosition';
+import { createChapterBlockLookup, calculateCharOffsetFromBlock } from './blockMap';
 
 // ============================================================================
 // Types
@@ -28,13 +30,15 @@ export interface DetectedBlock {
  * @param pageSize - Size of each page in pixels
  * @param isVertical - Whether reading direction is vertical
  * @param chapterIndex - Current chapter index (for block ID prefix)
+ * @param blockMaps - Optional blockMaps for precise character offset calculation
  */
 export function detectVisibleBlockPaged(
     container: HTMLElement,
     pageIndex: number,
     pageSize: number,
     isVertical: boolean,
-    chapterIndex: number
+    chapterIndex: number,
+    blockMaps?: BlockIndexMap[]
 ): DetectedBlock | null {
     // Get all blocks
     const allBlocks = container.querySelectorAll('[data-block-id]');
@@ -120,15 +124,23 @@ export function detectVisibleBlockPaged(
         blockLocalOffset = Math.floor(blockChars * readRatio);
     }
 
-    // Calculate chapter character offset
-    let chapterCharOffset = 0;
-    for (const block of allBlocks) {
-        if (block === bestBlock) {
-            chapterCharOffset += blockLocalOffset;
-            break;
+    // Calculate chapter character offset using blockMaps (precise!) or fallback to DOM counting
+    let chapterCharOffset: number;
+    
+    if (blockMaps && blockMaps.length > 0) {
+        const chapterLookup = createChapterBlockLookup(blockMaps, chapterIndex);
+        chapterCharOffset = calculateCharOffsetFromBlock(chapterLookup, blockId, blockLocalOffset);
+    } else {
+        // Fallback: count from DOM
+        chapterCharOffset = 0;
+        for (const block of allBlocks) {
+            if (block === bestBlock) {
+                chapterCharOffset += blockLocalOffset;
+                break;
+            }
+            const text = getCleanTextContent(block);
+            chapterCharOffset += getCleanCharCount(text);
         }
-        const text = getCleanTextContent(block);
-        chapterCharOffset += getCleanCharCount(text);
     }
 
     return {

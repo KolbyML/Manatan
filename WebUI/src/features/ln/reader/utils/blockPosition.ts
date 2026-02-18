@@ -71,48 +71,50 @@ export function calculateBlockLocalOffset(
 }
 
 /**
- * Calculate precise offset using text range detection
- * More accurate but more expensive than ratio-based calculation
+ * Calculate precise offset using caret position detection
+ * This gets the EXACT character position at the reading edge
  */
 export function calculatePreciseBlockOffset(
     block: Element,
     container: HTMLElement,
     isVertical: boolean
 ): number {
-    const range = document.createRange();
-    range.selectNodeContents(block);
-    const rects = Array.from(range.getClientRects());
-
-    if (rects.length === 0) return 0;
-
     const containerRect = container.getBoundingClientRect();
-    let lineIndex = 0;
-
+    
+    let x: number, y: number;
+    
     if (isVertical) {
-        const readingX = containerRect.right - 50;
-        for (let i = 0; i < rects.length; i++) {
-            if (rects[i].right <= readingX) {
-                lineIndex = i;
-                break;
-            }
-        }
+        x = containerRect.right - 30;
+        y = containerRect.top + containerRect.height / 2;
     } else {
-        const readingY = containerRect.top + 50;
-        for (let i = 0; i < rects.length; i++) {
-            if (rects[i].top >= readingY) {
-                lineIndex = i;
-                break;
-            }
-        }
+        x = containerRect.left + containerRect.width / 2;
+        y = containerRect.top + 30;
     }
 
-    const cleanText = getCleanTextContent(block);
-    const totalChars = cleanText.length;
+    const pos = getTextPositionAtPoint(x, y);
+    if (!pos) {
+        // Fallback to ratio-based if caret detection fails
+        return calculateBlockLocalOffset(block, container, isVertical);
+    }
 
-    if (totalChars === 0) return 0;
+    // Calculate character offset within the block
+    let offset = 0;
+    const walker = document.createTreeWalker(
+        block,
+        NodeFilter.SHOW_TEXT,
+        null
+    );
 
-    const lineRatio = lineIndex / Math.max(rects.length, 1);
-    return Math.floor(totalChars * lineRatio);
+    while (walker.nextNode()) {
+        const node = walker.currentNode as Text;
+        if (node === pos.node) {
+            offset += pos.offset;
+            break;
+        }
+        offset += node.textContent?.length || 0;
+    }
+
+    return offset;
 }
 
 /**
