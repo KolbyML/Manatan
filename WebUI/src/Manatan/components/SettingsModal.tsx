@@ -183,6 +183,8 @@ export const SettingsModal: React.FC<{ onClose: () => void }> = ({ onClose }) =>
     const yomitanPopupScaleValue = Number.isFinite(localSettings.yomitanPopupScalePercent)
         ? localSettings.yomitanPopupScalePercent
         : DEFAULT_SETTINGS.yomitanPopupScalePercent;
+    const yomitanPopupThemeValue = localSettings.yomitanPopupTheme || 'dark';
+    const animePopupThemeValue = localSettings.animePopupTheme || 'dark';
     const persistSettings = useCallback((nextSettings: typeof settings) => {
         AppStorage.local.setItem('mangatan_settings_v3', JSON.stringify(nextSettings));
         setSettings(nextSettings);
@@ -792,6 +794,18 @@ ${detail}`,
                         </div>
                         <div style={{ fontSize: '0.85em', color: '#aaa', marginTop: '6px' }}>
                             Adjust the popup dictionary size and scale.
+                        </div>
+                        <div style={{ marginTop: '12px', display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                            <label htmlFor="yomitanPopupTheme">Popup Theme</label>
+                            <select
+                                id="yomitanPopupTheme"
+                                value={yomitanPopupThemeValue}
+                                onChange={(e) => handleChange('yomitanPopupTheme', e.target.value)}
+                                style={{ ...inlineInputCompactStyle, padding: '6px 8px' }}
+                            >
+                                <option value="dark">Dark</option>
+                                <option value="light">Light</option>
+                            </select>
                         </div>
 
                         {/* Pitch Accent Display Settings */}
@@ -1477,6 +1491,16 @@ ${detail}`,
                             <div style={{ gridColumn: '1 / -1', fontSize: '0.85em', color: '#aaa' }}>
                                 Adjust the anime popup dictionary size and position. Each field has its own unit toggle and reset.
                             </div>
+                            <label htmlFor="animePopupTheme">Anime Popup Theme</label>
+                            <select
+                                id="animePopupTheme"
+                                value={animePopupThemeValue}
+                                onChange={(e) => handleChange('animePopupTheme', e.target.value)}
+                                style={{ padding: '6px 8px' }}
+                            >
+                                <option value="dark">Dark</option>
+                                <option value="light">Light</option>
+                            </select>
                             <label htmlFor="tapZonePercent">Video Tap Zone (%)</label>
                             <input
                                 id="tapZonePercent"
