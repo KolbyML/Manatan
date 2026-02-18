@@ -25,10 +25,11 @@ import { CropperModal } from '@/Manatan/components/CropperModal';
 
 export const StructuredContent: React.FC<{
     contentString: string;
+    dictionaryName?: string;
     onLinkClick?: (href: string, text: string) => void;
     onWordClick?: (text: string, position: number) => void;
-    colors?: typeof colors;
-}> = ({ contentString, onLinkClick, onWordClick, colors }) => {
+    colors?: StructuredContentColors;
+}> = ({ contentString, dictionaryName, onLinkClick, onWordClick, colors }) => {
     const parsedData = useMemo(() => {
         if (!contentString) return null;
         try {
@@ -39,7 +40,7 @@ export const StructuredContent: React.FC<{
     }, [contentString]);
 
     if (parsedData === null || parsedData === undefined) return null;
-    return <ContentNode node={parsedData} onLinkClick={onLinkClick} onWordClick={onWordClick} colors={colors} />;
+    return <ContentNode node={parsedData} dictionaryName={dictionaryName} onLinkClick={onLinkClick} onWordClick={onWordClick} colors={colors} />;
 };
 
 const getNodeText = (node: any): string => {
@@ -57,7 +58,19 @@ const tagStyle: React.CSSProperties = {
     color: '#fff', verticalAlign: 'middle', lineHeight: '1.2'
 };
 
-const ContentNode: React.FC<{ node: any; onLinkClick?: (href: string, text: string) => void; onWordClick?: (text: string, position: number) => void; colors?: typeof colors }> = ({ node, onLinkClick, onWordClick, colors }) => {
+type StructuredContentColors = {
+    tagBg?: string;
+    tagText?: string;
+    border?: string;
+};
+
+const ContentNode: React.FC<{
+    node: any;
+    dictionaryName?: string;
+    onLinkClick?: (href: string, text: string) => void;
+    onWordClick?: (text: string, position: number) => void;
+    colors?: StructuredContentColors;
+}> = ({ node, dictionaryName, onLinkClick, onWordClick, colors }) => {
     if (node === null || node === undefined) return null;
     if (typeof node === 'string' || typeof node === 'number') {
         const text = String(node);
@@ -102,8 +115,8 @@ const ContentNode: React.FC<{ node: any; onLinkClick?: (href: string, text: stri
         }
         return <>{node}</>;
     }
-    if (Array.isArray(node)) return <>{node.map((item, i) => <ContentNode key={i} node={item} onLinkClick={onLinkClick} onWordClick={onWordClick} colors={colors} />)}</>;
-    if (node.type === 'structured-content') return <ContentNode node={node.content} onLinkClick={onLinkClick} onWordClick={onWordClick} colors={colors} />;
+    if (Array.isArray(node)) return <>{node.map((item, i) => <ContentNode key={i} node={item} dictionaryName={dictionaryName} onLinkClick={onLinkClick} onWordClick={onWordClick} colors={colors} />)}</>;
+    if (node.type === 'structured-content') return <ContentNode node={node.content} dictionaryName={dictionaryName} onLinkClick={onLinkClick} onWordClick={onWordClick} colors={colors} />;
 
     if (node?.data?.content === 'attribution') return null;
 
@@ -137,15 +150,27 @@ const ContentNode: React.FC<{ node: any; onLinkClick?: (href: string, text: stri
     };
 
     switch (tag) {
-        case 'ul': return <ul style={{ ...s, ...listStyle }}><ContentNode node={content} onLinkClick={onLinkClick} onWordClick={onWordClick} colors={colors} /></ul>;
-        case 'ol': return <ol style={{ ...s, ...listStyle, listStyleType: 'decimal' }}><ContentNode node={content} onLinkClick={onLinkClick} onWordClick={onWordClick} colors={colors} /></ol>;
-        case 'li': return <li style={{ ...s }}><ContentNode node={content} onLinkClick={onLinkClick} onWordClick={onWordClick} colors={colors} /></li>;
-        case 'table': return <table style={{ ...s, ...tableStyle }}><tbody><ContentNode node={content} onLinkClick={onLinkClick} onWordClick={onWordClick} colors={colors} /></tbody></table>;
-        case 'tr': return <tr style={s}><ContentNode node={content} onLinkClick={onLinkClick} onWordClick={onWordClick} colors={colors} /></tr>;
-        case 'th': return <th style={{ ...s, ...cellStyle, fontWeight: 'bold' }}><ContentNode node={content} onLinkClick={onLinkClick} onWordClick={onWordClick} colors={colors} /></th>;
-        case 'td': return <td style={{ ...s, ...cellStyle }}><ContentNode node={content} onLinkClick={onLinkClick} onWordClick={onWordClick} colors={colors} /></td>;
-        case 'span': return <span style={spanStyle} title={titleAttr}><ContentNode node={content} onLinkClick={onLinkClick} onWordClick={onWordClick} colors={colors} /></span>;
-        case 'div': return <div style={s}><ContentNode node={content} onLinkClick={onLinkClick} onWordClick={onWordClick} colors={colors} /></div>;
+        case 'ul': return <ul style={{ ...s, ...listStyle }}><ContentNode node={content} dictionaryName={dictionaryName} onLinkClick={onLinkClick} onWordClick={onWordClick} colors={colors} /></ul>;
+        case 'ol': return <ol style={{ ...s, ...listStyle, listStyleType: 'decimal' }}><ContentNode node={content} dictionaryName={dictionaryName} onLinkClick={onLinkClick} onWordClick={onWordClick} colors={colors} /></ol>;
+        case 'li': return <li style={{ ...s }}><ContentNode node={content} dictionaryName={dictionaryName} onLinkClick={onLinkClick} onWordClick={onWordClick} colors={colors} /></li>;
+        case 'table': return <table style={{ ...s, ...tableStyle }}><tbody><ContentNode node={content} dictionaryName={dictionaryName} onLinkClick={onLinkClick} onWordClick={onWordClick} colors={colors} /></tbody></table>;
+        case 'tr': return <tr style={s}><ContentNode node={content} dictionaryName={dictionaryName} onLinkClick={onLinkClick} onWordClick={onWordClick} colors={colors} /></tr>;
+        case 'th': return <th style={{ ...s, ...cellStyle, fontWeight: 'bold' }}><ContentNode node={content} dictionaryName={dictionaryName} onLinkClick={onLinkClick} onWordClick={onWordClick} colors={colors} /></th>;
+        case 'td': return <td style={{ ...s, ...cellStyle }}><ContentNode node={content} dictionaryName={dictionaryName} onLinkClick={onLinkClick} onWordClick={onWordClick} colors={colors} /></td>;
+        case 'span': return <span style={spanStyle} title={titleAttr}><ContentNode node={content} dictionaryName={dictionaryName} onLinkClick={onLinkClick} onWordClick={onWordClick} colors={colors} /></span>;
+        case 'div': return <div style={s}><ContentNode node={content} dictionaryName={dictionaryName} onLinkClick={onLinkClick} onWordClick={onWordClick} colors={colors} /></div>;
+        case 'img': {
+            const rawPath = node.path || node.src;
+            const width = node.width;
+            const height = node.height;
+            const alt = getNodeText(content) || titleAttr || '';
+            const imgStyle: React.CSSProperties = { ...s };
+            if (width) imgStyle.maxWidth = `${width}px`;
+            if (height) imgStyle.maxHeight = `${height}px`;
+            if (!imgStyle.maxWidth && !imgStyle.maxHeight) imgStyle.maxWidth = '100%';
+            const src = rawPath && dictionaryName ? `/api/yomitan/dict-media/${encodeURIComponent(dictionaryName)}/${rawPath}` : rawPath;
+            return <img src={src} alt={alt} style={imgStyle} />;
+        }
         case 'a':
             return (
                 <a
@@ -155,10 +180,26 @@ const ContentNode: React.FC<{ node: any; onLinkClick?: (href: string, text: stri
                     rel={onLinkClick ? undefined : 'noreferrer'}
                     onClick={onLinkClick ? handleLinkClick : undefined}
                 >
-                    <ContentNode node={content} onLinkClick={onLinkClick} onWordClick={onWordClick} colors={colors} />
+                    <ContentNode node={content} dictionaryName={dictionaryName} onLinkClick={onLinkClick} onWordClick={onWordClick} colors={colors} />
                 </a>
             );
-        default: return <ContentNode node={content} onLinkClick={onLinkClick} onWordClick={onWordClick} colors={colors} />;
+        case 'ruby':
+            return <ruby style={s}><ContentNode node={content} dictionaryName={dictionaryName} onLinkClick={onLinkClick} onWordClick={onWordClick} colors={colors} /></ruby>;
+        case 'rt':
+            return <rt style={s}><ContentNode node={content} dictionaryName={dictionaryName} onLinkClick={onLinkClick} onWordClick={onWordClick} colors={colors} /></rt>;
+        case 'br':
+            return <br />;
+        case 'p':
+            return <p style={{ ...s, margin: '0.5em 0' }}><ContentNode node={content} dictionaryName={dictionaryName} onLinkClick={onLinkClick} onWordClick={onWordClick} colors={colors} /></p>;
+        case 'strong':
+            return <strong style={{ ...s, fontWeight: 'bold' }}><ContentNode node={content} dictionaryName={dictionaryName} onLinkClick={onLinkClick} onWordClick={onWordClick} colors={colors} /></strong>;
+        case 'em':
+            return <em style={{ ...s, fontStyle: 'italic' }}><ContentNode node={content} dictionaryName={dictionaryName} onLinkClick={onLinkClick} onWordClick={onWordClick} colors={colors} /></em>;
+        case 'b':
+            return <b style={{ ...s, fontWeight: 'bold' }}><ContentNode node={content} dictionaryName={dictionaryName} onLinkClick={onLinkClick} onWordClick={onWordClick} colors={colors} /></b>;
+        case 'i':
+            return <i style={{ ...s, fontStyle: 'italic' }}><ContentNode node={content} dictionaryName={dictionaryName} onLinkClick={onLinkClick} onWordClick={onWordClick} colors={colors} /></i>;
+        default: return <ContentNode node={content} dictionaryName={dictionaryName} onLinkClick={onLinkClick} onWordClick={onWordClick} colors={colors} />;
     }
 };
 
@@ -800,37 +841,70 @@ export const DictionaryView: React.FC<DictionaryViewProps> = ({
     }, [processedEntries, settings.autoPlayWordAudio, handlePlayWordAudio]);
     const audioMenuEntryKey = audioMenu ? `${audioMenu.entry.headword}::${audioMenu.entry.reading}` : null;
     const activeWordAudioSelection = audioMenuEntryKey && wordAudioSelectionKey === audioMenuEntryKey ? wordAudioSelection : 'auto';
+    
+    // Collect all styles from results
+    const allStyles = useMemo(() => {
+        const stylesMap: Record<string, string> = {};
+        for (const entry of results) {
+            if (entry.styles) {
+                for (const [dictName, css] of Object.entries(entry.styles)) {
+                    if (css && !stylesMap[dictName]) {
+                        stylesMap[dictName] = css;
+                    }
+                }
+            }
+        }
+        return stylesMap;
+    }, [results]);
+
+    const scopedStyles = useMemo(() => {
+        const cssParts: string[] = [];
+        for (const [dictName, css] of Object.entries(allStyles)) {
+            if (!css) continue;
+            // Escape quotes in dictionary name for CSS selector
+            const escapedName = dictName.replace(/"/g, '\\"');
+            const selector = `[data-dictionary="${escapedName}"]`;
+            // Use CSS nesting to scope all rules - wrap the entire CSS block
+            const scopedCss = `${selector} {\n${css}\n}`;
+            cssParts.push(scopedCss);
+        }
+        return cssParts.join('\n');
+    }, [allStyles]);
+
     return (
         <>
+            {scopedStyles && (
+                <style>{scopedStyles}</style>
+            )}
             {isLoading && <div style={{ textAlign: 'center', padding: '20px', color: colors.textMuted }}>Scanning...</div>}
             {!isLoading && processedEntries.map((entry, i) => (
-                <div key={i} style={{ marginBottom: '16px', paddingBottom: '16px', borderBottom: i < processedEntries.length - 1 ? `1px solid ${colors.border}` : 'none' }}>
+                <div key={i} class="entry" style={{ marginBottom: '16px', paddingBottom: '16px', borderBottom: i < processedEntries.length - 1 ? `1px solid ${colors.border}` : 'none' }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '8px' }}>
                         <div style={{ display: 'flex', alignItems: 'flex-end', flexWrap: 'wrap' }}>
-                            <div style={{ fontSize: '1.8em', lineHeight: '1', marginRight: '10px', color: colors.text }}>
+                            <div style={{ fontSize: '1.8em', lineHeight: '1', marginRight: '10px', color: colors.text }} class="headword">
                                 {entry.furigana && entry.furigana.length > 0 ? (
-                                    <ruby style={{ rubyPosition: 'over' }}>
+                                    <ruby style={{ rubyPosition: 'over' }} class="headword-text-container">
                                         {entry.furigana.map((seg, idx) => (
                                             <React.Fragment key={idx}>
-                                                {seg[0]}<rt style={{ fontSize: '0.5em', color: colors.textSecondary }}>{seg[1]}</rt>
+                                                <span class="headword-term">{seg[0]}</span><rt style={{ fontSize: '0.5em', color: colors.textSecondary }} class="headword-reading">{seg[1]}</rt>
                                             </React.Fragment>
                                         ))}
                                     </ruby>
                                 ) : (
-                                    <ruby>
-                                        {entry.headword}
-                                        <rt style={{ fontSize: '0.5em', color: colors.textSecondary }}>{entry.reading}</rt>
+                                    <ruby class="headword-text-container">
+                                        <span class="headword-term">{entry.headword}</span>
+                                        <rt style={{ fontSize: '0.5em', color: colors.textSecondary }} class="headword-reading">{entry.reading}</rt>
                                     </ruby>
                                 )}
                             </div>
                             {entry.termTags && entry.termTags.length > 0 && (
-                                <div style={{ display: 'flex', gap: '4px' }}>
+                                <div style={{ display: 'flex', gap: '4px' }} class="headword-list-tag-list tag-list">
                                     {entry.termTags.flatMap((tag: any) => {
                                         const label = (typeof tag === 'object' && tag !== null && tag.name) ? tag.name : tag;
                                         if (typeof label !== 'string') return [];
                                         return splitTagString(label);
                                     }).map((label, idx) => (
-                                        <span key={idx} style={{ ...tagStyle, backgroundColor: colors.tagBg, color: colors.tagText, marginRight: 0 }}>{label}</span>
+                                        <span key={idx} class="tag" style={{ ...tagStyle, backgroundColor: colors.tagBg, color: colors.tagText, marginRight: 0 }}><span class="tag-label">{label}</span></span>
                                     ))}
                                 </div>
                             )}
@@ -858,9 +932,9 @@ export const DictionaryView: React.FC<DictionaryViewProps> = ({
                         </div>
                     </div>
                     {entry.frequencies && entry.frequencies.length > 0 && (
-                        <div style={{ marginBottom: '10px', display: 'flex', flexWrap: 'wrap', gap: '5px' }}>
+                        <div class="entry-body frequency-group-list" style={{ marginBottom: '10px', display: 'flex', flexWrap: 'wrap', gap: '5px' }}>
                             {entry.frequencies.map((freq, fIdx) => (
-                                <div key={fIdx} style={{ display: 'inline-flex', fontSize: '0.75em', borderRadius: '4px', overflow: 'hidden', border: `1px solid ${colors.border}` }}>
+                                <div key={fIdx} class="frequency-item" style={{ display: 'inline-flex', fontSize: '0.75em', borderRadius: '4px', overflow: 'hidden', border: `1px solid ${colors.border}` }}>
                                     <div style={{ backgroundColor: colors.freqNameBg, color: colors.freqNameText, fontWeight: 'bold', padding: '2px 6px' }}>{freq.dictionaryName}</div>
                                     <div style={{ backgroundColor: colors.freqValueBg, color: colors.freqValueText, padding: '2px 6px', fontWeight: 'bold' }}>{freq.value}</div>
                                 </div>
@@ -872,31 +946,31 @@ export const DictionaryView: React.FC<DictionaryViewProps> = ({
                         if (pitchAccents.length === 0 && ipa.length === 0) return null;
                         return (
                             <PronunciationSection
-                                reading={entry.reading}
+                                reading={entry.reading || entry.headword}
                                 pitchAccents={pitchAccents}
                                 ipa={ipa}
-                                showGraph={settings.yomitanShowPitchGraph ?? false}
+                                showGraph={settings.yomitanShowPitchGraph ?? true}
                                 showText={settings.yomitanShowPitchText ?? true}
                                 showNotation={settings.yomitanShowPitchNotation ?? true}
                             />
                         );
                     })()}
                     {entry.glossary && (
-                        <div>
+                        <div class="entry-body gloss-list definition-list">
                             {entry.glossary.map((def, defIdx) => (
-                                <div key={defIdx} style={{ display: 'flex', marginBottom: '12px' }}>
-                                    <div style={{ flexShrink: 0, width: '24px', color: colors.textMuted, fontWeight: 'bold' }}>{defIdx + 1}.</div>
-                                    <div style={{ flexGrow: 1 }}>
-                                        <div style={{ marginBottom: '4px' }}>
+                                <div key={defIdx} class="gloss-item definition-item" data-dictionary={def.dictionaryName} style={{ display: 'flex', marginBottom: '12px' }}>
+                                    <div style={{ flexShrink: 0, width: '24px', color: colors.textMuted, fontWeight: 'bold' }}><span class="gloss-separator">{defIdx + 1}.</span></div>
+                                    <div style={{ flexGrow: 1 }} class="definition-item-inner definition-item-content">
+                                        <div style={{ marginBottom: '4px' }} class="definition-tag-list tag-list">
                                             {normalizeTagList(def.tags || []).map((t, ti) => (
-                                                <span key={ti} style={{ ...tagStyle, backgroundColor: colors.tagBg, color: colors.tagText }}>{t}</span>
+                                                <span key={ti} class="tag" style={{ ...tagStyle, backgroundColor: colors.tagBg, color: colors.tagText }}><span class="tag-label">{t}</span></span>
                                             ))}
-                                            <span style={{ ...tagStyle, backgroundColor: colors.dictTagBg, color: colors.dictTagText }}>{def.dictionaryName}</span>
+                                            <span class="tag tag-label" style={{ ...tagStyle, backgroundColor: colors.dictTagBg, color: colors.dictTagText }}>{def.dictionaryName}</span>
                                         </div>
-                                        <div style={{ color: colors.text }}>
+                                        <div style={{ color: colors.text, whiteSpace: 'pre-wrap' }} class="gloss-content">
                                             {def.content.map((jsonString, idx) => (
                                                 <div key={idx} style={{ marginBottom: '2px' }}>
-                                                    <StructuredContent contentString={jsonString} onLinkClick={onLinkClick} onWordClick={onWordClick} colors={colors} />
+                                                    <StructuredContent contentString={jsonString} dictionaryName={def.dictionaryName} onLinkClick={onLinkClick} onWordClick={onWordClick} colors={colors} />
                                                 </div>
                                             ))}
                                         </div>

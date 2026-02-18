@@ -423,6 +423,23 @@ const getLowestFrequency = (entry: DictionaryResult): string => {
     return Math.min(...numbers).toString();
 };
 
+const getHarmonicMeanFrequency = (entry: DictionaryResult): string => {
+    if (!entry.frequencies || entry.frequencies.length === 0) {
+        return '';
+    }
+    const numbers = entry.frequencies
+        .map((frequency) => {
+            const cleaned = frequency.value?.replace?.(/[^\d]/g, '') ?? '';
+            return parseInt(cleaned, 10);
+        })
+        .filter((value) => Number.isFinite(value) && value > 0);
+    if (!numbers.length) {
+        return '';
+    }
+    const sumOfReciprocals = numbers.reduce((sum, n) => sum + (1 / n), 0);
+    return Math.round(numbers.length / sumOfReciprocals).toString();
+};
+
 const generateAnkiPitchAccent = (entry: DictionaryResult): string => {
     const { pitchAccents } = extractPronunciationData(entry);
     if (!pitchAccents || pitchAccents.length === 0) return '';
@@ -2727,6 +2744,7 @@ export const AnimeVideoPlayer = ({
                     fields[ankiField] = buildDefinitionHtml(entry);
                 }
                 else if (mapType === 'Frequency') fields[ankiField] = getLowestFrequency(entry);
+                else if (mapType === 'Harmonic Frequency') fields[ankiField] = getHarmonicMeanFrequency(entry);
                 else if (mapType === 'Sentence') fields[ankiField] = sentence;
                 else if (mapType === 'Sentence Furigana') {
                     fields[ankiField] = sentenceFurigana;
@@ -3087,6 +3105,27 @@ export const AnimeVideoPlayer = ({
         () => Object.keys(settings.ankiFieldMap || {}).find((key) => settings.ankiFieldMap?.[key] === 'Target Word'),
         [settings.ankiFieldMap],
     );
+    const calculateHarmonicMean = useCallback((frequencies: { value: string }[]): number | null => {
+        if (!frequencies || frequencies.length === 0) return null;
+        const numbers = frequencies
+            .map(f => parseInt(f.value.replace(/[^\d]/g, ''), 10))
+            .filter(n => !isNaN(n) && n > 0);
+        if (numbers.length === 0) return null;
+        const sumOfReciprocals = numbers.reduce((sum, n) => sum + (1 / n), 0);
+        return Math.round(numbers.length / sumOfReciprocals);
+    }, []);
+    const processedDictionaryResults = useMemo(() => {
+        if (!settings.showHarmonicMeanFreq) return dictionaryResults;
+        return dictionaryResults.map(entry => {
+            if (!entry.frequencies || entry.frequencies.length === 0) return entry;
+            const harmonicMean = calculateHarmonicMean(entry.frequencies);
+            if (harmonicMean === null) return entry;
+            return {
+                ...entry,
+                frequencies: [{ dictionaryName: 'Harmonic Mean', value: harmonicMean.toString() }]
+            };
+        });
+    }, [dictionaryResults, settings.showHarmonicMeanFreq, calculateHarmonicMean]);
     const singleGlossaryPrefix = 'Single Glossary ';
     const getSingleGlossaryName = useCallback((value: string): string | null => {
         if (value.startsWith(singleGlossaryPrefix)) {
@@ -4294,6 +4333,25 @@ export const AnimeVideoPlayer = ({
             </Stack>
             {dictionaryVisible && (
                 <>
+                    {(() => {
+                        const stylesMap = dictionaryResults.reduce((acc, entry) => {
+                            if (entry.styles) {
+                                for (const [dictName, css] of Object.entries(entry.styles)) {
+                                    if (css && !acc[dictName]) acc[dictName] = css;
+                                }
+                            }
+                            return acc;
+                        }, {} as Record<string, string>);
+                        const cssParts = Object.entries(stylesMap).map(([dictName, css]) => {
+                            if (!css) return '';
+                            // Escape quotes in dictionary name for CSS selector
+                            const escapedName = dictName.replace(/"/g, '\\"');
+                            const selector = `[data-dictionary="${escapedName}"]`;
+                            // Use CSS nesting to scope all rules - wrap the entire CSS block
+                            return `${selector} {\n${css}\n}`;
+                        }).join('\n');
+                        return cssParts ? <style>{cssParts}</style> : null;
+                    })()}
                     <Box
                         sx={{
                             position: 'absolute',
@@ -4319,14 +4377,17 @@ export const AnimeVideoPlayer = ({
                                     Scanning…
                                 </Typography>
                             )}
-                            {!dictionaryLoading && dictionaryResults.map((entry, i) => (
+                            {!dictionaryLoading && processedDictionaryResults.map((entry, i) => (
                                 <Box
                                     key={`${entry.headword}-${entry.reading}-${i}`}
                                     sx={{
                                         mb: 2,
                                         pb: 2,
-                                        borderBottom: i < dictionaryResults.length - 1 ? `1px solid ${popupTheme.border}` : 'none',
+                                        borderBottom: i < processedDictionaryResults.length - 1
+                                            ? `1px solid ${popupTheme.border}`
+                                            : 'none',
                                     }}
+                                    class="entry"
                                 >
                                     <Stack
                                         direction="row"
@@ -4334,8 +4395,8 @@ export const AnimeVideoPlayer = ({
                                         alignItems="flex-start"
                                         sx={{ mb: 1 }}
                                     >
-                                        <Box sx={{ display: 'flex', flexWrap: 'wrap', alignItems: 'flex-end', gap: 1 }}>
-                                            <Typography variant="h5" sx={{ lineHeight: 1 }}>
+                                        <Box sx={{ display: 'flex', flexWrap: 'wrap', alignItems: 'flex-end', gap: 1 }} class="headword headword-text-container">
+                                            <Typography variant="h5" sx={{ lineHeight: 1 }} class="headword-term">
                                                 {entry.headword}
                                             </Typography>
                                             {entry.reading && (
@@ -4343,23 +4404,28 @@ export const AnimeVideoPlayer = ({
                                                     {entry.reading}
                                                 </Typography>
                                             )}
-                                            {entry.termTags
-                                                ?.flatMap((tag) => splitTagString(getTermTagLabel(tag)))
-                                                .map((label, tagIndex) => (
-                                                    <Box
-                                                        key={`${entry.headword}-tag-${tagIndex}`}
-                                                        sx={{
-                                                            px: 0.5,
-                                                            py: 0.1,
-                                                            borderRadius: 0.5,
-                                                            fontSize: '0.7rem',
-                                                            backgroundColor: popupTheme.secondary,
-                                                                color: popupTheme.bg,
-                                                        }}
-                                                    >
-                                                        {label}
-                                                    </Box>
-                                                ))}
+                                            {entry.termTags && entry.termTags.length > 0 && (
+                                                <Box class="headword-list-tag-list tag-list" sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
+                                                    {entry.termTags
+                                                        .flatMap((tag) => splitTagString(getTermTagLabel(tag)))
+                                                        .map((label, tagIndex) => (
+                                                            <Box
+                                                                key={`${entry.headword}-tag-${tagIndex}`}
+                                                                class="tag"
+                                                                sx={{
+                                                                    px: 0.5,
+                                                                    py: 0.1,
+                                                                    borderRadius: 0.5,
+                                                                    fontSize: '0.7rem',
+                                                                    backgroundColor: popupTheme.secondary,
+                                                                    color: popupTheme.bg,
+                                                                }}
+                                                            >
+                                                                <span class="tag-label">{label}</span>
+                                                            </Box>
+                                                        ))}
+                                                </Box>
+                                            )}
                                         </Box>
                                         <Stack direction="row" spacing={1} alignItems="center">
                                             {settings.ankiConnectEnabled && (
@@ -4494,22 +4560,9 @@ export const AnimeVideoPlayer = ({
                                             </IconButton>
                                         </Stack>
                                     </Stack>
-                                    {(() => {
-                                        const { pitchAccents, ipa } = extractPronunciationData(entry);
-                                        if (pitchAccents.length === 0 && ipa.length === 0) return null;
-                                        return (
-                                            <PronunciationSection
-                                                reading={entry.reading || entry.headword}
-                                                pitchAccents={pitchAccents}
-                                                ipa={ipa}
-                                                showGraph={true}
-                                                showText={true}
-                                                showNotation={true}
-                                            />
-                                        );
-                                    })()}
                                     {entry.frequencies && entry.frequencies.length > 0 && (
                                         <Box
+                                            class="entry-body frequency-group-list"
                                             sx={{
                                                 display: 'flex',
                                                 flexWrap: 'wrap',
@@ -4520,6 +4573,7 @@ export const AnimeVideoPlayer = ({
                                             {entry.frequencies.map((freq, freqIndex) => (
                                                 <Box
                                                     key={`${entry.headword}-freq-${freqIndex}`}
+                                                    class="frequency-item"
                                                     sx={{
                                                         display: 'inline-flex',
                                                         fontSize: '0.7rem',
@@ -4623,7 +4677,7 @@ export const AnimeVideoPlayer = ({
                                     </Box>
                                 </Box>
                             ))}
-                            {!dictionaryLoading && dictionaryResults.length === 0 && (
+                            {!dictionaryLoading && processedDictionaryResults.length === 0 && (
                                 <Typography variant="body2" sx={{ textAlign: 'center', color: '#777' }}>
                                     No results found
                                 </Typography>
