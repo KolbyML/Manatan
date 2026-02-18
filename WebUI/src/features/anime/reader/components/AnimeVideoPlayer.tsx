@@ -53,7 +53,7 @@ import VolumeUpIcon from '@mui/icons-material/VolumeUp';
 import TextFieldsIcon from '@mui/icons-material/TextFields';
 import { useTheme } from '@mui/material/styles';
 import useMediaQuery from '@mui/material/useMediaQuery';
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState, Fragment } from 'react';
 import type { MouseEvent as ReactMouseEvent } from 'react';
 import { useHotkeys as useHotkeysHook, useHotkeysContext } from 'react-hotkeys-hook';
 import Hls from 'hls.js';
@@ -64,7 +64,7 @@ import { HOTKEY_SCOPES } from '@/features/hotkeys/Hotkeys.constants.ts';
 import { HotkeyScope } from '@/features/hotkeys/Hotkeys.types.ts';
 import { useOCR } from '@/Manatan/context/OCRContext.tsx';
 import ManatanLogo from '@/Manatan/assets/manatan_logo.png';
-import { lookupYomitan } from '@/Manatan/utils/api.ts';
+import { cleanPunctuation, lookupYomitan } from '@/Manatan/utils/api.ts';
 import { buildSentenceFuriganaFromLookup } from '@/Manatan/utils/japaneseFurigana';
 import {
     getWordAudioFilename,
@@ -532,7 +532,7 @@ const buildDefinitionHtml = (entry: DictionaryResult, dictionaryName?: string): 
         const classNames = typeof data?.class === 'string' ? data.class.split(/\s+/) : [];
         const isTagClass = classNames.includes('tag');
         const tagClassStyle = isTagClass
-            ? 'display: inline-block; padding: 1px 5px; border-radius: 3px; font-size: 0.75em; font-weight: bold; margin-right: 6px; color: #fff; background-color: #666; vertical-align: middle; line-height: 1.2;'
+            ? 'display: inline-block; padding: 1px 5px; border-radius: 3px; font-size: 0.75em; font-weight: bold; margin-right: 6px; vertical-align: middle; line-height: 1.2;'
             : '';
 
         if (tag === 'ul') {
@@ -545,16 +545,16 @@ const buildDefinitionHtml = (entry: DictionaryResult, dictionaryName?: string): 
             return `<li style="${customStyle}">${generateHTML(content)}</li>`;
         }
         if (tag === 'table') {
-            return `<table style="border-collapse: collapse; width: 100%; border: 1px solid #777;${customStyle}"><tbody>${generateHTML(content)}</tbody></table>`;
+            return `<table style="border-collapse: collapse; width: 100%; border: 1px solid;${customStyle}"><tbody>${generateHTML(content)}</tbody></table>`;
         }
         if (tag === 'tr') {
             return `<tr style="${customStyle}">${generateHTML(content)}</tr>`;
         }
         if (tag === 'th') {
-            return `<th style="border: 1px solid #777; padding: 2px 8px; text-align: center; font-weight: bold;${customStyle}">${generateHTML(content)}</th>`;
+            return `<th style="border: 1px solid; padding: 2px 8px; text-align: center; font-weight: bold;${customStyle}">${generateHTML(content)}</th>`;
         }
         if (tag === 'td') {
-            return `<td style="border: 1px solid #777; padding: 2px 8px; text-align: center;${customStyle}">${generateHTML(content)}</td>`;
+            return `<td style="border: 1px solid; padding: 2px 8px; text-align: center;${customStyle}">${generateHTML(content)}</td>`;
         }
         if (tag === 'span') {
             return `<span style="${tagClassStyle}${customStyle}">${generateHTML(content)}</span>`;
@@ -579,9 +579,9 @@ const buildDefinitionHtml = (entry: DictionaryResult, dictionaryName?: string): 
         .map((def, idx) => {
             const tagsHTML = normalizeTagList(def.tags ?? []).map(
                 (tag) =>
-                    `<span style="display: inline-block; padding: 1px 5px; border-radius: 3px; font-size: 0.75em; font-weight: bold; margin-right: 6px; color: #fff; background-color: #666; vertical-align: middle;">${tag}</span>`,
+                    `<span style="display: inline-block; padding: 1px 5px; border-radius: 3px; font-size: 0.75em; font-weight: bold; margin-right: 6px; vertical-align: middle;">${tag}</span>`,
             );
-            const dictHTML = `<span style="display: inline-block; padding: 1px 5px; border-radius: 3px; font-size: 0.75em; font-weight: bold; margin-right: 6px; color: #fff; background-color: #9b59b6; vertical-align: middle;">${def.dictionaryName}</span>`;
+            const dictHTML = `<span style="display: inline-block; padding: 1px 5px; border-radius: 3px; font-size: 0.75em; font-weight: bold; margin-right: 6px; vertical-align: middle;">${def.dictionaryName}</span>`;
             const headerHTML = [...tagsHTML, dictHTML].join(' ');
             const contentHTML = def.content
                 .map((content) => {
@@ -729,6 +729,8 @@ export const AnimeVideoPlayer = ({
     const [dictionaryLoading, setDictionaryLoading] = useState(false);
     const [, setDictionarySystemLoading] = useState(false);
     const [, setDictionaryQuery] = useState('');
+    const [dictionaryHistory, setDictionaryHistory] = useState<{ term: string; results: DictionaryResult[]; isLoading: boolean; systemLoading: boolean }[]>([]);
+    const [dictionaryHistoryIndex, setDictionaryHistoryIndex] = useState(-1);
     const [wordAudioMenuAnchor, setWordAudioMenuAnchor] = useState<{ top: number; left: number } | null>(null);
     const [wordAudioMenuEntry, setWordAudioMenuEntry] = useState<DictionaryResult | null>(null);
     const [wordAudioSelection, setWordAudioSelection] = useState<WordAudioSourceSelection>('auto');
@@ -2952,15 +2954,34 @@ export const AnimeVideoPlayer = ({
             if (dictionaryRequestRef.current !== requestId) {
                 return;
             }
+            const maxHistory = settings.yomitanLookupMaxHistory || 10;
+            const cleanText = cleanPunctuation(text, true).trim();
             if (results === 'loading') {
                 setDictionaryLoading(false);
                 setDictionarySystemLoading(true);
+                const newEntry = { term: cleanText, results: [], isLoading: false, systemLoading: true };
+                setDictionaryHistory(prev => {
+                    const newHistory = prev.slice(0, dictionaryHistoryIndex + 1);
+                    newHistory.push(newEntry);
+                    if (newHistory.length > maxHistory) newHistory.shift();
+                    return newHistory;
+                });
+                setDictionaryHistoryIndex(prev => Math.min(prev + 1, maxHistory - 1));
             } else {
-                setDictionaryResults(results || []);
+                const loadedResults = results || [];
+                setDictionaryResults(loadedResults);
                 setDictionaryLoading(false);
                 setDictionarySystemLoading(false);
                 const matchLen = results?.[0]?.matchLen;
                 applyDictionaryHighlight(matchLen);
+                const newEntry = { term: loadedResults[0]?.headword || cleanText, results: loadedResults, isLoading: false, systemLoading: false };
+                setDictionaryHistory(prev => {
+                    const newHistory = prev.slice(0, dictionaryHistoryIndex + 1);
+                    newHistory.push(newEntry);
+                    if (newHistory.length > maxHistory) newHistory.shift();
+                    return newHistory;
+                });
+                setDictionaryHistoryIndex(prev => Math.min(prev + 1, maxHistory - 1));
             }
         },
         [
@@ -2969,6 +2990,7 @@ export const AnimeVideoPlayer = ({
             safeSubtitleOffsetMs,
             settings.resultGroupingMode,
             settings.yomitanLanguage,
+            settings.yomitanLookupMaxHistory,
             wasPopupClosedRecently,
         ],
     );
@@ -2986,6 +3008,189 @@ export const AnimeVideoPlayer = ({
         const charOffset = getSubtitleCharOffset(element, event.clientX, event.clientY);
         await performSubtitleLookup(text, cueKey, cueStart, cueEnd, charOffset, 'click');
     };
+
+    const handleDictionaryWordClick = useCallback(async (text: string, position: number) => {
+        const textEncoder = new TextEncoder();
+        const prefixBytes = textEncoder.encode(text.slice(0, position)).length;
+        
+        const cleanText = cleanPunctuation(text, true).trim();
+        if (!cleanText) return;
+
+        const video = videoRef.current;
+        if (video) {
+            resumePlaybackRef.current = Boolean(video && !video.paused);
+            overlayVisibilityRef.current = isOverlayVisible;
+            video.pause();
+        }
+        setDictionaryVisible(true);
+        setIsOverlayVisible(false);
+
+        const maxHistory = settings.yomitanLookupMaxHistory || 10;
+        const newEntry = { term: cleanText, results: [], isLoading: true, systemLoading: false };
+
+        setDictionaryHistory(prev => {
+            const newHistory = prev.slice(0, dictionaryHistoryIndex + 1);
+            newHistory.push(newEntry);
+            if (newHistory.length > maxHistory) newHistory.shift();
+            return newHistory;
+        });
+        setDictionaryHistoryIndex(prev => Math.min(prev + 1, maxHistory - 1));
+
+        try {
+            const results = await lookupYomitan(cleanText, prefixBytes, settings.resultGroupingMode || 'grouped', settings.yomitanLanguage || 'japanese');
+            const loadedResults = results === 'loading' ? [] : (results || []);
+            const isSystemLoading = results === 'loading';
+
+            setDictionaryResults(loadedResults);
+            setDictionaryLoading(false);
+            setDictionarySystemLoading(isSystemLoading);
+
+            setDictionaryHistory(prev => {
+                const newHistory = [...prev];
+                const idx = Math.min(dictionaryHistoryIndex + 1, maxHistory - 1);
+                if (newHistory[idx]) {
+                    const matchedTerm = loadedResults[0]?.headword || cleanText;
+                    newHistory[idx] = { ...newHistory[idx], term: matchedTerm, results: loadedResults, isLoading: false, systemLoading: isSystemLoading };
+                }
+                return newHistory;
+            });
+        } catch (err) {
+            console.warn('Failed to lookup word', err);
+            setDictionaryResults([]);
+            setDictionaryLoading(false);
+            setDictionarySystemLoading(false);
+            setDictionaryHistory(prev => {
+                const newHistory = [...prev];
+                const idx = Math.min(dictionaryHistoryIndex + 1, maxHistory - 1);
+                if (newHistory[idx]) {
+                    newHistory[idx] = { ...newHistory[idx], results: [], isLoading: false, systemLoading: false };
+                }
+                return newHistory;
+            });
+        }
+    }, [isOverlayVisible, settings.resultGroupingMode, settings.yomitanLanguage, settings.yomitanLookupMaxHistory, dictionaryHistoryIndex]);
+
+    const handleDictionaryDefinitionLink = useCallback(async (href: string, text: string) => {
+        const safeFallback = text.trim();
+        const trimmedHref = href.trim();
+        let lookupText = safeFallback;
+
+        if (trimmedHref) {
+            const extractQuery = (params: URLSearchParams) =>
+                params.get('query') || params.get('text') || params.get('term') || params.get('q') || '';
+
+            if (trimmedHref.startsWith('http://') || trimmedHref.startsWith('https://')) {
+                try {
+                    const parsed = new URL(trimmedHref);
+                    const queryText = extractQuery(parsed.searchParams);
+                    if (queryText) lookupText = queryText;
+                } catch (err) {
+                    console.warn('Failed to parse http link', err);
+                }
+            } else if (trimmedHref.startsWith('?') || trimmedHref.includes('?')) {
+                const queryString = trimmedHref.startsWith('?')
+                    ? trimmedHref.slice(1)
+                    : trimmedHref.slice(trimmedHref.indexOf('?') + 1);
+                const params = new URLSearchParams(queryString);
+                const queryText = extractQuery(params);
+                if (queryText) lookupText = queryText;
+            } else if (trimmedHref.startsWith('term://')) {
+                lookupText = decodeURIComponent(trimmedHref.slice('term://'.length));
+            } else if (trimmedHref.startsWith('yomitan://')) {
+                try {
+                    const parsed = new URL(trimmedHref);
+                    const queryText = extractQuery(parsed.searchParams);
+                    if (queryText) lookupText = queryText;
+                    else lookupText = decodeURIComponent(parsed.pathname.replace(/^\//, ''));
+                } catch (err) {
+                    console.warn('Failed to parse yomitan link', err);
+                }
+            } else {
+                try {
+                    lookupText = decodeURIComponent(trimmedHref);
+                } catch (err) {
+                    lookupText = safeFallback || trimmedHref;
+                }
+            }
+        }
+
+        const cleanText = cleanPunctuation(lookupText, true).trim();
+        if (!cleanText) return;
+
+        const video = videoRef.current;
+        if (video) {
+            resumePlaybackRef.current = Boolean(video && !video.paused);
+            overlayVisibilityRef.current = isOverlayVisible;
+            video.pause();
+        }
+        setDictionaryVisible(true);
+        setIsOverlayVisible(false);
+
+        const maxHistory = settings.yomitanLookupMaxHistory || 10;
+        const newEntry = { term: cleanText, results: [], isLoading: true, systemLoading: false };
+
+        setDictionaryHistory(prev => {
+            const newHistory = prev.slice(0, dictionaryHistoryIndex + 1);
+            newHistory.push(newEntry);
+            if (newHistory.length > maxHistory) newHistory.shift();
+            return newHistory;
+        });
+        setDictionaryHistoryIndex(prev => Math.min(prev + 1, maxHistory - 1));
+
+        try {
+            const results = await lookupYomitan(cleanText, 0, settings.resultGroupingMode || 'grouped', settings.yomitanLanguage || 'japanese');
+            const loadedResults = results === 'loading' ? [] : (results || []);
+            const isSystemLoading = results === 'loading';
+
+            setDictionaryResults(loadedResults);
+            setDictionaryLoading(false);
+            setDictionarySystemLoading(isSystemLoading);
+
+            setDictionaryHistory(prev => {
+                const newHistory = [...prev];
+                const idx = Math.min(dictionaryHistoryIndex + 1, maxHistory - 1);
+                if (newHistory[idx]) {
+                    newHistory[idx] = { ...newHistory[idx], results: loadedResults, isLoading: false, systemLoading: isSystemLoading };
+                }
+                return newHistory;
+            });
+        } catch (err) {
+            console.warn('Failed to lookup link definition', err);
+            setDictionaryResults([]);
+            setDictionaryLoading(false);
+            setDictionarySystemLoading(false);
+            setDictionaryHistory(prev => {
+                const newHistory = [...prev];
+                const idx = Math.min(dictionaryHistoryIndex + 1, maxHistory - 1);
+                if (newHistory[idx]) {
+                    newHistory[idx] = { ...newHistory[idx], results: [], isLoading: false, systemLoading: false };
+                }
+                return newHistory;
+            });
+        }
+    }, [isOverlayVisible, settings.resultGroupingMode, settings.yomitanLanguage, settings.yomitanLookupMaxHistory, dictionaryHistoryIndex]);
+
+    const navigateToDictionaryHistory = useCallback((index: number) => {
+        if (index >= 0 && index < dictionaryHistory.length) {
+            const entry = dictionaryHistory[index];
+            setDictionaryHistoryIndex(index);
+            setDictionaryResults(entry.results);
+            setDictionaryLoading(entry.isLoading);
+            setDictionarySystemLoading(entry.systemLoading);
+        }
+    }, [dictionaryHistory]);
+
+    const goBackDictionary = useCallback(() => {
+        if (dictionaryHistoryIndex > 0) {
+            navigateToDictionaryHistory(dictionaryHistoryIndex - 1);
+        }
+    }, [dictionaryHistoryIndex, navigateToDictionaryHistory]);
+
+    const goForwardDictionary = useCallback(() => {
+        if (dictionaryHistoryIndex < dictionaryHistory.length - 1) {
+            navigateToDictionaryHistory(dictionaryHistoryIndex + 1);
+        }
+    }, [dictionaryHistoryIndex, dictionaryHistory.length, navigateToDictionaryHistory]);
 
     const hoverLookupEnabled =
         settings.animeSubtitleHoverLookup && settings.enableYomitan && !isMobile && isDesktopPlatform;
@@ -3115,8 +3320,10 @@ export const AnimeVideoPlayer = ({
         return Math.round(numbers.length / sumOfReciprocals);
     }, []);
     const processedDictionaryResults = useMemo(() => {
-        if (!settings.showHarmonicMeanFreq) return dictionaryResults;
-        return dictionaryResults.map(entry => {
+        const currentEntry = dictionaryHistoryIndex >= 0 && dictionaryHistoryIndex < dictionaryHistory.length ? dictionaryHistory[dictionaryHistoryIndex] : null;
+        const resultsToProcess = currentEntry ? currentEntry.results : dictionaryResults;
+        if (!settings.showHarmonicMeanFreq) return resultsToProcess;
+        return resultsToProcess.map(entry => {
             if (!entry.frequencies || entry.frequencies.length === 0) return entry;
             const harmonicMean = calculateHarmonicMean(entry.frequencies);
             if (harmonicMean === null) return entry;
@@ -3125,7 +3332,10 @@ export const AnimeVideoPlayer = ({
                 frequencies: [{ dictionaryName: 'Harmonic Mean', value: harmonicMean.toString() }]
             };
         });
-    }, [dictionaryResults, settings.showHarmonicMeanFreq, calculateHarmonicMean]);
+    }, [dictionaryResults, dictionaryHistory, dictionaryHistoryIndex, settings.showHarmonicMeanFreq, calculateHarmonicMean]);
+    const currentDictionaryEntry = dictionaryHistoryIndex >= 0 && dictionaryHistoryIndex < dictionaryHistory.length ? dictionaryHistory[dictionaryHistoryIndex] : null;
+    const isDictionaryLoading = currentDictionaryEntry ? currentDictionaryEntry.isLoading : dictionaryLoading;
+    const isDictionarySystemLoading = currentDictionaryEntry ? currentDictionaryEntry.systemLoading : false;
     const singleGlossaryPrefix = 'Single Glossary ';
     const getSingleGlossaryName = useCallback((value: string): string | null => {
         if (value.startsWith(singleGlossaryPrefix)) {
@@ -4353,6 +4563,7 @@ export const AnimeVideoPlayer = ({
                         return cssParts ? <style>{cssParts}</style> : null;
                     })()}
                     <Box
+                        tabIndex={0}
                         sx={{
                             position: 'absolute',
                             top: popupTopOffset,
@@ -4365,6 +4576,7 @@ export const AnimeVideoPlayer = ({
                             p: 2,
                             overflowY: 'auto',
                             zIndex: 4,
+                            outline: 'none',
                         }}
                         onClick={(event) => {
                             event.stopPropagation();
@@ -4372,12 +4584,74 @@ export const AnimeVideoPlayer = ({
                         }}
                     >
                         <Stack spacing={1}>
-                            {dictionaryLoading && (
+                            {(settings.yomitanLookupNavigationMode === 'tabs' ? dictionaryHistory.length > 1 : dictionaryHistoryIndex > 0) && (
+                                <Box sx={{ mb: 1 }}>
+                                    {settings.yomitanLookupNavigationMode === 'tabs' ? (
+                                        <Box sx={{ display: 'flex', gap: 0.5, overflowX: 'auto', pb: 0.5, alignItems: 'center' }}>
+                                            {dictionaryHistory.map((entry, i) => (
+                                                <Fragment key={i}>
+                                                    {i > 0 && (
+                                                        <Typography sx={{ color: popupTheme.secondary, fontSize: '0.7em', flexShrink: 0 }}>
+                                                            →
+                                                        </Typography>
+                                                    )}
+                                                    <Button
+                                                        size="small"
+                                                        onClick={() => navigateToDictionaryHistory(i)}
+                                                        sx={{
+                                                            px: 1,
+                                                            py: 0.25,
+                                                            borderRadius: 1,
+                                                            border: 'none',
+                                                            background: i === dictionaryHistoryIndex ? popupTheme.accent : popupTheme.hoverBg,
+                                                            color: i === dictionaryHistoryIndex ? '#fff' : popupTheme.fg,
+                                                            cursor: 'pointer',
+                                                            fontSize: '0.75em',
+                                                            minWidth: 'auto',
+                                                            maxWidth: '100px',
+                                                            overflow: 'hidden',
+                                                            textOverflow: 'ellipsis',
+                                                            whiteSpace: 'nowrap',
+                                                            flexShrink: 0,
+                                                            '&:hover': {
+                                                                background: i === dictionaryHistoryIndex ? popupTheme.accent : popupTheme.hoverBg,
+                                                            },
+                                                        }}
+                                                    >
+                                                        {entry.term.slice(0, 12)}
+                                                        {entry.term.length > 12 ? '...' : ''}
+                                                    </Button>
+                                                </Fragment>
+                                            ))}
+                                        </Box>
+                                    ) : (
+                                        dictionaryHistoryIndex > 0 ? (
+                                            <Button
+                                                size="small"
+                                                onClick={goBackDictionary}
+                                                sx={{
+                                                    px: 1,
+                                                    py: 0.25,
+                                                    borderRadius: 1,
+                                                    border: 'none',
+                                                    background: popupTheme.accent,
+                                                    color: '#fff',
+                                                    cursor: 'pointer',
+                                                    fontSize: '0.75em',
+                                                }}
+                                            >
+                                                ← Back
+                                            </Button>
+                                        ) : null
+                                    )}
+                                </Box>
+                            )}
+                            {isDictionaryLoading && (
                                 <Typography variant="body2" sx={{ textAlign: 'center', color: popupTheme.secondary, py: 2 }}>
                                     Scanning…
                                 </Typography>
                             )}
-                            {!dictionaryLoading && processedDictionaryResults.map((entry, i) => (
+                            {!isDictionaryLoading && processedDictionaryResults.map((entry, i) => (
                                 <Box
                                     key={`${entry.headword}-${entry.reading}-${i}`}
                                     sx={{
@@ -4400,7 +4674,7 @@ export const AnimeVideoPlayer = ({
                                                 {entry.headword}
                                             </Typography>
                                             {entry.reading && (
-                                                <Typography variant="caption" sx={{ color: popupTheme.secondary }}>
+                                                <Typography variant="caption" sx={{ color: popupTheme.secondary }} class="headword-reading">
                                                     {entry.reading}
                                                 </Typography>
                                             )}
@@ -4553,7 +4827,7 @@ export const AnimeVideoPlayer = ({
                                                 aria-label="Play word audio"
                                                 disabled={!wordAudioOptions.length}
                                                 sx={{
-                                                    color: wordAudioOptions.length ? '#7cc8ff' : '#555',
+                                                    color: wordAudioOptions.length ? popupTheme.accent : popupTheme.secondary,
                                                 }}
                                             >
                                                 <VolumeUpIcon sx={{ fontSize: 22 }} />
@@ -4579,7 +4853,7 @@ export const AnimeVideoPlayer = ({
                                                         fontSize: '0.7rem',
                                                         borderRadius: 0.75,
                                                         overflow: 'hidden',
-                                                        border: '1px solid rgba(255,255,255,0.2)',
+                                                        border: `1px solid ${popupTheme.border}`,
                                                     }}
                                                 >
                                                     <Box
@@ -4587,16 +4861,6 @@ export const AnimeVideoPlayer = ({
                                                             backgroundColor: '#2ecc71',
                                                             color: '#000',
                                                             fontWeight: 'bold',
-                                                            px: 0.75,
-                                                            py: 0.2,
-                                                        }}
-                                                    >
-                                                        {freq.dictionaryName}
-                                                    </Box>
-                                                    <Box
-                                                        sx={{
-                                                            backgroundColor: popupTheme.hoverBg,
-                                                            color: popupTheme.fg,
                                                             px: 0.75,
                                                             py: 0.2,
                                                         }}
@@ -4632,53 +4896,53 @@ export const AnimeVideoPlayer = ({
                                             />
                                         );
                                     })()}
-                                    <Box class="gloss-list definition-list">
-                                        {entry.glossary?.map((def, defIndex) => (
-                                            <Stack key={`${entry.headword}-def-${defIndex}`} sx={{ mb: 1 }} class="gloss-item definition-item" data-dictionary={def.dictionaryName}>
-                                                <Stack direction="row" spacing={1} sx={{ mb: 0.5 }} class="definition-tag-list tag-list">
-                                                    <span class="gloss-separator" style={{ color: popupTheme.secondary, fontWeight: 'bold' }}>{defIndex + 1}.</span>
-                                                    {normalizeTagList(def.tags ?? []).map((tag, tagIndex) => (
+                                    {entry.glossary && entry.glossary.length > 0 && (
+                                        <Box class="entry-body gloss-list definition-list">
+                                            {entry.glossary.map((def, defIndex) => (
+                                                <Stack key={`${entry.headword}-def-${defIndex}`} sx={{ mb: 1 }} class="gloss-item definition-item" data-dictionary={def.dictionaryName}>
+                                                    <Stack direction="row" spacing={1} sx={{ mb: 0.5 }} class="definition-tag-list tag-list">
+                                                        <span class="gloss-separator" style={{ fontWeight: 'bold' }}>{defIndex + 1}.</span>
+                                                        {normalizeTagList(def.tags ?? []).map((tag, tagIndex) => (
+                                                            <Box
+                                                                key={`${entry.headword}-def-${defIndex}-tag-${tagIndex}`}
+                                                                class="tag"
+                                                                sx={{
+                                                                    px: 0.5,
+                                                                    py: 0.1,
+                                                                    borderRadius: 0.5,
+                                                                    fontSize: '0.7rem',
+                                                                }}
+                                                            >
+                                                                <span class="tag-label">{tag}</span>
+                                                            </Box>
+                                                        ))}
                                                         <Box
-                                                            key={`${entry.headword}-def-${defIndex}-tag-${tagIndex}`}
-                                                            class="tag"
+                                                            class="tag tag-label"
                                                             sx={{
                                                                 px: 0.5,
                                                                 py: 0.1,
                                                                 borderRadius: 0.5,
                                                                 fontSize: '0.7rem',
-                                                                backgroundColor: '#666',
                                                             }}
                                                         >
-                                                            <span class="tag-label">{tag}</span>
+                                                            {def.dictionaryName}
                                                         </Box>
-                                                    ))}
-                                                    <Box
-                                                        class="tag tag-label"
-                                                        sx={{
-                                                            px: 0.5,
-                                                            py: 0.1,
-                                                            borderRadius: 0.5,
-                                                            fontSize: '0.7rem',
-                                                            backgroundColor: '#9b59b6',
-                                                        }}
-                                                    >
-                                                        {def.dictionaryName}
+                                                    </Stack>
+                                                    <Box sx={{ whiteSpace: 'pre-wrap' }} class="definition-item-inner definition-item-content gloss-content">
+                                                        {def.content.map((jsonString, idx) => (
+                                                            <Box key={`${entry.headword}-def-${defIndex}-${idx}`} sx={{ mb: 0.5 }}>
+                                                                <StructuredContent contentString={jsonString} dictionaryName={def.dictionaryName} onLinkClick={handleDictionaryDefinitionLink} onWordClick={handleDictionaryWordClick} />
+                                                            </Box>
+                                                        ))}
                                                     </Box>
                                                 </Stack>
-                                                <Box sx={{ color: '#ddd', whiteSpace: 'pre-wrap' }} class="definition-item-inner definition-item-content gloss-content">
-                                                    {def.content.map((jsonString, idx) => (
-                                                        <Box key={`${entry.headword}-def-${defIndex}-${idx}`} sx={{ mb: 0.5 }}>
-                                                            <StructuredContent contentString={jsonString} dictionaryName={def.dictionaryName} />
-                                                        </Box>
-                                                    ))}
-                                                </Box>
-                                            </Stack>
-                                        ))}
-                                    </Box>
+                                            ))}
+                                        </Box>
+                                    )}
                                 </Box>
                             ))}
-                            {!dictionaryLoading && processedDictionaryResults.length === 0 && (
-                                <Typography variant="body2" sx={{ textAlign: 'center', color: '#777' }}>
+                            {!isDictionaryLoading && processedDictionaryResults.length === 0 && (
+                                <Typography variant="body2" sx={{ textAlign: 'center', color: popupTheme.secondary }}>
                                     No results found
                                 </Typography>
                             )}
