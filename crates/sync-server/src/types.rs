@@ -194,6 +194,37 @@ pub struct LNMetadata {
     #[serde(skip_serializing_if = "Option::is_none")]
     #[serde(alias = "syncVersion")]
     pub sync_version: Option<i32>,
+
+    // Language and categories
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub language: Option<String>,
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub category_ids: Vec<String>,
+}
+
+// ============================================================================
+// LN Categories
+// ============================================================================
+
+/// Category for organizing light novels
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct LnCategory {
+    pub id: String,
+    pub name: String,
+    pub order: i32,
+    pub created_at: i64,
+    pub last_modified: i64,
+}
+
+/// Category metadata (sort settings)
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct LnCategoryMetadata {
+    #[serde(alias = "sortBy")]
+    pub sort_by: String,
+    #[serde(alias = "sortDesc")]
+    pub sort_desc: bool,
 }
 
 // ============================================================================
@@ -279,6 +310,16 @@ pub struct SyncPayload {
     /// File manifest for resumable sync
     #[serde(default, skip_serializing_if = "HashMap::is_empty")]
     pub file_manifest: HashMap<String, FileReference>,
+
+    /// LN Categories
+    #[serde(default, skip_serializing_if = "HashMap::is_empty")]
+    #[serde(alias = "lnCategories")]
+    pub ln_categories: HashMap<String, LnCategory>,
+
+    /// LN Category metadata (sort settings)
+    #[serde(default, skip_serializing_if = "HashMap::is_empty")]
+    #[serde(alias = "lnCategoryMetadata")]
+    pub ln_category_metadata: HashMap<String, LnCategoryMetadata>,
 }
 
 impl SyncPayload {

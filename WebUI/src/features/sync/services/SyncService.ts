@@ -172,6 +172,8 @@ export class SyncService {
                             hasProgress: metadata.has_progress || metadata.hasProgress,
                             lastModified: metadata.last_modified || metadata.lastModified,
                             syncVersion: metadata.sync_version || metadata.syncVersion,
+                            language: metadata.language,
+                            categoryIds: metadata.categoryIds || metadata.category_ids || [],
                         };
                         
                         // Save migrated data back to storage
@@ -270,12 +272,61 @@ export class SyncService {
             console.log('[SYNC] Collected %d files', Object.keys(payload.lnFiles || {}).length);
         }
 
+        // Collect LN Categories
+        if (config.lnMetadata) {
+            const catMsg = 'Collecting LN categories...';
+            console.log('[SYNC] ' + catMsg);
+            onProgress?.({ phase: 'collecting', message: catMsg });
+            
+            const categoryKeys = await AppStorage.lnCategories.keys();
+            console.log('[SYNC] Found %d category entries', categoryKeys.length);
+            
+            for (const key of categoryKeys) {
+                const category = await AppStorage.lnCategories.getItem<any>(key);
+                if (category) {
+                    // Migrate snake_case to camelCase if needed
+                    const migrated = {
+                        id: category.id,
+                        name: category.name,
+                        order: category.order ?? category.order ?? 0,
+                        createdAt: category.created_at || category.createdAt || Date.now(),
+                        lastModified: category.last_modified || category.lastModified || Date.now(),
+                    };
+                    payload.lnCategories[key] = migrated;
+                }
+            }
+            console.log('[SYNC] Collected %d categories', Object.keys(payload.lnCategories || {}).length);
+        }
+
+        // Collect LN Category Metadata (sort settings)
+        if (config.lnMetadata) {
+            const catMetaMsg = 'Collecting LN category metadata...';
+            console.log('[SYNC] ' + catMetaMsg);
+            onProgress?.({ phase: 'collecting', message: catMetaMsg });
+            
+            const catMetaKeys = await AppStorage.lnCategoryMetadata.keys();
+            console.log('[SYNC] Found %d category metadata entries', catMetaKeys.length);
+            
+            for (const key of catMetaKeys) {
+                const catMeta = await AppStorage.lnCategoryMetadata.getItem<any>(key);
+                if (catMeta) {
+                    payload.lnCategoryMetadata[key] = {
+                        sortBy: catMeta.sortBy || catMeta.sort_by || 'dateAdded',
+                        sortDesc: catMeta.sortDesc ?? catMeta.sort_desc ?? true,
+                    };
+                }
+            }
+            console.log('[SYNC] Collected %d category metadata', Object.keys(payload.lnCategoryMetadata || {}).length);
+        }
+
         console.log('[SYNC] ===== LOCAL DATA COLLECTION COMPLETE =====');
-        console.log('[SYNC] Summary: %d progress, %d metadata, %d content, %d files',
+        console.log('[SYNC] Summary: %d progress, %d metadata, %d content, %d files, %d categories, %d categoryMetadata',
             Object.keys(payload.lnProgress).length,
             Object.keys(payload.lnMetadata).length,
             Object.keys(payload.lnContent || {}).length,
-            Object.keys(payload.lnFiles || {}).length);
+            Object.keys(payload.lnFiles || {}).length,
+            Object.keys(payload.lnCategories || {}).length,
+            Object.keys(payload.lnCategoryMetadata || {}).length);
 
         return payload;
     }
@@ -359,6 +410,31 @@ export class SyncService {
                     message: `Applying files (${i + 1}/${entries.length})...`,
                     percent: ((i + 1) / entries.length) * 100,
                 });
+            }
+        }
+
+        // Apply LN Categories
+        if (config.lnMetadata && payload.lnCategories) {
+            onProgress?.({ phase: 'applying', message: 'Applying LN categories...' });
+            const entries = Object.entries(payload.lnCategories);
+            
+            for (const [categoryId, category] of entries) {
+                const existing = await AppStorage.lnCategories.getItem(categoryId);
+                if (!existing || (category.lastModified || 0) > (existing.lastModified || 0)) {
+                    await AppStorage.lnCategories.setItem(categoryId, category);
+                }
+            }
+        }
+
+        // Apply LN Category Metadata (sort settings)
+        if (config.lnMetadata && payload.lnCategoryMetadata) {
+            onProgress?.({ phase: 'applying', message: 'Applying LN category metadata...' });
+            const entries = Object.entries(payload.lnCategoryMetadata);
+            
+            for (const [categoryId, catMeta] of entries) {
+                const existing = await AppStorage.lnCategoryMetadata.getItem(categoryId);
+                // Always overwrite with remote (sort settings are simple)
+                await AppStorage.lnCategoryMetadata.setItem(categoryId, catMeta);
             }
         }
     }

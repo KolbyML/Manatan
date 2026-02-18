@@ -1,4 +1,4 @@
-use crate::types::{ConflictInfo, LNMetadata, LNProgress, SyncPayload};
+use crate::types::{ConflictInfo, LNMetadata, LNProgress, LnCategory, SyncPayload};
 use std::collections::HashMap;
 use tracing::debug;
 
@@ -29,6 +29,13 @@ pub fn merge_payloads(
     // Merge file manifest
     let merged_manifest = merge_simple_maps(local.file_manifest, remote.file_manifest);
 
+    // Merge categories (simple merge - both sides preserved)
+    let merged_categories = merge_categories(local.ln_categories, remote.ln_categories);
+
+    // Merge category metadata (simple: prefer remote)
+    let merged_category_metadata =
+        merge_simple_maps(local.ln_category_metadata, remote.ln_category_metadata);
+
     let merged = SyncPayload {
         schema_version: SyncPayload::CURRENT_SCHEMA_VERSION,
         device_id: local_device_id.to_string(),
@@ -38,9 +45,35 @@ pub fn merge_payloads(
         ln_content: merged_content,
         ln_files: merged_files,
         file_manifest: merged_manifest,
+        ln_categories: merged_categories,
+        ln_category_metadata: merged_category_metadata,
     };
 
     (merged, conflicts)
+}
+
+/// Merge categories - keep all categories from both sides
+fn merge_categories(
+    local: HashMap<String, LnCategory>,
+    remote: HashMap<String, LnCategory>,
+) -> HashMap<String, LnCategory> {
+    let mut merged = remote;
+
+    for (id, category) in local {
+        // Keep local categories, or use remote if it exists (last-modified wins)
+        match merged.get(&id) {
+            Some(existing) => {
+                if category.last_modified > existing.last_modified {
+                    merged.insert(id, category);
+                }
+            }
+            None => {
+                merged.insert(id, category);
+            }
+        }
+    }
+
+    merged
 }
 
 fn merge_progress_maps(
@@ -74,10 +107,16 @@ fn merge_progress_maps(
                     && r.device_id.as_deref() == Some(local_device_id)
                 {
                     if l.has_higher_version(r) {
-                        debug!("Progress for {}: same device, local version higher", book_id);
+                        debug!(
+                            "Progress for {}: same device, local version higher",
+                            book_id
+                        );
                         l.clone()
                     } else {
-                        debug!("Progress for {}: same device, remote version higher", book_id);
+                        debug!(
+                            "Progress for {}: same device, remote version higher",
+                            book_id
+                        );
                         r.clone()
                     }
                 } else {

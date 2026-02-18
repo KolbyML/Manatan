@@ -18,17 +18,28 @@ import {
     DialogContent,
     DialogContentText,
     DialogActions,
+    FormControl,
+    Select,
+    Tabs,
+    Tab,
+    TextField,
+    InputLabel,
 } from '@mui/material';
 import UploadFileIcon from '@mui/icons-material/UploadFile';
 import DeleteIcon from '@mui/icons-material/Delete';
 import MoreVertIcon from '@mui/icons-material/MoreVert';
 import LibraryAddCheckIcon from '@mui/icons-material/LibraryAddCheck';
+import SortIcon from '@mui/icons-material/Sort';
+import EditIcon from '@mui/icons-material/Edit';
+import AddIcon from '@mui/icons-material/Add';
+import CategoryIcon from '@mui/icons-material/Category';
 import { styled } from '@mui/material/styles';
 
-import { AppStorage, LNMetadata } from '@/lib/storage/AppStorage';
+import { AppStorage, LNMetadata, LnCategory, LnCategoryMetadata } from '@/lib/storage/AppStorage';
 import { AppRoutes } from '@/base/AppRoute.constants';
 import { parseEpub, ParseProgress } from '../services/epubParser';
 import { clearBookCache } from '../reader/hooks/useBookContent';
+import { LNCategoriesService, LnSortMode, LnSortModeType } from '../services/LNCategories';
 
 import PopupState, { bindMenu, bindTrigger } from 'material-ui-popup-state';
 import { useLongPress } from 'use-long-press';
@@ -49,6 +60,8 @@ import { useNavBarContext } from '@/features/navigation-bar/NavbarContext';
 interface LibraryItem extends LNMetadata {
     importProgress?: number;
     importMessage?: string;
+    lastRead?: number;
+    totalProgress?: number;
 }
 
 // --- Styled Components ---
@@ -75,13 +88,14 @@ type LNLibraryCardProps = {
     item: LibraryItem;
     onOpen: (id: string) => void;
     onDelete: (id: string, event: React.MouseEvent) => void;
+    onEdit: (item: LibraryItem) => void;
     isSelectionMode: boolean;
     isSelected: boolean;
     onToggleSelect: (id: string) => void;
     onLongPress: (id: string) => void;
 };
 
-const LNLibraryCard = ({ item, onOpen, onDelete, isSelectionMode, isSelected, onToggleSelect, onLongPress }: LNLibraryCardProps) => {
+const LNLibraryCard = ({ item, onOpen, onDelete, onEdit, isSelectionMode, isSelected, onToggleSelect, onLongPress }: LNLibraryCardProps) => {
     const preventMobileContextMenu = MediaQuery.usePreventMobileContextMenu();
     const optionButtonRef = useRef<HTMLButtonElement>(null);
 
@@ -318,17 +332,30 @@ const LNLibraryCard = ({ item, onOpen, onDelete, isSelectionMode, isSelected, on
                     {popupState.isOpen && !isSelectionMode && (
                         <Menu {...bindMenu(popupState)}>
                             {(onClose) => (
-                                <MenuItem
-                                    onClick={(event: React.MouseEvent<HTMLElement>) => {
-                                        onClose();
-                                        onDelete(item.id, event);
-                                    }}
-                                >
-                                    <ListItemIcon>
-                                        <DeleteIcon fontSize="small" />
-                                    </ListItemIcon>
-                                    Delete
-                                </MenuItem>
+                                <>
+                                    <MenuItem
+                                        onClick={(event: React.MouseEvent<HTMLElement>) => {
+                                            onClose();
+                                            onEdit(item);
+                                        }}
+                                    >
+                                        <ListItemIcon>
+                                            <EditIcon fontSize="small" />
+                                        </ListItemIcon>
+                                        Edit
+                                    </MenuItem>
+                                    <MenuItem
+                                        onClick={(event: React.MouseEvent<HTMLElement>) => {
+                                            onClose();
+                                            onDelete(item.id, event);
+                                        }}
+                                    >
+                                        <ListItemIcon>
+                                            <DeleteIcon fontSize="small" />
+                                        </ListItemIcon>
+                                        Delete
+                                    </MenuItem>
+                                </>
                             )}
                         </Menu>
                     )}
@@ -343,10 +370,30 @@ const LNLibraryCard = ({ item, onOpen, onDelete, isSelectionMode, isSelected, on
 export const LNLibrary: React.FC = () => {
     const navigate = useNavigate();
     const [library, setLibrary] = useState<LibraryItem[]>([]);
+    const [allBooks, setAllBooks] = useState<LibraryItem[]>([]);
     const [isImporting, setIsImporting] = useState(false);
     const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
     const [isSelectionMode, setIsSelectionMode] = useState(false);
     const [isDragOver, setIsDragOver] = useState(false);
+
+    // Category state
+    const [categories, setCategories] = useState<LnCategory[]>([]);
+    const [selectedCategoryId, setSelectedCategoryId] = useState<string>(LNCategoriesService.getAllCategoryId());
+    const [categoryMetadata, setCategoryMetadata] = useState<Record<string, LnCategoryMetadata>>({});
+    const [currentSort, setCurrentSort] = useState<LnCategoryMetadata>({ sortBy: 'dateAdded', sortDesc: true });
+
+    // Dialog states
+    const [confirmOpen, setConfirmOpen] = useState(false);
+    const [confirmOptions, setConfirmOptions] = useState<{ title: string; message: string; confirmText?: string; cancelText?: string }>({
+        title: '',
+        message: ''
+    });
+    const confirmResolver = useRef<((value: boolean) => void) | null>(null);
+
+    // Edit dialog state
+    const [editDialogOpen, setEditDialogOpen] = useState(false);
+    const [editingItem, setEditingItem] = useState<LibraryItem | null>(null);
+    const [editForm, setEditForm] = useState({ title: '', author: '', language: '', categoryIds: [] as string[] });
 
     const { navBarWidth } = useNavBarContext();
     const { settings: { mangaGridItemWidth } } = useMetadataServerSettings();
@@ -355,14 +402,6 @@ export const LNLibrary: React.FC = () => {
     const [dimensions, setDimensions] = useState(
         gridWrapperRef.current?.offsetWidth ?? Math.max(0, document.documentElement.offsetWidth - navBarWidth)
     );
-
-    // --- Confirmation Dialog State ---
-    const [confirmOpen, setConfirmOpen] = useState(false);
-    const [confirmOptions, setConfirmOptions] = useState<{ title: string; message: string; confirmText?: string; cancelText?: string }>({
-        title: '',
-        message: ''
-    });
-    const confirmResolver = useRef<((value: boolean) => void) | null>(null);
 
     // Helper to show confirm dialog as a Promise (replacing window.confirm)
     const confirm = useCallback((title: string, message: string, confirmText = 'Confirm', cancelText = 'Cancel'): Promise<boolean> => {
@@ -381,9 +420,77 @@ export const LNLibrary: React.FC = () => {
         }
     };
 
-    useEffect(() => {
-        loadLibrary();
+    // Load categories and metadata
+    const loadCategories = useCallback(async () => {
+        const cats = await LNCategoriesService.getCategories();
+        setCategories(cats);
+        const meta = await LNCategoriesService.getAllCategoryMetadata();
+        setCategoryMetadata(meta);
     }, []);
+
+    // Load sort settings for current category
+    const loadSortSettings = useCallback(async () => {
+        const sort = await LNCategoriesService.getCategoryMetadata(selectedCategoryId);
+        setCurrentSort(sort);
+    }, [selectedCategoryId]);
+
+    // Filter and sort books
+    const filterAndSortBooks = useCallback((books: LibraryItem[], categoryId: string, sort: LnCategoryMetadata): LibraryItem[] => {
+        let filtered = books;
+
+        // Filter by category
+        if (!LNCategoriesService.isAllCategory(categoryId)) {
+            filtered = filtered.filter(book => book.categoryIds?.includes(categoryId));
+        }
+
+        // Sort
+        const compareFn = LNCategoriesService.compareFn(
+            filtered.map(book => ({ metadata: book, progress: {} })),
+            sort.sortBy as LnSortModeType,
+            sort.sortDesc
+        );
+
+        return [...filtered].sort((a, b) => {
+            const multiplier = sort.sortDesc ? -1 : 1;
+            switch (sort.sortBy) {
+                case LnSortMode.DATE_ADDED:
+                    return multiplier * (b.addedAt - a.addedAt);
+                case LnSortMode.TITLE:
+                    return multiplier * ((a.title || '').localeCompare(b.title || ''));
+                case LnSortMode.AUTHOR:
+                    return multiplier * ((a.author || '').localeCompare(b.author || ''));
+                case LnSortMode.LENGTH:
+                    // For length: sortDesc=true (longer first), sortDesc=false (shorter first)
+                    return multiplier * ((a.stats?.totalLength || 0) - (b.stats?.totalLength || 0));
+                case LnSortMode.LANGUAGE:
+                    return multiplier * ((a.language || 'unknown') > (b.language || 'unknown') ? 1 : -1);
+                case LnSortMode.LAST_READ:
+                    return multiplier * ((b.lastRead || 0) - (a.lastRead || 0));
+                case LnSortMode.PROGRESS:
+                    return multiplier * ((b.totalProgress || 0) - (a.totalProgress || 0));
+                default:
+                    return multiplier * (b.addedAt - a.addedAt);
+            }
+        });
+    }, []);
+
+    useEffect(() => {
+        const init = async () => {
+            await AppStorage.migrateLnMetadata();
+            await loadCategories();
+            await loadLibrary();
+        };
+        init();
+    }, []);
+
+    useEffect(() => {
+        loadSortSettings();
+    }, [selectedCategoryId, loadSortSettings]);
+
+    useEffect(() => {
+        const filtered = filterAndSortBooks(allBooks, selectedCategoryId, currentSort);
+        setLibrary(filtered);
+    }, [allBooks, selectedCategoryId, currentSort, filterAndSortBooks]);
 
     useResizeObserver(
         gridWrapperRef,
@@ -403,15 +510,17 @@ export const LNLibrary: React.FC = () => {
             for (const key of keys) {
                 const metadata = await AppStorage.lnMetadata.getItem<LNMetadata>(key);
                 if (metadata) {
-                    const hasProgress = await AppStorage.lnProgress.getItem(key);
+                    const progress = await AppStorage.lnProgress.getItem(key);
                     items.push({
                         ...metadata,
-                        hasProgress: !!hasProgress,
-                    });
+                        hasProgress: !!progress,
+                        lastRead: progress?.lastRead,
+                        totalProgress: progress?.totalProgress,
+                    } as LibraryItem & { lastRead?: number; totalProgress?: number });
                 }
             }
 
-            setLibrary(items.sort((a, b) => b.addedAt - a.addedAt));
+            setAllBooks(items);
         } catch (e) {
             console.error('Failed to load library:', e);
         }
@@ -595,8 +704,42 @@ export const LNLibrary: React.FC = () => {
 
         clearBookCache(id);
         setLibrary((prev) => prev.filter((item) => item.id !== id));
+        setAllBooks((prev) => prev.filter((item) => item.id !== id));
         await AppStorage.deleteLnData(id);
     }, [confirm]);
+
+    const handleEdit = useCallback((item: LibraryItem) => {
+        setEditingItem(item);
+        setEditForm({
+            title: item.title,
+            author: item.author,
+            language: item.language || 'unknown',
+            categoryIds: item.categoryIds || [],
+        });
+        setEditDialogOpen(true);
+    }, []);
+
+    const handleEditSave = useCallback(async () => {
+        if (!editingItem) return;
+
+        const updates: Partial<LNMetadata> = {
+            title: editForm.title,
+            author: editForm.author,
+            language: editForm.language,
+            categoryIds: editForm.categoryIds,
+        };
+
+        await AppStorage.updateLnMetadata(editingItem.id, updates);
+
+        setAllBooks((prev) =>
+            prev.map((item) =>
+                item.id === editingItem.id ? { ...item, ...updates } : item
+            )
+        );
+
+        setEditDialogOpen(false);
+        setEditingItem(null);
+    }, [editingItem, editForm]);
 
     const handleMultiDelete = useCallback(async () => {
         if (selectedIds.size === 0) return;
@@ -691,6 +834,59 @@ export const LNLibrary: React.FC = () => {
         await handleImport(mockEvent);
     }, [handleImport]);
 
+    const handleSortChange = useCallback(async (newSortBy: LnSortModeType) => {
+        const newSort = { ...currentSort };
+        if (newSort.sortBy === newSortBy) {
+            newSort.sortDesc = !newSort.sortDesc;
+        } else {
+            newSort.sortBy = newSortBy;
+            newSort.sortDesc = getDefaultSortDesc(newSortBy);
+        }
+        setCurrentSort(newSort);
+        await LNCategoriesService.setCategoryMetadata(selectedCategoryId, newSort);
+    }, [currentSort, selectedCategoryId]);
+
+    const handleCategoryChange = useCallback((categoryId: string) => {
+        setSelectedCategoryId(categoryId);
+    }, []);
+
+    const getSortLabel = (sortBy: string): string => {
+        const labels: Record<string, string> = {
+            dateAdded: 'Date Added',
+            title: 'Title',
+            author: 'Author',
+            length: 'Length',
+            language: 'Language',
+            lastRead: 'Last Read',
+            progress: 'Progress',
+        };
+        return labels[sortBy] || sortBy;
+    };
+
+    // Get default sort direction for each sort type
+    const getDefaultSortDesc = (sortBy: string): boolean => {
+        switch (sortBy) {
+            case LnSortMode.TITLE:
+            case LnSortMode.AUTHOR:
+            case LnSortMode.LANGUAGE:
+                return false; // A to Z (ascending)
+            case LnSortMode.LENGTH:
+                return true; // Long to short (descending)
+            case LnSortMode.DATE_ADDED:
+            case LnSortMode.LAST_READ:
+            case LnSortMode.PROGRESS:
+            default:
+                return true; // Newest/most first (descending)
+        }
+    };
+
+    // Toggle sort direction
+    const handleToggleSortDirection = useCallback(async () => {
+        const newSort = { ...currentSort, sortDesc: !currentSort.sortDesc };
+        setCurrentSort(newSort);
+        await LNCategoriesService.setCategoryMetadata(selectedCategoryId, newSort);
+    }, [currentSort, selectedCategoryId]);
+
     useAppTitle('Light Novels');
 
     const appAction = useMemo(
@@ -738,6 +934,34 @@ export const LNLibrary: React.FC = () => {
                                 <LibraryAddCheckIcon />
                             </IconButton>
                         )}
+                        <FormControl size="small" sx={{ minWidth: 120 }}>
+                            <Select
+                                value={currentSort.sortBy}
+                                onChange={(e) => handleSortChange(e.target.value as LnSortModeType)}
+                                displayEmpty
+                                sx={{ color: 'inherit', '.MuiSelect-select': { py: 0.5 } }}
+                                startAdornment={<SortIcon sx={{ mr: 0.5, fontSize: 18 }} />}
+                            >
+                                <MenuItem value="dateAdded">Date Added</MenuItem>
+                                <MenuItem value="title">Title</MenuItem>
+                                <MenuItem value="author">Author</MenuItem>
+                                <MenuItem value="length">Length</MenuItem>
+                                <MenuItem value="language">Language</MenuItem>
+                                <MenuItem value="lastRead">Last Read</MenuItem>
+                                <MenuItem value="progress">Progress</MenuItem>
+                            </Select>
+                        </FormControl>
+                        <CustomTooltip title={currentSort.sortDesc ? 'Descending (Z→A, Long→Short)' : 'Ascending (A→Z, Short→Long)'}>
+                            <IconButton
+                                color="inherit"
+                                onClick={handleToggleSortDirection}
+                                size="small"
+                            >
+                                <Typography sx={{ fontWeight: 'bold', fontSize: 16 }}>
+                                    {currentSort.sortDesc ? '↓' : '↑'}
+                                </Typography>
+                            </IconButton>
+                        </CustomTooltip>
                         <Button
                             color="inherit"
                             component="label"
@@ -752,7 +976,7 @@ export const LNLibrary: React.FC = () => {
                 )}
             </Stack>
         ),
-        [handleImport, isImporting, isSelectionMode, selectedIds.size, handleMultiDelete, handleSelectAll, handleCancelSelection, library.length]
+        [handleImport, isImporting, isSelectionMode, selectedIds.size, handleMultiDelete, handleSelectAll, handleCancelSelection, library.length, currentSort.sortBy, handleSortChange]
     );
 
     useAppAction(appAction, [appAction]);
@@ -787,6 +1011,43 @@ export const LNLibrary: React.FC = () => {
                 </Box>
             )}
 
+            {/* Category Tabs */}
+            <Box sx={{ borderBottom: 1, borderColor: 'divider', mb: 1 }}>
+                <Tabs
+                    value={selectedCategoryId}
+                    onChange={(_, newValue) => handleCategoryChange(newValue)}
+                    variant="scrollable"
+                    scrollButtons="auto"
+                >
+                    <Tab
+                        label="All"
+                        value={LNCategoriesService.getAllCategoryId()}
+                        icon={<CategoryIcon />}
+                        iconPosition="start"
+                    />
+                    {categories.map((category) => (
+                        <Tab
+                            key={category.id}
+                            label={category.name}
+                            value={category.id}
+                        />
+                    ))}
+                    <Tab
+                        label="Add"
+                        value="__add__"
+                        icon={<AddIcon />}
+                        iconPosition="start"
+                        onClick={async () => {
+                            const name = prompt('Enter category name:');
+                            if (name) {
+                                await LNCategoriesService.createCategory(name);
+                                await loadCategories();
+                            }
+                        }}
+                    />
+                </Tabs>
+            </Box>
+
             {library.length === 0 && !isImporting && (
                 <Typography variant="body1" color="text.secondary" align="center" sx={{ mt: 10 }}>
                     No books found. Import an EPUB to start reading.
@@ -807,6 +1068,7 @@ export const LNLibrary: React.FC = () => {
                             item={item}
                             onOpen={handleOpen}
                             onDelete={handleDelete}
+                            onEdit={handleEdit}
                             isSelectionMode={isSelectionMode}
                             isSelected={selectedIds.has(item.id)}
                             onToggleSelect={handleToggleSelect}
@@ -815,6 +1077,73 @@ export const LNLibrary: React.FC = () => {
                     </Box>
                 ))}
             </Box>
+
+            {/* Edit Dialog */}
+            <Dialog open={editDialogOpen} onClose={() => setEditDialogOpen(false)} maxWidth="sm" fullWidth>
+                <DialogTitle>Edit Book</DialogTitle>
+                <DialogContent>
+                    <Stack spacing={2} sx={{ mt: 1 }}>
+                        <TextField
+                            label="Title"
+                            value={editForm.title}
+                            onChange={(e) => setEditForm({ ...editForm, title: e.target.value })}
+                            fullWidth
+                        />
+                        <TextField
+                            label="Author"
+                            value={editForm.author}
+                            onChange={(e) => setEditForm({ ...editForm, author: e.target.value })}
+                            fullWidth
+                        />
+                        <FormControl fullWidth>
+                            <InputLabel>Language</InputLabel>
+                            <Select
+                                value={editForm.language}
+                                label="Language"
+                                onChange={(e) => setEditForm({ ...editForm, language: e.target.value })}
+                            >
+                                <MenuItem value="unknown">Unknown</MenuItem>
+                                <MenuItem value="ja">Japanese</MenuItem>
+                                <MenuItem value="en">English</MenuItem>
+                                <MenuItem value="zh">Chinese</MenuItem>
+                                <MenuItem value="ko">Korean</MenuItem>
+                                <MenuItem value="es">Spanish</MenuItem>
+                                <MenuItem value="fr">French</MenuItem>
+                                <MenuItem value="de">German</MenuItem>
+                                <MenuItem value="ru">Russian</MenuItem>
+                                <MenuItem value="pt">Portuguese</MenuItem>
+                                <MenuItem value="it">Italian</MenuItem>
+                                <MenuItem value="ar">Arabic</MenuItem>
+                                <MenuItem value="other">Other</MenuItem>
+                            </Select>
+                        </FormControl>
+                        <FormControl fullWidth>
+                            <InputLabel>Categories</InputLabel>
+                            <Select
+                                multiple
+                                value={editForm.categoryIds}
+                                label="Categories"
+                                onChange={(e) => setEditForm({ ...editForm, categoryIds: e.target.value as string[] })}
+                                renderValue={(selected) => {
+                                    const selectedCats = categories.filter(c => selected.includes(c.id));
+                                    return selectedCats.map(c => c.name).join(', ');
+                                }}
+                            >
+                                {categories.map((category) => (
+                                    <MenuItem key={category.id} value={category.id}>
+                                        <Checkbox checked={editForm.categoryIds.includes(category.id)} />
+                                        {category.name}
+                                    </MenuItem>
+                                ))}
+                            </Select>
+                        </FormControl>
+                    </Stack>
+                </DialogContent>
+                <DialogActions>
+                    <Button onClick={() => setEditDialogOpen(false)}>Cancel</Button>
+                    <Button onClick={handleEditSave} variant="contained">Save</Button>
+                </DialogActions>
+            </Dialog>
 
             {/* Confirmation Dialog */}
             <Dialog
