@@ -32,6 +32,7 @@ rusqlite = "0.31"
 r2d2 = "0.8"
 r2d2_sqlite = "0.24"
 snap = "1.1"
+mime_guess = "2"
 
 [lints]
 workspace = true

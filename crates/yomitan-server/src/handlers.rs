@@ -2,8 +2,9 @@ use std::collections::HashMap;
 
 use axum::{
     Json,
-    extract::{Multipart, Query, State},
-    http::StatusCode,
+    extract::{Multipart, Path, Query, State},
+    http::{HeaderMap, StatusCode},
+    response::IntoResponse,
 };
 use regex::Regex;
 use reqwest::Client;
@@ -128,6 +129,8 @@ pub struct ApiGroupedResult {
     pub forms: Vec<ApiForm>,
     pub term_tags: Vec<GlossaryTag>,
     pub match_len: usize,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub styles: Option<std::collections::HashMap<String, String>>,
 }
 
 #[derive(Deserialize)]
@@ -1450,9 +1453,9 @@ pub async fn lookup_handler(
         language.to_deinflect_language(),
     );
 
-    let dict_meta: std::collections::HashMap<DictionaryId, String> = {
+    let dict_meta: std::collections::HashMap<DictionaryId, (String, Option<String>)> = {
         let dicts = state.app.dictionaries.read().expect("lock");
-        dicts.iter().map(|(k, v)| (*k, v.name.clone())).collect()
+        dicts.iter().map(|(k, v)| (*k, (v.name.clone(), v.styles.clone()))).collect()
     };
 
     struct Aggregator {
@@ -1466,6 +1469,7 @@ pub async fn lookup_handler(
         ipa: Vec<ApiIpa>,
         forms_set: Vec<(String, String)>,
         match_len: usize,
+        dict_ids: Vec<DictionaryId>,
     }
 
     let mut map: Vec<Aggregator> = Vec::new();
@@ -1509,7 +1513,7 @@ pub async fn lookup_handler(
 
         let dict_name = dict_meta
             .get(&entry.0.source)
-            .cloned()
+            .map(|(name, _)| name.clone())
             .unwrap_or("Unknown".to_string());
 
         if is_freq {
@@ -1658,7 +1662,7 @@ pub async fn lookup_handler(
         } else {
             // === DEFINITION LOGIC ===
             let def_obj = ApiDefinition {
-                dictionary_name: dict_name,
+                dictionary_name: dict_name.clone(),
                 tags,
                 content: content_val,
             };
@@ -1674,6 +1678,7 @@ pub async fn lookup_handler(
                     });
                     if !is_dup {
                         existing.glossary.push(def_obj);
+                        existing.dict_ids.push(entry.0.source);
                     }
                 } else {
                     map.push(Aggregator {
@@ -1687,6 +1692,7 @@ pub async fn lookup_handler(
                         term_tags: entry.1.unwrap_or_default(),
                         forms_set: vec![(headword.clone(), reading.clone())],
                         match_len,
+                        dict_ids: vec![entry.0.source],
                     });
                 }
             } else {
@@ -1704,6 +1710,7 @@ pub async fn lookup_handler(
                         reading: reading.clone(),
                     }],
                     match_len,
+                    styles: Some(std::iter::once((dict_name.clone(), dict_meta.get(&entry.0.source).and_then(|(_, s)| s.clone()).unwrap_or_default())).filter(|(_, s)| !s.is_empty()).collect()),
                 });
             }
         }
@@ -1744,6 +1751,16 @@ pub async fn lookup_handler(
                         })
                         .collect(),
                     match_len: agg.match_len,
+                    styles: Some(
+                        agg.dict_ids
+                            .into_iter()
+                            .filter_map(|id| {
+                                dict_meta.get(&id).and_then(|(name, styles)| {
+                                    styles.as_ref().map(|s| (name.clone(), s.clone()))
+                                })
+                            })
+                            .collect(),
+                    ),
                 }
             })
             .collect();
@@ -1858,4 +1875,44 @@ pub async fn import_handler(
         }
     }
     Json(json!({ "status": "error", "message": "No file field found" }))
+}
+
+pub async fn dict_media_handler(
+    Path((dict_name, file_path)): Path<(String, String)>,
+    State(state): State<ServerState>,
+) -> impl IntoResponse {
+    let media_dir = state.app.data_dir.join("dict_media").join(&dict_name).join(&file_path);
+    
+    // Path traversal protection
+    let media_dir = match media_dir.canonicalize() {
+        Ok(p) => p,
+        Err(_) => return (StatusCode::NOT_FOUND, "Not found").into_response(),
+    };
+    
+    let base_dir = state.app.data_dir.join("dict_media").join(&dict_name).canonicalize().ok();
+    if !base_dir.map(|b| media_dir.starts_with(b)).unwrap_or(false) {
+        return (StatusCode::FORBIDDEN, "Forbidden").into_response();
+    }
+    
+    match tokio::fs::read(&media_dir).await {
+        Ok(data) => {
+            let mime = mime_guess::from_path(&media_dir)
+                .first_or_octet_stream()
+                .as_ref()
+                .to_string();
+            
+            let mut headers = HeaderMap::new();
+            headers.insert(
+                axum::http::header::CONTENT_TYPE,
+                mime.parse().unwrap(),
+            );
+            headers.insert(
+                axum::http::header::CACHE_CONTROL,
+                "public, max-age=31536000".parse().unwrap(),
+            );
+            
+            (headers, data).into_response()
+        }
+        Err(_) => (StatusCode::NOT_FOUND, "Not found").into_response(),
+    }
 }
