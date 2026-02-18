@@ -7,21 +7,22 @@ import { useOCR } from '@/Manatan/context/OCRContext';
 import { lookupYomitan } from '@/Manatan/utils/api';
 
 const BLOCK_TAGS = new Set(['P', 'DIV', 'SECTION', 'ARTICLE', 'LI', 'TD', 'TH', 'BLOCKQUOTE', 'H1', 'H2', 'H3', 'H4', 'H5', 'H6']);
-const SENTENCE_END_SET = new Set(['。', '！', '？', '.', '!', '?']);
+const SENTENCE_END_SET = new Set(['。', '！', '？', '；', '，', '、', '.', '!', '?', ';']);
+const MAX_SENTENCE_LENGTH = 200;
 const INTERACTIVE_SELECTORS = 'a, button, input, ruby rt, img, .nav-btn, .reader-progress, .reader-slider-wrap';
 const WHITESPACE_REGEX = /\s/;
 
 const textEncoder = new TextEncoder();
 
-const getCaretRange = document.caretRangeFromPoint
-    ? (x: number, y: number) => document.caretRangeFromPoint(x, y)
-    : (x: number, y: number) => {
-        const pos = (document as any).caretPositionFromPoint?.(x, y);
-        if (!pos) return null;
+const getCaretRange = (x: number, y: number) => {
+    const pos = (document as any).caretPositionFromPoint?.(x, y);
+    if (pos) {
         const range = document.createRange();
         range.setStart(pos.offsetNode, pos.offset);
         return range;
-    };
+    }
+    return document.caretRangeFromPoint?.(x, y) ?? null;
+};
 
 export function useTextLookup() {
     const { settings, setDictPopup } = useOCR();
@@ -30,6 +31,7 @@ export function useTextLookup() {
         node: Node;
         offset: number;
         character: string;
+        rect: DOMRect;
     } | null => {
         const range = getCaretRange(x, y);
 
@@ -54,17 +56,26 @@ export function useTextLookup() {
                     const rect = testRange.getBoundingClientRect();
 
                     if (x >= rect.left && x <= rect.right && y >= rect.top && y <= rect.bottom) {
-                        return { node, offset: caretOffset - 1, character: char };
+                        return { node, offset: caretOffset - 1, character: char, rect };
                     }
                 } catch (e) { }
             }
         }
 
-        // Fallback: use caret position
+        // Fallback: use caret position with bounding rect check
         if (caretOffset < text.length) {
             const char = text[caretOffset];
             if (!WHITESPACE_REGEX.test(char)) {
-                return { node, offset: caretOffset, character: char };
+                try {
+                    const testRange = document.createRange();
+                    testRange.setStart(node, caretOffset);
+                    testRange.setEnd(node, caretOffset + 1);
+                    const rect = testRange.getBoundingClientRect();
+
+                    if (x >= rect.left && x <= rect.right && y >= rect.top && y <= rect.bottom) {
+                        return { node, offset: caretOffset, character: char, rect };
+                    }
+                } catch (e) { }
             }
         }
 
@@ -125,12 +136,20 @@ export function useTextLookup() {
                 start = i + 1;
                 break;
             }
+            if (clickPosition - i > MAX_SENTENCE_LENGTH) {
+                start = clickPosition - MAX_SENTENCE_LENGTH;
+                break;
+            }
         }
 
         let end = fullText.length;
         for (let i = clickPosition; i < fullText.length; i++) {
             if (SENTENCE_END_SET.has(fullText[i])) {
                 end = i + 1;
+                break;
+            }
+            if (i - clickPosition > MAX_SENTENCE_LENGTH) {
+                end = clickPosition + MAX_SENTENCE_LENGTH;
                 break;
             }
         }
@@ -156,17 +175,24 @@ export function useTextLookup() {
         if (selection && !selection.isCollapsed) return false;
 
         const charInfo = getCharacterAtPoint(e.clientX, e.clientY);
-        if (!charInfo || WHITESPACE_REGEX.test(charInfo.character)) return false;
+        if (!charInfo || WHITESPACE_REGEX.test(charInfo.character)) {
+            console.log('[TextLookup] No valid character found at point:', { x: e.clientX, y: e.clientY, charInfo });
+            return false;
+        }
 
         const sentenceContext = getSentenceContext(charInfo.node, charInfo.offset);
         if (!sentenceContext?.sentence.trim()) return false;
 
         const { sentence, byteOffset } = sentenceContext;
 
+        // Use actual text position for popup, not click coordinates
+        const popupX = charInfo.rect.left + charInfo.rect.width / 2;
+        const popupY = charInfo.rect.top;
+
         setDictPopup({
             visible: true,
-            x: e.clientX,
-            y: e.clientY,
+            x: popupX,
+            y: popupY,
             results: [],
             isLoading: true,
             systemLoading: false,
