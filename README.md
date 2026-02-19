@@ -95,7 +95,7 @@ You can also read manga files stored locally on your device. To set up local man
 * Windows: The default local manga directory is at C:\Users\[YourUsername]\AppData\Local\Tachidesk\local)
 3. You will then be able to find your local manga under **Browse → Sources → Local source**
 ### Important : Your manga must follow a specific folder structure to be detected properly.
-Refer to the [Suwayomi Local Source documentation](https://github.com/Suwayomi/Suwayomi-Server/wiki/Local-Source#folder-structure) for details on how to structure your folders.
+Refer to the [Manatan local manga guide](https://manatan.com/docs/guides/local-manga) for details on how to structure your folders.
 ## Troubleshooting
 
 To fully clear cache and data from previous installs, delete the following folders and try again:
