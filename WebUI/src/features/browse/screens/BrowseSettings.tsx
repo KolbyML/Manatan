@@ -64,8 +64,7 @@ export const BrowseSettings = () => {
         value: ExtensionsSettings[Setting],
     ) => {
         mutateSettings({ variables: { input: { settings: { [setting]: value } as Record<string, unknown> } } }).catch(
-            (e) =>
-                makeToast(t('global.error.label.failed_to_save_changes'), 'error', getErrorMessage(e)),
+            (e) => makeToast(t('global.error.label.failed_to_save_changes'), 'error', getErrorMessage(e)),
         );
     };
 
