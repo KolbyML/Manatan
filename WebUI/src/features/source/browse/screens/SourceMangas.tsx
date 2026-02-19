@@ -335,7 +335,7 @@ export function SourceMangas() {
     const messageExtra = isLocalSource ? (
         <>
             <span>{t('source.local_source.label.checkout')} </span>
-            <Link href="https://github.com/Suwayomi/Suwayomi-Server/wiki/Local-Source" target="_blank" rel="noreferrer">
+            <Link href="https://manatan.com/docs/guides/local-manga" target="_blank" rel="noreferrer">
                 {t('source.local_source.label.guide')}
             </Link>
         </>
@@ -412,16 +412,21 @@ export function SourceMangas() {
         <>
             <AppbarSearch />
             <SourceGridLayout />
-                <CustomTooltip title={t('global.button.open_webview')} disabled={!source?.baseUrl}>
+            <CustomTooltip title={t('global.button.open_webview')} disabled={!source?.baseUrl}>
+                {source?.baseUrl ? (
                     <IconButton
-                        disabled={!source?.baseUrl}
-                        href={source?.baseUrl ? requestManager.getWebviewUrl(source?.baseUrl) : undefined}
+                        href={requestManager.getWebviewUrl(source.baseUrl)}
                         rel="noreferrer"
                         target="_blank"
                         color="inherit"
                     >
                         <IconWebView />
-                </IconButton>
+                    </IconButton>
+                ) : (
+                    <IconButton disabled color="inherit">
+                        <IconWebView />
+                    </IconButton>
+                )}
             </CustomTooltip>
             {source?.isConfigurable && (
                 <CustomTooltip title={t('settings.title')}>
