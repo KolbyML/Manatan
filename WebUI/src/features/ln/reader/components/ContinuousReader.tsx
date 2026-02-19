@@ -417,9 +417,23 @@ export const ContinuousReader: React.FC<ContinuousReaderProps> = ({
         if (!containerRef.current) return;
 
         const container = containerRef.current;
+        const targetChapter = initialProgress.chapterIndex ?? 0;
 
-        // Wait for content to render
-        setTimeout(() => {
+        // Wait for target chapter's content to be rendered before restoration
+        const tryRestore = async () => {
+            const maxWaitMs = 10000; // 10 seconds for weak devices
+            const checkIntervalMs = 200;
+
+            // Wait for target chapter's blocks to be in DOM
+            for (let elapsed = 0; elapsed < maxWaitMs; elapsed += checkIntervalMs) {
+                const blocks = container.querySelectorAll(`[data-block-id^="ch${targetChapter}-b"]`);
+                if (blocks.length > 0) {
+                    console.log('[ContinuousReader] Chapter content loaded after', elapsed, 'ms');
+                    break;
+                }
+                await new Promise(r => setTimeout(r, checkIntervalMs));
+            }
+
             if (hasRestoredRef.current) return;
 
             const result = restoreReadingPosition(
@@ -457,7 +471,9 @@ export const ContinuousReader: React.FC<ContinuousReaderProps> = ({
                 saveLockUntilRef.current = Date.now() + SAVE_LOCK_DURATION_MS;
                 setRestorationComplete(true);
             }, 500);
-        }, 300);
+        };
+
+        tryRestore();
     }, [contentLoaded, initialProgress, isVertical, isRTL, stats?.blockMaps]);
 
     // ========================================================================

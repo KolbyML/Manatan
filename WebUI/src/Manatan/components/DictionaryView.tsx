@@ -33,13 +33,41 @@ export const StructuredContent: React.FC<{
     const parsedData = useMemo(() => {
         if (!contentString) return null;
         try {
-            return JSON.parse(contentString);
+            const parsed = JSON.parse(contentString);
+            if (typeof parsed === 'string') return parsed;
+            return parsed;
         } catch (e) {
             return contentString;
         }
     }, [contentString]);
 
     if (parsedData === null || parsedData === undefined) return null;
+    
+    if (typeof parsedData === 'string') {
+        const text = parsedData;
+        if (onWordClick && text.trim()) {
+            return (
+                <span 
+                    onClick={(e) => {
+                        e.stopPropagation();
+                        let charOffset = 0;
+                        if (document.caretRangeFromPoint) {
+                            const range = document.caretRangeFromPoint(e.clientX, e.clientY);
+                            if (range && range.startContainer.nodeType === Node.TEXT_NODE) {
+                                charOffset = range.startOffset;
+                            }
+                        }
+                        onWordClick(text, charOffset);
+                    }}
+                    style={{ whiteSpace: 'pre-wrap' }}
+                >
+                    {text}
+                </span>
+            );
+        }
+        return <span style={{ whiteSpace: 'pre-wrap' }}>{text}</span>;
+    }
+    
     return <ContentNode node={parsedData} dictionaryName={dictionaryName} onLinkClick={onLinkClick} onWordClick={onWordClick} colors={colors} />;
 };
 
@@ -875,15 +903,16 @@ export const DictionaryView: React.FC<DictionaryViewProps> = ({
     }, []);
     const processedEntries = useMemo(() => {
         if (!settings.showHarmonicMeanFreq) return results;
-        return results.map(entry => {
-            if (!entry.frequencies || entry.frequencies.length === 0) return entry;
-            const harmonicMean = calculateHarmonicMean(entry.frequencies);
-            if (harmonicMean === null) return entry;
-            return {
-                ...entry,
-                frequencies: [{ dictionaryName: 'Harmonic Mean', value: harmonicMean.toString() }]
-            };
-        });
+        const firstFrequencies = results
+            .filter(entry => entry.frequencies && entry.frequencies.length > 0)
+            .map(entry => entry.frequencies![0]);
+        if (firstFrequencies.length === 0) return results;
+        const harmonicMean = calculateHarmonicMean(firstFrequencies);
+        if (harmonicMean === null) return results;
+        return results.map(entry => ({
+            ...entry,
+            frequencies: [{ dictionaryName: 'Harmonic Mean', value: harmonicMean.toString() }]
+        }));
     }, [results, settings.showHarmonicMeanFreq, calculateHarmonicMean]);
     const handlePlayWordAudio = useCallback(async (entry: DictionaryResult, selection?: WordAudioSourceSelection, playFailSound = true) => {
         const entryKey = `${entry.headword}::${entry.reading}`;

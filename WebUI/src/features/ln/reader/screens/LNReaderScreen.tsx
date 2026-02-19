@@ -242,13 +242,32 @@ export const LNReaderScreen: React.FC = () => {
     }, [content, isLoading, location.hash]);
 
     const handleChapterClick = (index: number) => {
+        // Get first block ID for this chapter from blockMaps
+        const blockMaps = content?.stats?.blockMaps;
+        let firstBlockId: string | undefined;
+        
+        if (blockMaps) {
+            const chapterBlocks = blockMaps
+                .filter(b => b.blockId.startsWith(`ch${index}-`))
+                .sort((a, b) => a.startOffset - b.startOffset);
+            
+            if (chapterBlocks.length > 0) {
+                firstBlockId = chapterBlocks[0].blockId;
+            }
+        }
+        
+        // Fallback if no blockMaps
+        if (!firstBlockId) {
+            firstBlockId = `ch${index}-b0`;
+        }
+        
         setSavedProgress((prev: any) => ({
             ...prev,
             chapterIndex: index,
             pageNumber: 0,
-            chapterCharOffset: 0,
+            chapterCharOffset: 1, // Use 1 to trigger blockMaps lookup in restoration
             sentenceText: '',
-            blockId: undefined,
+            blockId: firstBlockId,
             blockLocalOffset: 0,
             contextSnippet: '',
         }));
@@ -273,13 +292,32 @@ export const LNReaderScreen: React.FC = () => {
     };
 
     const handleTocItemClick = (chapterIndex: number) => {
+        // Get first block ID for this chapter from blockMaps
+        const blockMaps = content?.stats?.blockMaps;
+        let firstBlockId: string | undefined;
+        
+        if (blockMaps) {
+            const chapterBlocks = blockMaps
+                .filter(b => b.blockId.startsWith(`ch${chapterIndex}-`))
+                .sort((a, b) => a.startOffset - b.startOffset);
+            
+            if (chapterBlocks.length > 0) {
+                firstBlockId = chapterBlocks[0].blockId;
+            }
+        }
+        
+        // Fallback if no blockMaps
+        if (!firstBlockId) {
+            firstBlockId = `ch${chapterIndex}-b0`;
+        }
+        
         setSavedProgress((prev: any) => ({
             ...prev,
             chapterIndex: chapterIndex,
             pageNumber: 0,
-            chapterCharOffset: 0,
+            chapterCharOffset: 1, // Use 1 to trigger blockMaps lookup in restoration
             sentenceText: '',
-            blockId: undefined,
+            blockId: firstBlockId,
             blockLocalOffset: 0,
             contextSnippet: '',
         }));

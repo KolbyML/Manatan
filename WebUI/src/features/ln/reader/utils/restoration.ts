@@ -8,6 +8,11 @@ import {
 } from './blockMap';
 import { getCleanTextContent } from './blockPosition';
 
+export function hasChapterBlocks(container: HTMLElement, chapterIndex: number): boolean {
+    const blocks = container.querySelectorAll(`[data-block-id^="ch${chapterIndex}-b"]`);
+    return blocks.length > 0;
+}
+
 export interface RestorationResult {
     success: boolean;
     method: 'block' | 'block-offset' | 'block-map' | 'text-search' | 'fallback' | 'failed';
@@ -59,7 +64,7 @@ export function restoreReadingPosition(
             scrollToBlock(block, container, isVertical, isRTL);
 
             if (position.blockLocalOffset && position.blockLocalOffset > 0) {
-                applyLocalOffset(block, container, position.blockLocalOffset, isVertical);
+                applyLocalOffset(block, container, position.blockLocalOffset, isVertical, isRTL);
             }
 
             const confidence = validateContext(block, position.contextSnippet);
@@ -115,7 +120,7 @@ export function restoreReadingPosition(
                     scrollToBlock(block, container, isVertical, isRTL);
                     
                     if (pos.blockLocalOffset > 0) {
-                        applyLocalOffset(block, container, pos.blockLocalOffset, isVertical);
+                        applyLocalOffset(block, container, pos.blockLocalOffset, isVertical, isRTL);
                     }
 
                     console.log('[Restoration] BlockMap-based success:', {
@@ -209,7 +214,7 @@ function scrollToBlock(
     if (isVertical) {
         block.scrollIntoView({
             block: 'start',
-            inline: 'start',
+            inline: isRTL ? 'start' : 'end',
             behavior: 'auto',
         });
     } else {
@@ -225,13 +230,14 @@ function applyLocalOffset(
     block: Element,
     container: HTMLElement,
     localOffset: number,
-    isVertical: boolean
+    isVertical: boolean,
+    isRTL: boolean = false
 ): void {
     const text = getCleanTextContent(block);
     if (text.length === 0) return;
 
     // Try precise caret-based positioning first
-    const applied = applyLocalOffsetCaret(block, container, localOffset, isVertical);
+    const applied = applyLocalOffsetCaret(block, container, localOffset, isVertical, isRTL);
     if (applied) return;
 
     // Fallback to ratio-based (less precise)
@@ -240,7 +246,8 @@ function applyLocalOffset(
 
     if (isVertical) {
         const scrollAmount = rect.width * ratio;
-        container.scrollBy({ left: -scrollAmount, behavior: 'auto' });
+        const direction = isRTL ? 1 : -1;
+        container.scrollBy({ left: scrollAmount * direction, behavior: 'auto' });
     } else {
         const scrollAmount = rect.height * ratio;
         container.scrollBy({ top: scrollAmount, behavior: 'auto' });
@@ -251,7 +258,8 @@ function applyLocalOffsetCaret(
     block: Element,
     container: HTMLElement,
     localOffset: number,
-    isVertical: boolean
+    isVertical: boolean,
+    isRTL: boolean = false
 ): boolean {
     try {
         const text = getCleanTextContent(block);
@@ -297,19 +305,21 @@ function applyLocalOffsetCaret(
 
         const containerRect = container.getBoundingClientRect();
 
-        let scrollLeft: number;
-        let scrollTop: number;
-
         if (isVertical) {
-            scrollLeft = container.scrollLeft + rect.left - containerRect.left;
-            scrollTop = container.scrollTop + rect.top - containerRect.top;
-            container.scrollTo({ left: scrollLeft, top: container.scrollTop, behavior: 'auto' });
+            let scrollLeft: number;
+            if (isRTL) {
+                scrollLeft = container.scrollLeft + rect.left - containerRect.left;
+            } else {
+                scrollLeft = container.scrollLeft + rect.right - containerRect.right;
+            }
+            const scrollTop = container.scrollTop + rect.top - containerRect.top;
+            container.scrollTo({ left: scrollLeft, top: scrollTop, behavior: 'auto' });
         } else {
-            scrollTop = container.scrollTop + rect.top - containerRect.top;
+            const scrollTop = container.scrollTop + rect.top - containerRect.top;
             container.scrollTo({ top: scrollTop, left: container.scrollLeft, behavior: 'auto' });
         }
 
-        console.log('[Restoration] Applied precise caret offset:', { localOffset, offsetInNode });
+        console.log('[Restoration] Applied precise caret offset:', { localOffset, offsetInNode, isVertical, isRTL });
         return true;
     } catch (e) {
         console.warn('[Restoration] Caret positioning failed:', e);

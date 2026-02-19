@@ -288,6 +288,16 @@ export const PagedReader: React.FC<PagedReaderProps> = ({
         [chapters, currentSection]
     );
 
+    const isKorean = useMemo(() => {
+        if (stats?.language === 'ko') return true;
+
+        const koreanFonts = ['KR', 'Malgun', 'Nanum', 'Gothic', 'Noto Sans CJK KR'];
+        if (koreanFonts.some(f => settings.lnFontFamily?.includes(f))) return true;
+
+        const sample = currentHtml.slice(0, 2000);
+        return /[\uAC00-\uD7A3]/.test(sample);
+    }, [stats?.language, settings.lnFontFamily, currentHtml]);
+
     const typographyStyles = useMemo(
         () => buildTypographyStyles(settings, isVertical),
         [settings, isVertical]
@@ -626,91 +636,99 @@ export const PagedReader: React.FC<PagedReaderProps> = ({
 
         if (restoreKey === lastRestoreKeyRef.current) return;
 
-        // Block detection until we finish
-        restorePendingRef.current = true;
-
         const anchor = restoreAnchorRef.current;
         const anchorBlockId = anchor?.blockId;
         const anchorChapter = anchor?.chapterIndex ?? 0;
 
-        // If no anchor or wrong chapter, just mark done and allow detection
-        if (!anchorBlockId || anchorChapter !== currentSection) {
-            lastRestoreKeyRef.current = restoreKey;
-            restorePendingRef.current = false;
-            return;
-        }
+        // Wait for target chapter's content to be rendered before restoration
+        const tryRestore = async () => {
+            const maxWaitMs = 10000; // 10 seconds for weak devices
+            const checkIntervalMs = 200;
 
-        let blockEl = contentRef.current.querySelector(
-            `[data-block-id="${anchorBlockId}"]`
-        ) as HTMLElement | null;
+            // Wait for target chapter's blocks to be in DOM
+            for (let elapsed = 0; elapsed < maxWaitMs; elapsed += checkIntervalMs) {
+                const blocks = contentRef.current.querySelectorAll(`[data-block-id^="ch${anchorChapter}-b"]`);
+                if (blocks.length > 0) {
+                    console.log('[PagedReader] Chapter content loaded after', elapsed, 'ms');
+                    break;
+                }
+                await new Promise(r => setTimeout(r, checkIntervalMs));
+            }
 
-        if (!blockEl && stats?.blockMaps && anchor?.chapterCharOffset) {
-            const chapterLookup = createChapterBlockLookup(stats.blockMaps, anchorChapter);
-            const pos = getPositionFromCharOffset(chapterLookup, anchor.chapterCharOffset);
-            
-            if (pos) {
-                blockEl = contentRef.current.querySelector(
-                    `[data-block-id="${pos.blockId}"]`
-                ) as HTMLElement | null;
+            // Block detection until we finish
+            restorePendingRef.current = true;
+
+            // If no anchor or wrong chapter, just mark done and allow detection
+            if (!anchorBlockId || anchorChapter !== currentSection) {
+                lastRestoreKeyRef.current = restoreKey;
+                restorePendingRef.current = false;
+                return;
+            }
+
+            let blockEl = contentRef.current.querySelector(
+                `[data-block-id="${anchorBlockId}"]`
+            ) as HTMLElement | null;
+
+            if (!blockEl && stats?.blockMaps && anchor?.chapterCharOffset) {
+                const chapterLookup = createChapterBlockLookup(stats.blockMaps, anchorChapter);
+                const pos = getPositionFromCharOffset(chapterLookup, anchor.chapterCharOffset);
                 
-                if (blockEl) {
-                    console.log('[PagedReader] Restored using blockMaps:', {
-                        originalBlockId: anchorBlockId,
-                        foundBlockId: pos.blockId,
-                        charOffset: anchor.chapterCharOffset,
-                    });
+                if (pos) {
+                    blockEl = contentRef.current.querySelector(
+                        `[data-block-id="${pos.blockId}"]`
+                    ) as HTMLElement | null;
+                    
+                    if (blockEl) {
+                        console.log('[PagedReader] Restored using blockMaps:', {
+                            originalBlockId: anchorBlockId,
+                            foundBlockId: pos.blockId,
+                            charOffset: anchor.chapterCharOffset,
+                        });
+                    }
                 }
             }
-        }
 
-        if (!blockEl) {
-            lastRestoreKeyRef.current = restoreKey;
-            restorePendingRef.current = false;
-            return;
-        }
-
-        const blockRect = blockEl.getBoundingClientRect();
-        const contentRect = contentRef.current.getBoundingClientRect();
-
-        // Match your existing logic (vertical uses translateY, horizontal uses translateX)
-        const offset = isVertical
-            ? (blockRect.top - contentRect.top)
-            : (blockRect.left - contentRect.left);
-
-        const targetPage = Math.floor(Math.abs(offset) / measuredPageSize);
-        const clamped = Math.max(0, Math.min(targetPage, totalPages - 1));
-
-        // Mark as restored for this layout
-        lastRestoreKeyRef.current = restoreKey;
-
-        setCurrentPage(prev => {
-            if (prev === clamped) {
-                // If page didn't change, release the guard immediately
+            if (!blockEl) {
+                lastRestoreKeyRef.current = restoreKey;
                 restorePendingRef.current = false;
-                // Set save lock for 3 seconds
-                saveLockUntilRef.current = Date.now() + SAVE_LOCK_DURATION_MS;
-                return prev;
+                return;
             }
-            return clamped;
-        });
 
-        // Release guard and set save lock after state updates
-        requestAnimationFrame(() => {
-            restorePendingRef.current = false;
-            // Set save lock for 3 seconds to prevent overwriting restored position
-            saveLockUntilRef.current = Date.now() + SAVE_LOCK_DURATION_MS;
-        });
+            const blockRect = blockEl.getBoundingClientRect();
+            const contentRect = contentRef.current.getBoundingClientRect();
 
-    }, [
-        contentReady,
-        measuredPageSize,
-        totalPages,
-        currentSection,
-        isVertical,
-        layoutKey,
-        stats?.blockMaps,
-        // (Note: we use refs for anchors so we don't depend on changing positions)
-    ]);
+            // Match your existing logic (vertical uses translateY, horizontal uses translateX)
+            const offset = isVertical
+                ? (blockRect.top - contentRect.top)
+                : (blockRect.left - contentRect.left);
+
+            const targetPage = Math.floor(Math.abs(offset) / measuredPageSize);
+            const clamped = Math.max(0, Math.min(targetPage, totalPages - 1));
+
+            // Mark as restored for this layout
+            lastRestoreKeyRef.current = restoreKey;
+
+            setCurrentPage(prev => {
+                if (prev === clamped) {
+                    // If page didn't change, release the guard immediately
+                    restorePendingRef.current = false;
+                    // Set save lock for 3 seconds
+                    saveLockUntilRef.current = Date.now() + SAVE_LOCK_DURATION_MS;
+                    return prev;
+                }
+                return clamped;
+            });
+
+            // Release guard and set save lock after state updates
+            requestAnimationFrame(() => {
+                restorePendingRef.current = false;
+                // Set save lock for 3 seconds to prevent overwriting restored position
+                saveLockUntilRef.current = Date.now() + SAVE_LOCK_DURATION_MS;
+            });
+        };
+
+        tryRestore();
+    }, [contentReady, measuredPageSize, totalPages, currentSection, isVertical, layoutKey, stats?.blockMaps]);
 
     // ========================================================================
     // Touch/Click Handlers
@@ -1249,6 +1267,7 @@ useEffect(() => {
                 <div
                     ref={contentRef}
                     className={`paged-content ${!settings.lnEnableFurigana ? 'furigana-hidden' : ''}`}
+                    lang={isKorean ? "ko" : undefined}
                     style={contentStyle}
                     dangerouslySetInnerHTML={{ __html: currentHtml }}
                 />
