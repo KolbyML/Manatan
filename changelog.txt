@@ -1,3 +1,23 @@
+## Release v3.1.0
+
+- Fix bug in in anime player where it got confused if we should play downloaded or online video (c54f272)
+- Show AnkiConnect Integration settings on iOS (1787c3f)
+- Link to Manatan docs for local manga/anime instructions (7db05d1)
+- Improve anime download stability (e8adfbc)
+- Show watch time, fix playback resume for downloaded video, make subtitle pattern detection smarter (3250fbe)
+- Link to Manatan documentation for manga guide (77ac5e6)
+- Fix regressions in anime player and glossary html generation (ff532cd)
+- Novel Reader: restoration and library and sync fixes and improvements (#208) (1d7f055)
+- Popup : make css more robust and anime fixes (#207) (d4ff1dd)
+- Improve ts payload detection (a3ffdfa)
+- Add Anime Download support (d1c3113)
+- iOS: fix bug where app got stuck on reopening (9589f81)
+- Popup: Add dict. css and images support and fixes (#203) (4f48d4b)
+- LN Reader: add more font settings and faster lookup (#205) (8a341e8)
+- LN Library: add categories and sorting (#204) (0ba22b1)
+- Add light theme to popup (#202) (ab732ac)
+- ios: make loading screen on sleep more descriptive and active (7ffb7ea)
+
 ## Release v3.0.22
 
 - fix(audio): make local sentence-audio clip generation work for MKV sources (eca0968)
