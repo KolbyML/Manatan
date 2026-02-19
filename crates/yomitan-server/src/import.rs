@@ -21,11 +21,11 @@ use crate::state::{AppState, DictionaryData, StoredRecord};
 #[cfg(test)]
 const MAX_IMPORT_ARCHIVE_BYTES: usize = 2 * 1024 * 1024;
 #[cfg(not(test))]
-const MAX_IMPORT_ARCHIVE_BYTES: usize = 384 * 1024 * 1024;
-const MAX_TOTAL_UNCOMPRESSED_BYTES: u64 = 1024 * 1024 * 1024;
-const MAX_JSON_ENTRY_BYTES: u64 = 192 * 1024 * 1024;
+const MAX_IMPORT_ARCHIVE_BYTES: usize = 768 * 1024 * 1024;
+const MAX_TOTAL_UNCOMPRESSED_BYTES: u64 = 3 * 1024 * 1024 * 1024;
+const MAX_JSON_ENTRY_BYTES: u64 = 512 * 1024 * 1024;
 const MAX_INDEX_JSON_BYTES: u64 = 4 * 1024 * 1024;
-const MAX_ZIP_ENTRY_COUNT: usize = 1024;
+const MAX_ZIP_ENTRY_COUNT: usize = 65536;
 const MAX_COMPRESSION_RATIO: u64 = 300;
 const MAX_TERMS_INSERTED: usize = 8_000_000;
 

@@ -94,6 +94,7 @@ export interface Settings {
     animePopupLeftOffsetPx: number;
     animeSubtitleHoverLookup: boolean;
     animeSubtitleHoverAutoResume: boolean;
+    animePopupCustomCss: string;
     animeHotkeys: Record<AnimeHotkey, string[]>;
     tapZonePercent: number;
     jimakuApiKey?: string;
@@ -101,6 +102,7 @@ export interface Settings {
     yomitanPopupWidthPx: number;
     yomitanPopupHeightPx: number;
     yomitanPopupScalePercent: number;
+    yomitanPopupCustomCss: string;
     yomitanPopupTheme: 'dark' | 'light';
     animePopupTheme: 'dark' | 'light';
     yomitanShowPitchGraph: boolean;
@@ -295,6 +297,7 @@ export const DEFAULT_SETTINGS: Settings = {
     animePopupLeftOffsetPx: 0,
     animeSubtitleHoverLookup: true,
     animeSubtitleHoverAutoResume: false,
+    animePopupCustomCss: '',
     animeHotkeys: DEFAULT_ANIME_HOTKEYS,
     tapZonePercent: 30,
     jimakuApiKey: '',
@@ -302,6 +305,7 @@ export const DEFAULT_SETTINGS: Settings = {
     yomitanPopupWidthPx: 340,
     yomitanPopupHeightPx: 450,
     yomitanPopupScalePercent: 100,
+    yomitanPopupCustomCss: '',
     yomitanPopupTheme: 'dark',
     animePopupTheme: 'dark',
     yomitanShowPitchGraph: false,

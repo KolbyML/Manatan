@@ -66,6 +66,7 @@ import { useOCR } from '@/Manatan/context/OCRContext.tsx';
 import ManatanLogo from '@/Manatan/assets/manatan_logo.png';
 import { cleanPunctuation, lookupYomitan } from '@/Manatan/utils/api.ts';
 import { buildSentenceFuriganaFromLookup } from '@/Manatan/utils/japaneseFurigana';
+import { buildScopedCustomCss } from '@/Manatan/utils/customCss';
 import {
     getWordAudioFilename,
     getWordAudioSourceLabel,
@@ -3964,6 +3965,10 @@ export const AnimeVideoPlayer = ({
         ? `min(${popupHeightPx}px, 100%)`
         : `${popupHeightPercent}%`;
     const popupTransform = popupWidthUnit === 'px' ? 'translateX(-50%)' : 'none';
+    const animePopupCustomCss = useMemo(
+        () => buildScopedCustomCss(settings.animePopupCustomCss, '.anime-dictionary-popup'),
+        [settings.animePopupCustomCss],
+    );
     const subtitleBottomOffset = isMobile
         ? isLandscape
             ? 'calc(env(safe-area-inset-bottom) + 28px)'
@@ -4731,6 +4736,7 @@ export const AnimeVideoPlayer = ({
                         </Box>
                     ))}
             </Stack>
+            {animePopupCustomCss && <style>{animePopupCustomCss}</style>}
             {dictionaryVisible && (
                 <>
                     {(() => {
@@ -4753,6 +4759,7 @@ export const AnimeVideoPlayer = ({
                         return cssParts ? <style>{cssParts}</style> : null;
                     })()}
                     <Box
+                        className="anime-dictionary-popup"
                         tabIndex={0}
                         sx={{
                             position: 'absolute',

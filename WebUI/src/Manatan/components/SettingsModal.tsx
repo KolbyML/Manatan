@@ -436,6 +436,14 @@ export const SettingsModal: React.FC<{ onClose: () => void }> = ({ onClose }) =>
         handleChange('yomitanPopupScalePercent', DEFAULT_SETTINGS.yomitanPopupScalePercent);
     };
 
+    const resetYomitanPopupCustomCss = () => {
+        handleChange('yomitanPopupCustomCss', DEFAULT_SETTINGS.yomitanPopupCustomCss);
+    };
+
+    const resetAnimePopupCustomCss = () => {
+        handleChange('animePopupCustomCss', DEFAULT_SETTINGS.animePopupCustomCss);
+    };
+
     const handleFieldMapChange = (ankiField: string, mapValue: string) => {
         const currentMap = (localSettings.ankiFieldMap as Record<string, string>) || {};
         const newMap = { ...currentMap, [ankiField]: mapValue };
@@ -806,6 +814,40 @@ ${detail}`,
                                 <option value="dark">Dark</option>
                                 <option value="light">Light</option>
                             </select>
+                        </div>
+
+                        <div style={{ marginTop: '12px', display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                            <label htmlFor="yomitanPopupCustomCss">Custom Popup CSS</label>
+                            <div style={inlineInputWrapperStyle}>
+                                <textarea
+                                    id="yomitanPopupCustomCss"
+                                    rows={5}
+                                    value={localSettings.yomitanPopupCustomCss ?? ''}
+                                    onChange={(e) => handleChange('yomitanPopupCustomCss', e.target.value)}
+                                    placeholder={"color: #f5f5f5;\nbackground: rgba(10,10,10,0.96);\n\n/* or full CSS: */\n.yomitan-popup .entry { font-size: 15px; }"}
+                                    style={{
+                                        ...inlineInputStyle,
+                                        width: '100%',
+                                        minHeight: '110px',
+                                        resize: 'vertical',
+                                        fontFamily: 'monospace',
+                                        lineHeight: 1.4,
+                                    }}
+                                />
+                                <div style={inlineInputActionsStyle}>
+                                    <IconButton
+                                        size="small"
+                                        onClick={resetYomitanPopupCustomCss}
+                                        aria-label="Reset popup dictionary custom CSS"
+                                        style={{ padding: 4 }}
+                                    >
+                                        <RestartAltIcon fontSize="small" />
+                                    </IconButton>
+                                </div>
+                            </div>
+                            <div style={{ fontSize: '0.85em', color: '#aaa' }}>
+                                Applies to <code>.yomitan-popup</code>. Enter CSS declarations or full CSS rules.
+                            </div>
                         </div>
 
                         {/* Pitch Accent Display Settings */}
@@ -1490,6 +1532,39 @@ ${detail}`,
                             </div>
                             <div style={{ gridColumn: '1 / -1', fontSize: '0.85em', color: '#aaa' }}>
                                 Adjust the anime popup dictionary size and position. Each field has its own unit toggle and reset.
+                            </div>
+                            <label htmlFor="animePopupCustomCss">Custom CSS</label>
+                            <div style={{ gridColumn: '1 / -1' }}>
+                                <div style={inlineInputWrapperStyle}>
+                                    <textarea
+                                        id="animePopupCustomCss"
+                                        rows={5}
+                                        value={localSettings.animePopupCustomCss ?? ''}
+                                        onChange={(e) => handleChange('animePopupCustomCss', e.target.value)}
+                                        placeholder={"background: rgba(12, 14, 18, 0.98);\nborder: 1px solid #4a5568;\n\n/* or full CSS: */\n.anime-dictionary-popup h5 { font-size: 1.5rem; }"}
+                                        style={{
+                                            ...inlineInputStyle,
+                                            width: '100%',
+                                            minHeight: '110px',
+                                            resize: 'vertical',
+                                            fontFamily: 'monospace',
+                                            lineHeight: 1.4,
+                                        }}
+                                    />
+                                    <div style={inlineInputActionsStyle}>
+                                        <IconButton
+                                            size="small"
+                                            onClick={resetAnimePopupCustomCss}
+                                            aria-label="Reset anime popup custom CSS"
+                                            style={{ padding: 4 }}
+                                        >
+                                            <RestartAltIcon fontSize="small" />
+                                        </IconButton>
+                                    </div>
+                                </div>
+                                <div style={{ fontSize: '0.85em', color: '#aaa', marginTop: '6px' }}>
+                                    Applies to <code>.anime-dictionary-popup</code>. Enter CSS declarations or full CSS rules.
+                                </div>
                             </div>
                             <label htmlFor="animePopupTheme">Anime Popup Theme</label>
                             <select

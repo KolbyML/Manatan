@@ -4,6 +4,7 @@ import { useOCR } from '@/Manatan/context/OCRContext';
 import { cleanPunctuation, lookupYomitan } from '@/Manatan/utils/api';
 import { DictionaryView } from '@/Manatan/components/DictionaryView';
 import { DictionaryResult } from '@/Manatan/types';
+import { buildScopedCustomCss } from '@/Manatan/utils/customCss';
 import { getPopupTheme } from '@/features/ln/reader/utils/themes';
 
 const POPUP_GAP = 10;
@@ -83,6 +84,10 @@ export const YomitanPopup = () => {
     const popupWidthPx = Math.min(Math.max(popupWidthPxRaw, POPUP_MIN_WIDTH_PX), POPUP_MAX_WIDTH_PX);
     const popupHeightPx = Math.min(Math.max(popupHeightPxRaw, POPUP_MIN_HEIGHT_PX), POPUP_MAX_HEIGHT_PX);
     const popupWidthStyle = `${popupWidthPx}px`;
+    const customPopupCss = React.useMemo(
+        () => buildScopedCustomCss(settings.yomitanPopupCustomCss, '.yomitan-popup'),
+        [settings.yomitanPopupCustomCss],
+    );
 
     const processedEntries = currentEntry ? currentEntry.results : dictPopup.results;
     const isLoading = currentEntry ? currentEntry.isLoading : dictPopup.isLoading;
@@ -422,6 +427,7 @@ export const YomitanPopup = () => {
 
     return createPortal(
         <>
+            {customPopupCss && <style>{customPopupCss}</style>}
             <HighlightOverlay />
             <div
                 ref={backdropRef}
