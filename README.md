@@ -96,6 +96,14 @@ You can also read manga files stored locally on your device. To set up local man
 3. You will then be able to find your local manga under **Browse → Sources → Local source**
 ### Important : Your manga must follow a specific folder structure to be detected properly.
 Refer to the [Manatan local manga guide](https://manatan.com/docs/guides/local-manga) for details on how to structure your folders.
+
+## Local Anime
+You can also watch anime files stored locally on your device. To set up local anime:
+1. Set your local anime directory in Settings -> Browse -> "Local anime source location"
+2. Place your files in the expected folder structure for detection
+
+Refer to the [Manatan local anime guide](https://manatan.com/docs/guides/local-anime) for details on folder layout and naming.
+
 ## Troubleshooting
 
 To fully clear cache and data from previous installs, delete the following folders and try again:

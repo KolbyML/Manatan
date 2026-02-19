@@ -13,6 +13,7 @@ import Button from '@mui/material/Button';
 import Stack from '@mui/material/Stack';
 import Grid from '@mui/material/Grid';
 import IconButton from '@mui/material/IconButton';
+import Link from '@mui/material/Link';
 import { useTranslation } from 'react-i18next';
 import { requestManager } from '@/lib/requests/RequestManager.ts';
 import { LoadingPlaceholder } from '@/base/components/feedback/LoadingPlaceholder.tsx';
@@ -30,12 +31,15 @@ import { useLocalStorage } from '@/base/hooks/useStorage.tsx';
 import { AnimeListCard } from '@/features/anime/components/AnimeListCard.tsx';
 import { updateMetadataServerSettings } from '@/features/settings/services/ServerSettingsMetadata.ts';
 import { defaultPromiseErrorHandler } from '@/lib/DefaultPromiseErrorHandler.ts';
+import { Sources } from '@/features/source/services/Sources.ts';
 
 export enum AnimeSourceContentType {
     POPULAR = 'POPULAR',
     LATEST = 'LATEST',
     SEARCH = 'SEARCH',
 }
+
+const LOCAL_ANIME_GUIDE_URL = 'https://manatan.com/docs/guides/local-anime';
 
 type AnimeSourceBrowseResult = {
     id: number;
@@ -116,6 +120,23 @@ export const AnimeSourceBrowse = () => {
     useEffect(() => {
         setAnimeEntries(animes as AnimeSourceBrowseResult[]);
     }, [animes]);
+    const isLocalSource = sourceId === Sources.LOCAL_SOURCE_ID;
+    const localSourceGuide = isLocalSource ? (
+        <>
+            <span>{t('source.local_source.label.checkout')} </span>
+            <Link href={LOCAL_ANIME_GUIDE_URL} target="_blank" rel="noreferrer">
+                {t('source.local_source.label.guide')}
+            </Link>
+        </>
+    ) : undefined;
+    const errorMessageExtra = isLocalSource ? (
+        <>
+            {error ? <span>{getErrorMessage(error)} </span> : null}
+            {localSourceGuide}
+        </>
+    ) : (
+        getErrorMessage(error)
+    );
 
     useAppTitleAndAction(
         source?.displayName ?? t('source.title_one'),
@@ -123,15 +144,20 @@ export const AnimeSourceBrowse = () => {
             <AppbarSearch />
             <SourceGridLayout />
             <CustomTooltip title={t('global.button.open_webview')} disabled={!source?.baseUrl}>
-                <IconButton
-                    disabled={!source?.baseUrl}
-                    href={source?.baseUrl ? requestManager.getWebviewUrl(source.baseUrl) : undefined}
-                    rel="noreferrer"
-                    target="_blank"
-                    color="inherit"
-                >
-                    <IconWebView />
-                </IconButton>
+                {source?.baseUrl ? (
+                    <IconButton
+                        href={requestManager.getWebviewUrl(source.baseUrl)}
+                        rel="noreferrer"
+                        target="_blank"
+                        color="inherit"
+                    >
+                        <IconWebView />
+                    </IconButton>
+                ) : (
+                    <IconButton disabled color="inherit">
+                        <IconWebView />
+                    </IconButton>
+                )}
             </CustomTooltip>
         </>,
         [source],
@@ -145,13 +171,13 @@ export const AnimeSourceBrowse = () => {
         return (
             <EmptyViewAbsoluteCentered
                 message={t('global.error.label.failed_to_load_data')}
-                messageExtra={getErrorMessage(error)}
+                messageExtra={errorMessageExtra}
             />
         );
     }
 
     if (!animeEntries.length) {
-        return <EmptyViewAbsoluteCentered message="No anime found in this source." />;
+        return <EmptyViewAbsoluteCentered message="No anime found in this source." messageExtra={localSourceGuide} />;
     }
 
     return (
