@@ -12,9 +12,11 @@ import { BlockTracker } from '../utils/blockTracker';
 import {
     extractContextSnippet,
     calculateBlockLocalOffset,
+    calculatePreciseBlockOffset,
     getCleanTextContent,
     getCleanCharCount,
 } from '../utils/blockPosition';
+import { createChapterBlockLookup, calculateCharOffsetFromBlock } from '../utils/blockMap';
 import {
     SaveablePosition,
     calculateProgress,
@@ -66,6 +68,10 @@ export const ContinuousReader: React.FC<ContinuousReaderProps> = ({
     const lastReportedChapterRef = useRef(initialChapter);
     const hasRestoredRef = useRef(false);
     const scrollDebounceRef = useRef<number | null>(null);
+    
+    // Save lock to prevent saving immediately after restoration (3 seconds)
+    const saveLockUntilRef = useRef<number>(0);
+    const SAVE_LOCK_DURATION_MS = 3000;
 
     // Drag detection
     const isDraggingRef = useRef(false);
@@ -121,6 +127,23 @@ export const ContinuousReader: React.FC<ContinuousReaderProps> = ({
             saveDelay: settings.lnBookmarkDelay ?? 0,
         });
     }, [bookId, settings.lnAutoBookmark, settings.lnBookmarkDelay]);
+
+    // Reset restoration when initialProgress changes (for search/highlight navigation)
+    const lastInitialProgressRef = useRef(initialProgress);
+    useEffect(() => {
+        const lastProgress = lastInitialProgressRef.current;
+        const progressChanged = 
+            (lastProgress?.blockId !== initialProgress?.blockId) ||
+            (lastProgress?.chapterIndex !== initialProgress?.chapterIndex);
+        
+        if (progressChanged && initialProgress?.blockId && hasRestoredRef.current) {
+            console.log('[ContinuousReader] InitialProgress changed, resetting restoration');
+            hasRestoredRef.current = false;
+            setRestorationComplete(false);
+        }
+        
+        lastInitialProgressRef.current = initialProgress;
+    }, [initialProgress?.blockId, initialProgress?.chapterIndex, initialProgress?.chapterCharOffset]);
 
     // ========================================================================
     // State
@@ -200,12 +223,22 @@ export const ContinuousReader: React.FC<ContinuousReaderProps> = ({
 
         const container = containerRef.current;
 
-        // Calculate block local offset
-        const blockLocalOffset = calculateBlockLocalOffset(
+        // Try precise caret-based offset first (more accurate)
+        let blockLocalOffset = calculatePreciseBlockOffset(
             blockElement,
             container,
             isVertical
         );
+
+        // If precise fails (returns 0 when there should be content), fall back to ratio-based
+        const textContent = getCleanTextContent(blockElement);
+        if (blockLocalOffset === 0 && textContent.length > 0) {
+            blockLocalOffset = calculateBlockLocalOffset(
+                blockElement,
+                container,
+                isVertical
+            );
+        }
 
         // Extract context
         const contextSnippet = extractContextSnippet(blockElement, blockLocalOffset, 20);
@@ -214,22 +247,38 @@ export const ContinuousReader: React.FC<ContinuousReaderProps> = ({
         const chapterMatch = blockId.match(/ch(\d+)-/);
         const chapterIndex = chapterMatch ? parseInt(chapterMatch[1], 10) : currentChapter;
 
-        // Calculate chapter character offset
-        let chapterCharOffset = blockLocalOffset;
-        const blockOrder = parseInt(blockId.split('-b')[1] || '0', 10);
+        // Calculate chapter character offset using blockMaps (precise!)
+        let chapterCharOffset: number;
+        
+        if (stats.blockMaps && stats.blockMaps.length > 0) {
+            const chapterLookup = createChapterBlockLookup(stats.blockMaps, chapterIndex);
+            chapterCharOffset = calculateCharOffsetFromBlock(chapterLookup, blockId, blockLocalOffset);
+        } else {
+            // Fallback: count from DOM if no blockMaps
+            chapterCharOffset = blockLocalOffset;
+            const blockOrder = parseInt(blockId.split('-b')[1] || '0', 10);
 
-        for (let i = 0; i < blockOrder; i++) {
-            const prevBlock = container.querySelector(
-                `[data-block-id="ch${chapterIndex}-b${i}"]`
-            );
-            if (prevBlock) {
-                const text = getCleanTextContent(prevBlock);
-                chapterCharOffset += getCleanCharCount(text);
+            for (let i = 0; i < blockOrder; i++) {
+                const prevBlock = container.querySelector(
+                    `[data-block-id="ch${chapterIndex}-b${i}"]`
+                );
+                if (prevBlock) {
+                    const text = getCleanTextContent(prevBlock);
+                    chapterCharOffset += getCleanCharCount(text);
+                }
             }
         }
 
         // Calculate progress
         const progressCalc = calculateProgress(chapterIndex, chapterCharOffset, stats);
+
+        console.log('[ContinuousReader] Saving position:', {
+            blockId,
+            blockLocalOffset,
+            chapterCharOffset,
+            chapterIndex,
+            hasBlockMaps: !!(stats.blockMaps && stats.blockMaps.length > 0),
+        });
 
         return {
             blockId,
@@ -249,6 +298,12 @@ export const ContinuousReader: React.FC<ContinuousReaderProps> = ({
     // ========================================================================
 
     const handleActiveBlockChange = useCallback((blockId: string, element: Element) => {
+        // Skip if save is locked (after restoration)
+        if (Date.now() < saveLockUntilRef.current) {
+            console.log('[ContinuousReader] Save locked, skipping block change');
+            return;
+        }
+        
         // Skip if this is the same block as the restored position (no actual user movement)
         if (currentBlockIdRef.current === blockId) {
             return;
@@ -377,8 +432,11 @@ export const ContinuousReader: React.FC<ContinuousReaderProps> = ({
                     chapterCharOffset: initialProgress.chapterCharOffset,
                     sentenceText: initialProgress.sentenceText,
                 },
-                isVertical,
-                isRTL
+                {
+                    isVertical,
+                    isRTL,
+                    blockMaps: stats?.blockMaps,
+                }
             );
 
             hasRestoredRef.current = true;
@@ -395,10 +453,12 @@ export const ContinuousReader: React.FC<ContinuousReaderProps> = ({
             // This prevents BlockTracker from detecting the wrong block immediately
             setTimeout(() => {
                 console.log('[ContinuousReader] Scroll settled, enabling BlockTracker');
+                // Set save lock for 3 seconds to prevent overwriting restored position
+                saveLockUntilRef.current = Date.now() + SAVE_LOCK_DURATION_MS;
                 setRestorationComplete(true);
             }, 500);
         }, 300);
-    }, [contentLoaded, initialProgress, isVertical, isRTL]);
+    }, [contentLoaded, initialProgress, isVertical, isRTL, stats?.blockMaps]);
 
     // ========================================================================
     // Touch/Click Handlers

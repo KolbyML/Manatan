@@ -24,6 +24,7 @@ import {
     calculateProgress,
     createSaveScheduler
 } from '../utils/readerSave';
+import { createChapterBlockLookup, getPositionFromCharOffset } from '../utils/blockMap';
 import './PagedReader.css';
 
 // ============================================================================
@@ -99,9 +100,13 @@ export const PagedReader: React.FC<PagedReaderProps> = ({
     const positionDetectTimerRef = useRef<number | null>(null);
 
     // Restore state refs
-    const restoreAnchorRef = useRef<{ blockId?: string; chapterIndex: number } | null>(null);
+    const restoreAnchorRef = useRef<{ blockId?: string; chapterIndex: number; chapterCharOffset?: number } | null>(null);
     const lastRestoreKeyRef = useRef<string>('');
     const restorePendingRef = useRef(false);
+    
+    // Save lock to prevent saving immediately after restoration (3 seconds)
+    const saveLockUntilRef = useRef<number>(0);
+    const SAVE_LOCK_DURATION_MS = 3000;
 
     // Drag/touch detection
     const isDraggingRef = useRef(false);
@@ -135,6 +140,7 @@ export const PagedReader: React.FC<PagedReaderProps> = ({
             restoreAnchorRef.current = {
                 blockId: initialProgress?.blockId,
                 chapterIndex: initialProgress?.chapterIndex ?? initialChapter,
+                chapterCharOffset: initialProgress?.chapterCharOffset,
             };
         }
         // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -145,6 +151,28 @@ export const PagedReader: React.FC<PagedReaderProps> = ({
             saveSchedulerRef.current.setInitialSavedPosition(initialProgress.blockId);
         }
     }, []);
+
+    // Reset restoration when initialProgress changes (for search/highlight navigation)
+    const lastInitialProgressRef = useRef(initialProgress);
+    useEffect(() => {
+        const lastProgress = lastInitialProgressRef.current;
+        const progressChanged = 
+            (lastProgress?.blockId !== initialProgress?.blockId) ||
+            (lastProgress?.chapterIndex !== initialProgress?.chapterIndex);
+        
+        if (progressChanged && initialProgress?.blockId) {
+            console.log('[PagedReader] InitialProgress changed, resetting restoration');
+            restoreAnchorRef.current = {
+                blockId: initialProgress.blockId,
+                chapterIndex: initialProgress.chapterIndex ?? initialChapter,
+                chapterCharOffset: initialProgress.chapterCharOffset,
+            };
+            lastRestoreKeyRef.current = '';
+            restorePendingRef.current = false;
+        }
+        
+        lastInitialProgressRef.current = initialProgress;
+    }, [initialProgress?.blockId, initialProgress?.chapterIndex, initialProgress?.chapterCharOffset, initialChapter]);
 
     // ========================================================================
     // Update Callback Refs
@@ -480,6 +508,12 @@ export const PagedReader: React.FC<PagedReaderProps> = ({
         // GUARD: Don't save position if a restore is pending
         if (restorePendingRef.current) return;
 
+        // GUARD: Don't save if save is locked (after restoration)
+        if (Date.now() < saveLockUntilRef.current) {
+            console.log('[PagedReader] Save locked, skipping detection');
+            return;
+        }
+
         if (!contentReady || !viewportRef.current || !stats) return;
 
         const pageSize = measuredPageSize > 0
@@ -493,7 +527,8 @@ export const PagedReader: React.FC<PagedReaderProps> = ({
             currentPage,
             pageSize,
             isVertical,
-            currentSection
+            currentSection,
+            stats?.blockMaps
         );
 
         if (!detected) {
@@ -505,6 +540,7 @@ export const PagedReader: React.FC<PagedReaderProps> = ({
         restoreAnchorRef.current = {
             blockId: detected.blockId,
             chapterIndex: currentSection,
+            chapterCharOffset: detected.chapterCharOffset,
         };
 
         // Extract context for restoration
@@ -604,9 +640,28 @@ export const PagedReader: React.FC<PagedReaderProps> = ({
             return;
         }
 
-        const blockEl = contentRef.current.querySelector(
+        let blockEl = contentRef.current.querySelector(
             `[data-block-id="${anchorBlockId}"]`
         ) as HTMLElement | null;
+
+        if (!blockEl && stats?.blockMaps && anchor?.chapterCharOffset) {
+            const chapterLookup = createChapterBlockLookup(stats.blockMaps, anchorChapter);
+            const pos = getPositionFromCharOffset(chapterLookup, anchor.chapterCharOffset);
+            
+            if (pos) {
+                blockEl = contentRef.current.querySelector(
+                    `[data-block-id="${pos.blockId}"]`
+                ) as HTMLElement | null;
+                
+                if (blockEl) {
+                    console.log('[PagedReader] Restored using blockMaps:', {
+                        originalBlockId: anchorBlockId,
+                        foundBlockId: pos.blockId,
+                        charOffset: anchor.chapterCharOffset,
+                    });
+                }
+            }
+        }
 
         if (!blockEl) {
             lastRestoreKeyRef.current = restoreKey;
@@ -632,14 +687,18 @@ export const PagedReader: React.FC<PagedReaderProps> = ({
             if (prev === clamped) {
                 // If page didn't change, release the guard immediately
                 restorePendingRef.current = false;
+                // Set save lock for 3 seconds
+                saveLockUntilRef.current = Date.now() + SAVE_LOCK_DURATION_MS;
                 return prev;
             }
             return clamped;
         });
 
-        // Release guard after state updates
+        // Release guard and set save lock after state updates
         requestAnimationFrame(() => {
             restorePendingRef.current = false;
+            // Set save lock for 3 seconds to prevent overwriting restored position
+            saveLockUntilRef.current = Date.now() + SAVE_LOCK_DURATION_MS;
         });
 
     }, [
@@ -649,6 +708,7 @@ export const PagedReader: React.FC<PagedReaderProps> = ({
         currentSection,
         isVertical,
         layoutKey,
+        stats?.blockMaps,
         // (Note: we use refs for anchors so we don't depend on changing positions)
     ]);
 

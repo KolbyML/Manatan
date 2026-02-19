@@ -147,8 +147,8 @@ export class SyncService {
                                             if (!chapter.blocks || !Array.isArray(chapter.blocks)) return [];
                                             return chapter.blocks.map((block: any) => ({
                                                 blockId: block.id || `ch${chapter.chapterIndex}-b${block.order || 0}`,
-                                                startOffset: block.order || 0,
-                                                endOffset: (block.order || 0) + (block.cleanCharCount || 0),
+                                                startOffset: block.cleanCharStart || 0,
+                                                endOffset: (block.cleanCharStart || 0) + (block.cleanCharCount || 0),
                                             }));
                                         });
                                     }

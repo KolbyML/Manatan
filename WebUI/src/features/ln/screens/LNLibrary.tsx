@@ -836,7 +836,7 @@ export const LNLibrary: React.FC = () => {
 
     const handleSortChange = useCallback(async (newSortBy: LnSortModeType) => {
         const newSort = { ...currentSort };
-        if (newSort.sortBy === newSortBy) {
+        if (currentSort.sortBy === newSortBy) {
             newSort.sortDesc = !newSort.sortDesc;
         } else {
             newSort.sortBy = newSortBy;
@@ -887,7 +887,7 @@ export const LNLibrary: React.FC = () => {
         await LNCategoriesService.setCategoryMetadata(selectedCategoryId, newSort);
     }, [currentSort, selectedCategoryId]);
 
-    useAppTitle('Light Novels');
+    useAppTitle('Novels', 'Novel');
 
     const appAction = useMemo(
         () => (
@@ -934,34 +934,72 @@ export const LNLibrary: React.FC = () => {
                                 <LibraryAddCheckIcon />
                             </IconButton>
                         )}
-                        <FormControl size="small" sx={{ minWidth: 120 }}>
-                            <Select
-                                value={currentSort.sortBy}
-                                onChange={(e) => handleSortChange(e.target.value as LnSortModeType)}
-                                displayEmpty
-                                sx={{ color: 'inherit', '.MuiSelect-select': { py: 0.5 } }}
-                                startAdornment={<SortIcon sx={{ mr: 0.5, fontSize: 18 }} />}
-                            >
-                                <MenuItem value="dateAdded">Date Added</MenuItem>
-                                <MenuItem value="title">Title</MenuItem>
-                                <MenuItem value="author">Author</MenuItem>
-                                <MenuItem value="length">Length</MenuItem>
-                                <MenuItem value="language">Language</MenuItem>
-                                <MenuItem value="lastRead">Last Read</MenuItem>
-                                <MenuItem value="progress">Progress</MenuItem>
-                            </Select>
-                        </FormControl>
-                        <CustomTooltip title={currentSort.sortDesc ? 'Descending (Z→A, Long→Short)' : 'Ascending (A→Z, Short→Long)'}>
-                            <IconButton
-                                color="inherit"
-                                onClick={handleToggleSortDirection}
-                                size="small"
-                            >
-                                <Typography sx={{ fontWeight: 'bold', fontSize: 16 }}>
-                                    {currentSort.sortDesc ? '↓' : '↑'}
-                                </Typography>
-                            </IconButton>
-                        </CustomTooltip>
+                        <PopupState variant="popover" popupId="sort-menu">
+                            {(popupState) => (
+                                <>
+                                    <CustomTooltip title="Sort">
+                                        <IconButton
+                                            color="inherit"
+                                            {...bindTrigger(popupState)}
+                                            size="small"
+                                        >
+                                            <SortIcon />
+                                            <Typography sx={{ fontWeight: 'bold', fontSize: 12, ml: 0.25 }}>
+                                                {currentSort.sortDesc ? '↓' : '↑'}
+                                            </Typography>
+                                        </IconButton>
+                                    </CustomTooltip>
+                                    <Menu {...bindMenu(popupState)}>
+                                        {(onClose) => (
+                                            <>
+                                                <MenuItem
+                                                    selected={currentSort.sortBy === 'dateAdded'}
+                                                    onClick={() => { handleSortChange('dateAdded'); onClose(); }}
+                                                >
+                                                    Date Added {currentSort.sortBy === 'dateAdded' && (currentSort.sortDesc ? '↓' : '↑')}
+                                                </MenuItem>
+                                                <MenuItem
+                                                    selected={currentSort.sortBy === 'title'}
+                                                    onClick={() => { handleSortChange('title'); onClose(); }}
+                                                >
+                                                    Title {currentSort.sortBy === 'title' && (currentSort.sortDesc ? '↓' : '↑')}
+                                                </MenuItem>
+                                                <MenuItem
+                                                    selected={currentSort.sortBy === 'author'}
+                                                    onClick={() => { handleSortChange('author'); onClose(); }}
+                                                >
+                                                    Author {currentSort.sortBy === 'author' && (currentSort.sortDesc ? '↓' : '↑')}
+                                                </MenuItem>
+                                                <MenuItem
+                                                    selected={currentSort.sortBy === 'length'}
+                                                    onClick={() => { handleSortChange('length'); onClose(); }}
+                                                >
+                                                    Length {currentSort.sortBy === 'length' && (currentSort.sortDesc ? '↓' : '↑')}
+                                                </MenuItem>
+                                                <MenuItem
+                                                    selected={currentSort.sortBy === 'language'}
+                                                    onClick={() => { handleSortChange('language'); onClose(); }}
+                                                >
+                                                    Language {currentSort.sortBy === 'language' && (currentSort.sortDesc ? '↓' : '↑')}
+                                                </MenuItem>
+                                                <MenuItem
+                                                    selected={currentSort.sortBy === 'lastRead'}
+                                                    onClick={() => { handleSortChange('lastRead'); onClose(); }}
+                                                >
+                                                    Last Read {currentSort.sortBy === 'lastRead' && (currentSort.sortDesc ? '↓' : '↑')}
+                                                </MenuItem>
+                                                <MenuItem
+                                                    selected={currentSort.sortBy === 'progress'}
+                                                    onClick={() => { handleSortChange('progress'); onClose(); }}
+                                                >
+                                                    Progress {currentSort.sortBy === 'progress' && (currentSort.sortDesc ? '↓' : '↑')}
+                                                </MenuItem>
+                                            </>
+                                        )}
+                                    </Menu>
+                                </>
+                            )}
+                        </PopupState>
                         <Button
                             color="inherit"
                             component="label"
