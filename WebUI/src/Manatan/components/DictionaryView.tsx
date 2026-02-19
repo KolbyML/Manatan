@@ -52,10 +52,56 @@ const getNodeText = (node: any): string => {
     return '';
 };
 
+const ELEMENT_CONFIG: Record<string, {
+    void?: boolean;
+    wrapper?: 'table-container';
+    baseStyle?: React.CSSProperties;
+}> = {
+    br: { void: true },
+    img: { void: true },
+    hr: { void: true },
+    table: { wrapper: 'table-container' },
+    thead: { baseStyle: { border: '1px solid #777', backgroundColor: '#f5f5f5' } },
+    tbody: { baseStyle: { border: '1px solid #777' } },
+    tfoot: { baseStyle: { border: '1px solid #777', backgroundColor: '#f5f5f5' } },
+    ul: { baseStyle: { paddingInlineStart: '20px', margin: '2px 0', listStyleType: 'disc' } },
+    ol: { baseStyle: { paddingInlineStart: '20px', margin: '2px 0', listStyleType: 'decimal' } },
+    li: { baseStyle: { margin: '2px 0' } },
+    th: { baseStyle: { border: '1px solid #777', padding: '2px 8px', textAlign: 'center', fontWeight: 'bold' } },
+    td: { baseStyle: { border: '1px solid #777', padding: '2px 8px', textAlign: 'center' } },
+    p: { baseStyle: { margin: '0.5em 0' } },
+    details: { wrapper: 'table-container' },
+    summary: {},
+};
+
+const VOID_TAGS = ['br', 'img', 'hr', 'input', 'meta', 'link', 'area', 'base', 'col', 'embed', 'source', 'track', 'wbr'];
+
 const tagStyle: React.CSSProperties = {
     display: 'inline-block', padding: '1px 5px', borderRadius: '3px',
     fontSize: '0.75em', fontWeight: 'bold', marginRight: '6px',
     color: '#fff', verticalAlign: 'middle', lineHeight: '1.2'
+};
+
+const getTagStyle = (layout: 'vertical' | 'horizontal', tagBg: string, tagText: string): React.CSSProperties => {
+    if (layout === 'horizontal') {
+        return {
+            display: 'inline-block',
+            padding: '2px 4px',
+            borderRadius: '4px',
+            fontSize: '0.7rem',
+            fontWeight: 'bold',
+            marginRight: '4px',
+            color: tagText,
+            backgroundColor: tagBg,
+            verticalAlign: 'middle',
+            lineHeight: '1.2'
+        };
+    }
+    return {
+        ...tagStyle,
+        backgroundColor: tagBg,
+        color: tagText,
+    };
 };
 
 type StructuredContentColors = {
@@ -121,86 +167,84 @@ const ContentNode: React.FC<{
     if (node?.data?.content === 'attribution') return null;
 
     const { tag, content, style, href, data, title } = node;
-    const s = style || {};
+    const dictStyle = style || {};
     const titleAttr = typeof title === 'string' ? title : undefined;
-    const classNames = typeof data?.class === 'string' ? data.class.split(/\s+/) : [];
-    const isTagClass = classNames.includes('tag');
-    const tagBgColor = colors?.tagBg ?? '#666';
-    const tagTextColor = colors?.tagText ?? '#fff';
-    const spanStyle = isTagClass ? { ...tagStyle, backgroundColor: tagBgColor, color: tagTextColor, ...s } : s;
 
-    const borderColor = colors?.border ?? '#777';
-    const cellStyle: React.CSSProperties = { border: `1px solid ${borderColor}`, padding: '2px 8px', textAlign: 'center' };
-    const tableStyle: React.CSSProperties = { 
-        borderCollapse: 'collapse', 
-        border: `1px solid ${borderColor}`, 
-        margin: '4px 0', 
-        fontSize: '0.9em', 
-        width: '100%' 
-    };
+    const config = ELEMENT_CONFIG[tag] || {};
     
-    const listStyle: React.CSSProperties = { paddingInlineStart: '20px', margin: '2px 0', listStyleType: 'disc' };
-
-    const handleLinkClick = (event: React.MouseEvent) => {
-        if (!onLinkClick) return;
-        if (event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
-        event.preventDefault();
-        event.stopPropagation();
-        onLinkClick(href || '', getNodeText(content));
-    };
-
-    switch (tag) {
-        case 'ul': return <ul style={{ ...s, ...listStyle }}><ContentNode node={content} dictionaryName={dictionaryName} onLinkClick={onLinkClick} onWordClick={onWordClick} colors={colors} /></ul>;
-        case 'ol': return <ol style={{ ...s, ...listStyle, listStyleType: 'decimal' }}><ContentNode node={content} dictionaryName={dictionaryName} onLinkClick={onLinkClick} onWordClick={onWordClick} colors={colors} /></ol>;
-        case 'li': return <li style={{ ...s }}><ContentNode node={content} dictionaryName={dictionaryName} onLinkClick={onLinkClick} onWordClick={onWordClick} colors={colors} /></li>;
-        case 'table': return <table style={{ ...s, ...tableStyle }}><tbody><ContentNode node={content} dictionaryName={dictionaryName} onLinkClick={onLinkClick} onWordClick={onWordClick} colors={colors} /></tbody></table>;
-        case 'tr': return <tr style={s}><ContentNode node={content} dictionaryName={dictionaryName} onLinkClick={onLinkClick} onWordClick={onWordClick} colors={colors} /></tr>;
-        case 'th': return <th style={{ ...s, ...cellStyle, fontWeight: 'bold' }}><ContentNode node={content} dictionaryName={dictionaryName} onLinkClick={onLinkClick} onWordClick={onWordClick} colors={colors} /></th>;
-        case 'td': return <td style={{ ...s, ...cellStyle }}><ContentNode node={content} dictionaryName={dictionaryName} onLinkClick={onLinkClick} onWordClick={onWordClick} colors={colors} /></td>;
-        case 'span': return <span style={spanStyle} title={titleAttr}><ContentNode node={content} dictionaryName={dictionaryName} onLinkClick={onLinkClick} onWordClick={onWordClick} colors={colors} /></span>;
-        case 'div': return <div style={s}><ContentNode node={content} dictionaryName={dictionaryName} onLinkClick={onLinkClick} onWordClick={onWordClick} colors={colors} /></div>;
-        case 'img': {
+    const yomitanClass = `gloss-sc-${tag}`;
+    const dictClass = data?.class || '';
+    const className = [yomitanClass, dictClass].filter(Boolean).join(' ');
+    
+    const dataAttrs = data && typeof data === 'object'
+        ? Object.entries(data).reduce((acc, [key, value]) => {
+            if (typeof value === 'string' || typeof value === 'number' || typeof value === 'boolean') {
+                acc[`data-sc-${key}`] = String(value);
+            }
+            return acc;
+        }, {} as Record<string, string>)
+        : {};
+    
+    const finalStyle = { ...config.baseStyle, ...dictStyle };
+    
+    const childProps = { dictionaryName, onLinkClick, onWordClick, colors };
+    
+    if (config.void || VOID_TAGS.includes(tag)) {
+        if (tag === 'img') {
             const rawPath = node.path || node.src;
-            const width = node.width;
-            const height = node.height;
-            const alt = getNodeText(content) || titleAttr || '';
-            const imgStyle: React.CSSProperties = { ...s };
-            if (width) imgStyle.maxWidth = `${width}px`;
-            if (height) imgStyle.maxHeight = `${height}px`;
+            const imgWidth = node.width;
+            const imgHeight = node.height;
+            const altText = getNodeText(content) || titleAttr || '';
+            const imgStyle: React.CSSProperties = { ...finalStyle };
+            if (imgWidth) imgStyle.maxWidth = `${imgWidth}px`;
+            if (imgHeight) imgStyle.maxHeight = `${imgHeight}px`;
             if (!imgStyle.maxWidth && !imgStyle.maxHeight) imgStyle.maxWidth = '100%';
-            const src = rawPath && dictionaryName ? `/api/yomitan/dict-media/${encodeURIComponent(dictionaryName)}/${rawPath}` : rawPath;
-            return <img src={src} alt={alt} style={imgStyle} />;
+            const src = rawPath && dictionaryName 
+                ? `/api/yomitan/dict-media/${encodeURIComponent(dictionaryName)}/${rawPath}` 
+                : rawPath;
+            return <img src={src} alt={altText} style={imgStyle} {...dataAttrs} className={className} />;
         }
-        case 'a':
-            return (
-                <a
-                    href={href}
-                    style={{ ...s, color: '#4890ff', textDecoration: 'underline' }}
-                    target={onLinkClick ? undefined : '_blank'}
-                    rel={onLinkClick ? undefined : 'noreferrer'}
-                    onClick={onLinkClick ? handleLinkClick : undefined}
-                >
-                    <ContentNode node={content} dictionaryName={dictionaryName} onLinkClick={onLinkClick} onWordClick={onWordClick} colors={colors} />
-                </a>
-            );
-        case 'ruby':
-            return <ruby style={s}><ContentNode node={content} dictionaryName={dictionaryName} onLinkClick={onLinkClick} onWordClick={onWordClick} colors={colors} /></ruby>;
-        case 'rt':
-            return <rt style={s}><ContentNode node={content} dictionaryName={dictionaryName} onLinkClick={onLinkClick} onWordClick={onWordClick} colors={colors} /></rt>;
-        case 'br':
-            return <br />;
-        case 'p':
-            return <p style={{ ...s, margin: '0.5em 0' }}><ContentNode node={content} dictionaryName={dictionaryName} onLinkClick={onLinkClick} onWordClick={onWordClick} colors={colors} /></p>;
-        case 'strong':
-            return <strong style={{ ...s, fontWeight: 'bold' }}><ContentNode node={content} dictionaryName={dictionaryName} onLinkClick={onLinkClick} onWordClick={onWordClick} colors={colors} /></strong>;
-        case 'em':
-            return <em style={{ ...s, fontStyle: 'italic' }}><ContentNode node={content} dictionaryName={dictionaryName} onLinkClick={onLinkClick} onWordClick={onWordClick} colors={colors} /></em>;
-        case 'b':
-            return <b style={{ ...s, fontWeight: 'bold' }}><ContentNode node={content} dictionaryName={dictionaryName} onLinkClick={onLinkClick} onWordClick={onWordClick} colors={colors} /></b>;
-        case 'i':
-            return <i style={{ ...s, fontStyle: 'italic' }}><ContentNode node={content} dictionaryName={dictionaryName} onLinkClick={onLinkClick} onWordClick={onWordClick} colors={colors} /></i>;
-        default: return <ContentNode node={content} dictionaryName={dictionaryName} onLinkClick={onLinkClick} onWordClick={onWordClick} colors={colors} />;
+        if (tag === 'br') return <br />;
+        const Component = tag as keyof JSX.IntrinsicElements;
+        return <Component style={finalStyle} {...dataAttrs} className={className} />;
     }
+    
+    if (tag === 'a' && href) {
+        const handleClick = (e: React.MouseEvent) => {
+            if (!onLinkClick) return;
+            if (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
+            e.preventDefault();
+            e.stopPropagation();
+            onLinkClick(href || '', getNodeText(content));
+        };
+        return (
+            <a
+                href={href}
+                style={{ ...finalStyle, color: '#4890ff', textDecoration: 'underline' }}
+                target={onLinkClick ? undefined : '_blank'}
+                rel={onLinkClick ? undefined : 'noreferrer'}
+                onClick={onLinkClick ? handleClick : undefined}
+                {...dataAttrs}
+                className={className}
+                title={titleAttr}
+            >
+                <ContentNode node={content} {...childProps} />
+            </a>
+        );
+    }
+    
+    const Component = tag as keyof JSX.IntrinsicElements;
+    const element = (
+        <Component style={finalStyle} {...dataAttrs} className={className} title={titleAttr}>
+            <ContentNode node={content} {...childProps} />
+        </Component>
+    );
+    
+    if (config.wrapper === 'table-container') {
+        return <div className="gloss-sc-table-container">{element}</div>;
+    }
+    
+    return element;
 };
 
 const splitTagString = (tag: string): string[] =>
@@ -291,6 +335,76 @@ const AnkiButtons: React.FC<{
                 return `${key}:${v}`;
             }).join(';');
         };
+
+        const HTML_ELEMENT_CONFIG: Record<string, {
+            void?: boolean;
+            wrapper?: 'table-container';
+            baseStyle?: string;
+        }> = {
+            br: { void: true },
+            img: { void: true },
+            hr: { void: true },
+            table: { wrapper: 'table-container' },
+            thead: { baseStyle: 'border: 1px solid #777; background-color: #f5f5f5;' },
+            tbody: { baseStyle: 'border: 1px solid #777;' },
+            tfoot: { baseStyle: 'border: 1px solid #777; background-color: #f5f5f5;' },
+            ul: { baseStyle: 'padding-left: 20px; margin: 2px 0; list-style-type: disc;' },
+            ol: { baseStyle: 'padding-left: 20px; margin: 2px 0; list-style-type: decimal;' },
+            li: { baseStyle: 'margin: 2px 0;' },
+            th: { baseStyle: 'border: 1px solid #777; padding: 2px 8px; text-align: center; font-weight: bold;' },
+            td: { baseStyle: 'border: 1px solid #777; padding: 2px 8px; text-align: center;' },
+            p: { baseStyle: 'margin: 0.5em 0;' },
+            details: { wrapper: 'table-container' },
+            summary: {},
+        };
+
+        const VOID_TAGS_HTML = ['br', 'img', 'hr', 'input', 'meta', 'link', 'area', 'base', 'col', 'embed', 'source', 'track', 'wbr'];
+
+        const generateElementHTML = (tag: string, tagContent: any, nodeData: any, dictStyle: string): string => {
+            const config = HTML_ELEMENT_CONFIG[tag] || {};
+            
+            const yomitanClass = `gloss-sc-${tag}`;
+            const dictClass = nodeData?.class || '';
+            const classStr = [yomitanClass, dictClass].filter(Boolean).join(' ');
+            const classAttr = classStr ? ` class="${classStr}"` : '';
+            
+            const dataAttrs = nodeData && typeof nodeData === 'object'
+                ? Object.entries(nodeData).map(([key, value]) => {
+                    if (typeof value === 'string' || typeof value === 'number' || typeof value === 'boolean') {
+                        return `data-sc-${key}="${String(value).replace(/"/g, '&quot;')}"`;
+                    }
+                    return '';
+                }).filter(Boolean).join(' ')
+                : '';
+            
+            const finalStyle = config.baseStyle ? `${config.baseStyle}${dictStyle}` : dictStyle;
+            const styleAttr = finalStyle ? ` style="${finalStyle}"` : '';
+            
+            if (config.void || VOID_TAGS_HTML.includes(tag)) {
+                if (tag === 'img') {
+                    const rawPath = tagContent?.path || tagContent?.src || '';
+                    const src = rawPath ? `/api/yomitan/dict-media/${encodeURIComponent(dictionaryName || '')}/${rawPath}` : rawPath;
+                    const alt = tagContent?.alt || '';
+                    return `<img src="${src}" alt="${alt}"${styleAttr} ${dataAttrs}${classAttr} />`;
+                }
+                if (tag === 'br') return '<br />';
+                return `<${tag}${styleAttr} ${dataAttrs}${classAttr} />`;
+            }
+            
+            if (tag === 'a') {
+                return `<a href="${href}" target="_blank" style="text-decoration: underline;${dictStyle}" ${dataAttrs}${classAttr}>${generateHTML(tagContent)}</a>`;
+            }
+            
+            const innerHTML = generateHTML(tagContent);
+            let element = `<${tag}${styleAttr} ${dataAttrs}${classAttr}>${innerHTML}</${tag}>`;
+            
+            if (config.wrapper === 'table-container') {
+                element = `<div class="gloss-sc-table-container">${element}</div>`;
+            }
+            
+            return element;
+        };
+
         const generateHTML = (node: any): string => {
             if (node === null || node === undefined) return '';
             if (typeof node === 'string' || typeof node === 'number') return String(node);
@@ -299,40 +413,7 @@ const AnkiButtons: React.FC<{
             if (node?.data?.content === 'attribution') return '';
             const { tag, content, style, href, data } = node;
             const customStyle = styleToString(style);
-            const classNames = typeof data?.class === 'string' ? data.class.split(/\s+/) : [];
-            const isTagClass = classNames.includes('tag');
-            const tagClassStyle = isTagClass
-                ? 'display: inline-block; padding: 1px 5px; border-radius: 3px; font-size: 0.75em; font-weight: bold; margin-right: 6px; color: #fff; background-color: #666; vertical-align: middle; line-height: 1.2;'
-                : '';
-            if (tag === 'ul') {
-                const baseStyle = 'padding-left: 20px; margin: 2px 0; list-style-type: disc;';
-                return `<ul style="${baseStyle}${customStyle}">${generateHTML(content)}</ul>`;
-            }
-            if (tag === 'ol') {
-                const baseStyle = 'padding-left: 20px; margin: 2px 0; list-style-type: decimal;';
-                return `<ol style="${baseStyle}${customStyle}">${generateHTML(content)}</ol>`;
-            }
-            if (tag === 'li') return `<li style="${customStyle}">${generateHTML(content)}</li>`;
-            if (tag === 'table') {
-                const baseStyle = 'border-collapse: collapse; width: 100%; border: 1px solid #777;';
-                return `<table style="${baseStyle}${customStyle}"><tbody>${generateHTML(content)}</tbody></table>`;
-            }
-            if (tag === 'tr') return `<tr style="${customStyle}">${generateHTML(content)}</tr>`;
-            if (tag === 'th') {
-                const baseStyle = 'border: 1px solid #777; padding: 2px 8px; text-align: center; font-weight: bold;';
-                return `<th style="${baseStyle}${customStyle}">${generateHTML(content)}</th>`;
-            }
-            if (tag === 'td') {
-                const baseStyle = 'border: 1px solid #777; padding: 2px 8px; text-align: center;';
-                return `<td style="${baseStyle}${customStyle}">${generateHTML(content)}</td>`;
-            }
-            if (tag === 'span') return `<span style="${tagClassStyle}${customStyle}">${generateHTML(content)}</span>`;
-            if (tag === 'div') return `<div style="${customStyle}">${generateHTML(content)}</div>`;
-            if (tag === 'a') {
-                const baseStyle = 'text-decoration: underline;'; 
-                return `<a href="${href}" target="_blank" style="${baseStyle}${customStyle}">${generateHTML(content)}</a>`;
-            }
-            return generateHTML(content);
+            return generateElementHTML(tag, content, data, customStyle);
         };
         const generateAnkiFurigana = (furiganaData: string[][]): string => {
             if (!furiganaData || furiganaData.length === 0) return entry.headword;
@@ -701,10 +782,13 @@ interface DictionaryViewProps {
     };
     variant?: 'popup' | 'inline';
     popupTheme?: PopupTheme;
+    layout?: 'vertical' | 'horizontal';
+    renderAnkiButtons?: (entry: DictionaryResult) => React.ReactNode;
+    renderHistoryNav?: () => React.ReactNode;
 }
 
 export const DictionaryView: React.FC<DictionaryViewProps> = ({ 
-    results, isLoading, systemLoading, onLinkClick, onWordClick, context, variant = 'inline', popupTheme
+    results, isLoading, systemLoading, onLinkClick, onWordClick, context, variant = 'inline', popupTheme, layout = 'vertical', renderAnkiButtons, renderHistoryNav
 }) => {
     const isPopup = variant === 'popup';
     const muiTheme = useTheme();
@@ -723,6 +807,8 @@ export const DictionaryView: React.FC<DictionaryViewProps> = ({
         freqValueText: popupTheme.fg,
         dictTagBg: popupTheme.accent,
         dictTagText: '#fff',
+        accent: popupTheme.accent,
+        hoverBg: popupTheme.hoverBg,
     } : {
         // Popup colors (dark background - fallback)
         text: '#fff',
@@ -737,6 +823,8 @@ export const DictionaryView: React.FC<DictionaryViewProps> = ({
         freqValueText: '#eee',
         dictTagBg: '#9b59b6',
         dictTagText: '#fff',
+        accent: '#7cc8ff',
+        hoverBg: '#333',
     } : {
         // Inline colors using MUI theme
         text: muiTheme.palette.text.primary,
@@ -751,6 +839,8 @@ export const DictionaryView: React.FC<DictionaryViewProps> = ({
         freqValueText: isDark ? '#eee' : '#000',
         dictTagBg: '#9b59b6',
         dictTagText: '#fff',
+        accent: muiTheme.palette.primary.main,
+        hoverBg: isDark ? '#333' : '#f5f5f5',
     };
     const { settings } = useOCR();
     const [audioMenu, setAudioMenu] = useState<{
@@ -878,23 +968,33 @@ export const DictionaryView: React.FC<DictionaryViewProps> = ({
             )}
             {isLoading && <div style={{ textAlign: 'center', padding: '20px', color: colors.textMuted }}>Scanning...</div>}
             {!isLoading && processedEntries.map((entry, i) => (
-                <div key={i} class="entry" style={{ marginBottom: '16px', paddingBottom: '16px', borderBottom: i < processedEntries.length - 1 ? `1px solid ${colors.border}` : 'none' }}>
+                <div key={i} class="entry" style={{ marginBottom: layout === 'horizontal' ? '8px' : '16px', paddingBottom: layout === 'horizontal' ? '8px' : '16px', borderBottom: i < processedEntries.length - 1 ? `1px solid ${colors.border}` : 'none' }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '8px' }}>
-                        <div style={{ display: 'flex', alignItems: 'flex-end', flexWrap: 'wrap' }}>
-                            <div style={{ fontSize: '1.8em', lineHeight: '1', marginRight: '10px', color: colors.text }} class="headword">
-                                {entry.furigana && entry.furigana.length > 0 ? (
-                                    <ruby style={{ rubyPosition: 'over' }} class="headword-text-container">
-                                        {entry.furigana.map((seg, idx) => (
-                                            <React.Fragment key={idx}>
-                                                <span class="headword-term">{seg[0]}</span><rt style={{ fontSize: '0.5em', color: colors.textSecondary }} class="headword-reading">{seg[1]}</rt>
-                                            </React.Fragment>
-                                        ))}
-                                    </ruby>
-                                ) : (
-                                    <ruby class="headword-text-container">
+                        <div style={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: layout === 'horizontal' ? '6px' : '0' }}>
+                            {i === 0 && layout === 'horizontal' && renderHistoryNav && renderHistoryNav()}
+                            <div style={{ fontSize: layout === 'horizontal' ? '1.5rem' : '1.8em', lineHeight: '1', marginRight: layout === 'horizontal' ? '8px' : '10px', color: colors.text }} class="headword">
+                                {layout === 'horizontal' ? (
+                                    <>
                                         <span class="headword-term">{entry.headword}</span>
-                                        <rt style={{ fontSize: '0.5em', color: colors.textSecondary }} class="headword-reading">{entry.reading}</rt>
-                                    </ruby>
+                                        {entry.reading && (
+                                            <span style={{ fontSize: '0.75rem', color: colors.textSecondary, marginLeft: '4px' }} class="headword-reading">({entry.reading})</span>
+                                        )}
+                                    </>
+                                ) : (
+                                    entry.furigana && entry.furigana.length > 0 ? (
+                                        <ruby style={{ rubyPosition: 'over' }} class="headword-text-container">
+                                            {entry.furigana.map((seg, idx) => (
+                                                <React.Fragment key={idx}>
+                                                    <span class="headword-term">{seg[0]}</span><rt style={{ fontSize: '0.5em', color: colors.textSecondary }} class="headword-reading">{seg[1]}</rt>
+                                                </React.Fragment>
+                                            ))}
+                                        </ruby>
+                                    ) : (
+                                        <ruby class="headword-text-container">
+                                            <span class="headword-term">{entry.headword}</span>
+                                            <rt style={{ fontSize: '0.5em', color: colors.textSecondary }} class="headword-reading">{entry.reading}</rt>
+                                        </ruby>
+                                    )
                                 )}
                             </div>
                             {entry.termTags && entry.termTags.length > 0 && (
@@ -904,14 +1004,18 @@ export const DictionaryView: React.FC<DictionaryViewProps> = ({
                                         if (typeof label !== 'string') return [];
                                         return splitTagString(label);
                                     }).map((label, idx) => (
-                                        <span key={idx} class="tag" style={{ ...tagStyle, backgroundColor: colors.tagBg, color: colors.tagText, marginRight: 0 }}><span class="tag-label">{label}</span></span>
+                                        <span key={idx} class="tag" style={getTagStyle(layout, colors.tagBg, colors.tagText)}><span class="tag-label">{label}</span></span>
                                     ))}
                                 </div>
                             )}
                         </div>
                         <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
                             {settings.ankiConnectEnabled && (
-                                <AnkiButtons entry={entry} wordAudioSelection={wordAudioSelection} wordAudioSelectionKey={wordAudioSelectionKey} />
+                                renderAnkiButtons ? (
+                                    renderAnkiButtons(entry)
+                                ) : (
+                                    <AnkiButtons entry={entry} wordAudioSelection={wordAudioSelection} wordAudioSelectionKey={wordAudioSelectionKey} />
+                                )
                             )}
                             <button
                                 type="button"
@@ -946,6 +1050,7 @@ export const DictionaryView: React.FC<DictionaryViewProps> = ({
                         if (pitchAccents.length === 0 && ipa.length === 0) return null;
                         return (
                             <PronunciationSection
+                                layout={layout}
                                 reading={entry.reading || entry.headword}
                                 pitchAccents={pitchAccents}
                                 ipa={ipa}
@@ -963,9 +1068,9 @@ export const DictionaryView: React.FC<DictionaryViewProps> = ({
                                     <div style={{ flexGrow: 1 }} class="definition-item-inner definition-item-content">
                                         <div style={{ marginBottom: '4px' }} class="definition-tag-list tag-list">
                                             {normalizeTagList(def.tags || []).map((t, ti) => (
-                                                <span key={ti} class="tag" style={{ ...tagStyle, backgroundColor: colors.tagBg, color: colors.tagText }}><span class="tag-label">{t}</span></span>
+                                                <span key={ti} class="tag" style={getTagStyle(layout, colors.tagBg, colors.tagText)}><span class="tag-label">{t}</span></span>
                                             ))}
-                                            <span class="tag tag-label" style={{ ...tagStyle, backgroundColor: colors.dictTagBg, color: colors.dictTagText }}>{def.dictionaryName}</span>
+                                            <span class="tag tag-label" style={getTagStyle(layout, colors.dictTagBg, colors.dictTagText)}>{def.dictionaryName}</span>
                                         </div>
                                         <div style={{ color: colors.text, whiteSpace: 'pre-wrap' }} class="gloss-content">
                                             {def.content.map((jsonString, idx) => (

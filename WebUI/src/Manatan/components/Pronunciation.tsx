@@ -364,6 +364,26 @@ const CSS = `
     padding: 8px 0;
     border-top: 1px solid rgba(255, 255, 255, 0.1);
 }
+.pronunciation-section.horizontal {
+    margin: 4px 0;
+    padding: 4px 0;
+    border-top: none;
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px;
+}
+.pronunciation-group.horizontal {
+    flex-direction: row;
+    align-items: center;
+    gap: 4px;
+}
+.pronunciation-list.horizontal {
+    flex-direction: row;
+    flex-wrap: wrap;
+    gap: 4px;
+}
 `;
 
 let cssInjected = false;
@@ -537,6 +557,7 @@ export interface PronunciationSectionProps {
     showGraph?: boolean;
     showText?: boolean;
     showNotation?: boolean;
+    layout?: 'vertical' | 'horizontal';
 }
 
 export const PronunciationSection: React.FC<PronunciationSectionProps> = ({
@@ -546,6 +567,7 @@ export const PronunciationSection: React.FC<PronunciationSectionProps> = ({
     showGraph = true,
     showText = true,
     showNotation = true,
+    layout = 'vertical',
 }) => {
     React.useEffect(() => {
         injectCSS();
@@ -557,7 +579,7 @@ export const PronunciationSection: React.FC<PronunciationSectionProps> = ({
     if (!hasPitch && !hasIpa) return null;
 
     return (
-        <div className="pronunciation-section">
+        <div className={`pronunciation-section ${layout}`}>
             {pitchAccents.map((pa, i) => {
                 const effectiveReading = pa.reading || reading;
                 
@@ -574,9 +596,9 @@ export const PronunciationSection: React.FC<PronunciationSectionProps> = ({
                 }
 
                 return (
-                    <div key={i} className="pronunciation-group" data-dictionary={pa.dictionaryName}>
+                    <div key={i} className={`pronunciation-group ${layout}`} data-dictionary={pa.dictionaryName}>
                         <span className="pronunciation-group-tag">{pa.dictionaryName}</span>
-                        <div className="pronunciation-list">
+                        <div className={`pronunciation-list ${layout}`}>
                             {pa.pitches.map((pitch, j) => {
                                 // Skip if pitch data is invalid
                                 const pos = pitch.pattern && pitch.pattern.length > 0
