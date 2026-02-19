@@ -438,8 +438,12 @@ export const YomitanPopup = () => {
 
             <div
                 ref={popupRef}
+                tabIndex={0}
                 className="yomitan-popup"
-                style={popupStyle}
+                style={{
+                    ...popupStyle,
+                    outline: 'none',
+                }}
                 onMouseDown={e => e.stopPropagation()}
                 onTouchStart={e => e.stopPropagation()}
                 onClick={e => e.stopPropagation()}

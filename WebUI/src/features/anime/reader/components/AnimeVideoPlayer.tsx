@@ -18,6 +18,7 @@ import DialogTitle from '@mui/material/DialogTitle';
 import MenuItem from '@mui/material/MenuItem';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
+import { Fragment } from 'react';
 import Slider from '@mui/material/Slider';
 import Menu from '@mui/material/Menu';
 import CircularProgress from '@mui/material/CircularProgress';
@@ -53,7 +54,7 @@ import VolumeUpIcon from '@mui/icons-material/VolumeUp';
 import TextFieldsIcon from '@mui/icons-material/TextFields';
 import { useTheme } from '@mui/material/styles';
 import useMediaQuery from '@mui/material/useMediaQuery';
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState, Fragment } from 'react';
 import type { MouseEvent as ReactMouseEvent } from 'react';
 import { useHotkeys as useHotkeysHook, useHotkeysContext } from 'react-hotkeys-hook';
 import Hls from 'hls.js';
@@ -64,7 +65,7 @@ import { HOTKEY_SCOPES } from '@/features/hotkeys/Hotkeys.constants.ts';
 import { HotkeyScope } from '@/features/hotkeys/Hotkeys.types.ts';
 import { useOCR } from '@/Manatan/context/OCRContext.tsx';
 import ManatanLogo from '@/Manatan/assets/manatan_logo.png';
-import { lookupYomitan } from '@/Manatan/utils/api.ts';
+import { cleanPunctuation, lookupYomitan } from '@/Manatan/utils/api.ts';
 import { buildSentenceFuriganaFromLookup } from '@/Manatan/utils/japaneseFurigana';
 import {
     getWordAudioFilename,
@@ -75,7 +76,7 @@ import {
     resolveWordAudioUrl,
 } from '@/Manatan/utils/wordAudio';
 import { DictionaryResult, WordAudioSource, WordAudioSourceSelection } from '@/Manatan/types.ts';
-import { StructuredContent } from '@/Manatan/components/DictionaryView.tsx';
+import { StructuredContent, DictionaryView } from '@/Manatan/components/DictionaryView.tsx';
 import { PronunciationSection, extractPronunciationData } from '@/Manatan/components/Pronunciation.tsx';
 import { makeToast } from '@/base/utils/Toast.ts';
 import { MediaQuery } from '@/base/utils/MediaQuery.tsx';
@@ -532,7 +533,7 @@ const buildDefinitionHtml = (entry: DictionaryResult, dictionaryName?: string): 
         const classNames = typeof data?.class === 'string' ? data.class.split(/\s+/) : [];
         const isTagClass = classNames.includes('tag');
         const tagClassStyle = isTagClass
-            ? 'display: inline-block; padding: 1px 5px; border-radius: 3px; font-size: 0.75em; font-weight: bold; margin-right: 6px; color: #fff; background-color: #666; vertical-align: middle; line-height: 1.2;'
+            ? 'display: inline-block; padding: 1px 5px; border-radius: 3px; font-size: 0.75em; font-weight: bold; margin-right: 6px; vertical-align: middle; line-height: 1.2;'
             : '';
 
         if (tag === 'ul') {
@@ -545,16 +546,16 @@ const buildDefinitionHtml = (entry: DictionaryResult, dictionaryName?: string): 
             return `<li style="${customStyle}">${generateHTML(content)}</li>`;
         }
         if (tag === 'table') {
-            return `<table style="border-collapse: collapse; width: 100%; border: 1px solid #777;${customStyle}"><tbody>${generateHTML(content)}</tbody></table>`;
+            return `<table style="border-collapse: collapse; width: 100%; border: 1px solid;${customStyle}"><tbody>${generateHTML(content)}</tbody></table>`;
         }
         if (tag === 'tr') {
             return `<tr style="${customStyle}">${generateHTML(content)}</tr>`;
         }
         if (tag === 'th') {
-            return `<th style="border: 1px solid #777; padding: 2px 8px; text-align: center; font-weight: bold;${customStyle}">${generateHTML(content)}</th>`;
+            return `<th style="border: 1px solid; padding: 2px 8px; text-align: center; font-weight: bold;${customStyle}">${generateHTML(content)}</th>`;
         }
         if (tag === 'td') {
-            return `<td style="border: 1px solid #777; padding: 2px 8px; text-align: center;${customStyle}">${generateHTML(content)}</td>`;
+            return `<td style="border: 1px solid; padding: 2px 8px; text-align: center;${customStyle}">${generateHTML(content)}</td>`;
         }
         if (tag === 'span') {
             return `<span style="${tagClassStyle}${customStyle}">${generateHTML(content)}</span>`;
@@ -579,9 +580,9 @@ const buildDefinitionHtml = (entry: DictionaryResult, dictionaryName?: string): 
         .map((def, idx) => {
             const tagsHTML = normalizeTagList(def.tags ?? []).map(
                 (tag) =>
-                    `<span style="display: inline-block; padding: 1px 5px; border-radius: 3px; font-size: 0.75em; font-weight: bold; margin-right: 6px; color: #fff; background-color: #666; vertical-align: middle;">${tag}</span>`,
+                    `<span style="display: inline-block; padding: 1px 5px; border-radius: 3px; font-size: 0.75em; font-weight: bold; margin-right: 6px; vertical-align: middle;">${tag}</span>`,
             );
-            const dictHTML = `<span style="display: inline-block; padding: 1px 5px; border-radius: 3px; font-size: 0.75em; font-weight: bold; margin-right: 6px; color: #fff; background-color: #9b59b6; vertical-align: middle;">${def.dictionaryName}</span>`;
+            const dictHTML = `<span style="display: inline-block; padding: 1px 5px; border-radius: 3px; font-size: 0.75em; font-weight: bold; margin-right: 6px; vertical-align: middle;">${def.dictionaryName}</span>`;
             const headerHTML = [...tagsHTML, dictHTML].join(' ');
             const contentHTML = def.content
                 .map((content) => {
@@ -727,8 +728,10 @@ export const AnimeVideoPlayer = ({
     const [dictionaryVisible, setDictionaryVisible] = useState(false);
     const [dictionaryResults, setDictionaryResults] = useState<DictionaryResult[]>([]);
     const [dictionaryLoading, setDictionaryLoading] = useState(false);
-    const [, setDictionarySystemLoading] = useState(false);
+    const [dictionarySystemLoading, setDictionarySystemLoading] = useState(false);
     const [, setDictionaryQuery] = useState('');
+    const [dictionaryHistory, setDictionaryHistory] = useState<{ term: string; results: DictionaryResult[]; isLoading: boolean; systemLoading: boolean }[]>([]);
+    const [dictionaryHistoryIndex, setDictionaryHistoryIndex] = useState(-1);
     const [wordAudioMenuAnchor, setWordAudioMenuAnchor] = useState<{ top: number; left: number } | null>(null);
     const [wordAudioMenuEntry, setWordAudioMenuEntry] = useState<DictionaryResult | null>(null);
     const [wordAudioSelection, setWordAudioSelection] = useState<WordAudioSourceSelection>('auto');
@@ -2940,6 +2943,10 @@ export const AnimeVideoPlayer = ({
             setIsOverlayVisible(false);
             dictionaryOpenedByHoverRef.current = source === 'hover';
 
+            const newEntry = { term: text, results: [], isLoading: true, systemLoading: false };
+            setDictionaryHistory([newEntry]);
+            setDictionaryHistoryIndex(0);
+
             const requestId = dictionaryRequestRef.current + 1;
             dictionaryRequestRef.current = requestId;
 
@@ -2952,15 +2959,36 @@ export const AnimeVideoPlayer = ({
             if (dictionaryRequestRef.current !== requestId) {
                 return;
             }
+            const loadedResults = results === 'loading' ? [] : (results || []);
+            const isSystemLoading = results === 'loading';
+            
+            setDictionaryHistory(prev => {
+                const newHistory = [...prev];
+                if (newHistory.length > 0) {
+                    newHistory[0] = { ...newHistory[0], results: loadedResults, isLoading: false, systemLoading: isSystemLoading };
+                }
+                return newHistory;
+            });
+            
             if (results === 'loading') {
                 setDictionaryLoading(false);
                 setDictionarySystemLoading(true);
             } else {
-                setDictionaryResults(results || []);
+                const loadedResults = results || [];
+                setDictionaryResults(loadedResults);
                 setDictionaryLoading(false);
                 setDictionarySystemLoading(false);
                 const matchLen = results?.[0]?.matchLen;
                 applyDictionaryHighlight(matchLen);
+                // Update the first history entry's term to be the headword
+                const headword = loadedResults[0]?.headword || text;
+                setDictionaryHistory(prev => {
+                    const newHistory = [...prev];
+                    if (newHistory.length > 0) {
+                        newHistory[0] = { ...newHistory[0], term: headword };
+                    }
+                    return newHistory;
+                });
             }
         },
         [
@@ -2986,6 +3014,189 @@ export const AnimeVideoPlayer = ({
         const charOffset = getSubtitleCharOffset(element, event.clientX, event.clientY);
         await performSubtitleLookup(text, cueKey, cueStart, cueEnd, charOffset, 'click');
     };
+
+    const handleDictionaryWordClick = useCallback(async (text: string, position: number) => {
+        const textEncoder = new TextEncoder();
+        const prefixBytes = textEncoder.encode(text.slice(0, position)).length;
+        
+        const cleanText = cleanPunctuation(text, true).trim();
+        if (!cleanText) return;
+
+        const video = videoRef.current;
+        if (video) {
+            resumePlaybackRef.current = Boolean(video && !video.paused);
+            overlayVisibilityRef.current = isOverlayVisible;
+            video.pause();
+        }
+        setDictionaryVisible(true);
+        setIsOverlayVisible(false);
+
+        const maxHistory = settings.yomitanLookupMaxHistory || 10;
+        const newEntry = { term: cleanText, results: [], isLoading: true, systemLoading: false };
+
+        setDictionaryHistory(prev => {
+            const newHistory = prev.slice(0, dictionaryHistoryIndex + 1);
+            newHistory.push(newEntry);
+            if (newHistory.length > maxHistory) newHistory.shift();
+            return newHistory;
+        });
+        setDictionaryHistoryIndex(prev => Math.min(prev + 1, maxHistory - 1));
+
+        try {
+            const results = await lookupYomitan(cleanText, prefixBytes, settings.resultGroupingMode || 'grouped', settings.yomitanLanguage || 'japanese');
+            const loadedResults = results === 'loading' ? [] : (results || []);
+            const isSystemLoading = results === 'loading';
+
+            setDictionaryResults(loadedResults);
+            setDictionaryLoading(false);
+            setDictionarySystemLoading(isSystemLoading);
+
+            setDictionaryHistory(prev => {
+                const newHistory = [...prev];
+                const idx = Math.min(dictionaryHistoryIndex + 1, maxHistory - 1);
+                if (newHistory[idx]) {
+                    const matchedTerm = loadedResults[0]?.headword || cleanText;
+                    newHistory[idx] = { ...newHistory[idx], term: matchedTerm, results: loadedResults, isLoading: false, systemLoading: isSystemLoading };
+                }
+                return newHistory;
+            });
+        } catch (err) {
+            console.warn('Failed to lookup word', err);
+            setDictionaryResults([]);
+            setDictionaryLoading(false);
+            setDictionarySystemLoading(false);
+            setDictionaryHistory(prev => {
+                const newHistory = [...prev];
+                const idx = Math.min(dictionaryHistoryIndex + 1, maxHistory - 1);
+                if (newHistory[idx]) {
+                    newHistory[idx] = { ...newHistory[idx], results: [], isLoading: false, systemLoading: false };
+                }
+                return newHistory;
+            });
+        }
+    }, [isOverlayVisible, settings.resultGroupingMode, settings.yomitanLanguage, settings.yomitanLookupMaxHistory, dictionaryHistoryIndex]);
+
+    const handleDictionaryDefinitionLink = useCallback(async (href: string, text: string) => {
+        const safeFallback = text.trim();
+        const trimmedHref = href.trim();
+        let lookupText = safeFallback;
+
+        if (trimmedHref) {
+            const extractQuery = (params: URLSearchParams) =>
+                params.get('query') || params.get('text') || params.get('term') || params.get('q') || '';
+
+            if (trimmedHref.startsWith('http://') || trimmedHref.startsWith('https://')) {
+                try {
+                    const parsed = new URL(trimmedHref);
+                    const queryText = extractQuery(parsed.searchParams);
+                    if (queryText) lookupText = queryText;
+                } catch (err) {
+                    console.warn('Failed to parse http link', err);
+                }
+            } else if (trimmedHref.startsWith('?') || trimmedHref.includes('?')) {
+                const queryString = trimmedHref.startsWith('?')
+                    ? trimmedHref.slice(1)
+                    : trimmedHref.slice(trimmedHref.indexOf('?') + 1);
+                const params = new URLSearchParams(queryString);
+                const queryText = extractQuery(params);
+                if (queryText) lookupText = queryText;
+            } else if (trimmedHref.startsWith('term://')) {
+                lookupText = decodeURIComponent(trimmedHref.slice('term://'.length));
+            } else if (trimmedHref.startsWith('yomitan://')) {
+                try {
+                    const parsed = new URL(trimmedHref);
+                    const queryText = extractQuery(parsed.searchParams);
+                    if (queryText) lookupText = queryText;
+                    else lookupText = decodeURIComponent(parsed.pathname.replace(/^\//, ''));
+                } catch (err) {
+                    console.warn('Failed to parse yomitan link', err);
+                }
+            } else {
+                try {
+                    lookupText = decodeURIComponent(trimmedHref);
+                } catch (err) {
+                    lookupText = safeFallback || trimmedHref;
+                }
+            }
+        }
+
+        const cleanText = cleanPunctuation(lookupText, true).trim();
+        if (!cleanText) return;
+
+        const video = videoRef.current;
+        if (video) {
+            resumePlaybackRef.current = Boolean(video && !video.paused);
+            overlayVisibilityRef.current = isOverlayVisible;
+            video.pause();
+        }
+        setDictionaryVisible(true);
+        setIsOverlayVisible(false);
+
+        const maxHistory = settings.yomitanLookupMaxHistory || 10;
+        const newEntry = { term: cleanText, results: [], isLoading: true, systemLoading: false };
+
+        setDictionaryHistory(prev => {
+            const newHistory = prev.slice(0, dictionaryHistoryIndex + 1);
+            newHistory.push(newEntry);
+            if (newHistory.length > maxHistory) newHistory.shift();
+            return newHistory;
+        });
+        setDictionaryHistoryIndex(prev => Math.min(prev + 1, maxHistory - 1));
+
+        try {
+            const results = await lookupYomitan(cleanText, 0, settings.resultGroupingMode || 'grouped', settings.yomitanLanguage || 'japanese');
+            const loadedResults = results === 'loading' ? [] : (results || []);
+            const isSystemLoading = results === 'loading';
+
+            setDictionaryResults(loadedResults);
+            setDictionaryLoading(false);
+            setDictionarySystemLoading(isSystemLoading);
+
+            setDictionaryHistory(prev => {
+                const newHistory = [...prev];
+                const idx = Math.min(dictionaryHistoryIndex + 1, maxHistory - 1);
+                if (newHistory[idx]) {
+                    newHistory[idx] = { ...newHistory[idx], results: loadedResults, isLoading: false, systemLoading: isSystemLoading };
+                }
+                return newHistory;
+            });
+        } catch (err) {
+            console.warn('Failed to lookup link definition', err);
+            setDictionaryResults([]);
+            setDictionaryLoading(false);
+            setDictionarySystemLoading(false);
+            setDictionaryHistory(prev => {
+                const newHistory = [...prev];
+                const idx = Math.min(dictionaryHistoryIndex + 1, maxHistory - 1);
+                if (newHistory[idx]) {
+                    newHistory[idx] = { ...newHistory[idx], results: [], isLoading: false, systemLoading: false };
+                }
+                return newHistory;
+            });
+        }
+    }, [isOverlayVisible, settings.resultGroupingMode, settings.yomitanLanguage, settings.yomitanLookupMaxHistory, dictionaryHistoryIndex]);
+
+    const navigateToDictionaryHistory = useCallback((index: number) => {
+        if (index >= 0 && index < dictionaryHistory.length) {
+            const entry = dictionaryHistory[index];
+            setDictionaryHistoryIndex(index);
+            setDictionaryResults(entry.results);
+            setDictionaryLoading(entry.isLoading);
+            setDictionarySystemLoading(entry.systemLoading);
+        }
+    }, [dictionaryHistory]);
+
+    const goBackDictionary = useCallback(() => {
+        if (dictionaryHistoryIndex > 0) {
+            navigateToDictionaryHistory(dictionaryHistoryIndex - 1);
+        }
+    }, [dictionaryHistoryIndex, navigateToDictionaryHistory]);
+
+    const goForwardDictionary = useCallback(() => {
+        if (dictionaryHistoryIndex < dictionaryHistory.length - 1) {
+            navigateToDictionaryHistory(dictionaryHistoryIndex + 1);
+        }
+    }, [dictionaryHistoryIndex, dictionaryHistory.length, navigateToDictionaryHistory]);
 
     const hoverLookupEnabled =
         settings.animeSubtitleHoverLookup && settings.enableYomitan && !isMobile && isDesktopPlatform;
@@ -3053,6 +3264,163 @@ export const AnimeVideoPlayer = ({
         }
     }, [dictionaryVisible, hoverLookupEnabled, settings.animeSubtitleHoverAutoResume]);
 
+    const cleanPunctuation = (text: string, aggressive = false): string => {
+        const punctuation = aggressive
+            ? /[【】《》「」『』［］〔〕｛｝()（）〈〉≪≫「」『』【】〖〗〘〙〚〛°′″℃￥＄€£¥、。…‥・：；！？・\s]/g
+            : /[【】《》「」『』［］〔〕｛｝()（）〈〉≪≫「」『』【】〖〗〘〙〚〛]/g;
+        return text.replace(punctuation, '');
+    };
+
+    const handleDefinitionLink = useCallback(async (href: string, text: string) => {
+        const safeFallback = text.trim();
+        const trimmedHref = href.trim();
+        let lookupText = safeFallback;
+
+        if (trimmedHref) {
+            const extractQuery = (params: URLSearchParams) =>
+                params.get('query') || params.get('text') || params.get('term') || params.get('q') || '';
+
+            if (trimmedHref.startsWith('http://') || trimmedHref.startsWith('https://')) {
+                try {
+                    const parsed = new URL(trimmedHref);
+                    const queryText = extractQuery(parsed.searchParams);
+                    if (queryText) lookupText = queryText;
+                } catch (err) {
+                    console.warn('Failed to parse http link', err);
+                }
+            } else if (trimmedHref.startsWith('?') || trimmedHref.includes('?')) {
+                const queryString = trimmedHref.startsWith('?')
+                    ? trimmedHref.slice(1)
+                    : trimmedHref.slice(trimmedHref.indexOf('?') + 1);
+                const params = new URLSearchParams(queryString);
+                const queryText = extractQuery(params);
+                if (queryText) lookupText = queryText;
+            } else if (trimmedHref.startsWith('term://')) {
+                lookupText = decodeURIComponent(trimmedHref.slice('term://'.length));
+            } else if (trimmedHref.startsWith('yomitan://')) {
+                try {
+                    const parsed = new URL(trimmedHref);
+                    const queryText = extractQuery(parsed.searchParams);
+                    if (queryText) lookupText = queryText;
+                    else lookupText = decodeURIComponent(parsed.pathname.replace(/^\//, ''));
+                } catch (err) {
+                    console.warn('Failed to parse yomitan link', err);
+                }
+            } else if (trimmedHref.startsWith('/lookup?text=')) {
+                const match = trimmedHref.match(/\/lookup\?text=([^&]+)/);
+                if (match) lookupText = decodeURIComponent(match[1]);
+            } else {
+                try {
+                    lookupText = decodeURIComponent(trimmedHref);
+                } catch (err) {
+                    lookupText = safeFallback || trimmedHref;
+                }
+            }
+        }
+
+        const cleanText = cleanPunctuation(lookupText, true).trim();
+        if (!cleanText) return;
+
+        const maxHistory = settings.yomitanLookupMaxHistory || 10;
+        const newEntry = { term: cleanText, results: [], isLoading: true, systemLoading: false };
+        setDictionaryHistory(prev => {
+            const newHistory = prev.slice(0, dictionaryHistoryIndex + 1);
+            newHistory.push(newEntry);
+            if (newHistory.length > maxHistory) newHistory.shift();
+            return newHistory;
+        });
+        setDictionaryHistoryIndex(prev => Math.min(prev + 1, maxHistory - 1));
+
+        dictionaryRequestRef.current += 1;
+        const requestId = dictionaryRequestRef.current;
+        
+        setDictionaryVisible(true);
+        setIsOverlayVisible(false);
+        dictionaryOpenedByHoverRef.current = false;
+        setDictionaryResults([]);
+        setDictionaryLoading(true);
+        setDictionarySystemLoading(false);
+        
+        const results = await lookupYomitan(
+            cleanText,
+            0,
+            settings.resultGroupingMode,
+            settings.yomitanLanguage
+        );
+        if (dictionaryRequestRef.current !== requestId) {
+            return;
+        }
+        const loadedResults = results === 'loading' ? [] : (results || []);
+        const isSystemLoading = results === 'loading';
+
+        setDictionaryHistory(prev => {
+            const newHistory = [...prev];
+            const idx = newHistory.findIndex(e => e.term === cleanText && e.isLoading);
+            if (idx >= 0) {
+                newHistory[idx] = { ...newHistory[idx], results: loadedResults, isLoading: false, systemLoading: isSystemLoading };
+            }
+            return newHistory;
+        });
+        setDictionaryResults(loadedResults);
+        setDictionaryLoading(false);
+        setDictionarySystemLoading(isSystemLoading);
+        if (loadedResults.length > 0) {
+            applyDictionaryHighlight(loadedResults[0]?.matchLen);
+        }
+    }, [settings.resultGroupingMode, settings.yomitanLanguage, settings.yomitanLookupMaxHistory, dictionaryHistoryIndex]);
+
+    const handleWordClick = useCallback(async (text: string, position: number) => {
+        const cleanText = text.trim();
+        if (!cleanText) return;
+
+        const maxHistory = settings.yomitanLookupMaxHistory || 10;
+        const newEntry = { term: cleanText, results: [], isLoading: true, systemLoading: false };
+        setDictionaryHistory(prev => {
+            const newHistory = prev.slice(0, dictionaryHistoryIndex + 1);
+            newHistory.push(newEntry);
+            if (newHistory.length > maxHistory) newHistory.shift();
+            return newHistory;
+        });
+        setDictionaryHistoryIndex(prev => Math.min(prev + 1, maxHistory - 1));
+
+        dictionaryRequestRef.current += 1;
+        const requestId = dictionaryRequestRef.current;
+        
+        setDictionaryVisible(true);
+        setIsOverlayVisible(false);
+        dictionaryOpenedByHoverRef.current = false;
+        setDictionaryResults([]);
+        setDictionaryLoading(true);
+        setDictionarySystemLoading(false);
+        
+        const results = await lookupYomitan(
+            cleanText,
+            position,
+            settings.resultGroupingMode,
+            settings.yomitanLanguage
+        );
+        if (dictionaryRequestRef.current !== requestId) {
+            return;
+        }
+        const loadedResults = results === 'loading' ? [] : (results || []);
+        const isSystemLoading = results === 'loading';
+
+        setDictionaryHistory(prev => {
+            const newHistory = [...prev];
+            const idx = newHistory.findIndex(e => e.term === cleanText && e.isLoading);
+            if (idx >= 0) {
+                newHistory[idx] = { ...newHistory[idx], results: loadedResults, isLoading: false, systemLoading: isSystemLoading };
+            }
+            return newHistory;
+        });
+        setDictionaryResults(loadedResults);
+        setDictionaryLoading(false);
+        setDictionarySystemLoading(isSystemLoading);
+        if (loadedResults.length > 0) {
+            applyDictionaryHighlight(loadedResults[0]?.matchLen);
+        }
+    }, [settings.resultGroupingMode, settings.yomitanLanguage, settings.yomitanLookupMaxHistory, dictionaryHistoryIndex]);
+
     useEffect(() => {
         return () => {
             if (hoverLookupTimerRef.current !== null) {
@@ -3090,6 +3458,8 @@ export const AnimeVideoPlayer = ({
         setHighlightedSubtitle(null);
         closeWordAudioMenu();
         dictionaryOpenedByHoverRef.current = false;
+        setDictionaryHistory([]);
+        setDictionaryHistoryIndex(-1);
         if (!video || !shouldResume) {
             setIsOverlayVisible(previousOverlayVisible);
             return;
@@ -3115,8 +3485,10 @@ export const AnimeVideoPlayer = ({
         return Math.round(numbers.length / sumOfReciprocals);
     }, []);
     const processedDictionaryResults = useMemo(() => {
-        if (!settings.showHarmonicMeanFreq) return dictionaryResults;
-        return dictionaryResults.map(entry => {
+        const currentEntry = dictionaryHistoryIndex >= 0 && dictionaryHistoryIndex < dictionaryHistory.length ? dictionaryHistory[dictionaryHistoryIndex] : null;
+        const resultsToProcess = currentEntry ? currentEntry.results : dictionaryResults;
+        if (!settings.showHarmonicMeanFreq) return resultsToProcess;
+        return resultsToProcess.map(entry => {
             if (!entry.frequencies || entry.frequencies.length === 0) return entry;
             const harmonicMean = calculateHarmonicMean(entry.frequencies);
             if (harmonicMean === null) return entry;
@@ -3125,7 +3497,10 @@ export const AnimeVideoPlayer = ({
                 frequencies: [{ dictionaryName: 'Harmonic Mean', value: harmonicMean.toString() }]
             };
         });
-    }, [dictionaryResults, settings.showHarmonicMeanFreq, calculateHarmonicMean]);
+    }, [dictionaryResults, dictionaryHistory, dictionaryHistoryIndex, settings.showHarmonicMeanFreq, calculateHarmonicMean]);
+    const currentDictionaryEntry = dictionaryHistoryIndex >= 0 && dictionaryHistoryIndex < dictionaryHistory.length ? dictionaryHistory[dictionaryHistoryIndex] : null;
+    const isDictionaryLoading = currentDictionaryEntry ? currentDictionaryEntry.isLoading : dictionaryLoading;
+    const isDictionarySystemLoading = currentDictionaryEntry ? currentDictionaryEntry.systemLoading : false;
     const singleGlossaryPrefix = 'Single Glossary ';
     const getSingleGlossaryName = useCallback((value: string): string | null => {
         if (value.startsWith(singleGlossaryPrefix)) {
@@ -4280,6 +4655,7 @@ export const AnimeVideoPlayer = ({
                     <Typography variant="body2">{statusMessage}</Typography>
                 </Box>
             )}
+            </Box>
             <Stack
                 sx={{
                     position: 'absolute',
@@ -4353,6 +4729,7 @@ export const AnimeVideoPlayer = ({
                         return cssParts ? <style>{cssParts}</style> : null;
                     })()}
                     <Box
+                        tabIndex={0}
                         sx={{
                             position: 'absolute',
                             top: popupTopOffset,
@@ -4365,324 +4742,218 @@ export const AnimeVideoPlayer = ({
                             p: 2,
                             overflowY: 'auto',
                             zIndex: 4,
+                            border: `1px solid ${popupTheme.border}`,
+                            borderRadius: '8px',
+                            boxShadow: '0 8px 24px rgba(0,0,0,0.5)',
                         }}
                         onClick={(event) => {
                             event.stopPropagation();
                             closeWordAudioMenu();
                         }}
                     >
-                        <Stack spacing={1}>
-                            {dictionaryLoading && (
-                                <Typography variant="body2" sx={{ textAlign: 'center', color: popupTheme.secondary, py: 2 }}>
-                                    Scanning…
-                                </Typography>
-                            )}
-                            {!dictionaryLoading && processedDictionaryResults.map((entry, i) => (
-                                <Box
-                                    key={`${entry.headword}-${entry.reading}-${i}`}
-                                    sx={{
-                                        mb: 2,
-                                        pb: 2,
-                                        borderBottom: i < processedDictionaryResults.length - 1
-                                            ? `1px solid ${popupTheme.border}`
-                                            : 'none',
-                                    }}
-                                    class="entry"
-                                >
-                                    <Stack
-                                        direction="row"
-                                        justifyContent="space-between"
-                                        alignItems="flex-start"
-                                        sx={{ mb: 1 }}
-                                    >
-                                        <Box sx={{ display: 'flex', flexWrap: 'wrap', alignItems: 'flex-end', gap: 1 }} class="headword headword-text-container">
-                                            <Typography variant="h5" sx={{ lineHeight: 1 }} class="headword-term">
-                                                {entry.headword}
-                                            </Typography>
-                                            {entry.reading && (
-                                                <Typography variant="caption" sx={{ color: popupTheme.secondary }}>
-                                                    {entry.reading}
-                                                </Typography>
-                                            )}
-                                            {entry.termTags && entry.termTags.length > 0 && (
-                                                <Box class="headword-list-tag-list tag-list" sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
-                                                    {entry.termTags
-                                                        .flatMap((tag) => splitTagString(getTermTagLabel(tag)))
-                                                        .map((label, tagIndex) => (
-                                                            <Box
-                                                                key={`${entry.headword}-tag-${tagIndex}`}
-                                                                class="tag"
-                                                                sx={{
-                                                                    px: 0.5,
-                                                                    py: 0.1,
-                                                                    borderRadius: 0.5,
-                                                                    fontSize: '0.7rem',
-                                                                    backgroundColor: popupTheme.secondary,
-                                                                    color: popupTheme.bg,
-                                                                }}
-                                                            >
-                                                                <span class="tag-label">{label}</span>
-                                                            </Box>
-                                                        ))}
-                                                </Box>
-                                            )}
-                                        </Box>
-                                        <Stack direction="row" spacing={1} alignItems="center">
-                                            {settings.ankiConnectEnabled && (
-                                                <>
-                                                    {(!settings.ankiDeck || !settings.ankiModel) ? (
-                                                        <IconButton
-                                                            size="small"
-                                                            onClick={(event) => {
-                                                                event.stopPropagation();
-                                                                showAlert(
-                                                                    'Anki Settings Missing',
-                                                                    'Select a target Deck and Card Type in settings.',
-                                                                );
-                                                            }}
-                                                            title="Anki settings missing"
-                                                            sx={{ color: '#d04a4a' }}
-                                                            aria-label="Anki settings missing"
-                                                        >
-                                                            <CloseIcon fontSize="small" />
-                                                        </IconButton>
-                                                    ) : (
-                                                        settings.enableYomitan
-                                                            ? (() => {
-                                                                const entryKey = getDictionaryEntryKey(entry);
-                                                                if (ankiActionPending[entryKey]) {
-                                                                    return (
-                                                                        <IconButton
-                                                                            size="small"
-                                                                            disabled
-                                                                            title="Adding card..."
-                                                                            sx={{ color: '#888' }}
-                                                                            aria-label="Adding card"
-                                                                        >
-                                                                            <HourglassEmptyIcon fontSize="small" />
-                                                                        </IconButton>
-                                                                    );
-                                                                }
-                                                                const status = getAnkiEntryStatus(entry);
-                                                                if (status === 'exists') {
-                                                                    return (
-                                                                        <IconButton
-                                                                            size="small"
-                                                                            onClick={(event) => {
-                                                                                event.stopPropagation();
-                                                                                handleAnkiOpen(entry);
-                                                                            }}
-                                                                            title="Open in Anki"
-                                                                            sx={{ color: '#2ecc71' }}
-                                                                            aria-label="Open in Anki"
-                                                                        >
-                                                                            <MenuBookIcon sx={{ fontSize: 22, transform: 'translateY(-0.5px)' }} />
-                                                                        </IconButton>
-                                                                    );
-                                                                }
-                                                                if (status === 'missing') {
-                                                                    return (
-                                                                        <IconButton
-                                                                            size="small"
-                                                                            onClick={(event) => {
-                                                                                event.stopPropagation();
-                                                                                handleAnkiAdd(entry);
-                                                                            }}
-                                                                            title="Add to Anki"
-                                                                            sx={{ color: '#2ecc71' }}
-                                                                            aria-label="Add to Anki"
-                                                                        >
-                                                                            <AddCircleOutlineIcon
-                                                                                sx={{
-                                                                                    fontSize: 22,
-                                                                                    '& path': {
-                                                                                        transform: 'scale(0.9167)',
-                                                                                        transformOrigin: 'center',
-                                                                                        transformBox: 'fill-box',
-                                                                                    },
-                                                                                }}
-                                                                            />
-                                                                        </IconButton>
-                                                                    );
-                                                                }
-                                                                return (
-                                                                    <IconButton
-                                                                        size="small"
-                                                                        disabled
-                                                                        title="Checking duplicates"
-                                                                        sx={{ color: '#888' }}
-                                                                        aria-label="Checking duplicates"
-                                                                    >
-                                                                        <HourglassEmptyIcon fontSize="small" />
-                                                                    </IconButton>
-                                                                );
-                                                            })()
-                                                            : (() => {
-                                                                const entryKey = getDictionaryEntryKey(entry);
-                                                                const isPending = ankiActionPending[entryKey];
-                                                                return (
-                                                                    <IconButton
-                                                                        size="small"
-                                                                        onClick={(event) => {
-                                                                            event.stopPropagation();
-                                                                            if (isPending) {
-                                                                                return;
-                                                                            }
-                                                                            handleAnkiReplaceLast(entry);
-                                                                        }}
-                                                                        title={isPending ? 'Updating card...' : 'Update last card'}
-                                                                        sx={{ color: isPending ? '#888' : '#4fb0ff' }}
-                                                                        disabled={isPending}
-                                                                        aria-label={isPending ? 'Updating card' : 'Update last card'}
-                                                                    >
-                                                                        <NoteAddIcon fontSize="small" />
-                                                                    </IconButton>
-                                                                );
-                                                            })()
-                                                    )}
-                                                </>
-                                            )}
-                                            <IconButton
-                                                size="small"
-                                                onClick={(event) => {
-                                                    event.stopPropagation();
-                                                    handlePlayWordAudio(entry);
-                                                }}
-                                                onContextMenu={(event) => openWordAudioMenu(event, entry)}
-                                                title="Play word audio (right-click for sources)"
-                                                aria-label="Play word audio"
-                                                disabled={!wordAudioOptions.length}
-                                                sx={{
-                                                    color: wordAudioOptions.length ? '#7cc8ff' : '#555',
-                                                }}
-                                            >
-                                                <VolumeUpIcon sx={{ fontSize: 22 }} />
-                                            </IconButton>
-                                        </Stack>
-                                    </Stack>
-                                    {entry.frequencies && entry.frequencies.length > 0 && (
-                                        <Box
-                                            class="entry-body frequency-group-list"
-                                            sx={{
-                                                display: 'flex',
-                                                flexWrap: 'wrap',
-                                                gap: 0.75,
-                                                mb: 1,
-                                            }}
-                                        >
-                                            {entry.frequencies.map((freq, freqIndex) => (
-                                                <Box
-                                                    key={`${entry.headword}-freq-${freqIndex}`}
-                                                    class="frequency-item"
-                                                    sx={{
-                                                        display: 'inline-flex',
-                                                        fontSize: '0.7rem',
-                                                        borderRadius: 0.75,
-                                                        overflow: 'hidden',
-                                                        border: '1px solid rgba(255,255,255,0.2)',
-                                                    }}
-                                                >
+                        <DictionaryView
+                            results={processedDictionaryResults}
+                            isLoading={dictionaryLoading}
+                            systemLoading={dictionarySystemLoading}
+                            onLinkClick={handleDefinitionLink}
+                            onWordClick={handleWordClick}
+                            context={dictionaryContext}
+                            variant="popup"
+                            popupTheme={popupTheme}
+                            layout="horizontal"
+                            renderHistoryNav={() => {
+                                if (!settings.yomitanLookupNavigationMode || dictionaryHistory.length <= 1) return null;
+                                const navMode = settings.yomitanLookupNavigationMode;
+                                if (navMode === 'tabs') {
+                                    return (
+                                        <div style={{ display: 'flex', gap: '3px', alignItems: 'center', flexWrap: 'wrap' }}>
+                                            {dictionaryHistory.map((h, hi) => (
+                                                <Fragment key={hi}>
+                                                    {hi > 0 && <span style={{ color: popupTheme.secondary, fontSize: '0.65rem' }}>→</span>}
                                                     <Box
-                                                        sx={{
-                                                            backgroundColor: '#2ecc71',
-                                                            color: '#000',
-                                                            fontWeight: 'bold',
-                                                            px: 0.75,
-                                                            py: 0.2,
-                                                        }}
-                                                    >
-                                                        {freq.dictionaryName}
-                                                    </Box>
-                                                    <Box
-                                                        sx={{
-                                                            backgroundColor: popupTheme.hoverBg,
-                                                            color: popupTheme.fg,
-                                                            px: 0.75,
-                                                            py: 0.2,
-                                                        }}
-                                                    >
-                                                        {freq.dictionaryName}
-                                                    </Box>
-                                                    <Box
-                                                        sx={{
-                                                            backgroundColor: popupTheme.hoverBg,
-                                                            color: popupTheme.fg,
-                                                            px: 0.75,
-                                                            py: 0.2,
-                                                            fontWeight: 'bold',
-                                                        }}
-                                                    >
-                                                        {freq.value}
-                                                    </Box>
-                                                </Box>
-                                            ))}
-                                        </Box>
-                                    )}
-                                    {(() => {
-                                        const { pitchAccents, ipa } = extractPronunciationData(entry);
-                                        if (pitchAccents.length === 0 && ipa.length === 0) return null;
-                                        return (
-                                            <PronunciationSection
-                                                reading={entry.reading || entry.headword}
-                                                pitchAccents={pitchAccents}
-                                                ipa={ipa}
-                                                showGraph={settings.yomitanShowPitchGraph ?? true}
-                                                showText={settings.yomitanShowPitchText ?? true}
-                                                showNotation={settings.yomitanShowPitchNotation ?? true}
-                                            />
-                                        );
-                                    })()}
-                                    <Box class="gloss-list definition-list">
-                                        {entry.glossary?.map((def, defIndex) => (
-                                            <Stack key={`${entry.headword}-def-${defIndex}`} sx={{ mb: 1 }} class="gloss-item definition-item" data-dictionary={def.dictionaryName}>
-                                                <Stack direction="row" spacing={1} sx={{ mb: 0.5 }} class="definition-tag-list tag-list">
-                                                    <span class="gloss-separator" style={{ color: popupTheme.secondary, fontWeight: 'bold' }}>{defIndex + 1}.</span>
-                                                    {normalizeTagList(def.tags ?? []).map((tag, tagIndex) => (
-                                                        <Box
-                                                            key={`${entry.headword}-def-${defIndex}-tag-${tagIndex}`}
-                                                            class="tag"
-                                                            sx={{
-                                                                px: 0.5,
-                                                                py: 0.1,
-                                                                borderRadius: 0.5,
-                                                                fontSize: '0.7rem',
-                                                                backgroundColor: '#666',
-                                                            }}
-                                                        >
-                                                            <span class="tag-label">{tag}</span>
-                                                        </Box>
-                                                    ))}
-                                                    <Box
-                                                        class="tag tag-label"
+                                                        component="button"
+                                                        onClick={() => navigateToDictionaryHistory(hi)}
                                                         sx={{
                                                             px: 0.5,
-                                                            py: 0.1,
-                                                            borderRadius: 0.5,
+                                                            py: 0.25,
+                                                            borderRadius: '3px',
+                                                            border: 'none',
+                                                            background: hi === dictionaryHistoryIndex ? popupTheme.accent : popupTheme.hoverBg,
+                                                            color: hi === dictionaryHistoryIndex ? '#fff' : popupTheme.fg,
+                                                            cursor: 'pointer',
                                                             fontSize: '0.7rem',
-                                                            backgroundColor: '#9b59b6',
+                                                            maxWidth: '60px',
+                                                            overflow: 'hidden',
+                                                            textOverflow: 'ellipsis',
+                                                            whiteSpace: 'nowrap',
                                                         }}
+                                                        title={h.term}
                                                     >
-                                                        {def.dictionaryName}
+                                                        {h.term.slice(0, 8)}
+                                                        {h.term.length > 8 ? '…' : ''}
                                                     </Box>
-                                                </Stack>
-                                                <Box sx={{ color: '#ddd', whiteSpace: 'pre-wrap' }} class="definition-item-inner definition-item-content gloss-content">
-                                                    {def.content.map((jsonString, idx) => (
-                                                        <Box key={`${entry.headword}-def-${defIndex}-${idx}`} sx={{ mb: 0.5 }}>
-                                                            <StructuredContent contentString={jsonString} dictionaryName={def.dictionaryName} />
-                                                        </Box>
-                                                    ))}
-                                                </Box>
-                                            </Stack>
-                                        ))}
-                                    </Box>
-                                </Box>
-                            ))}
-                            {!dictionaryLoading && processedDictionaryResults.length === 0 && (
-                                <Typography variant="body2" sx={{ textAlign: 'center', color: '#777' }}>
-                                    No results found
-                                </Typography>
+                                                </Fragment>
+                                            ))}
+                                        </div>
+                                    );
+                                }
+                                if (dictionaryHistoryIndex > 0) {
+                                    return (
+                                        <Box
+                                            component="button"
+                                            onClick={() => navigateToDictionaryHistory(dictionaryHistoryIndex - 1)}
+                                            sx={{
+                                                px: 0.5,
+                                                py: 0.25,
+                                                borderRadius: '3px',
+                                                border: 'none',
+                                                background: popupTheme.accent,
+                                                color: '#fff',
+                                                cursor: 'pointer',
+                                                fontSize: '0.7rem',
+                                            }}
+                                        >
+                                            ←
+                                        </Box>
+                                    );
+                                }
+                                return null;
+                            }}
+                            renderAnkiButtons={(entry) => (
+                                <Stack direction="row" spacing={1} alignItems="center">
+                                    {settings.ankiConnectEnabled && (
+                                        <>
+                                            {(!settings.ankiDeck || !settings.ankiModel) ? (
+                                                <IconButton
+                                                    size="small"
+                                                    onClick={(event) => {
+                                                        event.stopPropagation();
+                                                        showAlert(
+                                                            'Anki Settings Missing',
+                                                            'Select a target Deck and Card Type in settings.',
+                                                        );
+                                                    }}
+                                                    title="Anki settings missing"
+                                                    sx={{ color: '#d04a4a' }}
+                                                    aria-label="Anki settings missing"
+                                                >
+                                                    <CloseIcon fontSize="small" />
+                                                </IconButton>
+                                            ) : (
+                                                settings.enableYomitan
+                                                    ? (() => {
+                                                        const entryKey = getDictionaryEntryKey(entry);
+                                                        if (ankiActionPending[entryKey]) {
+                                                            return (
+                                                                <IconButton
+                                                                    size="small"
+                                                                    disabled
+                                                                    title="Adding card..."
+                                                                    sx={{ color: '#888' }}
+                                                                    aria-label="Adding card"
+                                                                >
+                                                                    <HourglassEmptyIcon fontSize="small" />
+                                                                </IconButton>
+                                                            );
+                                                        }
+                                                        const status = getAnkiEntryStatus(entry);
+                                                        if (status === 'exists') {
+                                                            return (
+                                                                <IconButton
+                                                                    size="small"
+                                                                    onClick={(event) => {
+                                                                        event.stopPropagation();
+                                                                        handleAnkiOpen(entry);
+                                                                    }}
+                                                                    title="Open in Anki"
+                                                                    sx={{ color: '#2ecc71' }}
+                                                                    aria-label="Open in Anki"
+                                                                >
+                                                                    <MenuBookIcon sx={{ fontSize: 22, transform: 'translateY(-0.5px)' }} />
+                                                                </IconButton>
+                                                            );
+                                                        }
+                                                        if (status === 'missing') {
+                                                            return (
+                                                                <IconButton
+                                                                    size="small"
+                                                                    onClick={(event) => {
+                                                                        event.stopPropagation();
+                                                                        handleAnkiAdd(entry);
+                                                                    }}
+                                                                    title="Add to Anki"
+                                                                    sx={{ color: '#2ecc71' }}
+                                                                    aria-label="Add to Anki"
+                                                                >
+                                                                    <AddCircleOutlineIcon
+                                                                        sx={{
+                                                                            fontSize: 22,
+                                                                            '& path': {
+                                                                                transform: 'scale(0.9167)',
+                                                                                transformOrigin: 'center',
+                                                                                transformBox: 'fill-box',
+                                                                            },
+                                                                        }}
+                                                                    />
+                                                                </IconButton>
+                                                            );
+                                                        }
+                                                        return (
+                                                            <IconButton
+                                                                size="small"
+                                                                disabled
+                                                                title="Checking duplicates"
+                                                                sx={{ color: '#888' }}
+                                                                aria-label="Checking duplicates"
+                                                            >
+                                                                <HourglassEmptyIcon fontSize="small" />
+                                                            </IconButton>
+                                                        );
+                                                    })()
+                                                    : (() => {
+                                                        const entryKey = getDictionaryEntryKey(entry);
+                                                        const isPending = ankiActionPending[entryKey];
+                                                        return (
+                                                            <IconButton
+                                                                size="small"
+                                                                onClick={(event) => {
+                                                                    event.stopPropagation();
+                                                                    if (isPending) {
+                                                                        return;
+                                                                    }
+                                                                    handleAnkiReplaceLast(entry);
+                                                                }}
+                                                                title={isPending ? 'Updating card...' : 'Update last card'}
+                                                                sx={{ color: isPending ? '#888' : '#4fb0ff' }}
+                                                                disabled={isPending}
+                                                                aria-label={isPending ? 'Updating card' : 'Update last card'}
+                                                            >
+                                                                <NoteAddIcon fontSize="small" />
+                                                            </IconButton>
+                                                        );
+                                                    })()
+                                            )}
+                                        </>
+                                    )}
+                                    <IconButton
+                                        size="small"
+                                        onClick={(event) => {
+                                            event.stopPropagation();
+                                            handlePlayWordAudio(entry);
+                                        }}
+                                        onContextMenu={(event) => openWordAudioMenu(event, entry)}
+                                        title="Play word audio (right-click for sources)"
+                                        aria-label="Play word audio"
+                                        disabled={!wordAudioOptions.length}
+                                        sx={{
+                                            color: wordAudioOptions.length ? '#7cc8ff' : '#555',
+                                        }}
+                                    >
+                                        <VolumeUpIcon sx={{ fontSize: 22 }} />
+                                    </IconButton>
+                                </Stack>
                             )}
-                        </Stack>
+                        />
                     </Box>
                 </>
             )}
@@ -5513,7 +5784,6 @@ export const AnimeVideoPlayer = ({
                     </Dialog>
                 </Box>
             )}
-                </Box>
             </Box>
         </Box>
     );
