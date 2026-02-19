@@ -2970,19 +2970,9 @@ export const AnimeVideoPlayer = ({
                 return newHistory;
             });
             
-            const maxHistory = settings.yomitanLookupMaxHistory || 10;
-            const cleanText = cleanPunctuation(text, true).trim();
             if (results === 'loading') {
                 setDictionaryLoading(false);
                 setDictionarySystemLoading(true);
-                const newEntry = { term: cleanText, results: [], isLoading: false, systemLoading: true };
-                setDictionaryHistory(prev => {
-                    const newHistory = prev.slice(0, dictionaryHistoryIndex + 1);
-                    newHistory.push(newEntry);
-                    if (newHistory.length > maxHistory) newHistory.shift();
-                    return newHistory;
-                });
-                setDictionaryHistoryIndex(prev => Math.min(prev + 1, maxHistory - 1));
             } else {
                 const loadedResults = results || [];
                 setDictionaryResults(loadedResults);
@@ -2990,14 +2980,15 @@ export const AnimeVideoPlayer = ({
                 setDictionarySystemLoading(false);
                 const matchLen = results?.[0]?.matchLen;
                 applyDictionaryHighlight(matchLen);
-                const newEntry = { term: loadedResults[0]?.headword || cleanText, results: loadedResults, isLoading: false, systemLoading: false };
+                // Update the first history entry's term to be the headword
+                const headword = loadedResults[0]?.headword || text;
                 setDictionaryHistory(prev => {
-                    const newHistory = prev.slice(0, dictionaryHistoryIndex + 1);
-                    newHistory.push(newEntry);
-                    if (newHistory.length > maxHistory) newHistory.shift();
+                    const newHistory = [...prev];
+                    if (newHistory.length > 0) {
+                        newHistory[0] = { ...newHistory[0], term: headword };
+                    }
                     return newHistory;
                 });
-                setDictionaryHistoryIndex(prev => Math.min(prev + 1, maxHistory - 1));
             }
         },
         [
@@ -3006,7 +2997,6 @@ export const AnimeVideoPlayer = ({
             safeSubtitleOffsetMs,
             settings.resultGroupingMode,
             settings.yomitanLanguage,
-            settings.yomitanLookupMaxHistory,
             wasPopupClosedRecently,
         ],
     );
