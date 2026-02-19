@@ -18,7 +18,6 @@ import DialogTitle from '@mui/material/DialogTitle';
 import MenuItem from '@mui/material/MenuItem';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
-import { Fragment } from 'react';
 import Slider from '@mui/material/Slider';
 import Menu from '@mui/material/Menu';
 import CircularProgress from '@mui/material/CircularProgress';
@@ -533,7 +532,7 @@ const buildDefinitionHtml = (entry: DictionaryResult, dictionaryName?: string): 
         const classNames = typeof data?.class === 'string' ? data.class.split(/\s+/) : [];
         const isTagClass = classNames.includes('tag');
         const tagClassStyle = isTagClass
-            ? 'display: inline-block; padding: 1px 5px; border-radius: 3px; font-size: 0.75em; font-weight: bold; margin-right: 6px; vertical-align: middle; line-height: 1.2;'
+            ? 'display: inline-block; padding: 1px 5px; border-radius: 3px; border: 1px solid rgba(255,255,255,0.28); font-size: 0.75em; font-weight: bold; margin-right: 6px; color: #fff; background-color: #666; vertical-align: middle; line-height: 1.2;'
             : '';
 
         if (tag === 'ul') {
@@ -546,16 +545,16 @@ const buildDefinitionHtml = (entry: DictionaryResult, dictionaryName?: string): 
             return `<li style="${customStyle}">${generateHTML(content)}</li>`;
         }
         if (tag === 'table') {
-            return `<table style="border-collapse: collapse; width: 100%; border: 1px solid;${customStyle}"><tbody>${generateHTML(content)}</tbody></table>`;
+            return `<table style="border-collapse: collapse; width: 100%; border: 1px solid #777;${customStyle}"><tbody>${generateHTML(content)}</tbody></table>`;
         }
         if (tag === 'tr') {
             return `<tr style="${customStyle}">${generateHTML(content)}</tr>`;
         }
         if (tag === 'th') {
-            return `<th style="border: 1px solid; padding: 2px 8px; text-align: center; font-weight: bold;${customStyle}">${generateHTML(content)}</th>`;
+            return `<th style="border: 1px solid #777; padding: 2px 8px; text-align: center; font-weight: bold;${customStyle}">${generateHTML(content)}</th>`;
         }
         if (tag === 'td') {
-            return `<td style="border: 1px solid; padding: 2px 8px; text-align: center;${customStyle}">${generateHTML(content)}</td>`;
+            return `<td style="border: 1px solid #777; padding: 2px 8px; text-align: center;${customStyle}">${generateHTML(content)}</td>`;
         }
         if (tag === 'span') {
             return `<span style="${tagClassStyle}${customStyle}">${generateHTML(content)}</span>`;
@@ -580,9 +579,9 @@ const buildDefinitionHtml = (entry: DictionaryResult, dictionaryName?: string): 
         .map((def, idx) => {
             const tagsHTML = normalizeTagList(def.tags ?? []).map(
                 (tag) =>
-                    `<span style="display: inline-block; padding: 1px 5px; border-radius: 3px; font-size: 0.75em; font-weight: bold; margin-right: 6px; vertical-align: middle;">${tag}</span>`,
+                    `<span style="display: inline-block; padding: 1px 5px; border-radius: 3px; border: 1px solid rgba(255,255,255,0.28); font-size: 0.75em; font-weight: bold; margin-right: 6px; color: #fff; background-color: #666; vertical-align: middle;">${tag}</span>`,
             );
-            const dictHTML = `<span style="display: inline-block; padding: 1px 5px; border-radius: 3px; font-size: 0.75em; font-weight: bold; margin-right: 6px; vertical-align: middle;">${def.dictionaryName}</span>`;
+            const dictHTML = `<span style="display: inline-block; padding: 1px 5px; border-radius: 3px; border: 1px solid rgba(255,255,255,0.2); font-size: 0.75em; font-weight: bold; margin-right: 6px; color: #fff; background-color: #9b59b6; vertical-align: middle;">${def.dictionaryName}</span>`;
             const headerHTML = [...tagsHTML, dictHTML].join(' ');
             const contentHTML = def.content
                 .map((content) => {
@@ -2891,6 +2890,38 @@ export const AnimeVideoPlayer = ({
         return 0;
     };
 
+    const applyDictionaryHighlight = useCallback(
+        (
+            matchLen?: number | null,
+            options?: {
+                cueKey?: string;
+                text?: string;
+                start?: number;
+                fallbackRange?: { start: number; end: number } | null;
+            },
+        ) => {
+            const cueKey = options?.cueKey ?? highlightedSubtitle?.key;
+            const sourceText = options?.text ?? dictionaryContext?.sentence;
+            if (!cueKey || !sourceText) {
+                return;
+            }
+
+            const currentStart = options?.start ?? highlightedSubtitle?.start ?? 0;
+            const boundedStart = Math.min(Math.max(currentStart, 0), sourceText.length);
+
+            if (matchLen && matchLen > 0) {
+                const end = Math.min(sourceText.length, boundedStart + matchLen);
+                setHighlightedSubtitle({ key: cueKey, start: boundedStart, end });
+                return;
+            }
+
+            if (options?.fallbackRange) {
+                setHighlightedSubtitle({ key: cueKey, ...options.fallbackRange });
+            }
+        },
+        [dictionaryContext?.sentence, highlightedSubtitle],
+    );
+
     const performSubtitleLookup = useCallback(
         async (
             text: string,
@@ -2907,19 +2938,6 @@ export const AnimeVideoPlayer = ({
             const safeCharOffset = Math.min(Math.max(charOffset, 0), text.length);
             const fallbackHighlightRange = getSubtitleHighlightRange(text, safeCharOffset);
             setHighlightedSubtitle(null);
-
-            const applyDictionaryHighlight = (matchLen?: number | null) => {
-                if (matchLen && matchLen > 0) {
-                    const end = Math.min(text.length, safeCharOffset + matchLen);
-                    setHighlightedSubtitle({ key: cueKey, start: safeCharOffset, end });
-                    return;
-                }
-                if (fallbackHighlightRange) {
-                    setHighlightedSubtitle({ key: cueKey, ...fallbackHighlightRange });
-                } else {
-                    setHighlightedSubtitle(null);
-                }
-            };
 
             const encoder = new TextEncoder();
             const byteIndex = encoder.encode(text.substring(0, safeCharOffset)).length;
@@ -2979,7 +2997,12 @@ export const AnimeVideoPlayer = ({
                 setDictionaryLoading(false);
                 setDictionarySystemLoading(false);
                 const matchLen = results?.[0]?.matchLen;
-                applyDictionaryHighlight(matchLen);
+                applyDictionaryHighlight(matchLen, {
+                    cueKey,
+                    text,
+                    start: safeCharOffset,
+                    fallbackRange: fallbackHighlightRange,
+                });
                 // Update the first history entry's term to be the headword
                 const headword = loadedResults[0]?.headword || text;
                 setDictionaryHistory(prev => {
@@ -2998,6 +3021,7 @@ export const AnimeVideoPlayer = ({
             settings.resultGroupingMode,
             settings.yomitanLanguage,
             wasPopupClosedRecently,
+            applyDictionaryHighlight,
         ],
     );
 
@@ -3367,7 +3391,7 @@ export const AnimeVideoPlayer = ({
         if (loadedResults.length > 0) {
             applyDictionaryHighlight(loadedResults[0]?.matchLen);
         }
-    }, [settings.resultGroupingMode, settings.yomitanLanguage, settings.yomitanLookupMaxHistory, dictionaryHistoryIndex]);
+    }, [settings.resultGroupingMode, settings.yomitanLanguage, settings.yomitanLookupMaxHistory, dictionaryHistoryIndex, applyDictionaryHighlight]);
 
     const handleWordClick = useCallback(async (text: string, position: number) => {
         const cleanText = text.trim();
@@ -3419,7 +3443,7 @@ export const AnimeVideoPlayer = ({
         if (loadedResults.length > 0) {
             applyDictionaryHighlight(loadedResults[0]?.matchLen);
         }
-    }, [settings.resultGroupingMode, settings.yomitanLanguage, settings.yomitanLookupMaxHistory, dictionaryHistoryIndex]);
+    }, [settings.resultGroupingMode, settings.yomitanLanguage, settings.yomitanLookupMaxHistory, dictionaryHistoryIndex, applyDictionaryHighlight]);
 
     useEffect(() => {
         return () => {
@@ -4743,7 +4767,7 @@ export const AnimeVideoPlayer = ({
                             overflowY: 'auto',
                             zIndex: 4,
                             border: `1px solid ${popupTheme.border}`,
-                            borderRadius: '8px',
+                            borderRadius: 0,
                             boxShadow: '0 8px 24px rgba(0,0,0,0.5)',
                         }}
                         onClick={(event) => {
@@ -4928,7 +4952,16 @@ export const AnimeVideoPlayer = ({
                                                                 disabled={isPending}
                                                                 aria-label={isPending ? 'Updating card' : 'Update last card'}
                                                             >
-                                                                <NoteAddIcon fontSize="small" />
+                                                                <NoteAddIcon
+                                                                    sx={{
+                                                                        fontSize: 22,
+                                                                        '& path': {
+                                                                            transform: 'scale(0.9167)',
+                                                                            transformOrigin: 'center',
+                                                                            transformBox: 'fill-box',
+                                                                        },
+                                                                    }}
+                                                                />
                                                             </IconButton>
                                                         );
                                                     })()

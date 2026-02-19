@@ -360,60 +360,73 @@ const AnkiButtons: React.FC<{
 
         const VOID_TAGS_HTML = ['br', 'img', 'hr', 'input', 'meta', 'link', 'area', 'base', 'col', 'embed', 'source', 'track', 'wbr'];
 
-        const generateElementHTML = (tag: string, tagContent: any, nodeData: any, dictStyle: string): string => {
+        const generateElementHTML = (
+            node: any,
+            dictStyle: string,
+            glossaryDictionaryName?: string,
+        ): string => {
+            const { tag, content, data, href } = node;
             const config = HTML_ELEMENT_CONFIG[tag] || {};
-            
+
             const yomitanClass = `gloss-sc-${tag}`;
-            const dictClass = nodeData?.class || '';
+            const dictClass = data?.class || '';
             const classStr = [yomitanClass, dictClass].filter(Boolean).join(' ');
             const classAttr = classStr ? ` class="${classStr}"` : '';
-            
-            const dataAttrs = nodeData && typeof nodeData === 'object'
-                ? Object.entries(nodeData).map(([key, value]) => {
+
+            const classNames = typeof data?.class === 'string' ? data.class.split(/\s+/) : [];
+            const isTagClass = classNames.includes('tag');
+            const tagClassStyle = isTagClass
+                ? 'display: inline-block; padding: 1px 5px; border-radius: 3px; border: 1px solid rgba(255,255,255,0.28); font-size: 0.75em; font-weight: bold; margin-right: 6px; color: #fff; background-color: #666; vertical-align: middle; line-height: 1.2;'
+                : '';
+
+            const dataAttrs = data && typeof data === 'object'
+                ? Object.entries(data).map(([key, value]) => {
                     if (typeof value === 'string' || typeof value === 'number' || typeof value === 'boolean') {
                         return `data-sc-${key}="${String(value).replace(/"/g, '&quot;')}"`;
                     }
                     return '';
                 }).filter(Boolean).join(' ')
                 : '';
-            
-            const finalStyle = config.baseStyle ? `${config.baseStyle}${dictStyle}` : dictStyle;
+
+            const finalStyle = `${config.baseStyle || ''}${tagClassStyle}${dictStyle}`;
             const styleAttr = finalStyle ? ` style="${finalStyle}"` : '';
-            
+
             if (config.void || VOID_TAGS_HTML.includes(tag)) {
                 if (tag === 'img') {
-                    const rawPath = tagContent?.path || tagContent?.src || '';
-                    const src = rawPath ? `/api/yomitan/dict-media/${encodeURIComponent(dictionaryName || '')}/${rawPath}` : rawPath;
-                    const alt = tagContent?.alt || '';
+                    const rawPath = node.path || node.src || '';
+                    const src = rawPath && glossaryDictionaryName
+                        ? `/api/yomitan/dict-media/${encodeURIComponent(glossaryDictionaryName)}/${rawPath}`
+                        : rawPath;
+                    const alt = node.alt || '';
                     return `<img src="${src}" alt="${alt}"${styleAttr} ${dataAttrs}${classAttr} />`;
                 }
                 if (tag === 'br') return '<br />';
                 return `<${tag}${styleAttr} ${dataAttrs}${classAttr} />`;
             }
-            
+
             if (tag === 'a') {
-                return `<a href="${href}" target="_blank" style="text-decoration: underline;${dictStyle}" ${dataAttrs}${classAttr}>${generateHTML(tagContent)}</a>`;
+                return `<a href="${href}" target="_blank" style="text-decoration: underline;${dictStyle}" ${dataAttrs}${classAttr}>${generateHTML(content, glossaryDictionaryName)}</a>`;
             }
-            
-            const innerHTML = generateHTML(tagContent);
+
+            const innerHTML = generateHTML(content, glossaryDictionaryName);
             let element = `<${tag}${styleAttr} ${dataAttrs}${classAttr}>${innerHTML}</${tag}>`;
-            
+
             if (config.wrapper === 'table-container') {
                 element = `<div class="gloss-sc-table-container">${element}</div>`;
             }
-            
+
             return element;
         };
 
-        const generateHTML = (node: any): string => {
+        const generateHTML = (node: any, glossaryDictionaryName?: string): string => {
             if (node === null || node === undefined) return '';
             if (typeof node === 'string' || typeof node === 'number') return String(node);
-            if (Array.isArray(node)) return node.map(generateHTML).join('');
-            if (node.type === 'structured-content') return generateHTML(node.content);
+            if (Array.isArray(node)) return node.map((part) => generateHTML(part, glossaryDictionaryName)).join('');
+            if (node.type === 'structured-content') return generateHTML(node.content, glossaryDictionaryName);
             if (node?.data?.content === 'attribution') return '';
-            const { tag, content, style, href, data } = node;
+            const { style } = node;
             const customStyle = styleToString(style);
-            return generateElementHTML(tag, content, data, customStyle);
+            return generateElementHTML(node, customStyle, glossaryDictionaryName);
         };
         const generateAnkiFurigana = (furiganaData: string[][]): string => {
             if (!furiganaData || furiganaData.length === 0) return entry.headword;
@@ -512,14 +525,14 @@ const AnkiButtons: React.FC<{
             if (!glossaryEntries.length) return '';
             return glossaryEntries.map((def, idx) => {
                 const tagsHTML = normalizeTagList(def.tags).map((t) =>
-                    `<span style="display: inline-block; padding: 1px 5px; border-radius: 3px; font-size: 0.75em; font-weight: bold; margin-right: 6px; color: #fff; background-color: #666; vertical-align: middle;">${t}</span>`
+                    `<span style="display: inline-block; padding: 1px 5px; border-radius: 3px; border: 1px solid rgba(255,255,255,0.28); font-size: 0.75em; font-weight: bold; margin-right: 6px; color: #fff; background-color: #666; vertical-align: middle;">${t}</span>`
                 );
-                const dictHTML = `<span style="display: inline-block; padding: 1px 5px; border-radius: 3px; font-size: 0.75em; font-weight: bold; margin-right: 6px; color: #fff; background-color: #9b59b6; vertical-align: middle;">${def.dictionaryName}</span>`;
+                const dictHTML = `<span style="display: inline-block; padding: 1px 5px; border-radius: 3px; border: 1px solid rgba(255,255,255,0.2); font-size: 0.75em; font-weight: bold; margin-right: 6px; color: #fff; background-color: #9b59b6; vertical-align: middle;">${def.dictionaryName}</span>`;
                 const headerHTML = [...tagsHTML, dictHTML].join(' ');
                 const contentHTML = def.content.map((c) => {
                     try {
                         const parsed = JSON.parse(c);
-                        return `<div style="margin-bottom: 2px;">${generateHTML(parsed)}</div>`;
+                        return `<div style="margin-bottom: 2px;">${generateHTML(parsed, def.dictionaryName)}</div>`;
                     } catch {
                         return `<div>${c}</div>`;
                     }
@@ -1010,29 +1023,36 @@ export const DictionaryView: React.FC<DictionaryViewProps> = ({
                             )}
                         </div>
                         <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                            {settings.ankiConnectEnabled && (
-                                renderAnkiButtons ? (
-                                    renderAnkiButtons(entry)
-                                ) : (
-                                    <AnkiButtons entry={entry} wordAudioSelection={wordAudioSelection} wordAudioSelectionKey={wordAudioSelectionKey} />
-                                )
+                            {renderAnkiButtons ? (
+                                renderAnkiButtons(entry)
+                            ) : (
+                                <>
+                                    {settings.ankiConnectEnabled && (
+                                        <AnkiButtons
+                                            entry={entry}
+                                            wordAudioSelection={wordAudioSelection}
+                                            wordAudioSelectionKey={wordAudioSelectionKey}
+                                            mediaName={mediaName}
+                                        />
+                                    )}
+                                    <button
+                                        type="button"
+                                        onClick={(event) => { event.stopPropagation(); handlePlayWordAudio(entry); }}
+                                        onContextMenu={(event) => openAudioMenu(event, entry)}
+                                        title="Play word audio (right-click for sources)"
+                                        style={{
+                                            background: 'none', border: 'none',
+                                            cursor: wordAudioOptions.length ? 'pointer' : 'not-allowed', padding: '2px',
+                                            color: wordAudioOptions.length ? (popupTheme ? popupTheme.accent : '#7cc8ff') : (popupTheme ? popupTheme.secondary : '#555'), lineHeight: 1,
+                                            display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                        }}
+                                        disabled={!wordAudioOptions.length}
+                                        aria-label="Play word audio"
+                                    >
+                                        <VolumeUpIcon sx={{ fontSize: 22 }} />
+                                    </button>
+                                </>
                             )}
-                            <button
-                                type="button"
-                                onClick={(event) => { event.stopPropagation(); handlePlayWordAudio(entry); }}
-                                onContextMenu={(event) => openAudioMenu(event, entry)}
-                                title="Play word audio (right-click for sources)"
-                                style={{
-                                    background: 'none', border: 'none',
-                                    cursor: wordAudioOptions.length ? 'pointer' : 'not-allowed', padding: '2px',
-                                    color: wordAudioOptions.length ? (popupTheme ? popupTheme.accent : '#7cc8ff') : (popupTheme ? popupTheme.secondary : '#555'), lineHeight: 1,
-                                    display: 'flex', alignItems: 'center', justifyContent: 'center',
-                                }}
-                                disabled={!wordAudioOptions.length}
-                                aria-label="Play word audio"
-                            >
-                                <VolumeUpIcon sx={{ fontSize: 22 }} />
-                            </button>
                         </div>
                     </div>
                     {entry.frequencies && entry.frequencies.length > 0 && (
