@@ -553,16 +553,16 @@ const AnkiButtons: React.FC<{
             if (!glossaryEntries.length) return '';
             return glossaryEntries.map((def, idx) => {
                 const tagsHTML = normalizeTagList(def.tags).map((t) =>
-                    `<span style="display: inline-block; padding: 1px 5px; border-radius: 3px; border: 1px solid rgba(255,255,255,0.28); font-size: 0.75em; font-weight: bold; margin-right: 6px; color: #fff; background-color: #666; vertical-align: middle;">${t}</span>`
+                    `<span style="display: inline-block; padding: 1px 5px; border-radius: 3px; font-size: 0.75em; font-weight: bold; margin-right: 6px; color: #fff; background-color: #666; vertical-align: middle;">${t}</span>`
                 );
-                const dictHTML = `<span style="display: inline-block; padding: 1px 5px; border-radius: 3px; border: 1px solid rgba(255,255,255,0.2); font-size: 0.75em; font-weight: bold; margin-right: 6px; color: #fff; background-color: #9b59b6; vertical-align: middle;">${def.dictionaryName}</span>`;
+                const dictHTML = `<i>(${def.dictionaryName})</i>`;
                 const headerHTML = [...tagsHTML, dictHTML].join(' ');
                 const contentHTML = def.content.map((c) => {
                     try {
                         const parsed = JSON.parse(c);
-                        return `<div style="margin-bottom: 2px;">${generateHTML(parsed, def.dictionaryName)}</div>`;
+                        return generateHTML(parsed, def.dictionaryName);
                     } catch {
-                        return `<div>${c}</div>`;
+                        return c;
                     }
                 }).join('');
                 return `

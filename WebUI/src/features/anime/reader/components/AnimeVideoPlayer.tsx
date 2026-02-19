@@ -530,41 +530,51 @@ const buildDefinitionHtml = (entry: DictionaryResult, dictionaryName?: string): 
 
         const { tag, content, style, href, data } = node;
         const customStyle = styleToString(style);
+
+        const dataAttrs = data && typeof data === 'object'
+            ? Object.entries(data)
+                .filter(([_, v]) => typeof v === 'string' || typeof v === 'number' || typeof v === 'boolean')
+                .map(([k, v]) => `data-sc-${k}="${v}"`)
+                .join(' ')
+            : '';
+
         const classNames = typeof data?.class === 'string' ? data.class.split(/\s+/) : [];
         const isTagClass = classNames.includes('tag');
         const tagClassStyle = isTagClass
             ? 'display: inline-block; padding: 1px 5px; border-radius: 3px; border: 1px solid rgba(255,255,255,0.28); font-size: 0.75em; font-weight: bold; margin-right: 6px; color: #fff; background-color: #666; vertical-align: middle; line-height: 1.2;'
             : '';
 
+        const dataAttrString = dataAttrs ? ' ' + dataAttrs : '';
+
         if (tag === 'ul') {
-            return `<ul style="padding-left: 20px; margin: 2px 0; list-style-type: disc;${customStyle}">${generateHTML(content)}</ul>`;
+            return `<ul style="padding-left: 20px; margin: 2px 0; list-style-type: disc;${customStyle}"${dataAttrString}>${generateHTML(content)}</ul>`;
         }
         if (tag === 'ol') {
-            return `<ol style="padding-left: 20px; margin: 2px 0; list-style-type: decimal;${customStyle}">${generateHTML(content)}</ol>`;
+            return `<ol style="padding-left: 20px; margin: 2px 0; list-style-type: decimal;${customStyle}"${dataAttrString}>${generateHTML(content)}</ol>`;
         }
         if (tag === 'li') {
-            return `<li style="${customStyle}">${generateHTML(content)}</li>`;
+            return `<li style="${customStyle}"${dataAttrString}>${generateHTML(content)}</li>`;
         }
         if (tag === 'table') {
-            return `<table style="border-collapse: collapse; width: 100%; border: 1px solid #777;${customStyle}"><tbody>${generateHTML(content)}</tbody></table>`;
+            return `<table style="border-collapse: collapse; width: 100%; border: 1px solid #777;${customStyle}"${dataAttrString}><tbody>${generateHTML(content)}</tbody></table>`;
         }
         if (tag === 'tr') {
-            return `<tr style="${customStyle}">${generateHTML(content)}</tr>`;
+            return `<tr style="${customStyle}"${dataAttrString}>${generateHTML(content)}</tr>`;
         }
         if (tag === 'th') {
-            return `<th style="border: 1px solid #777; padding: 2px 8px; text-align: center; font-weight: bold;${customStyle}">${generateHTML(content)}</th>`;
+            return `<th style="border: 1px solid #777; padding: 2px 8px; text-align: center; font-weight: bold;${customStyle}"${dataAttrString}>${generateHTML(content)}</th>`;
         }
         if (tag === 'td') {
-            return `<td style="border: 1px solid #777; padding: 2px 8px; text-align: center;${customStyle}">${generateHTML(content)}</td>`;
+            return `<td style="border: 1px solid #777; padding: 2px 8px; text-align: center;${customStyle}"${dataAttrString}>${generateHTML(content)}</td>`;
         }
         if (tag === 'span') {
-            return `<span style="${tagClassStyle}${customStyle}">${generateHTML(content)}</span>`;
+            return `<span style="${tagClassStyle}${customStyle}"${dataAttrString}>${generateHTML(content)}</span>`;
         }
         if (tag === 'div') {
-            return `<div style="${customStyle}">${generateHTML(content)}</div>`;
+            return `<div style="${customStyle}"${dataAttrString}>${generateHTML(content)}</div>`;
         }
         if (tag === 'a') {
-            return `<a href="${href}" target="_blank" style="text-decoration: underline;${customStyle}">${generateHTML(content)}</a>`;
+            return `<a href="${href}" target="_blank" style="text-decoration: underline;${customStyle}"${dataAttrString}>${generateHTML(content)}</a>`;
         }
 
         return generateHTML(content);
@@ -580,17 +590,17 @@ const buildDefinitionHtml = (entry: DictionaryResult, dictionaryName?: string): 
         .map((def, idx) => {
             const tagsHTML = normalizeTagList(def.tags ?? []).map(
                 (tag) =>
-                    `<span style="display: inline-block; padding: 1px 5px; border-radius: 3px; border: 1px solid rgba(255,255,255,0.28); font-size: 0.75em; font-weight: bold; margin-right: 6px; color: #fff; background-color: #666; vertical-align: middle;">${tag}</span>`,
+                    `<span style="display: inline-block; padding: 1px 5px; border-radius: 3px; font-size: 0.75em; font-weight: bold; margin-right: 6px; color: #fff; background-color: #666; vertical-align: middle;">${tag}</span>`,
             );
-            const dictHTML = `<span style="display: inline-block; padding: 1px 5px; border-radius: 3px; border: 1px solid rgba(255,255,255,0.2); font-size: 0.75em; font-weight: bold; margin-right: 6px; color: #fff; background-color: #9b59b6; vertical-align: middle;">${def.dictionaryName}</span>`;
+            const dictHTML = `<i>(${def.dictionaryName})</i>`;
             const headerHTML = [...tagsHTML, dictHTML].join(' ');
             const contentHTML = def.content
                 .map((content) => {
                     try {
                         const parsed = JSON.parse(content);
-                        return `<div style="margin-bottom: 2px;">${generateHTML(parsed)}</div>`;
+                        return generateHTML(parsed);
                     } catch {
-                        return `<div>${content}</div>`;
+                        return content;
                     }
                 })
                 .join('');
