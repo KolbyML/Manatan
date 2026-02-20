@@ -55,9 +55,9 @@ https://github.com/user-attachments/assets/38c63c86-289d-45a4-ba85-e29f1b812ceb
 - [x] Add Novel sync support across devices
 - [x] Add Word Audio
 - [x] Add Aidoku extension support, ontop of existing Mihon/Aniyomi extension support
+- [x] Add local .mkv video support
 - [ ] Massively improve local media UX
 - [ ] Add Mangayomi, LNReader extension support
-- [ ] Add local .mkv video support
 - [ ] Add 1 click setup local audio support for popup dictionary lookups
 - [ ] Local OCR engine support
 - [ ] Add Manga Immersion Stats page https://github.com/KolbyML/Manatan/issues/1
