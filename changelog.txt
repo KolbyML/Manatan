@@ -1,3 +1,19 @@
+## Release v3.2.0
+
+- Fix iOS app resetting settings on every update (883c034)
+- Add refresh button and error if loading extension list fails (fccd7a1)
+- Fix downloaded anime not playing back on desktop, maybe other platforms? (009f403)
+- Fix downloaded anime playback on iOS (93197e7)
+- Fix Android failing to build after importing fsrs (789a722)
+- Allow iOS local networking for LAN server access (cb7bcd6)
+- Mark .mkv as supported on the roadmap (b811cb5)
+- Fix NavBar covering thumbnail and sort icons on exiting reader/player (669f0b1)
+- Add .mkv support (a26712f)
+- dictionary and ln reader fixes (#213) (dc524d3)
+- Add Manatan SRS Alpha (not ready for use) (bf6a470)
+- Add download subtitles dialog (8af4fe5)
+- Fix local manga not saving page position (055bcc0)
+
 ## Release v3.1.0
 
 - Fix bug in in anime player where it got confused if we should play downloaded or online video (c54f272)
