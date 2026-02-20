@@ -738,3 +738,20 @@
 .paged-content .font-2em   { font-size: 2em !important; }
 .paged-content .font-small { font-size: 0.8em !important; }
 .paged-content .font-large { font-size: 1.2em !important; }
+
+/* =====================================================
+   KOREAN-SPECIFIC FIXES FOR PAGINATION STABILITY
+   ===================================================== */
+
+.paged-content[lang="ko"] {
+    word-break: keep-all !important;
+    line-break: strict !important;
+    -webkit-line-break: strict !important;
+    orphans: 1 !important;
+    widows: 1 !important;
+}
+
+.paged-content[lang="ko"] p,
+.paged-content[lang="ko"] blockquote {
+    break-inside: avoid-column;
+}

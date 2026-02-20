@@ -33,13 +33,41 @@ export const StructuredContent: React.FC<{
     const parsedData = useMemo(() => {
         if (!contentString) return null;
         try {
-            return JSON.parse(contentString);
+            const parsed = JSON.parse(contentString);
+            if (typeof parsed === 'string') return parsed;
+            return parsed;
         } catch (e) {
             return contentString;
         }
     }, [contentString]);
 
     if (parsedData === null || parsedData === undefined) return null;
+    
+    if (typeof parsedData === 'string') {
+        const text = parsedData;
+        if (onWordClick && text.trim()) {
+            return (
+                <span 
+                    onClick={(e) => {
+                        e.stopPropagation();
+                        let charOffset = 0;
+                        if (document.caretRangeFromPoint) {
+                            const range = document.caretRangeFromPoint(e.clientX, e.clientY);
+                            if (range && range.startContainer.nodeType === Node.TEXT_NODE) {
+                                charOffset = range.startOffset;
+                            }
+                        }
+                        onWordClick(text, charOffset);
+                    }}
+                    style={{ whiteSpace: 'pre-wrap' }}
+                >
+                    {text}
+                </span>
+            );
+        }
+        return <span style={{ whiteSpace: 'pre-wrap' }}>{text}</span>;
+    }
+    
     return <ContentNode node={parsedData} dictionaryName={dictionaryName} onLinkClick={onLinkClick} onWordClick={onWordClick} colors={colors} />;
 };
 
@@ -525,16 +553,16 @@ const AnkiButtons: React.FC<{
             if (!glossaryEntries.length) return '';
             return glossaryEntries.map((def, idx) => {
                 const tagsHTML = normalizeTagList(def.tags).map((t) =>
-                    `<span style="display: inline-block; padding: 1px 5px; border-radius: 3px; border: 1px solid rgba(255,255,255,0.28); font-size: 0.75em; font-weight: bold; margin-right: 6px; color: #fff; background-color: #666; vertical-align: middle;">${t}</span>`
+                    `<span style="display: inline-block; padding: 1px 5px; border-radius: 3px; font-size: 0.75em; font-weight: bold; margin-right: 6px; color: #fff; background-color: #666; vertical-align: middle;">${t}</span>`
                 );
-                const dictHTML = `<span style="display: inline-block; padding: 1px 5px; border-radius: 3px; border: 1px solid rgba(255,255,255,0.2); font-size: 0.75em; font-weight: bold; margin-right: 6px; color: #fff; background-color: #9b59b6; vertical-align: middle;">${def.dictionaryName}</span>`;
+                const dictHTML = `<i>(${def.dictionaryName})</i>`;
                 const headerHTML = [...tagsHTML, dictHTML].join(' ');
                 const contentHTML = def.content.map((c) => {
                     try {
                         const parsed = JSON.parse(c);
-                        return `<div style="margin-bottom: 2px;">${generateHTML(parsed, def.dictionaryName)}</div>`;
+                        return generateHTML(parsed, def.dictionaryName);
                     } catch {
-                        return `<div>${c}</div>`;
+                        return c;
                     }
                 }).join('');
                 return `
@@ -875,15 +903,16 @@ export const DictionaryView: React.FC<DictionaryViewProps> = ({
     }, []);
     const processedEntries = useMemo(() => {
         if (!settings.showHarmonicMeanFreq) return results;
-        return results.map(entry => {
-            if (!entry.frequencies || entry.frequencies.length === 0) return entry;
-            const harmonicMean = calculateHarmonicMean(entry.frequencies);
-            if (harmonicMean === null) return entry;
-            return {
-                ...entry,
-                frequencies: [{ dictionaryName: 'Harmonic Mean', value: harmonicMean.toString() }]
-            };
-        });
+        const firstFrequencies = results
+            .filter(entry => entry.frequencies && entry.frequencies.length > 0)
+            .map(entry => entry.frequencies![0]);
+        if (firstFrequencies.length === 0) return results;
+        const harmonicMean = calculateHarmonicMean(firstFrequencies);
+        if (harmonicMean === null) return results;
+        return results.map(entry => ({
+            ...entry,
+            frequencies: [{ dictionaryName: 'Harmonic Mean', value: harmonicMean.toString() }]
+        }));
     }, [results, settings.showHarmonicMeanFreq, calculateHarmonicMean]);
     const handlePlayWordAudio = useCallback(async (entry: DictionaryResult, selection?: WordAudioSourceSelection, playFailSound = true) => {
         const entryKey = `${entry.headword}::${entry.reading}`;

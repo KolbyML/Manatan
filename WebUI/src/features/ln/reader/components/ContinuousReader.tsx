@@ -22,7 +22,7 @@ import {
     calculateProgress,
     createSaveScheduler
 } from '../utils/readerSave';
-import { restoreReadingPosition } from '../utils/restoration';
+import { restoreReadingPosition, applyLocalOffset } from '../utils/restoration';
 import { ContinuousReaderProps } from '../types/reader';
 import './ContinuousReader.css';
 
@@ -57,6 +57,7 @@ export const ContinuousReader: React.FC<ContinuousReaderProps> = ({
     highlights = [],
     onAddHighlight,
     onRemoveHighlight,
+    navigationRef,
 }) => {
     // ========================================================================
     // Refs
@@ -417,9 +418,23 @@ export const ContinuousReader: React.FC<ContinuousReaderProps> = ({
         if (!containerRef.current) return;
 
         const container = containerRef.current;
+        const targetChapter = initialProgress.chapterIndex ?? 0;
 
-        // Wait for content to render
-        setTimeout(() => {
+        // Wait for target chapter's content to be rendered before restoration
+        const tryRestore = async () => {
+            const maxWaitMs = 10000; // 10 seconds for weak devices
+            const checkIntervalMs = 200;
+
+            // Wait for target chapter's blocks to be in DOM
+            for (let elapsed = 0; elapsed < maxWaitMs; elapsed += checkIntervalMs) {
+                const blocks = container.querySelectorAll(`[data-block-id^="ch${targetChapter}-b"]`);
+                if (blocks.length > 0) {
+                    console.log('[ContinuousReader] Chapter content loaded after', elapsed, 'ms');
+                    break;
+                }
+                await new Promise(r => setTimeout(r, checkIntervalMs));
+            }
+
             if (hasRestoredRef.current) return;
 
             const result = restoreReadingPosition(
@@ -457,8 +472,168 @@ export const ContinuousReader: React.FC<ContinuousReaderProps> = ({
                 saveLockUntilRef.current = Date.now() + SAVE_LOCK_DURATION_MS;
                 setRestorationComplete(true);
             }, 500);
-        }, 300);
+        };
+
+        tryRestore();
     }, [contentLoaded, initialProgress, isVertical, isRTL, stats?.blockMaps]);
+
+    // ========================================================================
+    // Direct Navigation (for TOC/search - bypasses restoration)
+    // ========================================================================
+
+    const scrollToBlock = useCallback((blockId: string, blockLocalOffset?: number) => {
+        const container = containerRef.current;
+        if (!container) return;
+
+        // Extract chapter index from blockId
+        const chapterMatch = blockId.match(/ch(\d+)-/);
+        const chapterIndex = chapterMatch ? parseInt(chapterMatch[1], 10) : 0;
+
+        console.log('[ContinuousReader] scrollToBlock:', blockId, 'chapter:', chapterIndex);
+
+        // Function to actually scroll to the block
+        const doScroll = () => {
+            const block = container.querySelector(`[data-block-id="${blockId}"]`);
+            if (!block) {
+                console.log('[ContinuousReader] scrollToBlock: block not found:', blockId);
+                return false;
+            }
+
+            // Disable restoration temporarily so we don't trigger it
+            hasRestoredRef.current = true;
+
+            // Scroll to block
+            block.scrollIntoView({ behavior: 'auto', block: 'start' });
+
+            // Apply local offset if provided
+            if (blockLocalOffset && blockLocalOffset > 0) {
+                setTimeout(() => {
+                    applyLocalOffset(block as Element, container, blockLocalOffset, isVertical, isRTL);
+                }, 50);
+            }
+
+            // Update current block tracking
+            currentBlockIdRef.current = blockId;
+
+            // Update chapter if changed
+            if (chapterIndex !== currentChapter) {
+                setCurrentChapter(chapterIndex);
+            }
+
+            // Mark restoration complete
+            setRestorationComplete(true);
+
+            // Set save lock to prevent overwriting
+            saveLockUntilRef.current = Date.now() + SAVE_LOCK_DURATION_MS;
+
+            return true;
+        };
+
+        // Check if chapter is already loaded (has blocks in DOM)
+        const existingBlocks = container.querySelectorAll(`[data-block-id^="ch${chapterIndex}-b"]`);
+        
+        if (existingBlocks.length > 0) {
+            // Chapter already loaded, try to scroll immediately
+            doScroll();
+        } else {
+            // Chapter not loaded yet, load it first
+            console.log('[ContinuousReader] scrollToBlock: loading chapter:', chapterIndex);
+            loadChaptersAround(chapterIndex);
+            
+            // Wait for chapter to load and render
+            const maxAttempts = 10;
+            let attempts = 0;
+            
+            const tryScroll = () => {
+                attempts++;
+                const blocks = container.querySelectorAll(`[data-block-id^="ch${chapterIndex}-b"]`);
+                
+                if (blocks.length > 0) {
+                    console.log('[ContinuousReader] scrollToBlock: chapter loaded after', attempts * 100, 'ms');
+                    doScroll();
+                } else if (attempts < maxAttempts) {
+                    console.log('[ContinuousReader] scrollToBlock: retrying, attempt:', attempts);
+                    setTimeout(tryScroll, 100);
+                } else {
+                    console.log('[ContinuousReader] scrollToBlock: failed to load chapter after', maxAttempts * 100, 'ms');
+                }
+            };
+            
+            setTimeout(tryScroll, 100);
+        }
+    }, [isVertical, isRTL, currentChapter, loadChaptersAround]);
+
+    const scrollToChapter = useCallback((chapterIndex: number) => {
+        const container = containerRef.current;
+        if (!container) return;
+
+        console.log('[ContinuousReader] scrollToChapter:', chapterIndex);
+
+        // Function to do the actual scrolling
+        const doScroll = (): boolean => {
+            const blocks = container.querySelectorAll(`[data-block-id^="ch${chapterIndex}-b"]`);
+            if (blocks.length === 0) {
+                return false;
+            }
+
+            // Disable restoration temporarily
+            hasRestoredRef.current = true;
+
+            // Scroll to first block
+            (blocks[0] as HTMLElement).scrollIntoView({ behavior: 'auto', block: 'start' });
+
+            // Update state
+            setCurrentChapter(chapterIndex);
+            currentBlockIdRef.current = blocks[0].getAttribute('data-block-id');
+
+            // Mark restoration complete
+            setRestorationComplete(true);
+
+            // Set save lock
+            saveLockUntilRef.current = Date.now() + SAVE_LOCK_DURATION_MS;
+
+            return true;
+        };
+
+        // Check if chapter is already loaded
+        const existingBlocks = container.querySelectorAll(`[data-block-id^="ch${chapterIndex}-b"]`);
+        
+        if (existingBlocks.length > 0) {
+            doScroll();
+        } else {
+            // Chapter not loaded, load it first
+            console.log('[ContinuousReader] scrollToChapter: loading chapter:', chapterIndex);
+            loadChaptersAround(chapterIndex);
+            
+            // Wait for chapter to load with retry logic
+            const maxAttempts = 10;
+            let attempts = 0;
+            
+            const tryScroll = () => {
+                attempts++;
+                if (doScroll()) {
+                    console.log('[ContinuousReader] scrollToChapter: chapter loaded after', attempts * 100, 'ms');
+                } else if (attempts < maxAttempts) {
+                    console.log('[ContinuousReader] scrollToChapter: retrying, attempt:', attempts);
+                    setTimeout(tryScroll, 100);
+                } else {
+                    console.log('[ContinuousReader] scrollToChapter: failed to load chapter after', maxAttempts * 100, 'ms');
+                }
+            };
+            
+            setTimeout(tryScroll, 100);
+        }
+    }, [loadChaptersAround]);
+
+    // Expose navigation functions via ref
+    useEffect(() => {
+        if (navigationRef?.current) {
+            navigationRef.current = {
+                scrollToBlock,
+                scrollToChapter,
+            };
+        }
+    }, [scrollToBlock, scrollToChapter, navigationRef]);
 
     // ========================================================================
     // Touch/Click Handlers
