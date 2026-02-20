@@ -226,7 +226,7 @@ function scrollToBlock(
     }
 }
 
-function applyLocalOffset(
+export function applyLocalOffset(
     block: Element,
     container: HTMLElement,
     localOffset: number,

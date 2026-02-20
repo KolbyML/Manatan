@@ -26,6 +26,7 @@ export interface BaseReaderProps {
     showNavigation?: boolean;
     safeAreaTopInset?: string;
     safeAreaTopOffsetPx?: number;
+    navigationRef?: React.MutableRefObject<{ scrollToBlock?: (blockId: string, offset?: number) => void; scrollToChapter?: (chapterIndex: number) => void }>;
     onPositionUpdate?: (position: {
         chapterIndex: number;
         pageIndex?: number;

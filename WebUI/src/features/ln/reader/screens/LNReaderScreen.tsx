@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import {
     Box,
@@ -62,6 +62,7 @@ export const LNReaderScreen: React.FC = () => {
     const [currentChapter, setCurrentChapter] = useState(0);
     const [showMigrationDialog, setShowMigrationDialog] = useState(false);
     const [expandedToc, setExpandedToc] = useState<Set<number>>(new Set());
+    const navigationRef = useRef<{ scrollToBlock?: (blockId: string, offset?: number) => void; scrollToChapter?: (chapterIndex: number) => void }>({});
     const isIOS = typeof navigator !== 'undefined' && /iPhone|iPad|iPod/i.test(navigator.userAgent);
     const readerSafeTopOffsetPx = isIOS ? 24 : 0;
     const readerSafeTopInset = `${readerSafeTopOffsetPx}px`;
@@ -89,6 +90,14 @@ export const LNReaderScreen: React.FC = () => {
     }, [exportToJson, downloadFile]);
 
     const handleJumpToHighlight = useCallback((hl: LNHighlight) => {
+        // Try direct navigation first (for continuous reader)
+        if (hl.blockId && navigationRef.current?.scrollToBlock) {
+            navigationRef.current.scrollToBlock(hl.blockId, hl.startOffset);
+            setHighlightsOpen(false);
+            return;
+        }
+
+        // Fallback to savedProgress (for paged reader or if nav ref not ready)
         setSavedProgress((prev: any) => ({
             ...prev,
             chapterIndex: hl.chapterIndex,
@@ -292,6 +301,14 @@ export const LNReaderScreen: React.FC = () => {
     };
 
     const handleTocItemClick = (chapterIndex: number) => {
+        // Try direct navigation first (for continuous reader)
+        if (navigationRef.current?.scrollToChapter) {
+            navigationRef.current.scrollToChapter(chapterIndex);
+            setTocOpen(false);
+            return;
+        }
+
+        // Fallback to savedProgress (for paged reader or if nav ref not ready)
         // Get first block ID for this chapter from blockMaps
         const blockMaps = content?.stats?.blockMaps;
         let firstBlockId: string | undefined;
@@ -384,7 +401,15 @@ export const LNReaderScreen: React.FC = () => {
                 blockLocalOffset = result.position - chapterBlock.startOffset;
             }
         }
-        
+
+        // Try direct navigation first (for continuous reader)
+        if (blockId && navigationRef.current?.scrollToBlock) {
+            navigationRef.current.scrollToBlock(blockId, blockLocalOffset);
+            setSearchOpen(false);
+            return;
+        }
+
+        // Fallback to savedProgress (for paged reader or if nav ref not ready)
         setSavedProgress((prev: any) => ({
             ...prev,
             chapterIndex: result.chapterIndex,
@@ -479,6 +504,7 @@ export const LNReaderScreen: React.FC = () => {
                 onAddHighlight={addHighlight}
                 onUpdateSettings={(key, value) => setSettings(prev => ({ ...prev, [key]: value }))}
                 onChapterChange={handleChapterChange}
+                navigationRef={navigationRef}
                 safeAreaTopInset={readerSafeTopInset}
                 safeAreaTopOffsetPx={readerSafeTopOffsetPx}
                 renderHeader={(showUI, toggleUI) => (

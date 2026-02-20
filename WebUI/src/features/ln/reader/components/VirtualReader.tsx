@@ -44,6 +44,7 @@ interface VirtualReaderProps {
     onAddHighlight?: (chapterIndex: number, blockId: string, text: string, startOffset: number, endOffset: number) => void;
     safeAreaTopInset?: string;
     safeAreaTopOffsetPx?: number;
+    navigationRef?: React.MutableRefObject<{ scrollToBlock?: (blockId: string, offset?: number) => void; scrollToChapter?: (chapterIndex: number) => void }>;
 }
 
 interface SharedPosition {
@@ -77,12 +78,17 @@ export const VirtualReader: React.FC<VirtualReaderProps> = ({
     onAddHighlight,
     safeAreaTopInset,
     safeAreaTopOffsetPx,
+    navigationRef: externalNavRef,
 
 }) => {
     const { showUI, toggleUI } = useUIVisibility({
         autoHideDelay: 5000,
         initialVisible: false,
     });
+
+    // Navigation ref for direct navigation (bypassing restoration)
+    const internalNavRef = useRef<{ scrollToBlock?: (blockId: string, offset?: number) => void; scrollToChapter?: (chapterIndex: number) => void }>({});
+    const navigationRef = externalNavRef || internalNavRef;
 
 
     const sharedPositionRef = useRef<SharedPosition>({
@@ -296,6 +302,7 @@ export const VirtualReader: React.FC<VirtualReaderProps> = ({
         onAddHighlight,
         safeAreaTopInset,
         safeAreaTopOffsetPx,
+        navigationRef,
     };
 
     return (
