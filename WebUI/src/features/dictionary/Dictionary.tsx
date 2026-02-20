@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState, useRef } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import {
     Box,
     TextField,
@@ -19,13 +19,6 @@ import { DictionaryView } from '@/Manatan/components/DictionaryView';
 import { useOCR } from '@/Manatan/context/OCRContext';
 import { cleanPunctuation, lookupYomitan } from '@/Manatan/utils/api';
 import { useAppTitle } from '@/features/navigation-bar/hooks/useAppTitle';
-
-interface LookupHistoryEntry {
-    term: string;
-    results: DictionaryResult[];
-    isLoading: boolean;
-    systemLoading: boolean;
-}
 
 const getLookupTextFromHref = (href: string, fallback: string) => {
     const safeFallback = fallback.trim();
@@ -67,87 +60,105 @@ const getLookupTextFromHref = (href: string, fallback: string) => {
     }
 };
 
+interface LookupHistoryEntry {
+    term: string;
+    results: DictionaryResult[];
+    isLoading: boolean;
+    systemLoading: boolean;
+}
+
 export const Dictionary = () => {
     const [searchTerm, setSearchTerm] = useState('');
     const [results, setResults] = useState<DictionaryResult[]>([]);
     const [isLoading, setIsLoading] = useState(false);
     const [hasSearched, setHasSearched] = useState(false);
-    const [history, setHistory] = useState<LookupHistoryEntry[]>([]);
-    const [historyIndex, setHistoryIndex] = useState(-1);
-    const isNavigatingHistory = useRef(false);
     const { settings } = useOCR();
     const muiTheme = useTheme();
 
-    const maxHistory = settings.yomitanLookupMaxHistory || 10;
-    const navMode = settings.yomitanLookupNavigationMode || 'stacked';
-
-    const currentEntry = historyIndex >= 0 && historyIndex < history.length ? history[historyIndex] : null;
-
-    const processedEntries = currentEntry ? currentEntry.results : results;
-    const currentIsLoading = currentEntry ? currentEntry.isLoading : isLoading;
-    const currentSystemLoading = currentEntry ? currentEntry.systemLoading : false;
+    // History state
+    const [history, setHistory] = useState<LookupHistoryEntry[]>([]);
+    const [historyIndex, setHistoryIndex] = useState(-1);
 
     useAppTitle('Dictionary');
 
-    const handleSearch = useCallback(async (term: string, addToHistory: boolean = true) => {
+    // Configuration from settings (with defaults)
+    const maxHistory = settings.yomitanLookupMaxHistory || 10;
+    const navMode = settings.yomitanLookupNavigationMode || 'stacked'; // 'stacked' or 'tabs'
+
+    const currentEntry = historyIndex >= 0 && historyIndex < history.length ? history[historyIndex] : null;
+    const displayResults = currentEntry ? currentEntry.results : results;
+    const displayIsLoading = currentEntry ? currentEntry.isLoading : isLoading;
+    const displaySystemLoading = currentEntry ? currentEntry.systemLoading : false;
+
+    const handleSearch = useCallback(async (term: string, isFromHistory: boolean = false) => {
         if (!term.trim()) return;
         
-        const cleanTerm = cleanPunctuation(term, true).trim();
-        if (!cleanTerm) return;
-
-        if (addToHistory) {
-            const newEntry: LookupHistoryEntry = { term: cleanTerm, results: [], isLoading: true, systemLoading: false };
-            setHistory(prev => {
-                // Truncate forward history when adding new search from current position
-                const newHistory = prev.slice(0, historyIndex + 1);
-                newHistory.push(newEntry);
-                if (newHistory.length > maxHistory) newHistory.shift();
-                return newHistory;
-            });
-            setHistoryIndex(prev => Math.min(prev + 1, maxHistory - 1));
+        if (!isFromHistory) {
+            setIsLoading(true);
             setHasSearched(true);
         }
-        
-        setIsLoading(true);
-        
+
         const res = await lookupYomitan(
-            cleanTerm,
+            cleanPunctuation(term, true),
             0,
-            settings.resultGroupingMode,
-            settings.yomitanLanguage
+            settings.resultGroupingMode || 'grouped',
+            settings.yomitanLanguage || 'japanese'
         );
         
-        const loadedResults = res === 'loading' ? [] : (res || []);
+        const loadedResults = res === 'loading' ? [] : res;
         const isSystemLoading = res === 'loading';
-        
-        if (addToHistory) {
-            setHistory(prev => {
-                const newHistory = [...prev];
-                const idx = Math.min(historyIndex + 1, maxHistory - 1);
-                if (newHistory[idx]) {
-                    const matchedTerm = loadedResults[0]?.headword || cleanTerm;
-                    newHistory[idx] = { ...newHistory[idx], term: matchedTerm, results: loadedResults, isLoading: false, systemLoading: isSystemLoading };
-                }
-                return newHistory;
-            });
-        } else {
-            setResults(loadedResults);
-        }
-        
-        setIsLoading(false);
-    }, [settings.resultGroupingMode, settings.yomitanLanguage, maxHistory, historyIndex]);
 
-    const handleWordClick = useCallback(async (text: string, position: number) => {
-        const textEncoder = new TextEncoder();
-        const prefixBytes = textEncoder.encode(text.slice(0, position)).length;
-        
-        const cleanText = cleanPunctuation(text, true).trim();
+        if (!isFromHistory) {
+            setResults(loadedResults);
+            setIsLoading(false);
+        }
+
+        return { results: loadedResults, isSystemLoading };
+    }, [settings.resultGroupingMode, settings.yomitanLanguage]);
+
+    // Debounced search for text input
+    useEffect(() => {
+        const trimmed = searchTerm.trim();
+        if (!trimmed) {
+            setIsLoading(false);
+            setResults([]);
+            setHasSearched(false);
+            setHistory([]);
+            setHistoryIndex(-1);
+            return;
+        }
+
+        const timeout = setTimeout(async () => {
+            const result = await handleSearch(trimmed);
+            if (result) {
+                // Initialize history with first search
+                const term = result.results[0]?.headword || trimmed;
+                setHistory([{ term, results: result.results, isLoading: false, systemLoading: result.isSystemLoading }]);
+                setHistoryIndex(0);
+            }
+        }, 300);
+
+        return () => clearTimeout(timeout);
+    }, [searchTerm, handleSearch]);
+
+    const handleLinkClick = useCallback(async (href: string, text: string) => {
+        const newTerm = getLookupTextFromHref(href, text);
+        const cleanText = cleanPunctuation(newTerm, true).trim();
         if (!cleanText) return;
 
-        const newEntry: LookupHistoryEntry = { term: cleanText, results: [], isLoading: true, systemLoading: false };
+        // Update search term to show in input
+        setSearchTerm(newTerm);
 
+        // Create new history entry
+        const newEntry: LookupHistoryEntry = { 
+            term: cleanText, 
+            results: [], 
+            isLoading: true, 
+            systemLoading: false 
+        };
+
+        // Add to history based on navigation mode
         setHistory(prev => {
-            // Truncate forward history when adding new search from current position
             const newHistory = prev.slice(0, historyIndex + 1);
             newHistory.push(newEntry);
             if (newHistory.length > maxHistory) newHistory.shift();
@@ -155,17 +166,86 @@ export const Dictionary = () => {
         });
         setHistoryIndex(prev => Math.min(prev + 1, maxHistory - 1));
 
+        // Perform lookup
         try {
-            const results = await lookupYomitan(cleanText, prefixBytes, settings.resultGroupingMode || 'grouped', settings.yomitanLanguage || 'japanese');
-            const loadedResults = results === 'loading' ? [] : (results || []);
-            const isSystemLoading = results === 'loading';
+            const result = await handleSearch(cleanText, true);
+            if (result) {
+                setHistory(prev => {
+                    const newHistory = [...prev];
+                    const idx = Math.min(historyIndex + 1, maxHistory - 1);
+                    if (newHistory[idx]) {
+                        const matchedTerm = result.results[0]?.headword || cleanText;
+                        newHistory[idx] = { 
+                            term: matchedTerm, 
+                            results: result.results, 
+                            isLoading: false, 
+                            systemLoading: result.isSystemLoading 
+                        };
+                    }
+                    return newHistory;
+                });
+            }
+        } catch (err) {
+            console.warn('Failed to lookup link definition', err);
+            setHistory(prev => {
+                const newHistory = [...prev];
+                const idx = Math.min(historyIndex + 1, maxHistory - 1);
+                if (newHistory[idx]) {
+                    newHistory[idx] = { ...newHistory[idx], results: [], isLoading: false, systemLoading: false };
+                }
+                return newHistory;
+            });
+        }
+    }, [historyIndex, maxHistory, handleSearch]);
+
+    const handleWordClick = useCallback(async (text: string, position: number) => {
+        const cleanText = cleanPunctuation(text, true).trim();
+        if (!cleanText) return;
+
+        // Update search term to show in input
+        setSearchTerm(text);
+
+        const textEncoder = new TextEncoder();
+        const prefixBytes = textEncoder.encode(text.slice(0, position)).length;
+
+        // Create new history entry
+        const newEntry: LookupHistoryEntry = { 
+            term: cleanText, 
+            results: [], 
+            isLoading: true, 
+            systemLoading: false 
+        };
+
+        setHistory(prev => {
+            const newHistory = prev.slice(0, historyIndex + 1);
+            newHistory.push(newEntry);
+            if (newHistory.length > maxHistory) newHistory.shift();
+            return newHistory;
+        });
+        setHistoryIndex(prev => Math.min(prev + 1, maxHistory - 1));
+
+        // Perform lookup with position
+        try {
+            const res = await lookupYomitan(
+                cleanText,
+                prefixBytes,
+                settings.resultGroupingMode || 'grouped',
+                settings.yomitanLanguage || 'japanese'
+            );
+            const loadedResults = res === 'loading' ? [] : (res || []);
+            const isSystemLoading = res === 'loading';
 
             setHistory(prev => {
                 const newHistory = [...prev];
                 const idx = Math.min(historyIndex + 1, maxHistory - 1);
                 if (newHistory[idx]) {
                     const matchedTerm = loadedResults[0]?.headword || cleanText;
-                    newHistory[idx] = { ...newHistory[idx], term: matchedTerm, results: loadedResults, isLoading: false, systemLoading: isSystemLoading };
+                    newHistory[idx] = { 
+                        term: matchedTerm, 
+                        results: loadedResults, 
+                        isLoading: false, 
+                        systemLoading: isSystemLoading 
+                    };
                 }
                 return newHistory;
             });
@@ -180,58 +260,21 @@ export const Dictionary = () => {
                 return newHistory;
             });
         }
-    }, [settings.resultGroupingMode, settings.yomitanLanguage, maxHistory, historyIndex]);
+    }, [historyIndex, maxHistory, settings.resultGroupingMode, settings.yomitanLanguage]);
 
     const navigateToHistory = useCallback((index: number) => {
         if (index >= 0 && index < history.length) {
-            const entry = history[index];
-            isNavigatingHistory.current = true;
             setHistoryIndex(index);
-            setSearchTerm(entry.term);
+            setSearchTerm(history[index].term);
         }
     }, [history]);
 
     const goBack = useCallback(() => {
         if (historyIndex > 0) {
-            const newIndex = historyIndex - 1;
-            const entry = history[newIndex];
-            isNavigatingHistory.current = true;
-            setHistoryIndex(newIndex);
-            setSearchTerm(entry.term);
+            setHistoryIndex(prev => prev - 1);
+            setSearchTerm(history[historyIndex - 1].term);
         }
     }, [historyIndex, history]);
-
-    useEffect(() => {
-        const trimmed = searchTerm.trim();
-        
-        if (isNavigatingHistory.current) {
-            isNavigatingHistory.current = false;
-            return;
-        }
-
-        if (!trimmed) {
-            setIsLoading(false);
-            setResults([]);
-            setHasSearched(false);
-            setHistory([]);
-            setHistoryIndex(-1);
-            return;
-        }
-
-        const timeout = setTimeout(() => {
-            setHistory([]);
-            setHistoryIndex(-1);
-            handleSearch(trimmed, true);
-        }, 300);
-
-        return () => clearTimeout(timeout);
-    }, [searchTerm, handleSearch]);
-
-    const handleLinkClick = (href: string, text: string) => {
-        const newTerm = getLookupTextFromHref(href, text);
-        setSearchTerm(newTerm);
-        handleSearch(newTerm, true);
-    };
 
     const handleClear = () => {
         setSearchTerm('');
@@ -239,6 +282,86 @@ export const Dictionary = () => {
         setHasSearched(false);
         setHistory([]);
         setHistoryIndex(-1);
+    };
+
+    const renderHistoryNav = () => {
+        if (navMode === 'tabs' && history.length > 1) {
+            return (
+                <Box sx={{ display: 'flex', gap: 0.5, flexWrap: 'wrap', mb: 2, alignItems: 'center' }}>
+                    {history.map((entry, i) => (
+                        <Box key={i} sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                            {i > 0 && (
+                                <Typography sx={{ color: 'text.secondary', fontSize: '0.7em', px: 0.5 }}>
+                                    →
+                                </Typography>
+                            )}
+                            <Box
+                                component="button"
+                                onClick={() => navigateToHistory(i)}
+                                sx={{
+                                    px: 1.5,
+                                    py: 0.5,
+                                    borderRadius: 1,
+                                    border: 'none',
+                                    background: i === historyIndex 
+                                        ? muiTheme.palette.primary.main 
+                                        : alpha(muiTheme.palette.primary.main, 0.1),
+                                    color: i === historyIndex 
+                                        ? muiTheme.palette.primary.contrastText 
+                                        : muiTheme.palette.text.primary,
+                                    cursor: 'pointer',
+                                    fontSize: '0.8rem',
+                                    maxWidth: '120px',
+                                    overflow: 'hidden',
+                                    textOverflow: 'ellipsis',
+                                    whiteSpace: 'nowrap',
+                                    transition: 'all 0.2s',
+                                    '&:hover': {
+                                        background: i === historyIndex 
+                                            ? muiTheme.palette.primary.dark 
+                                            : alpha(muiTheme.palette.primary.main, 0.2),
+                                    }
+                                }}
+                                title={entry.term}
+                            >
+                                {entry.term.slice(0, 12)}
+                                {entry.term.length > 12 ? '...' : ''}
+                            </Box>
+                        </Box>
+                    ))}
+                </Box>
+            );
+        } else if (navMode === 'stacked' && historyIndex > 0) {
+            return (
+                <Box sx={{ mb: 2 }}>
+                    <Box
+                        component="button"
+                        onClick={goBack}
+                        sx={{
+                            px: 2,
+                            py: 1,
+                            borderRadius: 1,
+                            border: 'none',
+                            background: muiTheme.palette.primary.main,
+                            color: muiTheme.palette.primary.contrastText,
+                            cursor: 'pointer',
+                            fontSize: '0.85rem',
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: 1,
+                            transition: 'all 0.2s',
+                            '&:hover': {
+                                background: muiTheme.palette.primary.dark,
+                            }
+                        }}
+                    >
+                        <ArrowBackIcon sx={{ fontSize: 18 }} />
+                        Back
+                    </Box>
+                </Box>
+            );
+        }
+        return null;
     };
 
     return (
@@ -321,7 +444,7 @@ export const Dictionary = () => {
                 }}
             >
                 {/* Empty State */}
-                <Fade in={!isLoading && !hasSearched} timeout={300} mountOnEnter unmountOnExit>
+                <Fade in={!displayIsLoading && !hasSearched} timeout={300} mountOnEnter unmountOnExit>
                     <Box
                         sx={{
                             display: 'flex',
@@ -343,7 +466,7 @@ export const Dictionary = () => {
                 </Fade>
 
                 {/* Loading State */}
-                <Fade in={currentIsLoading} timeout={200} mountOnEnter unmountOnExit>
+                <Fade in={displayIsLoading} timeout={200} mountOnEnter unmountOnExit>
                     <Box
                         sx={{
                             display: 'flex',
@@ -359,9 +482,11 @@ export const Dictionary = () => {
                 </Fade>
 
                 {/* Results */}
-                <Fade in={!currentIsLoading && hasSearched} timeout={300}>
-                    <Box sx={{ display: !currentIsLoading && hasSearched ? 'block' : 'none' }}>
-                        {processedEntries.length > 0 ? (
+                <Fade in={!displayIsLoading && hasSearched} timeout={300}>
+                    <Box sx={{ display: !displayIsLoading && hasSearched ? 'block' : 'none' }}>
+                        {displayResults.length > 0 ? (
+                            <Box>
+                                {renderHistoryNav()}
                                 <Paper
                                     elevation={0}
                                     sx={{
@@ -376,65 +501,15 @@ export const Dictionary = () => {
                                         p: { xs: 2, sm: 3 },
                                     }}
                                 >
-                                {/* Navigation Bar */}
-                                {(navMode === 'tabs' ? history.length > 1 : historyIndex > 0) && (
-                                    <Box sx={{ mb: 2, display: 'flex', alignItems: 'center' }}>
-                                        {navMode === 'tabs' ? (
-                                            <Box sx={{ display: 'flex', gap: 1, alignItems: 'center', flexWrap: 'wrap' }}>
-                                                {history.map((entry, i) => (
-                                                    <Box key={i} sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-                                                        {i > 0 && (
-                                                            <Typography sx={{ color: 'text.secondary', fontSize: '0.75rem' }}>→</Typography>
-                                                        )}
-                                                        <IconButton
-                                                            size="small"
-                                                            onClick={() => navigateToHistory(i)}
-                                                            sx={{
-                                                                backgroundColor: i === historyIndex ? 'primary.main' : 'action.hover',
-                                                                color: i === historyIndex ? 'primary.contrastText' : 'text.primary',
-                                                                '&:hover': {
-                                                                    backgroundColor: i === historyIndex ? 'primary.dark' : 'action.selected',
-                                                                },
-                                                                fontSize: '0.75rem',
-                                                                maxWidth: 100,
-                                                                textTransform: 'none',
-                                                            }}
-                                                        >
-                                                            <Typography sx={{ 
-                                                                overflow: 'hidden', 
-                                                                textOverflow: 'ellipsis', 
-                                                                whiteSpace: 'nowrap',
-                                                                fontSize: '0.75rem',
-                                                            }}>
-                                                                {entry.term.slice(0, 10)}
-                                                            </Typography>
-                                                        </IconButton>
-                                                    </Box>
-                                                ))}
-                                            </Box>
-                                        ) : (
-                                            <IconButton
-                                                onClick={goBack}
-                                                size="small"
-                                                sx={{
-                                                    backgroundColor: 'primary.main',
-                                                    color: 'primary.contrastText',
-                                                    '&:hover': { backgroundColor: 'primary.dark' },
-                                                }}
-                                            >
-                                                <ArrowBackIcon fontSize="small" />
-                                            </IconButton>
-                                        )}
-                                    </Box>
-                                )}
-                                <DictionaryView
-                                    results={processedEntries}
-                                    isLoading={currentIsLoading}
-                                    systemLoading={currentSystemLoading}
-                                    onLinkClick={handleLinkClick}
-                                    onWordClick={handleWordClick}
-                                />
-                            </Paper>
+                                    <DictionaryView
+                                        results={displayResults}
+                                        isLoading={displayIsLoading}
+                                        systemLoading={displaySystemLoading}
+                                        onLinkClick={handleLinkClick}
+                                        onWordClick={handleWordClick}
+                                    />
+                                </Paper>
+                            </Box>
                         ) : (
                             /* No Results State */
                             <Box
