@@ -1,6 +1,8 @@
 /**
  * Updated AnkiConnect API call with automatic permission handshake
  */
+import { getDownscaledSize } from './image';
+
 const ANKI_LOG_COOLDOWN_MS = 60000;
 let lastAnkiLogAt = 0;
 
@@ -204,22 +206,7 @@ export async function imageUrlToBase64Webp(
         
         img.onload = () => {
             try {
-                let width = img.width;
-                let height = img.height;
-
-                // Calculate the scaling ratio to keep aspect ratio
-                let ratio = 1;
-                
-                if (maxWidth && width > maxWidth) {
-                    ratio = maxWidth / width;
-                }
-                if (maxHeight && (height * ratio) > maxHeight) {
-                    ratio = maxHeight / height;
-                }
-
-                // Apply ratio 
-                width = Math.round(width * ratio);
-                height = Math.round(height * ratio);
+                const { width, height } = getDownscaledSize(img.width, img.height, maxWidth, maxHeight);
 
                 const canvas = new OffscreenCanvas(width, height);
                 const ctx = canvas.getContext('2d');
