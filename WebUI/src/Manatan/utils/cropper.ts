@@ -80,7 +80,7 @@ export async function getCroppedImg(
             Math.round(0 - safeArea / 2 + image.height * 0.5 - pixelCrop.y)
         );
 
-        // Convert to WebP Base64 using shared utility
+        // Convert to WebP Base64
         return await canvasToBase64Webp(canvas, quality, maxWidth, maxHeight);
     } catch (error) {
         console.error('Failed to crop image:', error);
@@ -135,7 +135,7 @@ export async function getStitchedAndCroppedImg(
             );
         }
 
-        // Convert to WebP Base64 using shared utility
+        // Convert to WebP Base64
         return await canvasToBase64Webp(canvas, quality, maxWidth, maxHeight);
 
     } catch (error) {
