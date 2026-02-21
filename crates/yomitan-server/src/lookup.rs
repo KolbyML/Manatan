@@ -2,8 +2,8 @@ use std::collections::{HashMap, HashSet};
 
 use tracing::error;
 use wordbase_api::{
-    DictionaryId, FrequencyValue, Record, RecordEntry, RecordId, Span, Term,
-    dict::yomitan::GlossaryTag,
+    dict::yomitan::GlossaryTag, DictionaryId, FrequencyValue, Record, RecordEntry, RecordId, Span,
+    Term,
 };
 
 use crate::{

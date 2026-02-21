@@ -747,6 +747,171 @@ pub fn import_zip(state: &AppState, data: &[u8]) -> Result<String> {
                 info!("      Parsed {} metadata rows from {}", rows, name);
             }
         }
+        // Branch 3: Kanji bank (kanji_bank_*.json) - insert into terms table like pitch/freq
+        else if name.contains("kanji_bank") && name.ends_with(".json") {
+            info!("   -> Processing kanji bank: {}", name);
+
+            let parse_result = (|| -> Result<usize> {
+                let mut file = match open_zip_file_safe(&mut zip, name) {
+                    Some(f) => f,
+                    None => return Ok(0),
+                };
+
+                let mut stmt = tx.prepare(
+                    "INSERT INTO terms (term, dictionary_id, json) VALUES (?, ?, ?)"
+                )?;
+
+                let rows = parse_json_array_stream::<_, Vec<Value>, _>(&mut file, |arr| {
+                    if arr.len() < 6 {
+                        return Ok(());
+                    }
+
+                    let character = arr.first().and_then(|v| v.as_str()).unwrap_or("");
+                    if character.is_empty() || character.len() != 1 {
+                        return Ok(());
+                    }
+
+                    let onyomi = arr.get(1).and_then(|v| v.as_str()).unwrap_or("");
+                    let kunyomi = arr.get(2).and_then(|v| v.as_str()).unwrap_or("");
+                    let tags = arr.get(3).and_then(|v| v.as_str()).unwrap_or("");
+                    let meanings = arr.get(4)
+                        .and_then(|v| v.as_array())
+                        .map(|arr| {
+                            arr.iter()
+                                .filter_map(|v| v.as_str())
+                                .collect::<Vec<_>>()
+                        })
+                        .unwrap_or_default();
+                    let stats = arr.get(5).and_then(|v| v.as_object());
+
+                    let kanji_data = serde_json::json!({
+                        "onyomi": onyomi,
+                        "kunyomi": kunyomi,
+                        "tags": tags,
+                        "meanings": meanings,
+                        "stats": stats
+                    });
+                    let content = format!("Kanji:{}", kanji_data.to_string());
+
+                    let record = Record::YomitanGlossary(Glossary {
+                        popularity: 0,
+                        tags: vec![],
+                        content: vec![structured::Content::String(content)],
+                    });
+
+                    let stored = StoredRecord {
+                        dictionary_id: dict_id,
+                        record,
+                        term_tags: None,
+                        reading: None,
+                        headword: Some(character.to_string()),
+                    };
+
+                    let json_bytes = serde_json::to_vec(&stored)?;
+                    let compressed = encoder.compress_vec(&json_bytes)?;
+
+                    stmt.execute(rusqlite::params![character, dict_id.0, compressed])?;
+                    bump_term_count(&mut terms_found)?;
+
+                    Ok(())
+                })?;
+
+                Ok(rows)
+            })();
+
+            let rows = match parse_result {
+                Ok(count) => count,
+                Err(e) => {
+                    let error_str = format!("{:?}", e);
+                    if error_str.contains("checksum") || error_str.contains("CRC") || error_str.contains("InvalidArchive") {
+                        warn!("Kanji bank file had checksum error but data was read successfully: {}", name);
+                        continue;
+                    } else {
+                        return Err(e);
+                    }
+                }
+            };
+
+            if rows > 0 {
+                info!("      Parsed {} kanji from {}", rows, name);
+            }
+        }
+        // Branch 4: Kanji metadata (kanji_meta_bank_*.json) - insert as freq like term_meta
+        else if name.contains("kanji_meta_bank") && name.ends_with(".json") {
+            info!("   -> Processing kanji metadata: {}", name);
+
+            let parse_result = (|| -> Result<usize> {
+                let mut file = match open_zip_file_safe(&mut zip, name) {
+                    Some(f) => f,
+                    None => return Ok(0),
+                };
+
+                let mut stmt = tx.prepare(
+                    "INSERT INTO terms (term, dictionary_id, json) VALUES (?, ?, ?)"
+                )?;
+
+                let rows = parse_json_array_stream::<_, Vec<Value>, _>(&mut file, |arr| {
+                    if arr.len() < 3 {
+                        return Ok(());
+                    }
+
+                    let character = arr.first().and_then(|v| v.as_str()).unwrap_or("");
+                    if character.is_empty() {
+                        return Ok(());
+                    }
+
+                    let meta_type = arr.get(1).and_then(|v| v.as_str()).unwrap_or("");
+                    if meta_type.is_empty() || meta_type != "freq" {
+                        return Ok(());
+                    }
+
+                    let data_blob = arr.get(2).cloned().unwrap_or(Value::Null);
+                    let (display_val, _) = parse_frequency_value(&data_blob);
+                    let content = format!("Frequency: {}", display_val);
+
+                    let record = Record::YomitanGlossary(Glossary {
+                        popularity: 0,
+                        tags: vec![],
+                        content: vec![structured::Content::String(content)],
+                    });
+
+                    let stored = StoredRecord {
+                        dictionary_id: dict_id,
+                        record,
+                        term_tags: None,
+                        reading: None,
+                        headword: Some(character.to_string()),
+                    };
+
+                    let json_bytes = serde_json::to_vec(&stored)?;
+                    let compressed = encoder.compress_vec(&json_bytes)?;
+
+                    stmt.execute(rusqlite::params![character, dict_id.0, compressed])?;
+                    bump_term_count(&mut terms_found)?;
+
+                    Ok(())
+                })?;
+
+                Ok(rows)
+            })();
+
+            let rows = match parse_result {
+                Ok(count) => count,
+                Err(e) => {
+                    let error_str = format!("{:?}", e);
+                    if error_str.contains("checksum") || error_str.contains("CRC") || error_str.contains("InvalidArchive") {
+                        warn!("Kanji metadata file had checksum error but data was read successfully: {}", name);
+                        continue;
+                    } else {
+                        return Err(e);
+                    }
+                }
+            };
+
+            if rows > 0 {
+                info!("      Parsed {} kanji metadata rows from {}", rows, name);
+            }
+        }
     }
 
     tx.commit()?;

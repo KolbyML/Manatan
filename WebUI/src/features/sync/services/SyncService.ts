@@ -59,6 +59,8 @@ export class SyncService {
             lnMetadata: {},
             lnContent: {},
             lnFiles: {},
+            lnCategories: {},
+            lnCategoryMetadata: {},
         };
 
         // Collect progress
