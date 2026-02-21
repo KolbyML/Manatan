@@ -1,3 +1,9 @@
+## Release v3.2.2
+
+- Update runtime so Jellyfin login works (9a68b30)
+- Point OCR API link to the configured server URL from the client (#216) (d35a272)
+- Update Ko-Fi backers list (b95f6d1)
+
 ## Release v3.2.1
 
 - Add kanji support and reader text selection handles and Various bug fixes (#215) (dc1cb85)
