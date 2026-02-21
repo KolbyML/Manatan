@@ -828,6 +828,8 @@ export const TextBox: React.FC<{
                     onComplete={handleCropperComplete}
                     onCancel={() => setShowCropper(false)}
                     quality={settings.ankiImageQuality || 0.92}
+                    downscaleMaxWidth={settings.ankiDownscaleMaxWidth}
+                    downscaleMaxHeight={settings.ankiDownscaleMaxHeight}
                 />,
                 document.body
             )}

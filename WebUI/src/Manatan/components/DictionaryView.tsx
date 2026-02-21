@@ -696,6 +696,8 @@ const AnkiButtons: React.FC<{
                     onComplete={(b64) => { setShowCropper(false); addNoteToAnki(b64); }}
                     onCancel={() => setShowCropper(false)}
                     quality={settings.ankiImageQuality || 0.92}
+                    downscaleMaxWidth={settings.ankiDownscaleMaxWidth}
+                    downscaleMaxHeight={settings.ankiDownscaleMaxHeight}
                 />,
                 document.body
             )}
