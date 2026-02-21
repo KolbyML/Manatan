@@ -27,15 +27,17 @@ const fetchChapterPages = async (mangaId: number, chapterIndex: number): Promise
     return json?.pages as string[] | undefined;
 };
 
+import { requestManager } from '@/lib/requests/RequestManager';
+
 export const buildChapterBaseUrl = (chapterPath: string): string =>
-    `${window.location.origin}/api/v1${chapterPath}/page/`;
+    `${requestManager.getBaseUrl()}/api/v1${chapterPath}/page/`;
 
 // --- SAFE API REQUEST WRAPPER ---
 export const apiRequest = async <T>(
     url: string,
     options: { method?: string; body?: any; headers?: any } = {},
 ): Promise<T> => {
-    const fullUrl = url.startsWith('http') ? url : `${window.location.origin}${url}`;
+    const fullUrl = url.startsWith('http') ? url : `${requestManager.getBaseUrl()}${url}`;
     
     const response = await fetch(fullUrl, {
         method: options.method || 'GET',
@@ -276,10 +278,9 @@ export const preprocessChapter = async (
 
     if (!pages || pages.length === 0) throw new Error("No pages found via REST");
 
-    const origin = window.location.origin;
     const absolutePages = pages.map(p => {
         if (p.startsWith('http')) return p;
-        return `${origin}${p}`;
+        return `${requestManager.getBaseUrl()}${p}`;
     });
 
     const body: any = {
