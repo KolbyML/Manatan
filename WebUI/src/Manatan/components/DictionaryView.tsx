@@ -15,6 +15,7 @@ import {
 } from '@/Manatan/utils/wordAudio';
 import { DictionaryResult, WordAudioSource, WordAudioSourceSelection } from '@/Manatan/types';
 import { PronunciationSection, extractPronunciationData, getKanaMorae } from './Pronunciation';
+import { KanjiSection, extractKanjiData } from './KanjiView';
 import { PopupTheme } from '@/features/ln/reader/utils/themes';
 import VolumeUpIcon from '@mui/icons-material/VolumeUp';
 import StarIcon from '@mui/icons-material/Star';
@@ -1108,6 +1109,11 @@ export const DictionaryView: React.FC<DictionaryViewProps> = ({
                                 showNotation={settings.yomitanShowPitchNotation ?? true}
                             />
                         );
+                    })()}
+                    {(() => {
+                        const kanjiData = extractKanjiData(entry);
+                        if (kanjiData.length === 0) return null;
+                        return <KanjiSection kanji={kanjiData} />;
                     })()}
                     {entry.glossary && (
                         <div class="entry-body gloss-list definition-list">

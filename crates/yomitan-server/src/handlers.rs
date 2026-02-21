@@ -116,6 +116,18 @@ pub struct ApiIpaInfo {
     pub tags: Vec<String>,
 }
 
+#[derive(Serialize, Clone)]
+#[serde(rename_all = "camelCase")]
+pub struct ApiKanjiResult {
+    pub character: String,
+    pub onyomi: Vec<String>,
+    pub kunyomi: Vec<String>,
+    pub tags: Vec<String>,
+    pub meanings: Vec<String>,
+    pub stats: std::collections::HashMap<String, String>,
+    pub frequencies: Vec<ApiFrequency>,
+}
+
 #[derive(Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct ApiGroupedResult {
@@ -126,6 +138,7 @@ pub struct ApiGroupedResult {
     pub frequencies: Vec<ApiFrequency>,
     pub pitch_accents: Vec<ApiPitchAccent>,
     pub ipa: Vec<ApiIpa>,
+    pub kanji: Vec<ApiKanjiResult>,
     pub forms: Vec<ApiForm>,
     pub term_tags: Vec<GlossaryTag>,
     pub match_len: usize,
@@ -1467,6 +1480,7 @@ pub async fn lookup_handler(
         frequencies: Vec<ApiFrequency>,
         pitch_accents: Vec<ApiPitchAccent>,
         ipa: Vec<ApiIpa>,
+        kanji: Vec<ApiKanjiResult>,
         forms_set: Vec<(String, String)>,
         match_len: usize,
         dict_ids: Vec<DictionaryId>,
@@ -1477,6 +1491,7 @@ pub async fn lookup_handler(
     let mut freq_map: HashMap<(String, String), Vec<ApiFrequency>> = HashMap::new();
     let mut pitch_map: HashMap<(String, String), Vec<ApiPitchAccent>> = HashMap::new();
     let mut ipa_map: HashMap<(String, String), Vec<ApiIpa>> = HashMap::new();
+    let mut kanji_map: HashMap<String, Vec<ApiKanjiResult>> = HashMap::new();
 
     let mut flat_results: Vec<ApiGroupedResult> = Vec::new();
 
@@ -1496,6 +1511,7 @@ pub async fn lookup_handler(
         let mut is_freq = false;
         let mut is_pitch = false;
         let mut is_ipa = false;
+        let mut is_kanji = false;
 
         let (content_val, tags) = if let Record::YomitanGlossary(gloss) = &entry.0.record {
             use wordbase_api::dict::yomitan::structured::Content;
@@ -1503,6 +1519,7 @@ pub async fn lookup_handler(
                 is_freq = s.starts_with("Frequency: ");
                 is_pitch = s.starts_with("Pitch:");
                 is_ipa = s.starts_with("IPA:");
+                is_kanji = s.starts_with("Kanji:");
             }
             // Simply extract the name field as a string
             let t: Vec<String> = gloss.tags.iter().map(|tag| tag.name.clone()).collect();
@@ -1659,6 +1676,106 @@ pub async fn lookup_handler(
                     .or_default()
                     .push(api_ipa);
             }
+        } else if is_kanji {
+            // Parse Kanji JSON - store in kanji_map for later aggregation
+            // Also create/update Aggregator entry so kanji-only results are returned
+            let kanji_key = headword.clone();
+            if let Some(arr) = content_val.as_array() {
+                if let Some(first) = arr.get(0) {
+                    if let Some(s) = first.as_str() {
+                        if let Ok(kanji_data) = serde_json::from_str::<Value>(s.strip_prefix("Kanji:").unwrap_or("{}")) {
+                            let onyomi: Vec<String> = kanji_data
+                                .get("onyomi")
+                                .and_then(|v| v.as_str())
+                                .map(|s| s.split_whitespace().map(String::from).collect())
+                                .unwrap_or_default();
+                            let kunyomi: Vec<String> = kanji_data
+                                .get("kunyomi")
+                                .and_then(|v| v.as_str())
+                                .map(|s| s.split_whitespace().map(String::from).collect())
+                                .unwrap_or_default();
+                            let tags: Vec<String> = kanji_data
+                                .get("tags")
+                                .and_then(|v| v.as_str())
+                                .map(|s| s.split_whitespace().map(String::from).collect())
+                                .unwrap_or_default();
+                            let meanings: Vec<String> = kanji_data
+                                .get("meanings")
+                                .and_then(|v| v.as_array())
+                                .map(|arr| arr.iter().filter_map(|v| v.as_str()).map(String::from).collect())
+                                .unwrap_or_default();
+                            let stats = kanji_data
+                                .get("stats")
+                                .and_then(|v| v.as_object())
+                                .map(|o| o.iter().map(|(k, v)| (k.clone(), v.as_str().unwrap_or("").to_string())).collect())
+                                .unwrap_or_default();
+
+                            let kanji_entry = ApiKanjiResult {
+                                character: headword.clone(),
+                                onyomi,
+                                kunyomi,
+                                tags,
+                                meanings,
+                                stats,
+                                frequencies: vec![],
+                            };
+
+                            // Add to kanji_map
+                            kanji_map
+                                .entry(kanji_key.clone())
+                                .or_default()
+                                .push(kanji_entry);
+
+                            // Also create/update Aggregator entry so kanji-only results are returned
+                            if should_group {
+                                if let Some(existing) = map.iter_mut().find(|agg| agg.headword == headword && agg.reading == reading) {
+                                    // Entry exists, kanji will be attached later
+                                } else {
+                                    // Create new Aggregator for kanji-only entry
+                                    map.push(Aggregator {
+                                        headword: headword.clone(),
+                                        reading: reading.clone(),
+                                        furigana: vec![],
+                                        glossary: vec![],
+                                        frequencies: vec![],
+                                        pitch_accents: vec![],
+                                        ipa: vec![],
+                                        kanji: vec![],
+                                        term_tags: entry.1.unwrap_or_default(),
+                                        forms_set: vec![],
+                                        match_len,
+                                        dict_ids: vec![entry.0.source],
+                                    });
+                                }
+                            } else {
+                                // For non-grouped results, also create flat result with kanji
+                                flat_results.push(ApiGroupedResult {
+                                    headword: headword.clone(),
+                                    reading: reading.clone(),
+                                    furigana: vec![],
+                                    glossary: vec![],
+                                    frequencies: vec![],
+                                    pitch_accents: vec![],
+                                    ipa: vec![],
+                                    kanji: vec![ApiKanjiResult {
+                                        character: headword.clone(),
+                                        onyomi: kanji_data.get("onyomi").and_then(|v| v.as_str()).map(|s| s.split_whitespace().map(String::from).collect()).unwrap_or_default(),
+                                        kunyomi: kanji_data.get("kunyomi").and_then(|v| v.as_str()).map(|s| s.split_whitespace().map(String::from).collect()).unwrap_or_default(),
+                                        tags: kanji_data.get("tags").and_then(|v| v.as_str()).map(|s| s.split_whitespace().map(String::from).collect()).unwrap_or_default(),
+                                        meanings: kanji_data.get("meanings").and_then(|v| v.as_array()).map(|arr| arr.iter().filter_map(|v| v.as_str()).map(String::from).collect()).unwrap_or_default(),
+                                        stats: kanji_data.get("stats").and_then(|v| v.as_object()).map(|o| o.iter().map(|(k, v)| (k.clone(), v.as_str().unwrap_or("").to_string())).collect()).unwrap_or_default(),
+                                        frequencies: vec![],
+                                    }],
+                                    term_tags: entry.1.unwrap_or_default(),
+                                    forms: vec![],
+                                    match_len,
+                                    styles: Some(std::iter::once((dict_name.clone(), dict_meta.get(&entry.0.source).and_then(|(_, s)| s.clone()).unwrap_or_default())).filter(|(_, s)| !s.is_empty()).collect()),
+                                });
+                            }
+                        }
+                    }
+                }
+            }
         } else {
             // === DEFINITION LOGIC ===
             let def_obj = ApiDefinition {
@@ -1689,6 +1806,7 @@ pub async fn lookup_handler(
                         frequencies: vec![],
                         pitch_accents: vec![],
                         ipa: vec![],
+                        kanji: vec![],
                         term_tags: entry.1.unwrap_or_default(),
                         forms_set: vec![(headword.clone(), reading.clone())],
                         match_len,
@@ -1704,6 +1822,7 @@ pub async fn lookup_handler(
                     frequencies: vec![],
                     pitch_accents: vec![],
                     ipa: vec![],
+                    kanji: vec![],
                     term_tags: entry.1.unwrap_or_default(),
                     forms: vec![ApiForm {
                         headword: headword.clone(),
@@ -1732,6 +1851,10 @@ pub async fn lookup_handler(
                 if let Some(ipas) = ipa_map.get(&(agg.headword.clone(), agg.reading.clone())) {
                     agg.ipa.extend(ipas.clone());
                 }
+                // Attach kanji if they exist for this character
+                if let Some(kanjis) = kanji_map.get(&agg.headword) {
+                    agg.kanji.extend(kanjis.clone());
+                }
 
                 ApiGroupedResult {
                     headword: agg.headword,
@@ -1741,6 +1864,7 @@ pub async fn lookup_handler(
                     frequencies: agg.frequencies,
                     pitch_accents: agg.pitch_accents,
                     ipa: agg.ipa,
+                    kanji: agg.kanji,
                     term_tags: agg.term_tags,
                     forms: agg
                         .forms_set

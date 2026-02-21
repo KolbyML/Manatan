@@ -12,6 +12,7 @@ import { BookStats, AppStorage } from '@/lib/storage/AppStorage';
 import { ReaderNavigationUI } from './ReaderNavigationUI';
 import { ClickZones, getClickZone } from './ClickZones';
 import { ReaderContextMenu } from './ReaderContextMenu';
+import { SelectionHandles } from './SelectionHandles';
 import { buildTypographyStyles } from '../utils/styles';
 import { handleKeyNavigation, NavigationCallbacks } from '../utils/navigation';
 import { PagedReaderProps } from '../types/reader';
@@ -1094,86 +1095,6 @@ useEffect(() => {
     }, []);
 
     // ========================================================================
-    // Highlight - Long Press on Selection
-    // ========================================================================
-
-    const [highlightData, setHighlightData] = useState<{
-        x: number;
-        y: number;
-        text: string;
-        startOffset: number;
-        endOffset: number;
-        blockId: string;
-    } | null>(null);
-
-    const handleSaveHighlight = useCallback(() => {        
-        if (!highlightData) {
-            return;
-        }
-        if (!onAddHighlight) {
-            return;
-        }
-
-        onAddHighlight(currentSection, highlightData.blockId, highlightData.text, highlightData.startOffset, highlightData.endOffset);
-        setHighlightData(null);
-    }, [currentSection, onAddHighlight, highlightData]);
-
-    useEffect(() => {
-        const handleSelectionChange = () => {
-            setHighlightData(null);
-        };
-
-        const handleContextMenu = (e: MouseEvent) => {
-            const selection = window.getSelection();
-            if (!selection || selection.isCollapsed || !contentRef.current) return;
-
-            const range = selection.getRangeAt(0);
-            const rect = range.getBoundingClientRect();
-            if (rect.width === 0) return;
-
-            const text = selection.toString().trim();
-            if (!text || text.length < 2) return;
-
-            const container = contentRef.current;
-            const preSelectionRange = range.cloneRange();
-            preSelectionRange.selectNodeContents(container);
-            preSelectionRange.setEnd(range.startContainer, range.startOffset);
-            const startOffset = preSelectionRange.toString().length;
-            const endOffset = startOffset + text.length;
-
-            let blockId = '';
-            let blockEl: Element | null = range.startContainer.parentElement;
-            while (blockEl && !blockEl.hasAttribute('data-block-id')) {
-                blockEl = blockEl.parentElement;
-            }
-            if (blockEl) {
-                blockId = blockEl.getAttribute('data-block-id') || '';
-            }
-            if (!blockId) return;
-
-            e.preventDefault();
-
-            setHighlightData({
-                x: rect.left + rect.width / 2,
-                y: rect.top - 10,
-                text,
-                startOffset,
-                endOffset,
-                blockId,
-            });
-        };
-
-        document.addEventListener('selectionchange', handleSelectionChange);
-        document.addEventListener('contextmenu', handleContextMenu);
-        
-        return () => {
-            document.removeEventListener('selectionchange', handleSelectionChange);
-            document.removeEventListener('contextmenu', handleContextMenu);
-        };
-    }, []);
-
-
-    // ========================================================================
     // Cleanup
     // ========================================================================
 
@@ -1283,14 +1204,15 @@ useEffect(() => {
                 </div>
             )}
 
-            {/* Reader Context Menu */}
-            <ReaderContextMenu
-                visible={!!highlightData}
-                x={highlightData?.x || 0}
-                y={highlightData?.y || 0}
-                onHighlight={handleSaveHighlight}
-                onCopy={highlightData ? () => navigator.clipboard.writeText(highlightData.text) : undefined}
-                onClose={() => setHighlightData(null)}
+            <SelectionHandles 
+                containerRef={contentRef}
+                enabled={contentReady && !isTransitioning}
+                theme={(settings.lnTheme as 'light' | 'sepia' | 'dark' | 'black') || 'dark'}
+                onSelectionComplete={(text, startOffset, endOffset, blockId) => {
+                    if (onAddHighlight && currentSection && blockId) {
+                        onAddHighlight(currentSection, blockId, text, startOffset, endOffset);
+                    }
+                }}
             />
 
             {/* Click Zones - Visual Debug Only */}

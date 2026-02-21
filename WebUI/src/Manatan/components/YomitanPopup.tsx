@@ -176,7 +176,7 @@ export const YomitanPopup = () => {
         }
 
         try {
-            const results = await lookupYomitan(cleanText, 0, 'grouped', 'japanese');
+            const results = await lookupYomitan(cleanText, 0, settings.resultGroupingMode || 'grouped', settings.yomitanLanguage || 'japanese');
             const loadedResults = results === 'loading' ? [] : (results || []);
             const isSystemLoading = results === 'loading';
 
@@ -229,7 +229,7 @@ export const YomitanPopup = () => {
         }
 
         try {
-            const results = await lookupYomitan(cleanText, prefixBytes, 'grouped', 'japanese');
+            const results = await lookupYomitan(cleanText, prefixBytes, settings.resultGroupingMode || 'grouped', settings.yomitanLanguage || 'japanese');
             const loadedResults = results === 'loading' ? [] : (results || []);
             const isSystemLoading = results === 'loading';
 
