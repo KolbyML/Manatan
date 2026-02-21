@@ -359,6 +359,10 @@ export const TextBox: React.FC<{
                 sentField || '',
                 settings.ankiImageQuality || 0.92,
                 croppedImage,
+                undefined,
+                undefined,
+                settings.ankiDownscaleMaxWidth,
+                settings.ankiDownscaleMaxHeight
             );
 
             closeDialog();

@@ -624,7 +624,7 @@ const AnkiButtons: React.FC<{
                         fields: [imgField]
                     };
                 } else {
-                    const b64 = await imageUrlToBase64Webp(dictPopup.context.imgSrc, settings.ankiImageQuality || 0.92);
+                    const b64 = await imageUrlToBase64Webp(dictPopup.context.imgSrc, settings.ankiImageQuality || 0.92, settings.ankiDownscaleMaxWidth, settings.ankiDownscaleMaxHeight);
                     if (b64) {
                         pictureData = {
                             data: b64.split(';base64,')[1],
