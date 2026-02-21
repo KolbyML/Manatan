@@ -1,3 +1,11 @@
+## Release v3.2.1
+
+- Add kanji support and reader text selection handles and Various bug fixes (#215) (dc1cb85)
+- Fix Textbox context menu for yomitan intergration (8f67058)
+- Fix Jellyfin support (f096177)
+- Fix downloaded video playback on iOS (031ba94)
+- Attempt to fix anime download playback iOS (cd1c158)
+
 ## Release v3.2.0
 
 - Fix iOS app resetting settings on every update (883c034)
