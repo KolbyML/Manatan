@@ -214,7 +214,6 @@ export const ImageOverlay: React.FC<{
         if (!img.src || ocrCache.has(img.src)) return;
         try {
             setOcrStatus(img.src, 'loading');
-            
             let url = `/api/ocr/ocr?url=${encodeURIComponent(img.src)}`;
             url += `&add_space_on_merge=${!isNoSpaceLanguage(settings.yomitanLanguage)}`;
             url += `&language=${encodeURIComponent(settings.yomitanLanguage)}`;
