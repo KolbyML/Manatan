@@ -154,7 +154,7 @@ const getSingleGlossaryName = (value: string): string | null => {
 };
 
 const DOWNSCALE_OPTIONS = [
-    { value: '', label: 'Original Size' },
+    { value: undefined, label: 'Original Size' },
     { value: '240', label: '240' },
     { value: '360', label: '360' },
     { value: '480', label: '480' },
