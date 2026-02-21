@@ -2,7 +2,7 @@ import React, { useEffect, useState, useRef, useCallback, memo, useLayoutEffect 
 import { createPortal } from 'react-dom';
 import { useOCR } from '@/Manatan/context/OCRContext';
 import { OcrBlock } from '@/Manatan/types'; 
-import { apiRequest } from '@/Manatan/utils/api';
+import { apiRequest, buildChapterBaseUrl } from '@/Manatan/utils/api';
 import { isNoSpaceLanguage } from '@/Manatan/utils/language';
 import { TextBox } from '@/Manatan/components/TextBox';
 import { StatusIcon } from '@/Manatan/components/StatusIcon';
@@ -221,7 +221,7 @@ export const ImageOverlay: React.FC<{
             const chapterMatch = window.location.pathname.match(/\/chapter\/(\d+)/);
             if (mangaMatch && chapterMatch) {
                 const chapterPath = `/manga/${mangaMatch[1]}/chapter/${chapterMatch[1]}`;
-                const baseUrl = `${window.location.origin}/api/v1${chapterPath}/page/`;
+                const baseUrl = buildChapterBaseUrl(chapterPath);
                 url += `&base_url=${encodeURIComponent(baseUrl)}`;
             }
             if (serverSettings?.authUsername?.trim() && serverSettings?.authPassword?.trim()) {

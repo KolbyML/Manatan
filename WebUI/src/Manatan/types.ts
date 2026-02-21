@@ -206,6 +206,18 @@ export interface DictionaryResult {
             tags?: string[];
         }>;
     }>;
+    kanji?: Array<{
+        character: string;
+        onyomi: string[];
+        kunyomi: string[];
+        tags: string[];
+        meanings: string[];
+        stats: Record<string, string>;
+        frequencies: Array<{
+            dictionaryName: string;
+            value: string;
+        }>;
+    }>;
     styles?: Record<string, string>;
 }
 
