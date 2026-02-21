@@ -326,6 +326,10 @@ export const logDebug = (msg: string, isDebug: boolean) => {
 export const cleanPunctuation = (text: string, preserveSpaces: boolean = false): string => {
     if (!text) return text;
     let t = text
+        .replace(/<ruby[^>]*>(.*?)<rt[^>]*>.*?<\/rt><\/ruby>/g, '$1')
+        .replace(/<ruby[^>]*>(.*?)<\/ruby>/g, '$1')
+        .replace(/<rt[^>]*>.*?<\/rt>/g, '')
+        .replace(/<rp[^>]*>.*?<\/rp>/g, '')
         .replace(/[ ]*!!+/g, '‼')
         .replace(/[ ]*\?\?+/g, '⁇')
         .replace(/[ ]*\.\.+/g, '…')
