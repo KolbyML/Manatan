@@ -1123,8 +1123,6 @@ ${detail}`,
                                         </label>
                                     </div>
 
-
-
                                     {!localSettings.enableYomitan && (
                                         <div style={{ marginBottom: '15px', padding: '10px', backgroundColor: 'rgba(255,255,255,0.05)', borderRadius: '6px', border: '1px solid rgba(255,255,255,0.1)' }}>
                                             <label style={{ ...checkboxLabelStyle, marginBottom: '0' }}>
