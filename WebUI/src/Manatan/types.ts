@@ -124,6 +124,8 @@ export interface Settings {
     ankiConnectUrl: string;
     ankiImageQuality: number;
     ankiEnableCropper: boolean;
+    ankiDownscaleMaxWidth?: number;
+    ankiDownscaleMaxHeight?: number;
     // New Anki Settings
     ankiDeck?: string;
     ankiModel?: string;
@@ -352,6 +354,8 @@ export const DEFAULT_SETTINGS: Settings = {
     ankiConnectUrl: 'http://127.0.0.1:8765',
     ankiImageQuality: 0.92,
     ankiEnableCropper: false,
+    ankiDownscaleMaxWidth: undefined,
+    ankiDownscaleMaxHeight: undefined,
     ankiDeck: '',
     ankiModel: '',
     ankiFieldMap: {},

@@ -10,6 +10,8 @@ interface CropperModalProps {
     onComplete: (croppedImage: string) => void;
     onCancel: () => void;
     quality: number;
+    downscaleMaxWidth?: number;
+    downscaleMaxHeight?: number;
 }
 
 export const CropperModal: React.FC<CropperModalProps> = ({ 
@@ -17,7 +19,9 @@ export const CropperModal: React.FC<CropperModalProps> = ({
     spreadData,
     onComplete, 
     onCancel,
-    quality 
+    quality,
+    downscaleMaxWidth,
+    downscaleMaxHeight
 }) => {
     // Default crop is 80% of the image, centered
     const [crop, setCrop] = useState<Crop>({
@@ -89,7 +93,9 @@ export const CropperModal: React.FC<CropperModalProps> = ({
                     spreadData.leftSrc,
                     spreadData.rightSrc,
                     pixelCrop,
-                    quality
+                    quality,
+                    downscaleMaxWidth,
+                    downscaleMaxHeight
                 );
 
             } else if (singleImgRef.current && imageSrc) {
@@ -107,7 +113,9 @@ export const CropperModal: React.FC<CropperModalProps> = ({
                     imageSrc, 
                     pixelCrop, 
                     quality,
-                    0
+                    0,
+                    downscaleMaxWidth,
+                    downscaleMaxHeight
                 );
             }
 

@@ -1,6 +1,8 @@
 /**
  * Updated AnkiConnect API call with automatic permission handshake
  */
+import { getDownscaledSize } from './image';
+
 const ANKI_LOG_COOLDOWN_MS = 60000;
 let lastAnkiLogAt = 0;
 
@@ -188,11 +190,14 @@ function getCardAgeInMin(id: number) {
 }
 
 /**
- * Fetch image and convert to base64 webp using Image element (better CORS handling)
+ * Fetch image, downscale it if it exceeds max dimensions (keeping aspect ratio), 
+ * and convert to base64 webp using Image element (better CORS handling)
  */
 export async function imageUrlToBase64Webp(
     imageUrl: string,
-    quality: number = 0.92
+    quality: number = 0.92,
+    maxWidth?: number,
+    maxHeight?: number
 ): Promise<string | null> {
     return new Promise((resolve) => {
         const img = new Image();
@@ -201,11 +206,13 @@ export async function imageUrlToBase64Webp(
         
         img.onload = () => {
             try {
-                const canvas = new OffscreenCanvas(img.width, img.height);
+                const { width, height } = getDownscaledSize(img.width, img.height, maxWidth, maxHeight);
+
+                const canvas = new OffscreenCanvas(width, height);
                 const ctx = canvas.getContext('2d');
                 if (!ctx) throw new Error('No context');
-                
-                ctx.drawImage(img, 0, 0);
+
+                ctx.drawImage(img, 0, 0, width, height);
                 
                 canvas.convertToBlob({ type: 'image/webp', quality })
                     .then(blob => {
@@ -324,7 +331,9 @@ export async function updateLastCard(
     quality: number,
     preEncodedBase64?: string,
     audioField?: string,
-    audioBase64?: string
+    audioBase64?: string,
+    downscaleMaxWidth?: number,
+    downscaleMaxHeight?: number
 ) {
     // Find the last card
     const id = await getLastCardId(ankiConnectUrl);
@@ -376,7 +385,7 @@ export async function updateLastCard(
                 ? preEncodedBase64.split(';base64,')[1] 
                 : preEncodedBase64;
         } else if (imageUrl) {
-            const fullBase64 = await imageUrlToBase64Webp(imageUrl, quality);
+            const fullBase64 = await imageUrlToBase64Webp(imageUrl, quality, downscaleMaxWidth, downscaleMaxHeight);
             if (!fullBase64) throw new Error("Failed to process image (CORS or Load Error)");
             rawData = fullBase64.split(';base64,')[1];
         }
