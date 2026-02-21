@@ -1072,6 +1072,35 @@ ${detail}`,
                                         </label>
                                     </div>
 
+                                    <div style={{ marginBottom: '15px', padding: '10px', backgroundColor: 'rgba(255,255,255,0.05)', borderRadius: '6px', border: '1px solid rgba(255,255,255,0.1)' }}>
+                                        <div style={{ fontWeight: 'bold', marginBottom: '8px' }}>Downscale Image</div>
+                                        <div style={{ display: 'grid', gridTemplateColumns: 'min-content 1fr', gap: '8px', alignItems: 'center' }}>
+                                            <label htmlFor="ankiDownscaleMaxWidth" style={{ whiteSpace: 'nowrap' }}>Max Width:</label>
+                                            <input 
+                                                id="ankiDownscaleMaxWidth"
+                                                type="number" 
+                                                min="0"
+                                                value={localSettings.ankiDownscaleMaxWidth ?? ''}
+                                                onChange={(e) => handleChange('ankiDownscaleMaxWidth', e.target.value ? parseInt(e.target.value, 10) : undefined)}
+                                                placeholder="e.g. 500"
+                                                style={{ width: '100px' }}
+                                            />
+                                            <label htmlFor="ankiDownscaleMaxHeight" style={{ whiteSpace: 'nowrap' }}>Max Height:</label>
+                                            <input 
+                                                id="ankiDownscaleMaxHeight"
+                                                type="number" 
+                                                min="0"
+                                                value={localSettings.ankiDownscaleMaxHeight ?? ''}
+                                                onChange={(e) => handleChange('ankiDownscaleMaxHeight', e.target.value ? parseInt(e.target.value, 10) : undefined)}
+                                                placeholder="e.g. 500"
+                                                style={{ width: '100px' }}
+                                            />
+                                        </div>
+                                        <div style={{ opacity: 0.5, fontSize: '0.9em', marginTop: '4px' }}>
+                                            Leave blank to keep original size. Images will be downscaled while maintaining aspect ratio.
+                                        </div>
+                                    </div>
+
                                     {!localSettings.enableYomitan && (
                                         <div style={{ marginBottom: '15px', padding: '10px', backgroundColor: 'rgba(255,255,255,0.05)', borderRadius: '6px', border: '1px solid rgba(255,255,255,0.1)' }}>
                                             <label style={{ ...checkboxLabelStyle, marginBottom: '0' }}>
