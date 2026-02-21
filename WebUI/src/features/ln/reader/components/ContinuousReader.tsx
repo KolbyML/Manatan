@@ -948,7 +948,7 @@ export const ContinuousReader: React.FC<ContinuousReaderProps> = ({
 
             <SelectionHandles 
                 containerRef={contentRef}
-                enabled={contentReady}
+                enabled={contentLoaded}
                 theme={(settings.lnTheme as 'light' | 'sepia' | 'dark' | 'black') || 'dark'}
                 onSelectionComplete={(text, startOffset, endOffset, blockId) => {
                     if (onAddHighlight && currentChapter && blockId) {

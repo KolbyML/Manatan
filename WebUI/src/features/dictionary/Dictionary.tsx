@@ -202,9 +202,6 @@ export const Dictionary = () => {
         const cleanText = cleanPunctuation(text, true).trim();
         if (!cleanText) return;
 
-        // Update search term to show in input
-        setSearchTerm(text);
-
         const textEncoder = new TextEncoder();
         const prefixBytes = textEncoder.encode(text.slice(0, position)).length;
 
