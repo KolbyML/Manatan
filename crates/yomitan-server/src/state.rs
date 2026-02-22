@@ -2,8 +2,8 @@ use std::{
     collections::HashMap,
     path::PathBuf,
     sync::{
-        atomic::{AtomicBool, Ordering},
         Arc, RwLock,
+        atomic::{AtomicBool, Ordering},
     },
     time::{Duration, Instant},
 };
@@ -12,7 +12,7 @@ use r2d2::Pool;
 use r2d2_sqlite::SqliteConnectionManager;
 use serde::{Deserialize, Serialize};
 use tracing::info;
-use wordbase_api::{dict::yomitan::GlossaryTag, DictionaryId, Record};
+use wordbase_api::{DictionaryId, Record, dict::yomitan::GlossaryTag};
 
 pub type DbPool = Pool<SqliteConnectionManager>;
 
@@ -128,7 +128,7 @@ impl AppState {
         {
             let mut stmt = conn
                 .prepare("SELECT id, name, priority, enabled, styles FROM dictionaries")
-                .unwrap();
+                .expect("failed to prepare dictionary query");
             let rows = stmt
                 .query_map([], |row| {
                     Ok(DictionaryData {
@@ -139,15 +139,13 @@ impl AppState {
                         styles: row.get(4)?,
                     })
                 })
-                .unwrap();
+                .expect("failed to load dictionaries");
 
-            for row in rows {
-                if let Ok(d) = row {
-                    if d.id.0 > max_id {
-                        max_id = d.id.0;
-                    }
-                    dicts.insert(d.id, d);
+            for d in rows.flatten() {
+                if d.id.0 > max_id {
+                    max_id = d.id.0;
                 }
+                dicts.insert(d.id, d);
             }
         }
 
@@ -201,10 +199,8 @@ mod tests {
             .expect("time")
             .as_nanos();
         std::env::temp_dir().join(format!(
-            "manatan-yomitan-state-test-{}-{}-{}",
-            name,
-            std::process::id(),
-            nanos
+            "manatan-yomitan-state-test-{name}-{}-{nanos}",
+            std::process::id()
         ))
     }
 

@@ -9,6 +9,13 @@ repository.workspace = true
 rust-version.workspace = true
 version.workspace = true
 
+[target.'cfg(target_os = "linux")'.dependencies]
+openssl-sys.workspace = true
+
+[[bin]]
+name = "manatan"
+path = "src/main.rs"
+
 [features]
 default = []
 embed-jre = []
@@ -27,8 +34,8 @@ mime_guess.workspace = true
 open.workspace = true
 reqwest.workspace = true
 rust-embed.workspace = true
-serde.workspace = true
 self_update.workspace = true
+serde.workspace = true
 tokio.workspace = true
 tokio-tungstenite.workspace = true
 tower-http.workspace = true
@@ -38,17 +45,10 @@ zip.workspace = true
 
 # Internal Crates
 manatan-audio-server.workspace = true
-manatan-server-public.workspace = true
 manatan-ocr-server.workspace = true
+manatan-server-public.workspace = true
 manatan-sync-server.workspace = true
 manatan-yomitan-server.workspace = true
-
-[target.'cfg(target_os = "linux")'.dependencies]
-openssl-sys.workspace = true
-
-[[bin]]
-name = "manatan"
-path = "src/main.rs"
 
 [lints]
 workspace = true

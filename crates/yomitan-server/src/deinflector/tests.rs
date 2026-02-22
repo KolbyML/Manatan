@@ -48,21 +48,20 @@ fn run_language_tests(
                 test_case.reasons.as_deref(),
             );
             let mut message = format!(
-                "{} {} {} term candidate {:?}",
-                label,
+                "{label} {} {} term candidate {:?}",
                 test_case.source,
                 if suite.valid { "has" } else { "does not have" },
                 test_case.term
             );
             if let Some(rule) = test_case.rule.as_deref() {
-                message.push_str(&format!(" with rule {:?}", rule));
+                message.push_str(&format!(" with rule {rule:?}"));
             }
             if let Some(reasons) = test_case.reasons.as_deref() {
-                message.push_str(&format!(" and reasons {:?}", reasons));
+                message.push_str(&format!(" and reasons {reasons:?}"));
             }
             message.push_str(&format!(" (category: {})", suite.category));
 
-            assert_eq!(has, suite.valid, "{}", message);
+            assert_eq!(has, suite.valid, "{message}");
             summary.passed += 1;
         }
     }

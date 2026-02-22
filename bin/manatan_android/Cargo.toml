@@ -10,11 +10,6 @@ rust-version.workspace = true
 version.workspace = true
 autobins = false 
 
-[features]
-default = []
-# When enabled, the app shows a loading spinner then launches a native Android Webview
-native_webview = []
-
 [package.metadata.android]
 package = "com.mangatan.app"
 build_targets = ["Arm64V8a"]
@@ -125,6 +120,11 @@ foreground_service_type = "dataSync"
 name = "manatan_android"
 crate-type = ["cdylib"]
 
+[features]
+default = []
+# When enabled, the app shows a loading spinner then launches a native Android Webview
+native_webview = []
+
 [target.'cfg(target_os = "android")'.dependencies]
 
 android-activity = { version = "0.6", features = ["native-activity"] }
@@ -132,23 +132,24 @@ axum.workspace = true
 # GUI
 eframe = { version = "0.29", default-features = false, features = ["wgpu", "android-native-activity" ] }
 egui = "0.29"
+flate2 = { version = "1.0", default-features = false, features = ["rust_backend"] }
 futures = "0.3"
 jni = "0.21"
 lazy_static = "1.4"
 libc = "0.2"
 libloading = "0.8"
-manatan-ocr-server.workspace = true
-manatan-yomitan-server.workspace = true
 manatan-audio-server.workspace = true
+manatan-ocr-server.workspace = true
 manatan-server-public.workspace = true
 manatan-sync-server.workspace = true
+manatan-yomitan-server.workspace = true
 mime_guess = "2"
-openssl = { version = "0.10", features = ["vendored"] }
 ndk-context = "0.1"
-serde.workspace = true
+openssl = { version = "0.10", features = ["vendored"] }
 # Web Server & Networking
 # IMPORTANT: reqwest 0.12 uses http 1.0, matching axum 0.7
 reqwest = { version = "0.12", default-features = false, features = ["rustls-tls", "stream"] }
+serde.workspace = true
 serde_json = "1.0"
 tar = "0.4"
 tokio = { version = "1", features = ["full"] }
@@ -162,4 +163,3 @@ tracing = "0.1"
 tracing-log = "0.2"
 tracing-subscriber = { version = "0.3", features = ["env-filter"] }
 winit = "0.30"
-flate2 = { version = "1.0", default-features = false, features = ["rust_backend"] }

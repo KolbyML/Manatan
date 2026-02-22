@@ -18,20 +18,20 @@ bytes.workspace = true
 chrome_lens_ocr.workspace = true 
 futures.workspace = true
 image.workspace = true 
+lazy_static = "1.5"
 r2d2 = "0.8"
 r2d2_sqlite = "0.24"
+regex = "1.12"   
 reqwest.workspace = true 
 rusqlite = "0.31"
 serde.workspace = true 
 serde_json .workspace = true 
 tokio.workspace = true 
 tracing.workspace = true 
-lazy_static = "1.5"
-regex = "1.12"   
 
 [dev-dependencies]
-walkdir = "2"
 pretty_assertions = "1"
+walkdir = "2"
 
 [lints]
 workspace = true

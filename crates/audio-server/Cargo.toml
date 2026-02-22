@@ -13,12 +13,12 @@ version.workspace = true
 anyhow.workspace = true
 axum.workspace = true
 bytes.workspace = true
+hls_m3u8 = "0.5.1"
 reqwest.workspace = true
 serde.workspace = true
+symphonia = { version = "0.5.4", default-features = false, features = ["aac", "isomp4"] }
 tokio.workspace = true
 tracing.workspace = true
-hls_m3u8 = "0.5.1"
-symphonia = { version = "0.5.4", default-features = false, features = ["aac", "isomp4"] }
 url = "2.5.4"
 
 [lints]

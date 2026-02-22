@@ -10,6 +10,7 @@ use crate::{
     state::{AppState, JobProgress},
 };
 
+#[allow(clippy::too_many_arguments)]
 pub async fn run_chapter_job(
     state: AppState,
     base_url: String,
