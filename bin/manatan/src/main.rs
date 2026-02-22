@@ -142,7 +142,11 @@ struct Cli {
     tracker_remote_search: bool,
 
     /// Tracker search cache TTL in seconds
-    #[arg(long, env = "MANATAN_TRACKER_SEARCH_TTL_SECONDS", default_value_t = 3600)]
+    #[arg(
+        long,
+        env = "MANATAN_TRACKER_SEARCH_TTL_SECONDS",
+        default_value_t = 3600
+    )]
     tracker_search_ttl_seconds: i64,
 
     /// Downloads directory (absolute or relative to data dir)
@@ -185,7 +189,11 @@ fn parse_boolish(value: &str) -> Result<bool, String> {
     }
 }
 
-fn resolve_path_option(option: Option<&PathBuf>, data_dir: &Path, default_relative: &str) -> String {
+fn resolve_path_option(
+    option: Option<&PathBuf>,
+    data_dir: &Path,
+    default_relative: &str,
+) -> String {
     match option {
         Some(path) if path.is_absolute() => path.clone(),
         Some(path) => data_dir.join(path),
@@ -239,14 +247,14 @@ fn resolve_data_dir() -> PathBuf {
 }
 
 fn migrate_legacy_data_dir(legacy_dir: &Path, new_dir: &Path) -> PathBuf {
-    if let Some(parent) = new_dir.parent() {
-        if let Err(err) = fs::create_dir_all(parent) {
-            warn!(
-                "Failed to create data dir parent {}: {err}",
-                parent.display()
-            );
-            return legacy_dir.to_path_buf();
-        }
+    if let Some(parent) = new_dir.parent()
+        && let Err(err) = fs::create_dir_all(parent)
+    {
+        warn!(
+            "Failed to create data dir parent {}: {err}",
+            parent.display()
+        );
+        return legacy_dir.to_path_buf();
     }
 
     match fs::rename(legacy_dir, new_dir) {
@@ -309,22 +317,23 @@ fn migrate_suwayomi_extensions(data_dir: &Path) {
         return;
     }
 
-    if new_extensions_dir.exists() && is_dir_empty(&new_extensions_dir) {
-        if let Err(err) = fs::remove_dir_all(&new_extensions_dir) {
-            warn!(
-                "Failed to remove empty extensions dir {}: {err}",
-                new_extensions_dir.display()
-            );
-        }
+    if new_extensions_dir.exists()
+        && is_dir_empty(&new_extensions_dir)
+        && let Err(err) = fs::remove_dir_all(&new_extensions_dir)
+    {
+        warn!(
+            "Failed to remove empty extensions dir {}: {err}",
+            new_extensions_dir.display()
+        );
     }
 
-    if let Some(parent) = new_extensions_dir.parent() {
-        if let Err(err) = fs::create_dir_all(parent) {
-            warn!(
-                "Failed to create extensions parent dir {}: {err}",
-                parent.display()
-            );
-        }
+    if let Some(parent) = new_extensions_dir.parent()
+        && let Err(err) = fs::create_dir_all(parent)
+    {
+        warn!(
+            "Failed to create extensions parent dir {}: {err}",
+            parent.display()
+        );
     }
 
     match fs::rename(&legacy_extensions_dir, &new_extensions_dir) {
@@ -471,22 +480,23 @@ fn migrate_suwayomi_settings(data_dir: &Path) {
         return;
     }
 
-    if new_settings_dir.exists() && is_dir_empty(&new_settings_dir) {
-        if let Err(err) = fs::remove_dir_all(&new_settings_dir) {
-            warn!(
-                "Failed to remove empty settings dir {}: {err}",
-                new_settings_dir.display()
-            );
-        }
+    if new_settings_dir.exists()
+        && is_dir_empty(&new_settings_dir)
+        && let Err(err) = fs::remove_dir_all(&new_settings_dir)
+    {
+        warn!(
+            "Failed to remove empty settings dir {}: {err}",
+            new_settings_dir.display()
+        );
     }
 
-    if let Some(parent) = new_settings_dir.parent() {
-        if let Err(err) = fs::create_dir_all(parent) {
-            warn!(
-                "Failed to create settings parent dir {}: {err}",
-                parent.display()
-            );
-        }
+    if let Some(parent) = new_settings_dir.parent()
+        && let Err(err) = fs::create_dir_all(parent)
+    {
+        warn!(
+            "Failed to create settings parent dir {}: {err}",
+            parent.display()
+        );
     }
 
     match fs::rename(&legacy_settings_dir, &new_settings_dir) {
@@ -632,7 +642,7 @@ fn main() -> eframe::Result<()> {
     let (server_stopped_tx, server_stopped_rx) = std::sync::mpsc::channel::<()>();
     let shutdown_requested = Arc::new(AtomicBool::new(false));
 
-    let thread_host = host.clone();
+    let thread_host = host;
     let thread_args = args.clone();
     thread::spawn(move || {
         let rt = tokio::runtime::Runtime::new().expect("Failed to create Tokio runtime");
@@ -641,7 +651,7 @@ fn main() -> eframe::Result<()> {
                 tx: server_stopped_tx,
             };
 
-            let h = thread_host.clone();
+            let h = thread_host;
             tokio::spawn(async move { open_webpage_when_ready(h, port).await });
 
             if let Err(err) = run_server(
@@ -690,7 +700,7 @@ fn main() -> eframe::Result<()> {
                 server_stopped_rx,
                 gui_data_dir,
                 shutdown_requested,
-                host.clone(),
+                host,
                 port,
             )))
         }),
@@ -955,7 +965,10 @@ impl eframe::App for MyApp {
 
             // Single action (keep spacing and avoid cramped bottom).
             if ui
-                .add_sized([ui.available_width(), 30.0], egui::Button::new("📂 Manatan Data"))
+                .add_sized(
+                    [ui.available_width(), 30.0],
+                    egui::Button::new("📂 Manatan Data"),
+                )
                 .clicked()
             {
                 if !self.data_dir.exists() {
@@ -983,22 +996,22 @@ async fn run_server(
         fs::create_dir_all(data_dir).map_err(|err| anyhow!("Failed to create data dir {err:?}"))?;
     }
     let local_manga_dir = data_dir.join("local-manga");
-    if !local_manga_dir.exists() {
-        if let Err(err) = fs::create_dir_all(&local_manga_dir) {
-            warn!(
-                "Failed to create local manga dir {}: {err}",
-                local_manga_dir.display()
-            );
-        }
+    if !local_manga_dir.exists()
+        && let Err(err) = fs::create_dir_all(&local_manga_dir)
+    {
+        warn!(
+            "Failed to create local manga dir {}: {err}",
+            local_manga_dir.display()
+        );
     }
     let local_anime_dir = data_dir.join("local-anime");
-    if !local_anime_dir.exists() {
-        if let Err(err) = fs::create_dir_all(&local_anime_dir) {
-            warn!(
-                "Failed to create local anime dir {}: {err}",
-                local_anime_dir.display()
-            );
-        }
+    if !local_anime_dir.exists()
+        && let Err(err) = fs::create_dir_all(&local_anime_dir)
+    {
+        warn!(
+            "Failed to create local anime dir {}: {err}",
+            local_anime_dir.display()
+        );
     }
     let bin_dir = data_dir.join("bin");
     if !bin_dir.exists() {
@@ -1061,18 +1074,16 @@ async fn run_server(
         .arg("-Dsuwayomi.tachidesk.config.server.initialOpenInBrowserEnabled=false")
         .arg("-Dsuwayomi.tachidesk.config.server.webUIEnabled=false")
         .arg("-Dsuwayomi.tachidesk.config.server.enableCookieApi=true")
-        .arg(format!("-Dsuwayomi.runtimeOnly={}", runtime_only))
+        .arg(format!("-Dsuwayomi.runtimeOnly={runtime_only}"))
         .arg(format!(
             "-Dsuwayomi.tachidesk.config.server.rootDir={}",
             data_dir.display()
         ))
         .arg(format!(
-            "-Dsuwayomi.tachidesk.config.server.ip={}",
-            SUWAYOMI_HOST
+            "-Dsuwayomi.tachidesk.config.server.ip={SUWAYOMI_HOST}"
         ))
         .arg(format!(
-            "-Dsuwayomi.tachidesk.config.server.port={}",
-            SUWAYOMI_PORT
+            "-Dsuwayomi.tachidesk.config.server.port={SUWAYOMI_PORT}"
         ))
         .arg(format!(
             "-Dsuwayomi.tachidesk.config.server.localAnimeSourcePath={}",
@@ -1125,8 +1136,10 @@ async fn run_server(
     let aidoku_index_url = cli.aidoku_index_url.clone().unwrap_or_default();
     let aidoku_enabled = cli.aidoku_enabled;
     let aidoku_cache_path = resolve_path_option(cli.aidoku_cache_path.as_ref(), data_dir, "aidoku");
-    let local_manga_path = resolve_path_option(cli.local_manga_path.as_ref(), data_dir, "local-manga");
-    let local_anime_path = resolve_path_option(cli.local_anime_path.as_ref(), data_dir, "local-anime");
+    let local_manga_path =
+        resolve_path_option(cli.local_manga_path.as_ref(), data_dir, "local-manga");
+    let local_anime_path =
+        resolve_path_option(cli.local_anime_path.as_ref(), data_dir, "local-anime");
     let manatan_config = ManatanServerConfig {
         host: host.to_string(),
         port,
@@ -1189,7 +1202,7 @@ async fn run_server(
         .fallback(serve_react_app)
         .layer(cors);
 
-    let listener_addr = format!("{}:{}", host, port);
+    let listener_addr = format!("{host}:{port}");
     let listener = tokio::net::TcpListener::bind(&listener_addr)
         .await
         .map_err(|err| anyhow!("Failed to create main server socket: {err:?}"))?;
@@ -1254,17 +1267,15 @@ fn ensure_suwayomi_port_available(host: &str, port: u16) -> anyhow::Result<()> {
             Ok(())
         }
         Err(err) => Err(anyhow!(
-            "{}:{} is already in use ({err}). Stop any existing Suwayomi/Manatan process and try again.",
-            host,
-            port
+            "{host}:{port} is already in use ({err}). Stop any existing Suwayomi/Manatan process and try again."
         )),
     }
 }
 
 async fn ensure_runtime_bridge_available(base_url: &str) -> anyhow::Result<()> {
     let client = Client::new();
-    let health_url = format!("{}/runtime/v1/health", base_url);
-    let bridge_url = format!("{}/runtime/v1/bridge/manga/pages", base_url);
+    let health_url = format!("{base_url}/runtime/v1/health");
+    let bridge_url = format!("{base_url}/runtime/v1/bridge/manga/pages");
 
     for _ in 0..60 {
         if let Ok(resp) = client.get(&health_url).send().await
@@ -1284,9 +1295,7 @@ async fn ensure_runtime_bridge_available(base_url: &str) -> anyhow::Result<()> {
                         .await
                         .unwrap_or_else(|_| "[failed to read body]".to_string());
                     Err(anyhow!(
-                        "runtime bridge endpoint missing at {} (status 404, body={}). This usually means an outdated or wrong Suwayomi runtime is running.",
-                        bridge_url,
-                        body
+                        "runtime bridge endpoint missing at {bridge_url} (status 404, body={body}). This usually means an outdated or wrong Suwayomi runtime is running."
                     ))
                 }
                 Ok(_) => Ok(()),
@@ -1298,8 +1307,7 @@ async fn ensure_runtime_bridge_available(base_url: &str) -> anyhow::Result<()> {
     }
 
     Err(anyhow!(
-        "timed out waiting for runtime health endpoint {}",
-        health_url
+        "timed out waiting for runtime health endpoint {health_url}"
     ))
 }
 
@@ -1492,10 +1500,10 @@ fn check_for_updates(status: Arc<Mutex<UpdateStatus>>) {
 fn perform_update() -> Result<(), Box<dyn std::error::Error>> {
     let target_str = get_asset_target_string();
 
-    if let Ok(updater) = build_updater_with_download(REPO_NAME, target_str) {
-        if updater.update().is_ok() {
-            return Ok(());
-        }
+    if let Ok(updater) = build_updater_with_download(REPO_NAME, target_str)
+        && updater.update().is_ok()
+    {
+        return Ok(());
     }
 
     build_updater_with_download(LEGACY_REPO_NAME, target_str)?.update()?;

@@ -1,4 +1,7 @@
-use std::sync::atomic::Ordering;
+use std::{
+    collections::HashMap,
+    sync::{Arc, Mutex, atomic::Ordering},
+};
 
 use axum::{
     Json,
@@ -7,8 +10,6 @@ use axum::{
 };
 use futures::StreamExt;
 use serde::Deserialize;
-use std::collections::HashMap;
-use std::sync::{Arc, Mutex};
 use tracing::{info, warn};
 
 use crate::{
@@ -34,7 +35,6 @@ pub struct OcrRequest {
 fn default_context() -> String {
     "No Context".to_string()
 }
-
 
 // --- Handlers ---
 
@@ -231,7 +231,13 @@ async fn chapter_status(state: &AppState, req: JobRequest) -> Json<serde_json::V
     // This commonly happens when pages were OCR'd on-demand (per-page) rather than via
     // a preprocess job that supplies the full page list.
     if cached_count > 0 && total_expected == 0 {
-        match logic::resolve_total_pages_from_graphql(&req.base_url, req.user.clone(), req.pass.clone()).await {
+        match logic::resolve_total_pages_from_graphql(
+            &req.base_url,
+            req.user.clone(),
+            req.pass.clone(),
+        )
+        .await
+        {
             Ok(page_count) if page_count > 0 => {
                 total_expected = page_count;
                 state.set_chapter_pages(&job_key, total_expected);

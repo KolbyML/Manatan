@@ -1,4 +1,5 @@
 use axum::Router;
+
 use crate::state::SyncState;
 
 mod auth;

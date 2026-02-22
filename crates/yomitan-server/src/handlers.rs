@@ -249,7 +249,7 @@ impl DictionaryLanguage {
         }
     }
 
-    fn to_deinflect_language(&self) -> crate::deinflector::Language {
+    fn deinflect_language(self) -> crate::deinflector::Language {
         match self {
             DictionaryLanguage::Japanese => crate::deinflector::Language::Japanese,
             DictionaryLanguage::English => crate::deinflector::Language::English,
@@ -578,8 +578,7 @@ fn get_language_pod101_fetch_url(language: &str) -> Result<String, anyhow::Error
     };
     let lower = language.to_lowercase();
     Ok(format!(
-        "https://www.{}{}101.com/learningcenter/reference/dictionary_post",
-        lower, pod_or_class
+        "https://www.{lower}{pod_or_class}101.com/learningcenter/reference/dictionary_post"
     ))
 }
 
@@ -595,9 +594,9 @@ fn is_string_entirely_kana(text: &str) -> bool {
 
 fn normalize_url(url: &str, base: &str) -> String {
     if url.starts_with("//") {
-        format!("https:{}", url)
+        format!("https:{url}")
     } else if url.starts_with("/") {
-        format!("{}{}", base.trim_end_matches('/'), url)
+        format!("{}{url}", base.trim_end_matches('/'))
     } else {
         url.to_string()
     }
@@ -747,7 +746,7 @@ where
             let image_info = match page
                 .get("imageinfo")
                 .and_then(|info| info.as_array())
-                .and_then(|arr| arr.get(0))
+                .and_then(|arr| arr.first())
             {
                 Some(value) => value,
                 None => continue,
@@ -777,10 +776,9 @@ async fn fetch_lingua_libre_audio_url(
         "incategory:\"Lingua_Libre_pronunciation-{}\"",
         summary.iso639_3
     );
-    let search_string = format!("-{}.wav", term);
+    let search_string = format!("-{term}.wav");
     let search_url = format!(
-        "https://commons.wikimedia.org/w/api.php?action=query&format=json&list=search&srsearch=intitle:/{}/i+{}&srnamespace=6&origin=*",
-        search_string, search_category
+        "https://commons.wikimedia.org/w/api.php?action=query&format=json&list=search&srsearch=intitle:/{search_string}/i+{search_category}&srnamespace=6&origin=*"
     );
     let urls = fetch_wikimedia_audio_urls(client, &search_url, |filename, file_user| {
         let pattern = format!(
@@ -802,10 +800,9 @@ async fn fetch_wiktionary_audio_url(
     term: &str,
     summary: &AudioLanguageSummary,
 ) -> Result<Option<String>, anyhow::Error> {
-    let search_string = format!("{}(-[a-zA-Z]{{2}})?-{}[0123456789]*.ogg", summary.iso, term);
+    let search_string = format!("{}(-[a-zA-Z]{{2}})?-{term}[0123456789]*.ogg", summary.iso);
     let search_url = format!(
-        "https://commons.wikimedia.org/w/api.php?action=query&format=json&list=search&srsearch=intitle:/{}/i&srnamespace=6&origin=*",
-        search_string
+        "https://commons.wikimedia.org/w/api.php?action=query&format=json&list=search&srsearch=intitle:/{search_string}/i&srnamespace=6&origin=*"
     );
     let urls = fetch_wikimedia_audio_urls(client, &search_url, |filename, _file_user| {
         let pattern = format!(
@@ -899,23 +896,24 @@ async fn fetch_jisho_audio_url(
 
     let term_key = term.trim();
     let reading_key = reading.trim();
-    let mut resolved: Option<(String, String)> = None;
-    if !reading_key.is_empty() {
-        let suffix = format!(":{}", reading_key);
-        resolved = candidates
+    let mut resolved: Option<(String, String)> = if !reading_key.is_empty() {
+        let suffix = format!(":{reading_key}");
+        candidates
             .iter()
             .find(|(id, _)| id.ends_with(&suffix))
-            .cloned();
-    }
+            .cloned()
+    } else {
+        None
+    };
     if resolved.is_none() && !term_key.is_empty() && term_key != reading_key {
-        let suffix = format!(":{}", term_key);
+        let suffix = format!(":{term_key}");
         resolved = candidates
             .iter()
             .find(|(id, _)| id.ends_with(&suffix))
             .cloned();
     }
     if resolved.is_none() && !term_key.is_empty() {
-        let prefix = format!("audio_{}:", term_key);
+        let prefix = format!("audio_{term_key}:");
         resolved = candidates
             .iter()
             .find(|(id, _)| id.starts_with(&prefix))
@@ -980,7 +978,7 @@ pub struct LanguageRequest {
 }
 
 pub fn load_preferred_language(app_state: &AppState) -> Option<DictionaryLanguage> {
-    let mut conn = app_state.pool.get().ok()?;
+    let conn = app_state.pool.get().ok()?;
     let mut stmt = conn
         .prepare("SELECT value FROM metadata WHERE key = ?")
         .ok()?;
@@ -991,7 +989,7 @@ pub fn load_preferred_language(app_state: &AppState) -> Option<DictionaryLanguag
 }
 
 fn store_preferred_language(app_state: &AppState, language: DictionaryLanguage) {
-    if let Ok(mut conn) = app_state.pool.get() {
+    if let Ok(conn) = app_state.pool.get() {
         let _ = conn.execute(
             "INSERT OR REPLACE INTO metadata (key, value) VALUES ('preferred_language', ?)",
             [language.as_str()],
@@ -1152,9 +1150,8 @@ async fn download_dictionary_bytes(language: DictionaryLanguage) -> Result<Vec<u
 
     if !response.status().is_success() {
         return Err(format!(
-            "Dictionary download failed ({}): {}",
-            response.status(),
-            url
+            "Dictionary download failed ({}): {url}",
+            response.status()
         ));
     }
 
@@ -1162,8 +1159,7 @@ async fn download_dictionary_bytes(language: DictionaryLanguage) -> Result<Vec<u
         && content_length > MAX_DOWNLOAD_BYTES
     {
         return Err(format!(
-            "Dictionary archive is too large ({} bytes, max {}).",
-            content_length, MAX_DOWNLOAD_BYTES
+            "Dictionary archive is too large ({content_length} bytes, max {MAX_DOWNLOAD_BYTES})."
         ));
     }
 
@@ -1174,8 +1170,8 @@ async fn download_dictionary_bytes(language: DictionaryLanguage) -> Result<Vec<u
 
     if bytes.len() as u64 > MAX_DOWNLOAD_BYTES {
         return Err(format!(
-            "Dictionary archive is too large ({} bytes, max {}).",
-            bytes.len(), MAX_DOWNLOAD_BYTES
+            "Dictionary archive is too large ({} bytes, max {MAX_DOWNLOAD_BYTES}).",
+            bytes.len()
         ));
     }
 
@@ -1230,7 +1226,7 @@ pub async fn manage_dictionaries_handler(
 ) -> Json<Value> {
     let app_state = state.app.clone();
 
-    let res = tokio::task::spawn_blocking(move || -> Result<(), String> {
+    let res = match tokio::task::spawn_blocking(move || -> Result<(), String> {
         let mut conn = app_state.pool.get().map_err(|e| e.to_string())?;
         let mut should_vacuum = false;
 
@@ -1297,7 +1293,10 @@ pub async fn manage_dictionaries_handler(
         Ok(())
     })
     .await
-    .unwrap();
+    {
+        Ok(result) => result,
+        Err(err) => Err(err.to_string()),
+    };
 
     match res {
         Ok(_) => Json(json!({ "status": "ok" })),
@@ -1314,7 +1313,7 @@ pub async fn unload_handler(State(state): State<ServerState>) -> Json<Value> {
 
     // 2. FORCE SYSTEM ALLOCATOR PURGE (Physical Free)
     // We tell iOS: "We just freed a ton of memory. Please release the cached pages to the OS now."
-    #[cfg(any(target_os = "ios"))]
+    #[cfg(target_os = "ios")]
     unsafe {
         info!("🧹 [Memory] Triggering iOS malloc_zone_pressure_relief...");
         let zone = malloc_default_zone();
@@ -1440,6 +1439,7 @@ pub async fn reset_db_handler(
     }
 }
 
+#[allow(clippy::useless_let_if_seq)]
 pub async fn lookup_handler(
     State(state): State<ServerState>,
     Query(params): Query<LookupParams>,
@@ -1463,12 +1463,15 @@ pub async fn lookup_handler(
         &state.app,
         &params.text,
         cursor_idx,
-        language.to_deinflect_language(),
+        language.deinflect_language(),
     );
 
     let dict_meta: std::collections::HashMap<DictionaryId, (String, Option<String>)> = {
         let dicts = state.app.dictionaries.read().expect("lock");
-        dicts.iter().map(|(k, v)| (*k, (v.name.clone(), v.styles.clone()))).collect()
+        dicts
+            .iter()
+            .map(|(k, v)| (*k, (v.name.clone(), v.styles.clone())))
+            .collect()
     };
 
     struct Aggregator {
@@ -1535,17 +1538,16 @@ pub async fn lookup_handler(
 
         if is_freq {
             let mut val_str = "Unknown".to_string();
-            if let Some(arr) = content_val.as_array() {
-                if let Some(first) = arr.get(0) {
-                    let raw = first.as_str().unwrap_or("");
-                    val_str = raw.replace("Frequency: ", "").trim().to_string();
-                    if raw.is_empty() {
-                        if let Some(obj) = first.get("content") {
-                            if let Some(s) = obj.as_str() {
-                                val_str = s.replace("Frequency: ", "").trim().to_string();
-                            }
-                        }
-                    }
+            if let Some(arr) = content_val.as_array()
+                && let Some(first) = arr.first()
+            {
+                let raw = first.as_str().unwrap_or("");
+                val_str = raw.replace("Frequency: ", "").trim().to_string();
+                if raw.is_empty()
+                    && let Some(obj) = first.get("content")
+                    && let Some(s) = obj.as_str()
+                {
+                    val_str = s.replace("Frequency: ", "").trim().to_string();
                 }
             }
 
@@ -1564,54 +1566,60 @@ pub async fn lookup_handler(
             let mut pitch_reading = reading.clone();
             let mut pitches: Vec<ApiPitchInfo> = vec![];
 
-            if let Some(arr) = content_val.as_array() {
-                if let Some(first) = arr.get(0) {
-                    if let Some(s) = first.as_str() {
-                        if let Ok(pitch_data) = serde_json::from_str::<Value>(s.strip_prefix("Pitch:").unwrap_or("{}")) {
-                            pitch_reading = pitch_data
-                                .get("reading")
-                                .and_then(|v| v.as_str())
-                                .unwrap_or(&reading)
-                                .to_string();
+            if let Some(arr) = content_val.as_array()
+                && let Some(first) = arr.first()
+                && let Some(s) = first.as_str()
+                && let Ok(pitch_data) =
+                    serde_json::from_str::<Value>(s.strip_prefix("Pitch:").unwrap_or("{}"))
+            {
+                pitch_reading = pitch_data
+                    .get("reading")
+                    .and_then(|v| v.as_str())
+                    .unwrap_or(&reading)
+                    .to_string();
 
-                            pitches = pitch_data
-                                .get("pitches")
-                                .and_then(|v| v.as_array())
-                                .map(|arr| {
-                                    arr.iter()
-                                        .filter_map(|p| {
-                                            let pos_val = p.get("position")?;
-                                            let (position, pattern) = if let Some(n) = pos_val.as_i64() {
-                                                (n, String::new())
-                                            } else if let Some(s) = pos_val.as_str() {
-                                                (-1, s.to_string())
-                                            } else {
-                                                return None;
-                                            };
+                pitches = pitch_data
+                    .get("pitches")
+                    .and_then(|v| v.as_array())
+                    .map(|arr| {
+                        arr.iter()
+                            .filter_map(|p| {
+                                let pos_val = p.get("position")?;
+                                let (position, pattern) = if let Some(n) = pos_val.as_i64() {
+                                    (n, String::new())
+                                } else if let Some(s) = pos_val.as_str() {
+                                    (-1, s.to_string())
+                                } else {
+                                    return None;
+                                };
 
-                                            Some(ApiPitchInfo {
-                                                position,
-                                                pattern,
-                                                nasal: p.get("nasal")
-                                                    .and_then(|v| v.as_array())
-                                                    .map(|a| a.iter().filter_map(|n| n.as_i64()).collect())
-                                                    .unwrap_or_default(),
-                                                devoice: p.get("devoice")
-                                                    .and_then(|v| v.as_array())
-                                                    .map(|a| a.iter().filter_map(|n| n.as_i64()).collect())
-                                                    .unwrap_or_default(),
-                                                tags: p.get("tags")
-                                                    .and_then(|v| v.as_array())
-                                                    .map(|a| a.iter().filter_map(|s| s.as_str().map(String::from)).collect())
-                                                    .unwrap_or_default(),
-                                            })
+                                Some(ApiPitchInfo {
+                                    position,
+                                    pattern,
+                                    nasal: p
+                                        .get("nasal")
+                                        .and_then(|v| v.as_array())
+                                        .map(|a| a.iter().filter_map(|n| n.as_i64()).collect())
+                                        .unwrap_or_default(),
+                                    devoice: p
+                                        .get("devoice")
+                                        .and_then(|v| v.as_array())
+                                        .map(|a| a.iter().filter_map(|n| n.as_i64()).collect())
+                                        .unwrap_or_default(),
+                                    tags: p
+                                        .get("tags")
+                                        .and_then(|v| v.as_array())
+                                        .map(|a| {
+                                            a.iter()
+                                                .filter_map(|s| s.as_str().map(String::from))
+                                                .collect()
                                         })
-                                        .collect()
+                                        .unwrap_or_default(),
                                 })
-                                .unwrap_or_default();
-                        }
-                    }
-                }
+                            })
+                            .collect()
+                    })
+                    .unwrap_or_default();
             }
 
             if !pitches.is_empty() {
@@ -1631,37 +1639,41 @@ pub async fn lookup_handler(
             let mut ipa_reading = reading.clone();
             let mut transcriptions: Vec<ApiIpaInfo> = vec![];
 
-            if let Some(arr) = content_val.as_array() {
-                if let Some(first) = arr.get(0) {
-                    if let Some(s) = first.as_str() {
-                        if let Ok(ipa_data) = serde_json::from_str::<Value>(s.strip_prefix("IPA:").unwrap_or("{}")) {
-                            ipa_reading = ipa_data
-                                .get("reading")
-                                .and_then(|v| v.as_str())
-                                .unwrap_or(&reading)
-                                .to_string();
+            if let Some(arr) = content_val.as_array()
+                && let Some(first) = arr.first()
+                && let Some(s) = first.as_str()
+                && let Ok(ipa_data) =
+                    serde_json::from_str::<Value>(s.strip_prefix("IPA:").unwrap_or("{}"))
+            {
+                ipa_reading = ipa_data
+                    .get("reading")
+                    .and_then(|v| v.as_str())
+                    .unwrap_or(&reading)
+                    .to_string();
 
-                            transcriptions = ipa_data
-                                .get("transcriptions")
-                                .and_then(|v| v.as_array())
-                                .map(|arr| {
-                                    arr.iter()
-                                        .filter_map(|t| {
-                                            let ipa = t.get("ipa")?.as_str()?.to_string();
-                                            Some(ApiIpaInfo {
-                                                ipa,
-                                                tags: t.get("tags")
-                                                    .and_then(|v| v.as_array())
-                                                    .map(|a| a.iter().filter_map(|s| s.as_str().map(String::from)).collect())
-                                                    .unwrap_or_default(),
-                                            })
+                transcriptions = ipa_data
+                    .get("transcriptions")
+                    .and_then(|v| v.as_array())
+                    .map(|arr| {
+                        arr.iter()
+                            .filter_map(|t| {
+                                let ipa = t.get("ipa")?.as_str()?.to_string();
+                                Some(ApiIpaInfo {
+                                    ipa,
+                                    tags: t
+                                        .get("tags")
+                                        .and_then(|v| v.as_array())
+                                        .map(|a| {
+                                            a.iter()
+                                                .filter_map(|s| s.as_str().map(String::from))
+                                                .collect()
                                         })
-                                        .collect()
+                                        .unwrap_or_default(),
                                 })
-                                .unwrap_or_default();
-                        }
-                    }
-                }
+                            })
+                            .collect()
+                    })
+                    .unwrap_or_default();
             }
 
             if !transcriptions.is_empty() {
@@ -1680,100 +1692,153 @@ pub async fn lookup_handler(
             // Parse Kanji JSON - store in kanji_map for later aggregation
             // Also create/update Aggregator entry so kanji-only results are returned
             let kanji_key = headword.clone();
-            if let Some(arr) = content_val.as_array() {
-                if let Some(first) = arr.get(0) {
-                    if let Some(s) = first.as_str() {
-                        if let Ok(kanji_data) = serde_json::from_str::<Value>(s.strip_prefix("Kanji:").unwrap_or("{}")) {
-                            let onyomi: Vec<String> = kanji_data
+            if let Some(arr) = content_val.as_array()
+                && let Some(first) = arr.first()
+                && let Some(s) = first.as_str()
+                && let Ok(kanji_data) =
+                    serde_json::from_str::<Value>(s.strip_prefix("Kanji:").unwrap_or("{}"))
+            {
+                let onyomi: Vec<String> = kanji_data
+                    .get("onyomi")
+                    .and_then(|v| v.as_str())
+                    .map(|s| s.split_whitespace().map(String::from).collect())
+                    .unwrap_or_default();
+                let kunyomi: Vec<String> = kanji_data
+                    .get("kunyomi")
+                    .and_then(|v| v.as_str())
+                    .map(|s| s.split_whitespace().map(String::from).collect())
+                    .unwrap_or_default();
+                let tags: Vec<String> = kanji_data
+                    .get("tags")
+                    .and_then(|v| v.as_str())
+                    .map(|s| s.split_whitespace().map(String::from).collect())
+                    .unwrap_or_default();
+                let meanings: Vec<String> = kanji_data
+                    .get("meanings")
+                    .and_then(|v| v.as_array())
+                    .map(|arr| {
+                        arr.iter()
+                            .filter_map(|v| v.as_str())
+                            .map(String::from)
+                            .collect()
+                    })
+                    .unwrap_or_default();
+                let stats = kanji_data
+                    .get("stats")
+                    .and_then(|v| v.as_object())
+                    .map(|o| {
+                        o.iter()
+                            .map(|(k, v)| (k.clone(), v.as_str().unwrap_or("").to_string()))
+                            .collect()
+                    })
+                    .unwrap_or_default();
+
+                let kanji_entry = ApiKanjiResult {
+                    character: headword.clone(),
+                    onyomi,
+                    kunyomi,
+                    tags,
+                    meanings,
+                    stats,
+                    frequencies: vec![],
+                };
+
+                // Add to kanji_map
+                kanji_map
+                    .entry(kanji_key.clone())
+                    .or_default()
+                    .push(kanji_entry);
+
+                // Also create/update Aggregator entry so kanji-only results are
+                // returned
+                if should_group {
+                    if let Some(_existing) = map
+                        .iter_mut()
+                        .find(|agg| agg.headword == headword && agg.reading == reading)
+                    {
+                        // Entry exists, kanji will be attached later
+                    } else {
+                        // Create new Aggregator for kanji-only entry
+                        map.push(Aggregator {
+                            headword: headword.clone(),
+                            reading: reading.clone(),
+                            furigana: vec![],
+                            glossary: vec![],
+                            frequencies: vec![],
+                            pitch_accents: vec![],
+                            ipa: vec![],
+                            kanji: vec![],
+                            term_tags: entry.1.unwrap_or_default(),
+                            forms_set: vec![],
+                            match_len,
+                            dict_ids: vec![entry.0.source],
+                        });
+                    }
+                } else {
+                    // For non-grouped results, also create flat result with kanji
+                    flat_results.push(ApiGroupedResult {
+                        headword: headword.clone(),
+                        reading: reading.clone(),
+                        furigana: vec![],
+                        glossary: vec![],
+                        frequencies: vec![],
+                        pitch_accents: vec![],
+                        ipa: vec![],
+                        kanji: vec![ApiKanjiResult {
+                            character: headword.clone(),
+                            onyomi: kanji_data
                                 .get("onyomi")
                                 .and_then(|v| v.as_str())
                                 .map(|s| s.split_whitespace().map(String::from).collect())
-                                .unwrap_or_default();
-                            let kunyomi: Vec<String> = kanji_data
+                                .unwrap_or_default(),
+                            kunyomi: kanji_data
                                 .get("kunyomi")
                                 .and_then(|v| v.as_str())
                                 .map(|s| s.split_whitespace().map(String::from).collect())
-                                .unwrap_or_default();
-                            let tags: Vec<String> = kanji_data
+                                .unwrap_or_default(),
+                            tags: kanji_data
                                 .get("tags")
                                 .and_then(|v| v.as_str())
                                 .map(|s| s.split_whitespace().map(String::from).collect())
-                                .unwrap_or_default();
-                            let meanings: Vec<String> = kanji_data
+                                .unwrap_or_default(),
+                            meanings: kanji_data
                                 .get("meanings")
                                 .and_then(|v| v.as_array())
-                                .map(|arr| arr.iter().filter_map(|v| v.as_str()).map(String::from).collect())
-                                .unwrap_or_default();
-                            let stats = kanji_data
+                                .map(|arr| {
+                                    arr.iter()
+                                        .filter_map(|v| v.as_str())
+                                        .map(String::from)
+                                        .collect()
+                                })
+                                .unwrap_or_default(),
+                            stats: kanji_data
                                 .get("stats")
                                 .and_then(|v| v.as_object())
-                                .map(|o| o.iter().map(|(k, v)| (k.clone(), v.as_str().unwrap_or("").to_string())).collect())
-                                .unwrap_or_default();
-
-                            let kanji_entry = ApiKanjiResult {
-                                character: headword.clone(),
-                                onyomi,
-                                kunyomi,
-                                tags,
-                                meanings,
-                                stats,
-                                frequencies: vec![],
-                            };
-
-                            // Add to kanji_map
-                            kanji_map
-                                .entry(kanji_key.clone())
-                                .or_default()
-                                .push(kanji_entry);
-
-                            // Also create/update Aggregator entry so kanji-only results are returned
-                            if should_group {
-                                if let Some(existing) = map.iter_mut().find(|agg| agg.headword == headword && agg.reading == reading) {
-                                    // Entry exists, kanji will be attached later
-                                } else {
-                                    // Create new Aggregator for kanji-only entry
-                                    map.push(Aggregator {
-                                        headword: headword.clone(),
-                                        reading: reading.clone(),
-                                        furigana: vec![],
-                                        glossary: vec![],
-                                        frequencies: vec![],
-                                        pitch_accents: vec![],
-                                        ipa: vec![],
-                                        kanji: vec![],
-                                        term_tags: entry.1.unwrap_or_default(),
-                                        forms_set: vec![],
-                                        match_len,
-                                        dict_ids: vec![entry.0.source],
-                                    });
-                                }
-                            } else {
-                                // For non-grouped results, also create flat result with kanji
-                                flat_results.push(ApiGroupedResult {
-                                    headword: headword.clone(),
-                                    reading: reading.clone(),
-                                    furigana: vec![],
-                                    glossary: vec![],
-                                    frequencies: vec![],
-                                    pitch_accents: vec![],
-                                    ipa: vec![],
-                                    kanji: vec![ApiKanjiResult {
-                                        character: headword.clone(),
-                                        onyomi: kanji_data.get("onyomi").and_then(|v| v.as_str()).map(|s| s.split_whitespace().map(String::from).collect()).unwrap_or_default(),
-                                        kunyomi: kanji_data.get("kunyomi").and_then(|v| v.as_str()).map(|s| s.split_whitespace().map(String::from).collect()).unwrap_or_default(),
-                                        tags: kanji_data.get("tags").and_then(|v| v.as_str()).map(|s| s.split_whitespace().map(String::from).collect()).unwrap_or_default(),
-                                        meanings: kanji_data.get("meanings").and_then(|v| v.as_array()).map(|arr| arr.iter().filter_map(|v| v.as_str()).map(String::from).collect()).unwrap_or_default(),
-                                        stats: kanji_data.get("stats").and_then(|v| v.as_object()).map(|o| o.iter().map(|(k, v)| (k.clone(), v.as_str().unwrap_or("").to_string())).collect()).unwrap_or_default(),
-                                        frequencies: vec![],
-                                    }],
-                                    term_tags: entry.1.unwrap_or_default(),
-                                    forms: vec![],
-                                    match_len,
-                                    styles: Some(std::iter::once((dict_name.clone(), dict_meta.get(&entry.0.source).and_then(|(_, s)| s.clone()).unwrap_or_default())).filter(|(_, s)| !s.is_empty()).collect()),
-                                });
-                            }
-                        }
-                    }
+                                .map(|o| {
+                                    o.iter()
+                                        .map(|(k, v)| {
+                                            (k.clone(), v.as_str().unwrap_or("").to_string())
+                                        })
+                                        .collect()
+                                })
+                                .unwrap_or_default(),
+                            frequencies: vec![],
+                        }],
+                        term_tags: entry.1.unwrap_or_default(),
+                        forms: vec![],
+                        match_len,
+                        styles: Some(
+                            std::iter::once((
+                                dict_name.clone(),
+                                dict_meta
+                                    .get(&entry.0.source)
+                                    .and_then(|(_, s)| s.clone())
+                                    .unwrap_or_default(),
+                            ))
+                            .filter(|(_, s)| !s.is_empty())
+                            .collect(),
+                        ),
+                    });
                 }
             }
         } else {
@@ -1790,8 +1855,7 @@ pub async fn lookup_handler(
                     .find(|agg| agg.headword == headword && agg.reading == reading)
                 {
                     let is_dup = existing.glossary.iter().any(|d| {
-                        d.dictionary_name == def_obj.dictionary_name
-                            && d.content.to_string() == def_obj.content.to_string()
+                        d.dictionary_name == def_obj.dictionary_name && d.content == def_obj.content
                     });
                     if !is_dup {
                         existing.glossary.push(def_obj);
@@ -1829,7 +1893,17 @@ pub async fn lookup_handler(
                         reading: reading.clone(),
                     }],
                     match_len,
-                    styles: Some(std::iter::once((dict_name.clone(), dict_meta.get(&entry.0.source).and_then(|(_, s)| s.clone()).unwrap_or_default())).filter(|(_, s)| !s.is_empty()).collect()),
+                    styles: Some(
+                        std::iter::once((
+                            dict_name.clone(),
+                            dict_meta
+                                .get(&entry.0.source)
+                                .and_then(|(_, s)| s.clone())
+                                .unwrap_or_default(),
+                        ))
+                        .filter(|(_, s)| !s.is_empty())
+                        .collect(),
+                    ),
                 });
             }
         }
@@ -1965,11 +2039,14 @@ pub async fn import_handler(
                         Ok(data) => {
                             info!("📥 [Import API] Received upload ({} bytes)", data.len());
                             let app_state = state.app.clone();
-                            let res = tokio::task::spawn_blocking(move || {
+                            let res = match tokio::task::spawn_blocking(move || {
                                 import::import_zip(&app_state, &data)
                             })
                             .await
-                            .unwrap();
+                            {
+                                Ok(result) => result,
+                                Err(err) => Err(anyhow::anyhow!(err.to_string())),
+                            };
                             return match res {
                                 Ok(msg) => {
                                     info!("✅ {}", msg);
@@ -2005,36 +2082,46 @@ pub async fn dict_media_handler(
     Path((dict_name, file_path)): Path<(String, String)>,
     State(state): State<ServerState>,
 ) -> impl IntoResponse {
-    let media_dir = state.app.data_dir.join("dict_media").join(&dict_name).join(&file_path);
-    
+    let media_dir = state
+        .app
+        .data_dir
+        .join("dict_media")
+        .join(&dict_name)
+        .join(&file_path);
+
     // Path traversal protection
     let media_dir = match media_dir.canonicalize() {
         Ok(p) => p,
         Err(_) => return (StatusCode::NOT_FOUND, "Not found").into_response(),
     };
-    
-    let base_dir = state.app.data_dir.join("dict_media").join(&dict_name).canonicalize().ok();
+
+    let base_dir = state
+        .app
+        .data_dir
+        .join("dict_media")
+        .join(&dict_name)
+        .canonicalize()
+        .ok();
     if !base_dir.map(|b| media_dir.starts_with(b)).unwrap_or(false) {
         return (StatusCode::FORBIDDEN, "Forbidden").into_response();
     }
-    
+
     match tokio::fs::read(&media_dir).await {
         Ok(data) => {
             let mime = mime_guess::from_path(&media_dir)
                 .first_or_octet_stream()
                 .as_ref()
                 .to_string();
-            
+
             let mut headers = HeaderMap::new();
-            headers.insert(
-                axum::http::header::CONTENT_TYPE,
-                mime.parse().unwrap(),
-            );
+            if let Ok(content_type) = mime.parse() {
+                headers.insert(axum::http::header::CONTENT_TYPE, content_type);
+            }
             headers.insert(
                 axum::http::header::CACHE_CONTROL,
-                "public, max-age=31536000".parse().unwrap(),
+                axum::http::HeaderValue::from_static("public, max-age=31536000"),
             );
-            
+
             (headers, data).into_response()
         }
         Err(_) => (StatusCode::NOT_FOUND, "Not found").into_response(),

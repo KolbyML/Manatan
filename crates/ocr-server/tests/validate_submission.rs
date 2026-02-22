@@ -1,6 +1,11 @@
+#![allow(clippy::collapsible_if, clippy::uninlined_format_args)]
+
 use std::{collections::HashMap, fs, path::Path};
 
-use manatan_ocr_server::logic::{self, RawChunk};
+use manatan_ocr_server::{
+    language::OcrLanguage,
+    logic::{self, RawChunk},
+};
 use serde_json::Value;
 use walkdir::WalkDir;
 
@@ -98,7 +103,7 @@ async fn validate_expected_is_subset_of_raw() {
                 } else {
                     println!("   -> Generating raw data from image...");
                     let image_bytes = fs::read(path).expect("Failed to read image");
-                    logic::get_raw_ocr_data(&image_bytes, None, None)
+                    logic::get_raw_ocr_data(&image_bytes, None, None, OcrLanguage::default())
                         .await
                         .expect("Failed to perform OCR extraction")
                 };

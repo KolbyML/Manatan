@@ -70,6 +70,12 @@ pub struct Deinflector {
     transformers: HashMap<Language, LanguageTransformer>,
 }
 
+impl Default for Deinflector {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl Deinflector {
     pub fn new() -> Self {
         let mut transformers = HashMap::new();

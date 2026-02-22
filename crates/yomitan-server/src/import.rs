@@ -1,10 +1,4 @@
-use std::{
-    collections::HashSet,
-    fmt,
-    fs,
-    io::Read,
-    marker::PhantomData,
-};
+use std::{collections::HashSet, fmt, fs, io::Read, marker::PhantomData};
 
 use anyhow::{Result, anyhow};
 use serde::de::{DeserializeOwned, DeserializeSeed, SeqAccess, Visitor};
@@ -35,22 +29,17 @@ fn read_limited_string<R: Read>(reader: R, byte_limit: u64, label: &str) -> Resu
     limited_reader.read_to_end(&mut buf)?;
 
     if (buf.len() as u64) > byte_limit {
-        return Err(anyhow!(
-            "{} exceeds size limit ({} bytes)",
-            label,
-            byte_limit
-        ));
+        return Err(anyhow!("{label} exceeds size limit ({byte_limit} bytes)"));
     }
 
-    String::from_utf8(buf).map_err(|err| anyhow!("{} is not valid UTF-8: {}", label, err))
+    String::from_utf8(buf).map_err(|err| anyhow!("{label} is not valid UTF-8: {err}"))
 }
 
 fn validate_zip_archive<R: Read + std::io::Seek>(zip: &mut ZipArchive<R>) -> Result<()> {
     if zip.len() > MAX_ZIP_ENTRY_COUNT {
         return Err(anyhow!(
-            "Archive contains too many entries ({}, max {}).",
-            zip.len(),
-            MAX_ZIP_ENTRY_COUNT
+            "Archive contains too many entries ({}, max {MAX_ZIP_ENTRY_COUNT}).",
+            zip.len()
         ));
     }
 
@@ -67,17 +56,14 @@ fn validate_zip_archive<R: Read + std::io::Seek>(zip: &mut ZipArchive<R>) -> Res
         total_uncompressed = total_uncompressed.saturating_add(size);
         if total_uncompressed > MAX_TOTAL_UNCOMPRESSED_BYTES {
             return Err(anyhow!(
-                "Archive uncompressed size exceeds limit ({} bytes).",
-                MAX_TOTAL_UNCOMPRESSED_BYTES
+                "Archive uncompressed size exceeds limit ({MAX_TOTAL_UNCOMPRESSED_BYTES} bytes)."
             ));
         }
 
         if file.name().ends_with(".json") && size > MAX_JSON_ENTRY_BYTES {
             return Err(anyhow!(
-                "JSON entry '{}' is too large ({} bytes, max {}).",
-                file.name(),
-                size,
-                MAX_JSON_ENTRY_BYTES
+                "JSON entry '{}' is too large ({size} bytes, max {MAX_JSON_ENTRY_BYTES}).",
+                file.name()
             ));
         }
 
@@ -85,9 +71,8 @@ fn validate_zip_archive<R: Read + std::io::Seek>(zip: &mut ZipArchive<R>) -> Res
             let ratio = size / compressed_size;
             if ratio > MAX_COMPRESSION_RATIO {
                 return Err(anyhow!(
-                    "Archive entry '{}' looks suspicious (compression ratio {}).",
-                    file.name(),
-                    ratio
+                    "Archive entry '{}' looks suspicious (compression ratio {ratio}).",
+                    file.name()
                 ));
             }
         }
@@ -96,12 +81,18 @@ fn validate_zip_archive<R: Read + std::io::Seek>(zip: &mut ZipArchive<R>) -> Res
     Ok(())
 }
 
-fn open_zip_file_safe<'a, R: std::io::Read + std::io::Seek>(zip: &'a mut ZipArchive<R>, name: &str) -> Option<zip::read::ZipFile<'a, R>> {
+fn open_zip_file_safe<'a, R: std::io::Read + std::io::Seek>(
+    zip: &'a mut ZipArchive<R>,
+    name: &str,
+) -> Option<zip::read::ZipFile<'a, R>> {
     match zip.by_name(name) {
         Ok(f) => Some(f),
         Err(e) => {
-            let error_str = format!("{:?}", e);
-            if error_str.contains("checksum") || error_str.contains("CRC") || error_str.contains("InvalidArchive") {
+            let error_str = format!("{e:?}");
+            if error_str.contains("checksum")
+                || error_str.contains("CRC")
+                || error_str.contains("InvalidArchive")
+            {
                 tracing::warn!("File has checksum error, skipping: {}", name);
             }
             None
@@ -113,8 +104,7 @@ fn bump_term_count(terms_found: &mut usize) -> Result<()> {
     *terms_found += 1;
     if *terms_found > MAX_TERMS_INSERTED {
         return Err(anyhow!(
-            "Dictionary exceeds safe import limit ({} records).",
-            MAX_TERMS_INSERTED
+            "Dictionary exceeds safe import limit ({MAX_TERMS_INSERTED} records)."
         ));
     }
     Ok(())
@@ -234,8 +224,12 @@ fn parse_pitch_meta(data_blob: &Value) -> (String, Option<String>) {
         "pitches": pitches
     });
 
-    let content = format!("Pitch:{}", pitch_data.to_string());
-    let reading_opt = if reading.is_empty() { None } else { Some(reading) };
+    let content = format!("Pitch:{pitch_data}");
+    let reading_opt = if reading.is_empty() {
+        None
+    } else {
+        Some(reading)
+    };
 
     (content, reading_opt)
 }
@@ -296,8 +290,12 @@ fn parse_ipa_meta(data_blob: &Value) -> (String, Option<String>) {
         "transcriptions": transcriptions
     });
 
-    let content = format!("IPA:{}", ipa_data.to_string());
-    let reading_opt = if reading.is_empty() { None } else { Some(reading) };
+    let content = format!("IPA:{ipa_data}");
+    let reading_opt = if reading.is_empty() {
+        None
+    } else {
+        Some(reading)
+    };
 
     (content, reading_opt)
 }
@@ -381,9 +379,8 @@ where
 pub fn import_zip(state: &AppState, data: &[u8]) -> Result<String> {
     if data.len() > MAX_IMPORT_ARCHIVE_BYTES {
         return Err(anyhow!(
-            "Archive is too large ({} bytes, max {}).",
-            data.len(),
-            MAX_IMPORT_ARCHIVE_BYTES
+            "Archive is too large ({} bytes, max {MAX_IMPORT_ARCHIVE_BYTES}).",
+            data.len()
         ));
     }
 
@@ -406,8 +403,7 @@ pub fn import_zip(state: &AppState, data: &[u8]) -> Result<String> {
         }
     }
 
-    let index_file_name =
-        index_file_name.ok_or_else(|| anyhow!("No index.json found in zip"))?;
+    let index_file_name = index_file_name.ok_or_else(|| anyhow!("No index.json found in zip"))?;
 
     let meta = {
         let file = zip.by_name(&index_file_name)?;
@@ -422,10 +418,8 @@ pub fn import_zip(state: &AppState, data: &[u8]) -> Result<String> {
         });
         if format_version != Some(3) {
             return Err(anyhow!(match format_version {
-                Some(found) => format!(
-                    "Unsupported dictionary format version {} (expected 3).",
-                    found
-                ),
+                Some(found) =>
+                    format!("Unsupported dictionary format version {found} (expected 3)."),
                 None => "Unsupported dictionary format: missing version (expected 3).".to_string(),
             }));
         }
@@ -446,8 +440,7 @@ pub fn import_zip(state: &AppState, data: &[u8]) -> Result<String> {
             .any(|dict| dict.name.trim().to_lowercase() == normalized_name)
         {
             return Err(anyhow!(format!(
-                "Dictionary '{}' is already imported.",
-                dict_name
+                "Dictionary '{dict_name}' is already imported."
             )));
         }
     }
@@ -497,7 +490,7 @@ pub fn import_zip(state: &AppState, data: &[u8]) -> Result<String> {
         // Extract styles.css
         if file_name == "styles.css" {
             let mut contents = String::new();
-            if let Ok(_) = file.read_to_string(&mut contents) {
+            if file.read_to_string(&mut contents).is_ok() {
                 styles_content = Some(contents);
             }
             continue;
@@ -519,10 +512,8 @@ pub fn import_zip(state: &AppState, data: &[u8]) -> Result<String> {
             let _ = fs::create_dir_all(parent);
         }
         let mut buffer = Vec::new();
-        if file.read_to_end(&mut buffer).is_ok() {
-            if fs::write(&media_path, &buffer).is_ok() {
-                info!("      Extracted media: {}", file_name);
-            }
+        if file.read_to_end(&mut buffer).is_ok() && fs::write(&media_path, &buffer).is_ok() {
+            info!("      Extracted media: {}", file_name);
         }
     }
 
@@ -634,9 +625,15 @@ pub fn import_zip(state: &AppState, data: &[u8]) -> Result<String> {
             let rows = match parse_result {
                 Ok(count) => count,
                 Err(e) => {
-                    let error_str = format!("{:?}", e);
-                    if error_str.contains("checksum") || error_str.contains("CRC") || error_str.contains("InvalidArchive") {
-                        warn!("Term bank file had checksum error but data was read successfully: {}", name);
+                    let error_str = format!("{e:?}");
+                    if error_str.contains("checksum")
+                        || error_str.contains("CRC")
+                        || error_str.contains("InvalidArchive")
+                    {
+                        warn!(
+                            "Term bank file had checksum error but data was read successfully: {}",
+                            name
+                        );
                         continue;
                     } else {
                         return Err(e);
@@ -679,21 +676,17 @@ pub fn import_zip(state: &AppState, data: &[u8]) -> Result<String> {
                             let (display_val, reading) = parse_frequency_value(&data_blob);
                             let content = if let Some(ref r) = reading {
                                 if r != term {
-                                    format!("Frequency: {} ({})", display_val, r)
+                                    format!("Frequency: {display_val} ({r})")
                                 } else {
-                                    format!("Frequency: {}", display_val)
+                                    format!("Frequency: {display_val}")
                                 }
                             } else {
-                                format!("Frequency: {}", display_val)
+                                format!("Frequency: {display_val}")
                             };
                             (content, reading)
                         }
-                        "pitch" => {
-                            parse_pitch_meta(&data_blob)
-                        }
-                        "ipa" => {
-                            parse_ipa_meta(&data_blob)
-                        }
+                        "pitch" => parse_pitch_meta(&data_blob),
+                        "ipa" => parse_ipa_meta(&data_blob),
                         _ => return Ok(()),
                     };
 
@@ -733,9 +726,15 @@ pub fn import_zip(state: &AppState, data: &[u8]) -> Result<String> {
             let rows = match parse_result {
                 Ok(count) => count,
                 Err(e) => {
-                    let error_str = format!("{:?}", e);
-                    if error_str.contains("checksum") || error_str.contains("CRC") || error_str.contains("InvalidArchive") {
-                        warn!("Metadata file had checksum error but data was read successfully: {}", name);
+                    let error_str = format!("{e:?}");
+                    if error_str.contains("checksum")
+                        || error_str.contains("CRC")
+                        || error_str.contains("InvalidArchive")
+                    {
+                        warn!(
+                            "Metadata file had checksum error but data was read successfully: {}",
+                            name
+                        );
                         continue;
                     } else {
                         return Err(e);
@@ -757,9 +756,8 @@ pub fn import_zip(state: &AppState, data: &[u8]) -> Result<String> {
                     None => return Ok(0),
                 };
 
-                let mut stmt = tx.prepare(
-                    "INSERT INTO terms (term, dictionary_id, json) VALUES (?, ?, ?)"
-                )?;
+                let mut stmt =
+                    tx.prepare("INSERT INTO terms (term, dictionary_id, json) VALUES (?, ?, ?)")?;
 
                 let rows = parse_json_array_stream::<_, Vec<Value>, _>(&mut file, |arr| {
                     if arr.len() < 6 {
@@ -774,13 +772,10 @@ pub fn import_zip(state: &AppState, data: &[u8]) -> Result<String> {
                     let onyomi = arr.get(1).and_then(|v| v.as_str()).unwrap_or("");
                     let kunyomi = arr.get(2).and_then(|v| v.as_str()).unwrap_or("");
                     let tags = arr.get(3).and_then(|v| v.as_str()).unwrap_or("");
-                    let meanings = arr.get(4)
+                    let meanings = arr
+                        .get(4)
                         .and_then(|v| v.as_array())
-                        .map(|arr| {
-                            arr.iter()
-                                .filter_map(|v| v.as_str())
-                                .collect::<Vec<_>>()
-                        })
+                        .map(|arr| arr.iter().filter_map(|v| v.as_str()).collect::<Vec<_>>())
                         .unwrap_or_default();
                     let stats = arr.get(5).and_then(|v| v.as_object());
 
@@ -791,7 +786,7 @@ pub fn import_zip(state: &AppState, data: &[u8]) -> Result<String> {
                         "meanings": meanings,
                         "stats": stats
                     });
-                    let content = format!("Kanji:{}", kanji_data.to_string());
+                    let content = format!("Kanji:{kanji_data}");
 
                     let record = Record::YomitanGlossary(Glossary {
                         popularity: 0,
@@ -822,9 +817,15 @@ pub fn import_zip(state: &AppState, data: &[u8]) -> Result<String> {
             let rows = match parse_result {
                 Ok(count) => count,
                 Err(e) => {
-                    let error_str = format!("{:?}", e);
-                    if error_str.contains("checksum") || error_str.contains("CRC") || error_str.contains("InvalidArchive") {
-                        warn!("Kanji bank file had checksum error but data was read successfully: {}", name);
+                    let error_str = format!("{e:?}");
+                    if error_str.contains("checksum")
+                        || error_str.contains("CRC")
+                        || error_str.contains("InvalidArchive")
+                    {
+                        warn!(
+                            "Kanji bank file had checksum error but data was read successfully: {}",
+                            name
+                        );
                         continue;
                     } else {
                         return Err(e);
@@ -846,9 +847,8 @@ pub fn import_zip(state: &AppState, data: &[u8]) -> Result<String> {
                     None => return Ok(0),
                 };
 
-                let mut stmt = tx.prepare(
-                    "INSERT INTO terms (term, dictionary_id, json) VALUES (?, ?, ?)"
-                )?;
+                let mut stmt =
+                    tx.prepare("INSERT INTO terms (term, dictionary_id, json) VALUES (?, ?, ?)")?;
 
                 let rows = parse_json_array_stream::<_, Vec<Value>, _>(&mut file, |arr| {
                     if arr.len() < 3 {
@@ -867,7 +867,7 @@ pub fn import_zip(state: &AppState, data: &[u8]) -> Result<String> {
 
                     let data_blob = arr.get(2).cloned().unwrap_or(Value::Null);
                     let (display_val, _) = parse_frequency_value(&data_blob);
-                    let content = format!("Frequency: {}", display_val);
+                    let content = format!("Frequency: {display_val}");
 
                     let record = Record::YomitanGlossary(Glossary {
                         popularity: 0,
@@ -898,9 +898,15 @@ pub fn import_zip(state: &AppState, data: &[u8]) -> Result<String> {
             let rows = match parse_result {
                 Ok(count) => count,
                 Err(e) => {
-                    let error_str = format!("{:?}", e);
-                    if error_str.contains("checksum") || error_str.contains("CRC") || error_str.contains("InvalidArchive") {
-                        warn!("Kanji metadata file had checksum error but data was read successfully: {}", name);
+                    let error_str = format!("{e:?}");
+                    if error_str.contains("checksum")
+                        || error_str.contains("CRC")
+                        || error_str.contains("InvalidArchive")
+                    {
+                        warn!(
+                            "Kanji metadata file had checksum error but data was read successfully: {}",
+                            name
+                        );
                         continue;
                     } else {
                         return Err(e);
@@ -920,7 +926,7 @@ pub fn import_zip(state: &AppState, data: &[u8]) -> Result<String> {
         terms_found
     );
 
-    Ok(format!("Imported '{}'", dict_name))
+    Ok(format!("Imported '{dict_name}'"))
 }
 
 #[cfg(test)]
@@ -942,10 +948,8 @@ mod tests {
             .expect("time")
             .as_nanos();
         std::env::temp_dir().join(format!(
-            "manatan-yomitan-import-test-{}-{}-{}",
-            name,
-            std::process::id(),
-            nanos
+            "manatan-yomitan-import-test-{name}-{}-{nanos}",
+            std::process::id()
         ))
     }
 
@@ -1034,7 +1038,10 @@ mod tests {
             );
 
             let err = import_zip(state, &zip).expect_err("non-v3 should fail");
-            assert!(err.to_string().contains("Unsupported dictionary format version"));
+            assert!(
+                err.to_string()
+                    .contains("Unsupported dictionary format version")
+            );
         });
     }
 

@@ -77,12 +77,8 @@ async fn get_proxy_settings(
         socks_proxy_version: raw.socks_proxy_version.unwrap_or(5),
         socks_proxy_host: raw.socks_proxy_host.unwrap_or_default(),
         socks_proxy_port: raw.socks_proxy_port.unwrap_or_default(),
-        socks_proxy_username: raw
-            .socks_proxy_username
-            .filter(|value| !value.is_empty()),
-        socks_proxy_password: raw
-            .socks_proxy_password
-            .filter(|value| !value.is_empty()),
+        socks_proxy_username: raw.socks_proxy_username.filter(|value| !value.is_empty()),
+        socks_proxy_password: raw.socks_proxy_password.filter(|value| !value.is_empty()),
     };
     Ok(Some(settings))
 }
@@ -106,9 +102,9 @@ fn derive_api_base(chapter_base_url: &str) -> String {
         let host = parsed.host_str().unwrap_or("127.0.0.1");
         let port = parsed
             .port()
-            .map(|value| format!(":{}", value))
+            .map(|value| format!(":{value}"))
             .unwrap_or_default();
-        format!("{}://{}{}", scheme, host, port)
+        format!("{scheme}://{host}{port}")
     } else {
         "http://127.0.0.1:4568".to_string()
     }
@@ -133,10 +129,7 @@ pub async fn resolve_total_pages_from_rest(
         .ok_or_else(|| anyhow!("Failed to parse chapter index from URL: {chapter_base_url}"))?;
 
     let api_base = derive_api_base(chapter_base_url);
-    let url = format!(
-        "{}/api/v1/manga/{}/chapter/{}/pages",
-        api_base, manga_id_str, chapter_index_str
-    );
+    let url = format!("{api_base}/api/v1/manga/{manga_id_str}/chapter/{chapter_index_str}/pages");
 
     let client = reqwest::Client::new();
     let mut request = client.get(url).header(ACCEPT, "application/json");
@@ -189,22 +182,22 @@ pub struct BoundingBox {
 pub fn get_cache_key(url: &str, language: Option<OcrLanguage>) -> String {
     let raw = if let Ok(parsed) = reqwest::Url::parse(url) {
         let mut path = parsed.path().to_string();
-        if let Some(query) = parsed.query() {
-            if !query.is_empty() {
-                // "sourceId" does not affect the actual image bytes for Suwayomi page URLs,
-                // but it does vary between requests. Strip it to keep cache hits stable.
-                let kept_parts: Vec<&str> = query
-                    .split('&')
-                    .filter(|part| {
-                        let key = part.split('=').next().unwrap_or("");
-                        key != "sourceId"
-                    })
-                    .collect();
+        if let Some(query) = parsed.query()
+            && !query.is_empty()
+        {
+            // "sourceId" does not affect the actual image bytes for Suwayomi page URLs,
+            // but it does vary between requests. Strip it to keep cache hits stable.
+            let kept_parts: Vec<&str> = query
+                .split('&')
+                .filter(|part| {
+                    let key = part.split('=').next().unwrap_or("");
+                    key != "sourceId"
+                })
+                .collect();
 
-                if !kept_parts.is_empty() {
-                    path.push('?');
-                    path.push_str(&kept_parts.join("&"));
-                }
+            if !kept_parts.is_empty() {
+                path.push('?');
+                path.push_str(&kept_parts.join("&"));
             }
         }
         path
@@ -217,7 +210,7 @@ pub fn get_cache_key(url: &str, language: Option<OcrLanguage>) -> String {
         if trimmed.is_empty() {
             format!("lang/{}/", language.as_str())
         } else {
-            format!("lang/{}/{}", language.as_str(), trimmed)
+            format!("lang/{}/{trimmed}", language.as_str())
         }
     } else {
         raw
@@ -377,12 +370,8 @@ pub async fn get_raw_ocr_data(
             {
                 if !username.is_empty() && !password.is_empty() {
                     format!(
-                        "socks{}://{}:{}@{}:{}",
-                        proxy.socks_proxy_version,
-                        username,
-                        password,
-                        proxy.socks_proxy_host,
-                        proxy.socks_proxy_port
+                        "socks{}://{username}:{password}@{}:{}",
+                        proxy.socks_proxy_version, proxy.socks_proxy_host, proxy.socks_proxy_port
                     )
                 } else {
                     format!(
@@ -405,7 +394,7 @@ pub async fn get_raw_ocr_data(
             );
 
             LensClient::new_with_proxy(None, Some(&proxy_url))
-                .map_err(|e| anyhow!("Failed to create LensClient with proxy: {}", e))?
+                .map_err(|e| anyhow!("Failed to create LensClient with proxy: {e}"))?
         } else {
             LensClient::new(None)
         }
@@ -560,9 +549,11 @@ async fn fetch_and_process_internal(
 
     // 3. Merge & Normalize
     let mut final_results = Vec::new();
-    let mut merge_config = MergeConfig::default();
-    merge_config.add_space_on_merge = add_space_on_merge;
-    merge_config.language = language;
+    let merge_config = MergeConfig {
+        add_space_on_merge,
+        language,
+        ..MergeConfig::default()
+    };
 
     for chunk in raw_chunks {
         let merged_lines = merge::auto_merge(chunk.lines, chunk.width, chunk.height, &merge_config);

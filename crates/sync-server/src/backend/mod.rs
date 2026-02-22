@@ -1,8 +1,8 @@
 pub mod google_drive;
 
-use crate::error::SyncError;
-use crate::types::SyncPayload;
 use async_trait::async_trait;
+
+use crate::{error::SyncError, types::SyncPayload};
 
 /// Result of a push operation
 #[derive(Debug)]

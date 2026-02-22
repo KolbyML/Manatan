@@ -5,6 +5,7 @@ use super::transformer::{
     TransformDefinition,
 };
 
+#[allow(clippy::vec_init_then_push)]
 pub fn transformer() -> LanguageTransformer {
     let mut conditions = HashMap::new();
     conditions.insert(
@@ -328,7 +329,7 @@ fn doubled_consonant_inflection(
     consonants
         .chars()
         .map(|consonant| {
-            let inflected = format!("{}{}{}", consonant, consonant, suffix);
+            let inflected = format!("{consonant}{consonant}{suffix}");
             suffix_rule(
                 &inflected,
                 &consonant.to_string(),

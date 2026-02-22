@@ -2,7 +2,9 @@ use serde::{Deserialize, Serialize};
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "lowercase")]
+#[derive(Default)]
 pub enum OcrLanguage {
+    #[default]
     Japanese,
     English,
     Chinese,
@@ -111,11 +113,5 @@ impl OcrLanguage {
 
     pub fn is_japanese(&self) -> bool {
         matches!(self, OcrLanguage::Japanese)
-    }
-}
-
-impl Default for OcrLanguage {
-    fn default() -> Self {
-        OcrLanguage::Japanese
     }
 }

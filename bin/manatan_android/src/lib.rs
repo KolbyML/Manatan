@@ -22,11 +22,6 @@ use axum::{
 };
 use eframe::egui;
 use flate2::read::GzDecoder;
-use manatan_server_public::{
-    app::build_router_without_cors,
-    build_state,
-    config::Config as ManatanServerConfig,
-};
 use jni::{
     JavaVM,
     objects::{JObject, JString, JValue},
@@ -34,6 +29,9 @@ use jni::{
     sys::{JNI_VERSION_1_6, jint, jobject},
 };
 use lazy_static::lazy_static;
+use manatan_server_public::{
+    app::build_router_without_cors, build_state, config::Config as ManatanServerConfig,
+};
 use reqwest::Client;
 use serde::{Deserialize, Serialize};
 use serde_json::json;
@@ -83,12 +81,11 @@ fn set_runtime_env_var(key: &str, value: &str) {
 }
 
 fn configure_oauth_broker_env() {
-    let broker_token = normalized_env_var("MANATAN_GOOGLE_OAUTH_BROKER_TOKEN")
-        .or_else(|| {
-            option_env!("MANATAN_GOOGLE_OAUTH_BROKER_TOKEN_COMPILED")
-                .map(|value| value.trim().to_string())
-                .filter(|value| !value.is_empty())
-        });
+    let broker_token = normalized_env_var("MANATAN_GOOGLE_OAUTH_BROKER_TOKEN").or_else(|| {
+        option_env!("MANATAN_GOOGLE_OAUTH_BROKER_TOKEN_COMPILED")
+            .map(|value| value.trim().to_string())
+            .filter(|value| !value.is_empty())
+    });
 
     let Some(broker_token) = broker_token else {
         warn!("No OAuth broker token configured for Android runtime");
@@ -406,10 +403,16 @@ fn prepare_shared_local_media_dirs(
     let shared_root = resolve_manatan_shared_root_with_migration(app);
 
     let (local_manga_dir, local_anime_dir) = if let Some(shared_root) = shared_root {
-        (shared_root.join("local-manga"), shared_root.join("local-anime"))
+        (
+            shared_root.join("local-manga"),
+            shared_root.join("local-anime"),
+        )
     } else {
         // Fallback: app data storage.
-        (fallback_base.join("local-manga"), fallback_base.join("local-anime"))
+        (
+            fallback_base.join("local-manga"),
+            fallback_base.join("local-anime"),
+        )
     };
 
     // Migrate any existing legacy directories (internal/app-external) to the shared defaults.
@@ -468,10 +471,7 @@ fn migrate_app_data_base_to_shared(src_base: &Path, dst_base: &Path) {
     let entries = match fs::read_dir(src_base) {
         Ok(e) => e,
         Err(err) => {
-            warn!(
-                "Failed to read app data dir {}: {err}",
-                src_base.display()
-            );
+            warn!("Failed to read app data dir {}: {err}", src_base.display());
             return;
         }
     };
@@ -522,7 +522,10 @@ fn migrate_app_data_base_to_shared(src_base: &Path, dst_base: &Path) {
     }
 }
 
-fn resolve_shared_app_data_dir_with_migration(app: &AndroidApp, internal_files_dir: &Path) -> PathBuf {
+fn resolve_shared_app_data_dir_with_migration(
+    app: &AndroidApp,
+    internal_files_dir: &Path,
+) -> PathBuf {
     // Desired location: shared storage root.
     let shared_root = resolve_manatan_shared_root_with_migration(app);
     let shared_app_data = shared_root.map(|root| root.join("app-data"));
@@ -598,9 +601,7 @@ fn resolve_tachidesk_data_dir_with_migration(app: &AndroidApp, fallback_base: &P
         .map(|b| b.join(TACHI_DATA_DIR_NAME));
 
     let shared_root = resolve_manatan_shared_root_with_migration(app);
-    let shared_dir = shared_root
-        .as_ref()
-        .map(|b| b.join(TACHI_DATA_DIR_NAME));
+    let shared_dir = shared_root.as_ref().map(|b| b.join(TACHI_DATA_DIR_NAME));
 
     // Preferred: shared storage root.
     if let Some(shared_dir) = shared_dir {
@@ -970,7 +971,8 @@ fn android_main(app: AndroidApp) {
     let internal_files_dir = app.internal_data_path().expect("Failed to get data path");
     let files_dir = resolve_shared_app_data_dir_with_migration(&app, &internal_files_dir);
 
-    let external_app_dir = get_external_files_dir(&app).unwrap_or_else(|| internal_files_dir.clone());
+    let external_app_dir =
+        get_external_files_dir(&app).unwrap_or_else(|| internal_files_dir.clone());
     let legacy_bases = vec![
         internal_files_dir.clone(),
         external_app_dir,
@@ -1177,11 +1179,15 @@ async fn start_web_server(
     info!("WebUI directory set to {}", webui_dir.display());
     let _ = WEBUI_DIR.set(webui_dir);
 
-    let manatan_db_path = std::env::var("MANATAN_DB_PATH")
-        .unwrap_or_else(|_| data_dir.join("manatan.sqlite").to_string_lossy().to_string());
+    let manatan_db_path = std::env::var("MANATAN_DB_PATH").unwrap_or_else(|_| {
+        data_dir
+            .join("manatan.sqlite")
+            .to_string_lossy()
+            .to_string()
+    });
     let manatan_migrate_path = std::env::var("MANATAN_MIGRATE_PATH").ok();
-    let manatan_runtime_url = std::env::var("MANATAN_JAVA_URL")
-        .unwrap_or_else(|_| "http://127.0.0.1:4566".to_string());
+    let manatan_runtime_url =
+        std::env::var("MANATAN_JAVA_URL").unwrap_or_else(|_| "http://127.0.0.1:4566".to_string());
     let tracker_remote_search = env_bool("MANATAN_TRACKER_REMOTE_SEARCH", true);
     let tracker_search_ttl_seconds = std::env::var("MANATAN_TRACKER_SEARCH_TTL_SECONDS")
         .ok()
@@ -1193,12 +1199,10 @@ async fn start_web_server(
     let aidoku_enabled = env_bool("MANATAN_AIDOKU_ENABLED", true);
     let aidoku_cache_path = std::env::var("MANATAN_AIDOKU_CACHE")
         .unwrap_or_else(|_| data_dir.join("aidoku").to_string_lossy().to_string());
-    let local_manga_path = std::env::var("MANATAN_LOCAL_MANGA_PATH").unwrap_or_else(|_| {
-        default_local_manga_dir.to_string_lossy().to_string()
-    });
-    let local_anime_path = std::env::var("MANATAN_LOCAL_ANIME_PATH").unwrap_or_else(|_| {
-        default_local_anime_dir.to_string_lossy().to_string()
-    });
+    let local_manga_path = std::env::var("MANATAN_LOCAL_MANGA_PATH")
+        .unwrap_or_else(|_| default_local_manga_dir.to_string_lossy().to_string());
+    let local_anime_path = std::env::var("MANATAN_LOCAL_ANIME_PATH")
+        .unwrap_or_else(|_| default_local_anime_dir.to_string_lossy().to_string());
     let manatan_config = ManatanServerConfig {
         host: "0.0.0.0".to_string(),
         port: 4568,
@@ -1267,11 +1271,7 @@ async fn start_web_server(
 
 async fn serve_react_app(uri: Uri) -> impl IntoResponse {
     let Some(webui_dir) = WEBUI_DIR.get() else {
-        return (
-            StatusCode::NOT_FOUND,
-            "404 - WebUI assets not configured",
-        )
-            .into_response();
+        return (StatusCode::NOT_FOUND, "404 - WebUI assets not configured").into_response();
     };
     let path_str = uri.path().trim_start_matches('/');
 
@@ -2702,17 +2702,9 @@ fn launch_native_webview_with_cookies(target_url: &str) -> Result<(), Box<dyn st
     let storage_root = get_external_storage_root_from_env(&mut env);
     let shared_manatan = storage_root.as_ref().map(|p| p.join("Manatan"));
     let shared_legacy = storage_root.as_ref().map(|p| p.join("Mangatan"));
-    let shared_base = if shared_manatan
-        .as_ref()
-        .map(|p| p.exists())
-        .unwrap_or(false)
-    {
+    let shared_base = if shared_manatan.as_ref().map(|p| p.exists()).unwrap_or(false) {
         shared_manatan
-    } else if shared_legacy
-        .as_ref()
-        .map(|p| p.exists())
-        .unwrap_or(false)
-    {
+    } else if shared_legacy.as_ref().map(|p| p.exists()).unwrap_or(false) {
         shared_legacy
     } else {
         shared_manatan
