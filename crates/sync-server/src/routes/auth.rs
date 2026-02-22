@@ -1,16 +1,17 @@
 use axum::{
+    Json, Router,
     extract::{Query, State},
     http::{HeaderMap, header::USER_AGENT},
     response::{IntoResponse, Redirect},
     routing::{get, post},
-    Json, Router,
 };
 use serde::{Deserialize, Serialize};
 
-use crate::backend::google_drive::GoogleDriveBackend;
-use crate::backend::{AuthFlow, SyncBackend};
-use crate::error::SyncError;
-use crate::state::SyncState;
+use crate::{
+    backend::{AuthFlow, SyncBackend, google_drive::GoogleDriveBackend},
+    error::SyncError,
+    state::SyncState,
+};
 
 pub fn router() -> Router<SyncState> {
     Router::new()
@@ -39,12 +40,12 @@ async fn auth_status(State(state): State<SyncState>) -> Result<impl IntoResponse
     if gdrive.is_none() {
         let access_token = state.get_access_token();
         let refresh_token = state.get_refresh_token();
-        
+
         if access_token.is_some() && refresh_token.is_some() {
             tracing::info!("[AUTH] Found existing tokens, initializing backend");
             let mut backend = GoogleDriveBackend::new(state.clone());
             // If initialization fails, we just don't set the backend
-            if let Ok(_) = backend.initialize().await {
+            if backend.initialize().await.is_ok() {
                 *gdrive = Some(backend);
             }
         }
@@ -54,7 +55,7 @@ async fn auth_status(State(state): State<SyncState>) -> Result<impl IntoResponse
     let mut did_refresh = false;
     let (connected, email) = if let Some(backend) = gdrive.as_mut() {
         let is_auth = backend.is_authenticated().await;
-        
+
         let mut user_email = if is_auth {
             backend.get_user_info().await.ok().flatten()
         } else {
@@ -64,12 +65,15 @@ async fn auth_status(State(state): State<SyncState>) -> Result<impl IntoResponse
         // 4. AUTO-REFRESH: If authenticated but email is missing, the token likely expired.
         if is_auth && user_email.is_none() {
             tracing::info!("[AUTH] Token likely expired (no email), attempting refresh...");
-            if let Ok(_) = backend.refresh_token().await {
+            if backend.refresh_token().await.is_ok() {
                 // Try to get email again with the new token
                 user_email = backend.get_user_info().await.ok().flatten();
                 if user_email.is_some() {
                     did_refresh = true;
-                    tracing::info!("[AUTH] Token refreshed successfully, email: {:?}", user_email);
+                    tracing::info!(
+                        "[AUTH] Token refreshed successfully, email: {:?}",
+                        user_email
+                    );
                 }
             }
         }
@@ -118,7 +122,7 @@ async fn google_start(
 ) -> Result<Json<AuthFlow>, SyncError> {
     // Store the redirect_uri to use in the callback (it must match exactly)
     state.set_auth_redirect_uri(&req.redirect_uri)?;
-    
+
     let backend = GoogleDriveBackend::new(state.clone());
     let auth_flow = backend.start_auth(&req.redirect_uri)?;
 
@@ -163,11 +167,15 @@ async fn google_callback(
             if is_android {
                 let target = format!(
                     "manatan://launch?url={}",
-                    urlencoding::encode(&format!("http://127.0.0.1:4568/settings/sync?error={error_message}"))
+                    urlencoding::encode(&format!(
+                        "http://127.0.0.1:4568/settings/sync?error={error_message}"
+                    ))
                 );
                 Ok(Redirect::to(&target))
             } else {
-                Ok(Redirect::to(&format!("/settings/sync?error={error_message}")))
+                Ok(Redirect::to(&format!(
+                    "/settings/sync?error={error_message}"
+                )))
             }
         }
     }
@@ -191,18 +199,19 @@ async fn google_callback_post(
     State(state): State<SyncState>,
     Json(body): Json<CallbackPostBody>,
 ) -> Result<Json<CallbackResponse>, SyncError> {
-    if let Some(received_state) = &body.state {
-        if let Some(stored_state) = state.get_auth_state() {
-            if received_state != &stored_state {
-                return Err(SyncError::OAuthError("State mismatch".to_string()));
-            }
-        }
+    if let Some(received_state) = &body.state
+        && let Some(stored_state) = state.get_auth_state()
+        && received_state != &stored_state
+    {
+        return Err(SyncError::OAuthError("State mismatch".to_string()));
     }
 
     let mut gdrive = state.google_drive.write().await;
     let backend = gdrive.get_or_insert_with(|| GoogleDriveBackend::new(state.clone()));
 
-    backend.complete_auth(&body.code, &body.redirect_uri).await?;
+    backend
+        .complete_auth(&body.code, &body.redirect_uri)
+        .await?;
 
     let mut config = state.get_sync_config();
     config.backend = crate::types::SyncBackendType::GoogleDrive;
@@ -219,16 +228,17 @@ async fn handle_callback(
     code: String,
     received_state: Option<String>,
 ) -> Result<(), SyncError> {
-    if let Some(received) = &received_state {
-        if let Some(stored) = state.get_auth_state() {
-            if received != &stored {
-                return Err(SyncError::OAuthError("State mismatch".to_string()));
-            }
-        }
+    if let Some(received) = &received_state
+        && let Some(stored) = state.get_auth_state()
+        && received != &stored
+    {
+        return Err(SyncError::OAuthError("State mismatch".to_string()));
     }
 
     let Some(redirect_uri) = state.get_auth_redirect_uri() else {
-        return Err(SyncError::OAuthError("No stored redirect_uri found".to_string()));
+        return Err(SyncError::OAuthError(
+            "No stored redirect_uri found".to_string(),
+        ));
     };
 
     let mut gdrive = state.google_drive.write().await;

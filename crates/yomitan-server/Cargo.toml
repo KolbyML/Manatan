@@ -15,24 +15,24 @@ axum.workspace = true
 base64.workspace = true 
 bytes.workspace = true 
 futures.workspace = true
+mime_guess = "2"
+r2d2 = "0.8"
+r2d2_sqlite = "0.24"
+regex = "1"
 reqwest.workspace = true 
+rusqlite = "0.31"
+scraper = "0.20"
 serde.workspace = true 
 serde_json .workspace = true 
-regex = "1"
 sha2 = "0.10"
-urlencoding = "2.1"
-scraper = "0.20"
+snap = "1.1"
+thiserror = "2.0"
 tokio.workspace = true 
 tower-http = { version = "0.5.2", features = ["cors", "fs", "limit"] }
 tracing.workspace = true 
-thiserror = "2.0"
-zip.workspace = true
+urlencoding = "2.1"
 wordbase-api = { git = "https://github.com/kolbyml/wordbase", rev = "b3a5a825b5afa05d9cd57ce18e24d988f1ab88ca" }
-rusqlite = "0.31"
-r2d2 = "0.8"
-r2d2_sqlite = "0.24"
-snap = "1.1"
-mime_guess = "2"
+zip.workspace = true
 
 [lints]
 workspace = true

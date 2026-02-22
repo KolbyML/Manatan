@@ -68,11 +68,12 @@ fn reassemble_hangul(text: &str) -> String {
             let mut consumed = 2;
             let mut jung_char = chars[i + 1];
 
-            if i + 2 < chars.len() && is_jung(chars[i + 2]) {
-                if let Some(combined) = combine_jung(jung_char, chars[i + 2]) {
-                    jung_char = combined;
-                    consumed = 3;
-                }
+            if i + 2 < chars.len()
+                && is_jung(chars[i + 2])
+                && let Some(combined) = combine_jung(jung_char, chars[i + 2])
+            {
+                jung_char = combined;
+                consumed = 3;
             }
 
             let cho_idx = get_cho_idx(c1);
@@ -87,18 +88,18 @@ fn reassemble_hangul(text: &str) -> String {
 
                     if i + consumed + 1 < chars.len() {
                         let c4 = chars[i + consumed + 1];
-                        if is_jong(c4) {
-                            if let Some(combined) = combine_jong(c3, c4) {
-                                let next_is_vowel = if i + consumed + 2 < chars.len() {
-                                    is_jung(chars[i + consumed + 2])
-                                } else {
-                                    false
-                                };
+                        if is_jong(c4)
+                            && let Some(combined) = combine_jong(c3, c4)
+                        {
+                            let next_is_vowel = if i + consumed + 2 < chars.len() {
+                                is_jung(chars[i + consumed + 2])
+                            } else {
+                                false
+                            };
 
-                                if !next_is_vowel {
-                                    jong_char = combined;
-                                    jong_consumed = 2;
-                                }
+                            if !next_is_vowel {
+                                jong_char = combined;
+                                jong_consumed = 2;
                             }
                         }
                     }

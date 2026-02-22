@@ -33,10 +33,11 @@ const MAX_DURATION_SECONDS: f64 = 30.0;
 const MAX_SEGMENTS: usize = 128;
 
 #[derive(Deserialize)]
+#[serde(rename_all = "camelCase")]
 pub struct AudioClipQuery {
-    pub animeId: i64,
-    pub episodeIndex: i64,
-    pub videoIndex: i64,
+    pub anime_id: i64,
+    pub episode_index: i64,
+    pub video_index: i64,
     pub start: f64,
     pub end: f64,
 }
@@ -92,13 +93,13 @@ pub async fn clip_handler(
     Query(query): Query<AudioClipQuery>,
 ) -> Response {
     let AudioClipQuery {
-        animeId,
-        episodeIndex,
-        videoIndex,
+        anime_id,
+        episode_index,
+        video_index,
         start,
         end,
     } = query;
-    if animeId < 0 || episodeIndex < 0 || videoIndex < 0 {
+    if anime_id < 0 || episode_index < 0 || video_index < 0 {
         return (StatusCode::BAD_REQUEST, "Invalid ids").into_response();
     }
     if !start.is_finite() || !end.is_finite() {
@@ -114,9 +115,9 @@ pub async fn clip_handler(
     let result = build_audio_clip(
         &state,
         &headers,
-        animeId,
-        episodeIndex,
-        videoIndex,
+        anime_id,
+        episode_index,
+        video_index,
         safe_start,
         duration,
     )
@@ -146,8 +147,8 @@ async fn build_audio_clip(
 ) -> anyhow::Result<Vec<u8>> {
     let target_end = start + duration;
     let playlist_url = format!(
-        "{}/api/v1/anime/{}/episode/{}/video/{}/playlist",
-        state.suwayomi_base_url, anime_id, episode_index, video_index
+        "{}/api/v1/anime/{anime_id}/episode/{episode_index}/video/{video_index}/playlist",
+        state.suwayomi_base_url
     );
     let playlist_url = Url::parse(&playlist_url).context("Invalid playlist URL")?;
     let client = Client::new();
@@ -237,18 +238,22 @@ async fn fetch_media_playlist(
 }
 
 fn select_master_variant(master: &MasterPlaylist<'static>, base_url: &Url) -> anyhow::Result<Url> {
-    if let Some(media) = master.media.iter().find(|media| {
-        media.media_type == MediaType::Audio && media.is_default && media.uri().is_some()
-    }) {
-        return resolve_url(base_url, media.uri().unwrap().as_ref());
+    if let Some(media) = master
+        .media
+        .iter()
+        .find(|media| media.media_type == MediaType::Audio && media.is_default)
+        && let Some(uri) = media.uri()
+    {
+        return resolve_url(base_url, uri.as_ref());
     }
 
     if let Some(media) = master
         .media
         .iter()
-        .find(|media| media.media_type == MediaType::Audio && media.uri().is_some())
+        .find(|media| media.media_type == MediaType::Audio)
+        && let Some(uri) = media.uri()
     {
-        return resolve_url(base_url, media.uri().unwrap().as_ref());
+        return resolve_url(base_url, uri.as_ref());
     }
 
     let mut best: Option<(&str, u64)> = None;
@@ -258,7 +263,7 @@ fn select_master_variant(master: &MasterPlaylist<'static>, base_url: &Url) -> an
         } = stream
         {
             let bandwidth = stream_data.bandwidth();
-            if best.map_or(true, |(_, best_bw)| bandwidth < best_bw) {
+            if best.is_none_or(|(_, best_bw)| bandwidth < best_bw) {
                 best = Some((uri.as_ref(), bandwidth));
             }
         }
@@ -313,10 +318,10 @@ fn select_segments(
         };
 
         if seg_end >= start && seg_start <= end {
-            if selections.is_empty() {
-                if let Some(prev) = previous_segment.take() {
-                    selections.push(prev);
-                }
+            if selections.is_empty()
+                && let Some(prev) = previous_segment.take()
+            {
+                selections.push(prev);
             }
             selections.push(selection.clone());
             if selections.len() >= MAX_SEGMENTS {
@@ -396,7 +401,7 @@ async fn fetch_bytes(
             return Err(anyhow!("Invalid byte range"));
         }
         let end_inclusive = range.end.saturating_sub(1);
-        let header_value = format!("bytes={}-{}", range.start, end_inclusive);
+        let header_value = format!("bytes={}-{end_inclusive}", range.start);
         request = request.header("Range", header_value);
     }
     let response = request
@@ -585,15 +590,17 @@ fn decode_samples_from_bytes(
 }
 
 fn ts_packet_size(data: &[u8]) -> Option<usize> {
-    if data.len() >= 188 && data.len() % 188 == 0 {
-        if data.chunks(188).all(|chunk| chunk.first() == Some(&0x47)) {
-            return Some(188);
-        }
+    if data.len() >= 188
+        && data.len().is_multiple_of(188)
+        && data.chunks(188).all(|chunk| chunk.first() == Some(&0x47))
+    {
+        return Some(188);
     }
-    if data.len() >= 192 && data.len() % 192 == 0 {
-        if data.chunks(192).all(|chunk| chunk.get(4) == Some(&0x47)) {
-            return Some(192);
-        }
+    if data.len() >= 192
+        && data.len().is_multiple_of(192)
+        && data.chunks(192).all(|chunk| chunk.get(4) == Some(&0x47))
+    {
+        return Some(192);
     }
     None
 }

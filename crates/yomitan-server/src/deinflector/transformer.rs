@@ -15,7 +15,6 @@ pub struct LanguageTransformer {
 
 #[derive(Debug, Clone)]
 struct Transform {
-    id: String,
     rules: Vec<Rule>,
 }
 
@@ -177,16 +176,16 @@ impl LanguageTransformer {
                     get_condition_flags_strict(&condition_flags_map, &rule_def.conditions_in)
                         .with_context(|| {
                             format!(
-                                "Invalid conditionsIn for transform {} rule {}",
-                                transform_def.id, rule_index
+                                "Invalid conditionsIn for transform {} rule {rule_index}",
+                                transform_def.id
                             )
                         })?;
                 let conditions_out =
                     get_condition_flags_strict(&condition_flags_map, &rule_def.conditions_out)
                         .with_context(|| {
                             format!(
-                                "Invalid conditionsOut for transform {} rule {}",
-                                transform_def.id, rule_index
+                                "Invalid conditionsOut for transform {} rule {rule_index}",
+                                transform_def.id
                             )
                         })?;
 
@@ -199,10 +198,7 @@ impl LanguageTransformer {
                 });
             }
 
-            transforms.push(Transform {
-                id: transform_def.id,
-                rules,
-            });
+            transforms.push(Transform { rules });
         }
 
         Ok(Self {
@@ -278,12 +274,12 @@ impl LanguageTransformer {
                         })?;
                         let replacement = replacement.unwrap_or_default();
                         let regex = Regex::new(&pattern)
-                            .with_context(|| format!("Invalid regex pattern: {}", pattern))?;
+                            .with_context(|| format!("Invalid regex pattern: {pattern}"))?;
                         RuleKind::RegexReplace { regex, replacement }
                     }
                     "spanishPronominal" => RuleKind::SpanishPronominal,
                     other => {
-                        return Err(anyhow::anyhow!("Unsupported rule type: {}", other));
+                        return Err(anyhow::anyhow!("Unsupported rule type: {other}"));
                     }
                 };
 
@@ -417,7 +413,7 @@ fn parse_json_char(value: Option<&str>) -> Result<Option<char>> {
         return Ok(None);
     };
     if chars.next().is_some() {
-        return Err(anyhow::anyhow!("Expected single character, got {}", value));
+        return Err(anyhow::anyhow!("Expected single character, got {value}"));
     }
     Ok(Some(first))
 }
@@ -461,14 +457,14 @@ impl RuleKind {
                 deinflected,
             } => {
                 let stem = text.strip_suffix(inflected)?;
-                Some(format!("{}{}", stem, deinflected))
+                Some(format!("{stem}{deinflected}"))
             }
             RuleKind::Prefix {
                 inflected,
                 deinflected,
             } => {
                 let stem = text.strip_prefix(inflected)?;
-                Some(format!("{}{}", deinflected, stem))
+                Some(format!("{deinflected}{stem}"))
             }
             RuleKind::WholeWord {
                 inflected,
@@ -506,7 +502,7 @@ impl RuleKind {
                 inflected,
                 deinflected,
             } => english_phrasal_suffix(text, inflected)
-                .map(|(stem, particle)| format!("{}{} {}", stem, deinflected, particle)),
+                .map(|(stem, particle)| format!("{stem}{deinflected} {particle}")),
         }
     }
 }
@@ -535,15 +531,15 @@ fn matches_affix(
             return false;
         }
     }
-    if let Some(disallow) = initial_disallow {
-        if matches!(middle.chars().next(), Some(value) if value == disallow) {
-            return false;
-        }
+    if let Some(disallow) = initial_disallow
+        && matches!(middle.chars().next(), Some(value) if value == disallow)
+    {
+        return false;
     }
-    if let Some(disallow) = final_disallow {
-        if matches!(middle.chars().last(), Some(value) if value == disallow) {
-            return false;
-        }
+    if let Some(disallow) = final_disallow
+        && matches!(middle.chars().last(), Some(value) if value == disallow)
+    {
+        return false;
     }
     true
 }
@@ -557,10 +553,7 @@ fn deinflect_affix(
 ) -> Option<String> {
     let stripped_prefix = text.strip_prefix(inflected_prefix)?;
     let middle = stripped_prefix.strip_suffix(inflected_suffix)?;
-    Some(format!(
-        "{}{}{}",
-        deinflected_prefix, middle, deinflected_suffix
-    ))
+    Some(format!("{deinflected_prefix}{middle}{deinflected_suffix}"))
 }
 
 fn is_arabic_letter(c: char) -> bool {
@@ -665,7 +658,7 @@ fn english_phrasal_interposed_object(text: &str) -> Option<String> {
     {
         return None;
     }
-    Some(format!("{} {}", words[0], particle))
+    Some(format!("{} {particle}", words[0]))
 }
 
 fn spanish_pronominal(text: &str) -> Option<String> {
@@ -682,7 +675,7 @@ fn spanish_pronominal(text: &str) -> Option<String> {
         if is_spanish_pronoun(token) && i + 1 < tokens.len() {
             let next = tokens[i + 1];
             if is_spanish_infinitive(next) {
-                output.push(format!("{}se", next));
+                output.push(format!("{next}se"));
                 changed = true;
                 i += 2;
                 continue;

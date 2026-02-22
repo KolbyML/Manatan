@@ -1,6 +1,13 @@
+#![allow(
+    clippy::assign_op_pattern,
+    clippy::collapsible_if,
+    clippy::uninlined_format_args
+)]
+
 use std::{fs, path::PathBuf};
 
 use manatan_ocr_server::{
+    language::OcrLanguage,
     logic::{self, RawChunk},
     merge::{self, MergeConfig},
 };
@@ -111,9 +118,10 @@ async fn run_merge_regression_tests() {
                 } else {
                     println!("  [OCR] Running Lens OCR for {}...", test_name);
                     let image_bytes = fs::read(path).expect("Read image");
-                    let chunks = logic::get_raw_ocr_data(&image_bytes, None, None)
-                        .await
-                        .expect("Lens OCR failed");
+                    let chunks =
+                        logic::get_raw_ocr_data(&image_bytes, None, None, OcrLanguage::default())
+                            .await
+                            .expect("Lens OCR failed");
 
                     let json = serde_json::to_string_pretty(&chunks).unwrap();
                     fs::write(&raw_cache_path, json).expect("Write raw cache");

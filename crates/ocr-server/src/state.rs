@@ -1,13 +1,13 @@
 use std::{
     collections::HashMap,
     path::{Path, PathBuf},
-    sync::{atomic::AtomicUsize, Arc, RwLock},
+    sync::{Arc, RwLock, atomic::AtomicUsize},
     time::{SystemTime, UNIX_EPOCH},
 };
 
 use r2d2::Pool;
 use r2d2_sqlite::SqliteConnectionManager;
-use rusqlite::{params, OptionalExtension};
+use rusqlite::{OptionalExtension, params};
 use serde::{Deserialize, Serialize};
 use tracing::{info, warn};
 
@@ -149,7 +149,7 @@ impl AppState {
             warn!("Failed to get DB connection for has_cache_entry_prefix");
             return false;
         };
-        let like_pattern = format!("{}%", prefix);
+        let like_pattern = format!("{prefix}%");
         conn.query_row(
             "SELECT 1 FROM ocr_cache WHERE cache_key LIKE ? LIMIT 1",
             params![like_pattern],
@@ -228,8 +228,8 @@ impl AppState {
             return None;
         };
 
-        let like_q = format!("{}?sourceId=%", cache_key);
-        let like_amp = format!("{}&sourceId=%", cache_key);
+        let like_q = format!("{cache_key}?sourceId=%");
+        let like_amp = format!("{cache_key}&sourceId=%");
 
         let row = conn
             .query_row(
@@ -353,8 +353,8 @@ impl AppState {
             for cache_key in cache_keys {
                 // Delete exact cache_key plus common variants that include sourceId query params.
                 // This mirrors the prefix matching used in chapter_status().
-                let like_q = format!("{}?sourceId=%", cache_key);
-                let like_amp = format!("{}&sourceId=%", cache_key);
+                let like_q = format!("{cache_key}?sourceId=%");
+                let like_amp = format!("{cache_key}&sourceId=%");
 
                 let deleted = tx
                     .execute(
@@ -425,11 +425,10 @@ impl AppState {
                     (cache_key, context, data, created_at, last_processed_at, last_accessed_at, access_count)
                  VALUES (?, ?, ?, ?, ?, ?, ?)",
                 params![key, entry.context, data_blob, now, now, now, 1i64],
-            ) {
-                if changes > 0 {
+            )
+                && changes > 0 {
                     added += 1;
                 }
-            }
         }
         let _ = tx.commit();
         added
@@ -588,11 +587,10 @@ fn migrate_legacy_cache(conn: &mut rusqlite::Connection, cache_dir: &Path) {
                 (cache_key, context, data, created_at, last_processed_at, last_accessed_at, access_count)
              VALUES (?, ?, ?, ?, ?, ?, ?)",
             params![key, entry.context, data_blob, now, now, now, 1i64],
-        ) {
-            if changes > 0 {
+        )
+            && changes > 0 {
                 imported += 1;
             }
-        }
     }
 
     for (key, count) in persistent_state.chapter_pages_map {

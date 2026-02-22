@@ -2,8 +2,8 @@ use std::collections::{HashMap, HashSet};
 
 use tracing::error;
 use wordbase_api::{
-    dict::yomitan::GlossaryTag, DictionaryId, FrequencyValue, Record, RecordEntry, RecordId, Span,
-    Term,
+    DictionaryId, FrequencyValue, Record, RecordEntry, RecordId, Span, Term,
+    dict::yomitan::GlossaryTag,
 };
 
 use crate::{
@@ -20,6 +20,12 @@ struct Candidate {
     pub word: String,
     pub source_len: usize,
     pub _reason: String,
+}
+
+impl Default for LookupService {
+    fn default() -> Self {
+        Self::new()
+    }
 }
 
 impl LookupService {
@@ -105,60 +111,57 @@ impl LookupService {
                 });
 
                 if let Ok(mapped_rows) = rows {
-                    for row_result in mapped_rows {
-                        if let Ok((dict_id_raw, compressed_data)) = row_result {
-                            let dict_id = DictionaryId(dict_id_raw);
+                    for (dict_id_raw, compressed_data) in mapped_rows.flatten() {
+                        let dict_id = DictionaryId(dict_id_raw);
 
-                            if let Some((enabled, _)) = dict_configs.get(&dict_id) {
-                                if !*enabled {
-                                    continue;
-                                }
-                            }
+                        if let Some((enabled, _)) = dict_configs.get(&dict_id)
+                            && !*enabled
+                        {
+                            continue;
+                        }
 
-                            if let Ok(decompressed) = decoder.decompress_vec(&compressed_data) {
-                                if let Ok(stored) =
-                                    serde_json::from_slice::<StoredRecord>(&decompressed)
-                                {
-                                    let match_len = candidate.source_len;
+                        if let Ok(decompressed) = decoder.decompress_vec(&compressed_data)
+                            && let Ok(stored) =
+                                serde_json::from_slice::<StoredRecord>(&decompressed)
+                        {
+                            let match_len = candidate.source_len;
 
-                                    let headword = stored
-                                        .headword
-                                        .as_deref()
-                                        .unwrap_or(candidate.word.as_str());
-                                    let term_obj =
-                                        Term::from_parts(Some(headword), stored.reading.as_deref())
-                                            .unwrap_or_else(|| {
-                                                Term::from_headword(headword.to_string()).unwrap()
-                                            });
+                            let headword = stored
+                                .headword
+                                .as_deref()
+                                .unwrap_or(candidate.word.as_str());
+                            let term_obj =
+                                Term::from_parts(Some(headword), stored.reading.as_deref())
+                                    .unwrap_or_else(|| {
+                                        Term::from_headword(headword.to_string())
+                                            .expect("headword should produce a valid term")
+                                    });
 
-                                    let mut freq = 0;
-                                    if let Record::YomitanGlossary(g) = &stored.record {
-                                        freq = g.popularity;
-                                    }
+                            let freq = if let Record::YomitanGlossary(g) = &stored.record {
+                                g.popularity
+                            } else {
+                                0
+                            };
 
-                                    results.push((
-                                        RecordEntry {
-                                            span_bytes: Span {
-                                                start: 0,
-                                                end: candidate.word.len() as u64,
-                                            },
-                                            span_chars: Span {
-                                                start: 0,
-                                                end: match_len as u64,
-                                            },
-                                            source: stored.dictionary_id,
-                                            term: term_obj,
-                                            record_id: RecordId(0),
-                                            record: stored.record.clone(),
-                                            profile_sorting_frequency: None,
-                                            source_sorting_frequency: Some(FrequencyValue::Rank(
-                                                freq,
-                                            )),
-                                        },
-                                        stored.term_tags,
-                                    ));
-                                }
-                            }
+                            results.push((
+                                RecordEntry {
+                                    span_bytes: Span {
+                                        start: 0,
+                                        end: candidate.word.len() as u64,
+                                    },
+                                    span_chars: Span {
+                                        start: 0,
+                                        end: match_len as u64,
+                                    },
+                                    source: stored.dictionary_id,
+                                    term: term_obj,
+                                    record_id: RecordId(0),
+                                    record: stored.record.clone(),
+                                    profile_sorting_frequency: None,
+                                    source_sorting_frequency: Some(FrequencyValue::Rank(freq)),
+                                },
+                                stored.term_tags,
+                            ));
                         }
                     }
                 }
@@ -242,7 +245,7 @@ impl LookupService {
     }
 
     fn is_ideograph(&self, c: char) -> bool {
-        c >= '\u{4E00}' && c <= '\u{9FFF}'
+        ('\u{4E00}'..='\u{9FFF}').contains(&c)
     }
 
     fn katakana_to_hiragana(&self, text: &str) -> String {
@@ -263,14 +266,13 @@ impl LookupService {
         let mut previous = None;
 
         for c in text.chars() {
-            if c == 'ー' {
-                if let Some(prev) = previous {
-                    if let Some(vowel) = self.prolonged_vowel(prev) {
-                        result.push(vowel);
-                        previous = Some(vowel);
-                        continue;
-                    }
-                }
+            if c == 'ー'
+                && let Some(prev) = previous
+                && let Some(vowel) = self.prolonged_vowel(prev)
+            {
+                result.push(vowel);
+                previous = Some(vowel);
+                continue;
             }
 
             result.push(c);

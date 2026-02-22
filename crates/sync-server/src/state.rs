@@ -1,9 +1,9 @@
-use crate::backend::google_drive::GoogleDriveBackend;
-use crate::types::SyncConfig;
+use std::{path::PathBuf, sync::Arc};
+
 use sled::Db;
-use std::path::PathBuf;
-use std::sync::Arc;
 use tokio::sync::RwLock;
+
+use crate::{backend::google_drive::GoogleDriveBackend, types::SyncConfig};
 
 const DB_KEY_DEVICE_ID: &[u8] = b"device_id";
 const DB_KEY_ACCESS_TOKEN: &[u8] = b"google_access_token";
@@ -209,7 +209,7 @@ impl SyncState {
 
     // Upload tracking (for resumable uploads)
     pub fn get_upload_state(&self, upload_id: &str) -> Option<UploadState> {
-        let key = format!("upload:{}", upload_id);
+        let key = format!("upload:{upload_id}");
         self.db
             .get(key.as_bytes())
             .ok()
@@ -222,7 +222,7 @@ impl SyncState {
         upload_id: &str,
         state: &UploadState,
     ) -> Result<(), sled::Error> {
-        let key = format!("upload:{}", upload_id);
+        let key = format!("upload:{upload_id}");
         let bytes = serde_json::to_vec(state).unwrap_or_default();
         self.db.insert(key.as_bytes(), bytes)?;
         self.db.flush()?;
@@ -230,7 +230,7 @@ impl SyncState {
     }
 
     pub fn clear_upload_state(&self, upload_id: &str) -> Result<(), sled::Error> {
-        let key = format!("upload:{}", upload_id);
+        let key = format!("upload:{upload_id}");
         self.db.remove(key.as_bytes())?;
         self.db.flush()?;
         Ok(())

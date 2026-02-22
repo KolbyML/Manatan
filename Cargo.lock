@@ -3641,6 +3641,7 @@ dependencies = [
 [[package]]
 name = "manatan-server-public"
 version = "0.1.0"
+source = "git+https://github.com/KolbyML/Manatan-Server-Public?rev=c0f1c9696bf8bdacfa3663a5b1d863d0a77fc428#c0f1c9696bf8bdacfa3663a5b1d863d0a77fc428"
 dependencies = [
  "axum",
  "bytes",

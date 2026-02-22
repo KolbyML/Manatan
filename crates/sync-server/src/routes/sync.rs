@@ -1,16 +1,17 @@
 use axum::{
+    Json, Router,
     extract::State,
     routing::{get, post},
-    Json, Router,
 };
 use tracing::{debug, info};
 
-use crate::backend::google_drive::GoogleDriveBackend;
-use crate::backend::{PushResult, SyncBackend};
-use crate::error::SyncError;
-use crate::merge::merge_payloads;
-use crate::state::SyncState;
-use crate::types::{MergeRequest, MergeResponse, SyncPayload};
+use crate::{
+    backend::{PushResult, SyncBackend, google_drive::GoogleDriveBackend},
+    error::SyncError,
+    merge::merge_payloads,
+    state::SyncState,
+    types::{MergeRequest, MergeResponse, SyncPayload},
+};
 
 pub fn router() -> Router<SyncState> {
     Router::new()
@@ -36,10 +37,10 @@ async fn ensure_backend(state: &SyncState) -> Result<(), SyncError> {
     }
 
     // Refresh token before operations
-    if let Some(backend) = gdrive.as_mut() {
-        if let Err(e) = backend.refresh_token().await {
-            debug!("Token refresh failed (may be okay): {}", e);
-        }
+    if let Some(backend) = gdrive.as_mut()
+        && let Err(e) = backend.refresh_token().await
+    {
+        debug!("Token refresh failed (may be okay): {}", e);
     }
 
     Ok(())
@@ -55,24 +56,28 @@ async fn merge_handler(
     // Apply config if provided
     if let Some(config) = req.config {
         state.set_sync_config(&config)?;
-        info!("[MERGE] Config updated - sync settings: progress={}, metadata={}, content={}, files={}",
-              config.ln_progress, config.ln_metadata, config.ln_content, config.ln_files);
+        info!(
+            "[MERGE] Config updated - sync settings: progress={}, metadata={}, content={}, files={}",
+            config.ln_progress, config.ln_metadata, config.ln_content, config.ln_files
+        );
     }
 
     let device_id = state.get_device_id();
     let local_payload = req.payload;
-    
+
     // Log local data summary
     let local_progress_count = local_payload.ln_progress.len();
     let local_metadata_count = local_payload.ln_metadata.len();
-    
-    // FIX 1: Removed .as_ref().map(...).unwrap_or(0). 
+
+    // FIX 1: Removed .as_ref().map(...).unwrap_or(0).
     // These fields are HashMaps, so they always exist (even if empty).
     let local_content_count = local_payload.ln_content.len();
     let local_files_count = local_payload.ln_files.len();
-    
-    info!("[MERGE] Local data: {} progress, {} metadata, {} content entries, {} files", 
-          local_progress_count, local_metadata_count, local_content_count, local_files_count);
+
+    info!(
+        "[MERGE] Local data: {} progress, {} metadata, {} content entries, {} files",
+        local_progress_count, local_metadata_count, local_content_count, local_files_count
+    );
 
     // Pull remote data
     let gdrive = state.google_drive.read().await;
@@ -81,32 +86,46 @@ async fn merge_handler(
     info!("[MERGE] Downloading remote data from Google Drive...");
     let remote_result = backend.pull().await?;
 
-    let (merged_payload, conflicts, etag) = if let Some((remote_payload, remote_etag)) = remote_result {
+    let (merged_payload, conflicts, etag) = if let Some((remote_payload, remote_etag)) =
+        remote_result
+    {
         let remote_progress_count = remote_payload.ln_progress.len();
         let remote_metadata_count = remote_payload.ln_metadata.len();
-        
+
         // FIX 2: Same fix for remote payload
         let remote_content_count = remote_payload.ln_content.len();
-        
-        info!("[MERGE] Remote data downloaded: {} progress, {} metadata, {} content entries",
-              remote_progress_count, remote_metadata_count, remote_content_count);
+
+        info!(
+            "[MERGE] Remote data downloaded: {} progress, {} metadata, {} content entries",
+            remote_progress_count, remote_metadata_count, remote_content_count
+        );
 
         let remote_device_id = remote_payload.device_id.clone();
 
         // Check if same device
         if remote_device_id == device_id {
-            info!("[MERGE] Same device detected ({}), will overwrite remote", device_id);
+            info!(
+                "[MERGE] Same device detected ({}), will overwrite remote",
+                device_id
+            );
             (local_payload.clone(), vec![], Some(remote_etag))
         } else {
-            info!("[MERGE] Different device detected. Local device: {}, Remote device: {}", device_id, remote_device_id);
+            info!(
+                "[MERGE] Different device detected. Local device: {}, Remote device: {}",
+                device_id, remote_device_id
+            );
             info!("[MERGE] Merging payloads...");
             let (merged, conflicts) = merge_payloads(local_payload, remote_payload, &device_id);
-            
+
             let merged_progress = merged.ln_progress.len();
             let merged_metadata = merged.ln_metadata.len();
-            info!("[MERGE] Merge complete: {} progress entries, {} metadata entries, {} conflicts", 
-                  merged_progress, merged_metadata, conflicts.len());
-            
+            info!(
+                "[MERGE] Merge complete: {} progress entries, {} metadata entries, {} conflicts",
+                merged_progress,
+                merged_metadata,
+                conflicts.len()
+            );
+
             (merged, conflicts, Some(remote_etag))
         }
     } else {
@@ -130,8 +149,7 @@ async fn merge_handler(
         }
         PushResult::Conflict { remote_etag } => {
             return Err(SyncError::Conflict(format!(
-                "[MERGE] Conflict detected! Expected etag: {:?}, got: {}",
-                etag, remote_etag
+                "[MERGE] Conflict detected! Expected etag: {etag:?}, got: {remote_etag}"
             )));
         }
     }
@@ -143,7 +161,10 @@ async fn merge_handler(
     let final_metadata = merged_payload.ln_metadata.len();
     info!("[MERGE] ========== SYNC COMPLETE ==========");
     info!("[MERGE] Timestamp: {}", now);
-    info!("[MERGE] Total entries: {} progress, {} metadata", final_progress, final_metadata);
+    info!(
+        "[MERGE] Total entries: {} progress, {} metadata",
+        final_progress, final_metadata
+    );
     info!("[MERGE] Conflicts resolved: {}", conflicts.len());
     info!("[MERGE] ==================================");
 
@@ -156,7 +177,9 @@ async fn merge_handler(
     }))
 }
 
-async fn pull_handler(State(state): State<SyncState>) -> Result<Json<Option<SyncPayload>>, SyncError> {
+async fn pull_handler(
+    State(state): State<SyncState>,
+) -> Result<Json<Option<SyncPayload>>, SyncError> {
     info!("[PULL] Starting pull operation...");
     ensure_backend(&state).await?;
 
@@ -170,8 +193,10 @@ async fn pull_handler(State(state): State<SyncState>) -> Result<Json<Option<Sync
         Some((payload, etag)) => {
             let progress_count = payload.ln_progress.len();
             let metadata_count = payload.ln_metadata.len();
-            info!("[PULL] Downloaded: {} progress, {} metadata entries, etag: {}", 
-                  progress_count, metadata_count, etag);
+            info!(
+                "[PULL] Downloaded: {} progress, {} metadata entries, etag: {}",
+                progress_count, metadata_count, etag
+            );
         }
         None => {
             info!("[PULL] No remote data found");
@@ -201,11 +226,14 @@ async fn push_handler(
     Json(req): Json<PushRequest>,
 ) -> Result<Json<PushResponse>, SyncError> {
     info!("[PUSH] Starting push operation...");
-    
+
     let payload_size = req.payload.ln_progress.len();
     let metadata_size = req.payload.ln_metadata.len();
-    info!("[PUSH] Pushing: {} progress, {} metadata entries", payload_size, metadata_size);
-    
+    info!(
+        "[PUSH] Pushing: {} progress, {} metadata entries",
+        payload_size, metadata_size
+    );
+
     ensure_backend(&state).await?;
 
     let gdrive = state.google_drive.read().await;
@@ -219,9 +247,12 @@ async fn push_handler(
             let now = chrono::Utc::now().timestamp_millis();
             state.set_last_sync(now)?;
             state.set_last_etag(&etag)?;
-            
-            info!("[PUSH] Upload successful! Timestamp: {}, etag: {}", now, etag);
-            
+
+            info!(
+                "[PUSH] Upload successful! Timestamp: {}, etag: {}",
+                now, etag
+            );
+
             Ok(Json(PushResponse {
                 success: true,
                 etag,
@@ -229,9 +260,7 @@ async fn push_handler(
             }))
         }
         PushResult::Conflict { remote_etag } => Err(SyncError::Conflict(format!(
-            "[PUSH] Conflict detected! Remote etag: {}",
-            remote_etag
+            "[PUSH] Conflict detected! Remote etag: {remote_etag}"
         ))),
     }
 }
-

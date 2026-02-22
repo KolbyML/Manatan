@@ -1,6 +1,8 @@
-use crate::types::{ConflictInfo, LNMetadata, LNProgress, LnCategory, SyncPayload};
 use std::collections::HashMap;
+
 use tracing::debug;
+
+use crate::types::{ConflictInfo, LNMetadata, LNProgress, LnCategory, SyncPayload};
 
 /// Merge two sync payloads, returning the merged result
 pub fn merge_payloads(

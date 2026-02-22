@@ -9,10 +9,12 @@ use crate::{
 };
 
 lazy_static! {
-    static ref JAPANESE_REGEX: Regex = Regex::new(r"[\p{Hiragana}\p{Katakana}\p{Han}]").unwrap();
-    static ref LINE_NOISE_REGEX: Regex = Regex::new(r"^[|—_ノヘく/\\:;]$").unwrap();
-    static ref KANJI_REGEX: Regex = Regex::new(r"\p{Han}").unwrap();
-    static ref KATAKANA_REGEX: Regex = Regex::new(r"[\p{Katakana}]").unwrap();
+    static ref JAPANESE_REGEX: Regex =
+        Regex::new(r"[\p{Hiragana}\p{Katakana}\p{Han}]").expect("valid Japanese regex");
+    static ref LINE_NOISE_REGEX: Regex =
+        Regex::new(r"^[|—_ノヘく/\\:;]$").expect("valid line-noise regex");
+    static ref KANJI_REGEX: Regex = Regex::new(r"\p{Han}").expect("valid Kanji regex");
+    static ref KATAKANA_REGEX: Regex = Regex::new(r"[\p{Katakana}]").expect("valid Katakana regex");
 }
 
 #[derive(Clone)]
@@ -118,7 +120,10 @@ fn filter_bad_boxes(
         let box_area = l.tight_bounding_box.width * l.tight_bounding_box.height;
 
         if text_len == 1 {
-            let ch = text.chars().next().unwrap();
+            let Some(ch) = text.chars().next() else {
+                keep[i] = false;
+                continue;
+            };
             if ch.is_ascii_punctuation() || ch.is_ascii_digit() {
                 keep[i] = false;
                 continue;
@@ -129,11 +134,11 @@ fn filter_bad_boxes(
             }
         }
 
-        if box_area < page_area * 0.0005 {
-            if !config.language.prefers_vertical() || !JAPANESE_REGEX.is_match(text) {
-                keep[i] = false;
-                continue;
-            }
+        if box_area < page_area * 0.0005
+            && (!config.language.prefers_vertical() || !JAPANESE_REGEX.is_match(text))
+        {
+            keep[i] = false;
+            continue;
         }
 
         if box_area > page_area * 0.30 && text_len < 6 {
@@ -169,10 +174,11 @@ fn filter_bad_boxes(
                 if intersection_area > b_area * 0.3 {
                     let a_area = a.tight_bounding_box.width * a.tight_bounding_box.height;
                     if a_area > b_area * 3.0 && intersection_area > b_area * 0.8 {
-                        if config.language.prefers_vertical() && JAPANESE_REGEX.is_match(&b.text) {
-                            if !a.text.contains(&b.text) {
-                                continue;
-                            }
+                        if config.language.prefers_vertical()
+                            && JAPANESE_REGEX.is_match(&b.text)
+                            && !a.text.contains(&b.text)
+                        {
+                            continue;
                         }
                         keep[j] = false;
                         continue;
@@ -357,10 +363,8 @@ fn are_lines_mergeable(a: &ProcessedLine, b: &ProcessedLine, config: &MergeConfi
     }
 
     // Font Consistency Check
-    if gap_cross > base_metric * 1.2 {
-        if font_ratio > 1.15 {
-            return false;
-        }
+    if gap_cross > base_metric * 1.2 && font_ratio > 1.15 {
+        return false;
     }
 
     if gap_cross > base_metric * allowed_gap {
@@ -470,12 +474,10 @@ pub fn auto_merge(lines: Vec<OcrResult>, w: u32, h: u32, config: &MergeConfig) -
                 } else {
                     ba.y.partial_cmp(&bb.y).unwrap_or(Ordering::Equal)
                 }
+            } else if (ba.y - bb.y).abs() > 5.0 {
+                ba.y.partial_cmp(&bb.y).unwrap_or(Ordering::Equal)
             } else {
-                if (ba.y - bb.y).abs() > 5.0 {
-                    ba.y.partial_cmp(&bb.y).unwrap_or(Ordering::Equal)
-                } else {
-                    ba.x.partial_cmp(&bb.x).unwrap_or(Ordering::Equal)
-                }
+                ba.x.partial_cmp(&bb.x).unwrap_or(Ordering::Equal)
             }
         });
 
