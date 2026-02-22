@@ -90,6 +90,7 @@ export const YomitanPopup = () => {
     );
 
     const processedEntries = currentEntry ? currentEntry.results : dictPopup.results;
+    const kanjiResults = dictPopup.kanjiResults || [];
     const isLoading = currentEntry ? currentEntry.isLoading : dictPopup.isLoading;
     const systemLoading = currentEntry ? currentEntry.systemLoading : dictPopup.systemLoading ?? false;
 
@@ -177,7 +178,7 @@ export const YomitanPopup = () => {
 
         try {
             const results = await lookupYomitan(cleanText, 0, settings.resultGroupingMode || 'grouped', settings.yomitanLanguage || 'japanese');
-            const loadedResults = results === 'loading' ? [] : (results || []);
+            const loadedResults = results === 'loading' ? [] : ((results as any).terms || results || []);
             const isSystemLoading = results === 'loading';
 
             setHistory(prev => {
@@ -230,7 +231,7 @@ export const YomitanPopup = () => {
 
         try {
             const results = await lookupYomitan(cleanText, prefixBytes, settings.resultGroupingMode || 'grouped', settings.yomitanLanguage || 'japanese');
-            const loadedResults = results === 'loading' ? [] : (results || []);
+            const loadedResults = results === 'loading' ? [] : ((results as any).terms || results || []);
             const isSystemLoading = results === 'loading';
 
             setHistory(prev => {
@@ -519,6 +520,8 @@ export const YomitanPopup = () => {
                     context={dictPopup.context}
                     variant="popup"
                     popupTheme={theme}
+                    kanjiResults={kanjiResults}
+                    grouped={settings.resultGroupingMode === 'grouped'}
                 />
             </div>
         </>,

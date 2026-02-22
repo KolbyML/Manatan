@@ -1,0 +1,231 @@
+.dictionary-view {
+  background-color: #111111 !important;
+  color: #eeeeee !important;
+  font-family: "Iwata GKyoukasho ProN", -apple-system, BlinkMacSystemFont,
+               "Hiragino Sans", "Noto Sans JP", sans-serif !important;
+  border: 1px solid #222222 !important;
+  border-radius: 8px !important;
+  padding: 10px !important;
+  line-height: 1.45 !important;
+}
+
+/* Ensure nothing inside is transparent */
+.dictionary-view * {
+  background: none !important;
+}
+
+
+/* =========================
+   HEADWORD
+========================= */
+
+.dictionary-view .headword,
+.dictionary-view .headword-term {
+  font-size: 32px !important;
+  font-weight: 600 !important;
+  color: #eeeeee !important;
+  line-height: 1.1 !important;
+}
+
+/* Furigana */
+.dictionary-view .headword-reading,
+.dictionary-view rt {
+  font-size: 19px !important;
+  color: #eeeeee !important;
+}
+
+
+/* =========================
+   REMOVE FLEX NUMBER COLUMN
+========================= */
+
+.dictionary-view .gloss-item > div:first-child {
+  display: none !important;
+}
+
+/* Allow content to expand */
+.dictionary-view .definition-item-inner {
+  flex-grow: 1 !important;
+}
+
+
+/* =========================
+   DICTIONARY NAME TAGS
+========================= */
+
+.dictionary-view .definition-tag-list .tag-label,
+.dictionary-view .pronunciation-group-tag {
+  background-color: #3c3c3c !important;
+  color: #ffffff !important;
+  border: 1px solid #555555 !important;
+  font-size: 15px !important;
+  padding: 2px 8px !important;
+  border-radius: 4px !important;
+}
+
+/* Increase font size of pronunciation downstep notation */
+.pronunciation .pronunciation-downstep-notation {
+    font-size: 0.9em;
+}
+
+/* Optional: make the number slightly bolder/larger than the brackets */
+.pronunciation .pronunciation-downstep-notation-number {
+    font-size: 1.2em;
+    font-weight: bold;
+}
+
+
+/* Minimize space between frequency and pronunciation */
+.dictionary-view .entry-body.frequency-group-list {
+    margin-bottom: 2px !important;
+    gap: 2px !important;
+}
+
+.dictionary-view .pronunciation-section {
+    margin-top: 0px !important;
+    padding-top: 0px !important;
+}
+
+/* Optional: tighten individual pronunciation items */
+.dictionary-view .pronunciation-list.vertical .pronunciation {
+    margin-top: 0px !important;
+    margin-bottom: 0px !important;
+}
+
+/* Hide the pronunciation group tag (dictionary name) */
+.dictionary-view .pronunciation-group-tag {
+    display: none !important;
+}
+
+/* Remove space below pronunciation section */
+.dictionary-view .pronunciation-section {
+    margin-bottom: 2px !important;
+}
+
+
+/* =========================
+   FREQUENCY BOX
+========================= */
+
+.dictionary-view .frequency-item {
+  background-color: #222222 !important;
+  border: 1px solid #555555 !important;
+  font-size: 13px !important;
+}
+
+.dictionary-view .frequency-item div:first-child {
+  background-color: #3c3c3c !important;
+  color: #ffffff !important;
+}
+
+.dictionary-view .frequency-item div:last-child {
+  background-color: #2a2a2a !important;
+  color: #ffffff !important;
+}
+
+
+/* =========================
+   DEFINITIONS
+========================= */
+
+.dictionary-view .gloss-content {
+  font-size: 19px !important;
+  line-height: 1.4 !important;
+  color: #eeeeee !important;
+}
+
+
+/* =========================
+   LINKS
+========================= */
+
+.dictionary-view a {
+  color: #8ab4ff !important;
+  text-decoration: underline !important;
+}
+
+.dictionary-view a:hover {
+  text-decoration: underline !important;
+}
+
+
+/* =========================
+   BUTTONS (Anki / Audio)
+========================= */
+
+.dictionary-view button,
+.dictionary-view svg {
+  opacity: 1 !important;
+}
+
+
+/* =========================
+   SCROLLBAR (Minimal)
+========================= */
+
+.dictionary-view::-webkit-scrollbar {
+  width: 4px;
+}
+
+.dictionary-view::-webkit-scrollbar-thumb {
+  background: #444444;
+  border-radius: 4px;
+}
+
+
+/* =========================
+   ENTRY SEPARATORS (white lines between entries)
+========================= */
+
+.dictionary-view .entry {
+  border-bottom: 1px solid #ffffff !important;
+  padding-bottom: 6px !important;
+  margin-bottom: 6px !important;
+}
+
+/* Remove separator if entry contains frequency-item immediately followed by pronunciation-group.vertical */
+.dictionary-view .entry:has(.frequency-item + .pronunciation-group.vertical) {
+  border-bottom: none !important;
+  padding-bottom: 0 !important;
+  margin-bottom: 0 !important;
+}
+
+/* Align sub-entry tags (子 and 句) */
+.dictionary-view .definition-item[data-dictionary="三省堂国学辞典　第八版"] .tag-label {
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+}
+
+/* Hide the dictionary name label in sub-entries */
+.dictionary-view .definition-item[data-dictionary="三省堂国学辞典　第八版"] .tag-list .tag-label:nth-child(2) {
+    display: none !important;
+}
+
+/* Optional: remove margin from gloss-content for tighter alignment */
+.dictionary-view .definition-item[data-dictionary="三省堂国学辞典　第八版"] .gloss-content {
+    margin-left: 0 !important;
+}
+
+/* =========================
+   ALIGN GLOSS CONTENT UNDER SUB-ENTRY TAG
+========================= */
+/* Target only 三省堂 sub-entry items 子 or 句 */
+.dictionary-view .gloss-item.definition-item[data-dictionary="三省堂国学辞典　第八版"] 
+.definition-item-inner
+.definition-tag-list .tag-label {
+    display: inline-block;
+    margin-right: 6px;
+}
+
+/* Make the links inline ONLY if they are not inside gloss-sc-div (i.e., exclude main entries) */
+.dictionary-view .gloss-item.definition-item[data-dictionary="三省堂国学辞典　第八版"] 
+.definition-item-inner > .gloss-content > div:not(.gloss-sc-div) {
+    display: inline-block;
+    margin-right: 6px;
+}
+
+/* Hide all tags in Jitendex entries except the last one */
+.dictionary-view .definition-item[data-dictionary*="Jitendex"] .definition-tag-list .tag:not(:last-child) {
+    display: none !important;
+}

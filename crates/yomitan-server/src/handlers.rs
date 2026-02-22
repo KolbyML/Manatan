@@ -15,7 +15,7 @@ use sha2::{Digest, Sha256};
 use tracing::{error, info, warn};
 use wordbase_api::{DictionaryId, Record, Term, dict::yomitan::GlossaryTag};
 
-use crate::{ServerState, import, state::AppState};
+use crate::{ServerState, import, lookup::KanjiEntry, state::AppState};
 
 #[cfg(target_os = "ios")]
 unsafe extern "C" {
@@ -138,12 +138,18 @@ pub struct ApiGroupedResult {
     pub frequencies: Vec<ApiFrequency>,
     pub pitch_accents: Vec<ApiPitchAccent>,
     pub ipa: Vec<ApiIpa>,
-    pub kanji: Vec<ApiKanjiResult>,
     pub forms: Vec<ApiForm>,
     pub term_tags: Vec<GlossaryTag>,
     pub match_len: usize,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub styles: Option<std::collections::HashMap<String, String>>,
+}
+
+#[derive(Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ApiLookupResponse {
+    pub terms: Vec<ApiGroupedResult>,
+    pub kanji: Vec<KanjiEntry>,
 }
 
 #[derive(Deserialize)]
@@ -980,7 +986,7 @@ pub struct LanguageRequest {
 }
 
 pub fn load_preferred_language(app_state: &AppState) -> Option<DictionaryLanguage> {
-    let mut conn = app_state.pool.get().ok()?;
+    let conn = app_state.pool.get().ok()?;
     let mut stmt = conn
         .prepare("SELECT value FROM metadata WHERE key = ?")
         .ok()?;
@@ -991,7 +997,7 @@ pub fn load_preferred_language(app_state: &AppState) -> Option<DictionaryLanguag
 }
 
 fn store_preferred_language(app_state: &AppState, language: DictionaryLanguage) {
-    if let Ok(mut conn) = app_state.pool.get() {
+    if let Ok(conn) = app_state.pool.get() {
         let _ = conn.execute(
             "INSERT OR REPLACE INTO metadata (key, value) VALUES ('preferred_language', ?)",
             [language.as_str()],
@@ -1232,6 +1238,7 @@ pub async fn manage_dictionaries_handler(
 
     let res = tokio::task::spawn_blocking(move || -> Result<(), String> {
         let mut conn = app_state.pool.get().map_err(|e| e.to_string())?;
+        
         let mut should_vacuum = false;
 
         {
@@ -1252,11 +1259,26 @@ pub async fn manage_dictionaries_handler(
                 }
                 DictionaryAction::Delete { id } => {
                     info!("🗑️ [Yomitan] Deleting dictionary {}...", id);
+                    
+                    // Delete from all related tables
                     tx.execute(
                         "DELETE FROM terms WHERE dictionary_id = ?",
                         rusqlite::params![id],
                     )
                     .map_err(|e| e.to_string())?;
+                    
+                    tx.execute(
+                        "DELETE FROM kanji WHERE dictionary_id = ?",
+                        rusqlite::params![id],
+                    )
+                    .map_err(|e| e.to_string())?;
+                    
+                    tx.execute(
+                        "DELETE FROM kanji_meta WHERE dictionary_id = ?",
+                        rusqlite::params![id],
+                    )
+                    .map_err(|e| e.to_string())?;
+                    
                     tx.execute(
                         "DELETE FROM dictionaries WHERE id = ?",
                         rusqlite::params![id],
@@ -1265,6 +1287,8 @@ pub async fn manage_dictionaries_handler(
 
                     let mut dicts = app_state.dictionaries.write().expect("lock");
                     dicts.remove(&DictionaryId(id));
+                    
+                    // Keep VACUUM to reclaim disk space
                     should_vacuum = true;
                 }
                 DictionaryAction::Reorder { order } => {
@@ -1443,7 +1467,7 @@ pub async fn reset_db_handler(
 pub async fn lookup_handler(
     State(state): State<ServerState>,
     Query(params): Query<LookupParams>,
-) -> Result<Json<Vec<ApiGroupedResult>>, (StatusCode, Json<Value>)> {
+) -> Result<Json<ApiLookupResponse>, (StatusCode, Json<Value>)> {
     let cursor_idx = params.index.unwrap_or(0);
     let language = params
         .language
@@ -1480,7 +1504,6 @@ pub async fn lookup_handler(
         frequencies: Vec<ApiFrequency>,
         pitch_accents: Vec<ApiPitchAccent>,
         ipa: Vec<ApiIpa>,
-        kanji: Vec<ApiKanjiResult>,
         forms_set: Vec<(String, String)>,
         match_len: usize,
         dict_ids: Vec<DictionaryId>,
@@ -1491,7 +1514,6 @@ pub async fn lookup_handler(
     let mut freq_map: HashMap<(String, String), Vec<ApiFrequency>> = HashMap::new();
     let mut pitch_map: HashMap<(String, String), Vec<ApiPitchAccent>> = HashMap::new();
     let mut ipa_map: HashMap<(String, String), Vec<ApiIpa>> = HashMap::new();
-    let mut kanji_map: HashMap<String, Vec<ApiKanjiResult>> = HashMap::new();
 
     let mut flat_results: Vec<ApiGroupedResult> = Vec::new();
 
@@ -1511,7 +1533,6 @@ pub async fn lookup_handler(
         let mut is_freq = false;
         let mut is_pitch = false;
         let mut is_ipa = false;
-        let mut is_kanji = false;
 
         let (content_val, tags) = if let Record::YomitanGlossary(gloss) = &entry.0.record {
             use wordbase_api::dict::yomitan::structured::Content;
@@ -1519,7 +1540,6 @@ pub async fn lookup_handler(
                 is_freq = s.starts_with("Frequency: ");
                 is_pitch = s.starts_with("Pitch:");
                 is_ipa = s.starts_with("IPA:");
-                is_kanji = s.starts_with("Kanji:");
             }
             // Simply extract the name field as a string
             let t: Vec<String> = gloss.tags.iter().map(|tag| tag.name.clone()).collect();
@@ -1676,106 +1696,6 @@ pub async fn lookup_handler(
                     .or_default()
                     .push(api_ipa);
             }
-        } else if is_kanji {
-            // Parse Kanji JSON - store in kanji_map for later aggregation
-            // Also create/update Aggregator entry so kanji-only results are returned
-            let kanji_key = headword.clone();
-            if let Some(arr) = content_val.as_array() {
-                if let Some(first) = arr.get(0) {
-                    if let Some(s) = first.as_str() {
-                        if let Ok(kanji_data) = serde_json::from_str::<Value>(s.strip_prefix("Kanji:").unwrap_or("{}")) {
-                            let onyomi: Vec<String> = kanji_data
-                                .get("onyomi")
-                                .and_then(|v| v.as_str())
-                                .map(|s| s.split_whitespace().map(String::from).collect())
-                                .unwrap_or_default();
-                            let kunyomi: Vec<String> = kanji_data
-                                .get("kunyomi")
-                                .and_then(|v| v.as_str())
-                                .map(|s| s.split_whitespace().map(String::from).collect())
-                                .unwrap_or_default();
-                            let tags: Vec<String> = kanji_data
-                                .get("tags")
-                                .and_then(|v| v.as_str())
-                                .map(|s| s.split_whitespace().map(String::from).collect())
-                                .unwrap_or_default();
-                            let meanings: Vec<String> = kanji_data
-                                .get("meanings")
-                                .and_then(|v| v.as_array())
-                                .map(|arr| arr.iter().filter_map(|v| v.as_str()).map(String::from).collect())
-                                .unwrap_or_default();
-                            let stats = kanji_data
-                                .get("stats")
-                                .and_then(|v| v.as_object())
-                                .map(|o| o.iter().map(|(k, v)| (k.clone(), v.as_str().unwrap_or("").to_string())).collect())
-                                .unwrap_or_default();
-
-                            let kanji_entry = ApiKanjiResult {
-                                character: headword.clone(),
-                                onyomi,
-                                kunyomi,
-                                tags,
-                                meanings,
-                                stats,
-                                frequencies: vec![],
-                            };
-
-                            // Add to kanji_map
-                            kanji_map
-                                .entry(kanji_key.clone())
-                                .or_default()
-                                .push(kanji_entry);
-
-                            // Also create/update Aggregator entry so kanji-only results are returned
-                            if should_group {
-                                if let Some(existing) = map.iter_mut().find(|agg| agg.headword == headword && agg.reading == reading) {
-                                    // Entry exists, kanji will be attached later
-                                } else {
-                                    // Create new Aggregator for kanji-only entry
-                                    map.push(Aggregator {
-                                        headword: headword.clone(),
-                                        reading: reading.clone(),
-                                        furigana: vec![],
-                                        glossary: vec![],
-                                        frequencies: vec![],
-                                        pitch_accents: vec![],
-                                        ipa: vec![],
-                                        kanji: vec![],
-                                        term_tags: entry.1.unwrap_or_default(),
-                                        forms_set: vec![],
-                                        match_len,
-                                        dict_ids: vec![entry.0.source],
-                                    });
-                                }
-                            } else {
-                                // For non-grouped results, also create flat result with kanji
-                                flat_results.push(ApiGroupedResult {
-                                    headword: headword.clone(),
-                                    reading: reading.clone(),
-                                    furigana: vec![],
-                                    glossary: vec![],
-                                    frequencies: vec![],
-                                    pitch_accents: vec![],
-                                    ipa: vec![],
-                                    kanji: vec![ApiKanjiResult {
-                                        character: headword.clone(),
-                                        onyomi: kanji_data.get("onyomi").and_then(|v| v.as_str()).map(|s| s.split_whitespace().map(String::from).collect()).unwrap_or_default(),
-                                        kunyomi: kanji_data.get("kunyomi").and_then(|v| v.as_str()).map(|s| s.split_whitespace().map(String::from).collect()).unwrap_or_default(),
-                                        tags: kanji_data.get("tags").and_then(|v| v.as_str()).map(|s| s.split_whitespace().map(String::from).collect()).unwrap_or_default(),
-                                        meanings: kanji_data.get("meanings").and_then(|v| v.as_array()).map(|arr| arr.iter().filter_map(|v| v.as_str()).map(String::from).collect()).unwrap_or_default(),
-                                        stats: kanji_data.get("stats").and_then(|v| v.as_object()).map(|o| o.iter().map(|(k, v)| (k.clone(), v.as_str().unwrap_or("").to_string())).collect()).unwrap_or_default(),
-                                        frequencies: vec![],
-                                    }],
-                                    term_tags: entry.1.unwrap_or_default(),
-                                    forms: vec![],
-                                    match_len,
-                                    styles: Some(std::iter::once((dict_name.clone(), dict_meta.get(&entry.0.source).and_then(|(_, s)| s.clone()).unwrap_or_default())).filter(|(_, s)| !s.is_empty()).collect()),
-                                });
-                            }
-                        }
-                    }
-                }
-            }
         } else {
             // === DEFINITION LOGIC ===
             let def_obj = ApiDefinition {
@@ -1806,7 +1726,6 @@ pub async fn lookup_handler(
                         frequencies: vec![],
                         pitch_accents: vec![],
                         ipa: vec![],
-                        kanji: vec![],
                         term_tags: entry.1.unwrap_or_default(),
                         forms_set: vec![(headword.clone(), reading.clone())],
                         match_len,
@@ -1814,6 +1733,7 @@ pub async fn lookup_handler(
                     });
                 }
             } else {
+                // Don't look up kanji here - we'll add it once at the end
                 flat_results.push(ApiGroupedResult {
                     headword: headword.clone(),
                     reading: reading.clone(),
@@ -1822,7 +1742,6 @@ pub async fn lookup_handler(
                     frequencies: vec![],
                     pitch_accents: vec![],
                     ipa: vec![],
-                    kanji: vec![],
                     term_tags: entry.1.unwrap_or_default(),
                     forms: vec![ApiForm {
                         headword: headword.clone(),
@@ -1835,8 +1754,11 @@ pub async fn lookup_handler(
         }
     }
 
+    // Get kanji results separately
+    let kanji_results = state.lookup.search_kanji(&state.app, &params.text, cursor_idx);
+
     if should_group {
-        let final_results = map
+        let final_results: Vec<ApiGroupedResult> = map
             .into_iter()
             .map(|mut agg| {
                 // Attach frequencies if they exist for this word
@@ -1851,10 +1773,6 @@ pub async fn lookup_handler(
                 if let Some(ipas) = ipa_map.get(&(agg.headword.clone(), agg.reading.clone())) {
                     agg.ipa.extend(ipas.clone());
                 }
-                // Attach kanji if they exist for this character
-                if let Some(kanjis) = kanji_map.get(&agg.headword) {
-                    agg.kanji.extend(kanjis.clone());
-                }
 
                 ApiGroupedResult {
                     headword: agg.headword,
@@ -1864,7 +1782,6 @@ pub async fn lookup_handler(
                     frequencies: agg.frequencies,
                     pitch_accents: agg.pitch_accents,
                     ipa: agg.ipa,
-                    kanji: agg.kanji,
                     term_tags: agg.term_tags,
                     forms: agg
                         .forms_set
@@ -1889,7 +1806,10 @@ pub async fn lookup_handler(
             })
             .collect();
 
-        Ok(Json(final_results))
+        Ok(Json(ApiLookupResponse {
+            terms: final_results,
+            kanji: kanji_results,
+        }))
     } else {
         // Iterate through results and attach frequencies to ALL of them.
         for res in &mut flat_results {
@@ -1904,7 +1824,10 @@ pub async fn lookup_handler(
             }
         }
 
-        Ok(Json(flat_results))
+        Ok(Json(ApiLookupResponse {
+            terms: flat_results,
+            kanji: kanji_results,
+        }))
     }
 }
 

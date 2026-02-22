@@ -1,4 +1,4 @@
-import { DictionaryResult, YomitanLanguage } from '../types';
+import { DictionaryResult, LookupResponse, YomitanLanguage } from '../types';
 import { isNoSpaceLanguage } from '@/Manatan/utils/language';
 
 export type AuthCredentials = { user?: string; pass?: string };
@@ -83,7 +83,7 @@ export const lookupYomitan = async (
     index: number = 0, 
     groupingMode: 'grouped' | 'flat' = 'grouped',
     language?: YomitanLanguage
-): Promise<DictionaryResult[] | 'loading'> => {
+): Promise<LookupResponse | 'loading'> => {
     try {
         // Convert dropdown value to backend boolean
         const groupParam = groupingMode === 'grouped';
@@ -92,12 +92,12 @@ export const lookupYomitan = async (
         const res = await apiRequest<any>(url);
         
         if (res && res.error === 'loading') return 'loading';
-        if (Array.isArray(res)) return res as DictionaryResult[];
+        if (res && res.terms) return res as LookupResponse;
         
-        return [];
+        return { terms: [], kanji: [] };
     } catch (e) {
         console.error("Lookup failed:", e);
-        return [];
+        return { terms: [], kanji: [] };
     }
 };
 
