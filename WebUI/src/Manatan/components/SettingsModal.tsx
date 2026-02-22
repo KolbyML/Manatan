@@ -152,6 +152,22 @@ const getSingleGlossaryName = (value: string): string | null => {
     }
     return null;
 };
+
+const DOWNSCALE_OPTIONS = [
+    { value: undefined, label: 'Original Size' },
+    { value: '240', label: '240' },
+    { value: '360', label: '360' },
+    { value: '480', label: '480' },
+    { value: '720', label: '720' },
+    { value: '900', label: '900' },
+    { value: '1080', label: '1080' },
+    { value: '1200', label: '1200' },
+    { value: '1440', label: '1440' },
+    { value: '1600', label: '1600' },
+    { value: '1920', label: '1920' },
+    { value: '2560', label: '2560' },
+    { value: '3840', label: '3840' },
+];
 export const SettingsModal: React.FC<{ onClose: () => void }> = ({ onClose }) => {
     const { settings, setSettings, showConfirm, showAlert, showProgress, closeDialog, showDialog, openSetup } = useOCR();
     const [localSettings, setLocalSettings] = useState(settings);
@@ -1052,6 +1068,41 @@ ${detail}`,
                                         />
                                         <div style={{ gridColumn: '1 / -1', fontSize: '0.85em', color: '#aaa' }}>
                                             Image compression quality for screenshots sent to Anki (0-1).
+                                        </div>
+
+                                        {/* Downscale settings */}
+                                        <div style={{ gridColumn: '1 / -1', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+                                            <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                                                <label htmlFor="ankiDownscaleMaxWidth">Max Image Width (px)</label>
+                                                    <select 
+                                                        id="ankiDownscaleMaxWidth"
+                                                        value={localSettings.ankiDownscaleMaxWidth ?? ''}
+                                                        onChange={(e) => handleChange('ankiDownscaleMaxWidth', e.target.value ? parseInt(e.target.value, 10) : undefined)}
+                                                    >
+                                                        {DOWNSCALE_OPTIONS.map(opt => (
+                                                            <option key={`width-${opt.value}`} value={opt.value}>
+                                                                {opt.label}
+                                                            </option>
+                                                        ))}
+                                                    </select>
+                                            </div>
+                                            <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                                                <label htmlFor="ankiDownscaleMaxHeight">Max Image Height (px)</label>
+                                                    <select 
+                                                        id="ankiDownscaleMaxHeight"
+                                                        value={localSettings.ankiDownscaleMaxHeight ?? ''}
+                                                        onChange={(e) => handleChange('ankiDownscaleMaxHeight', e.target.value ? parseInt(e.target.value, 10) : undefined)}
+                                                    >
+                                                        {DOWNSCALE_OPTIONS.map(opt => (
+                                                            <option key={`height-${opt.value}`} value={opt.value}>
+                                                                {opt.label}
+                                                            </option>
+                                                        ))}
+                                                    </select>
+                                            </div>
+                                            <div style={{ gridColumn: '1 / -1', fontSize: '0.85em', color: '#aaa' }}>
+                                                If the screenshot exceeds the max width or height, it will be downscaled.
+                                            </div>
                                         </div>
                                     </div>
 

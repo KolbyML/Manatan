@@ -1,3 +1,5 @@
+import { canvasToBase64Webp } from "./image";
+
 /**
  * Creates an image from a URL
  */
@@ -32,7 +34,9 @@ export async function getCroppedImg(
     imageSrc: string,
     pixelCrop: Pixels,
     quality: number,
-    rotation = 0
+    rotation = 0,
+    maxWidth?: number,
+    maxHeight?: number
 ): Promise<string | null> {
     try {
         const image = await createImage(imageSrc);
@@ -76,18 +80,8 @@ export async function getCroppedImg(
             Math.round(0 - safeArea / 2 + image.height * 0.5 - pixelCrop.y)
         );
 
-        // Convert to WebP blob
-        const blob = await canvas.convertToBlob({
-            type: 'image/webp',
-            quality: quality
-        });
-
-        // Convert to base64
-        return new Promise((resolve) => {
-            const reader = new FileReader();
-            reader.onloadend = () => resolve(reader.result as string);
-            reader.readAsDataURL(blob);
-        });
+        // Convert to WebP Base64
+        return await canvasToBase64Webp(canvas, quality, maxWidth, maxHeight);
     } catch (error) {
         console.error('Failed to crop image:', error);
         return null;
@@ -98,7 +92,9 @@ export async function getStitchedAndCroppedImg(
     leftSrc: string,
     rightSrc: string,
     pixelCrop: Pixels,
-    quality: number
+    quality: number,
+    maxWidth?: number,
+    maxHeight?: number
 ): Promise<string | null> {
     try {
         const [imgL, imgR] = await Promise.all([
@@ -139,18 +135,8 @@ export async function getStitchedAndCroppedImg(
             );
         }
 
-        // Convert to WebP blob
-        const blob = await canvas.convertToBlob({ 
-            type: 'image/webp',
-            quality: quality 
-        });
-
-        // Convert to base64
-        return new Promise((resolve) => {
-            const reader = new FileReader();
-            reader.onloadend = () => resolve(reader.result as string);
-            reader.readAsDataURL(blob);
-        });
+        // Convert to WebP Base64
+        return await canvasToBase64Webp(canvas, quality, maxWidth, maxHeight);
 
     } catch (error) {
         console.error('Failed to crop image:', error);
