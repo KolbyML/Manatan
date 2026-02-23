@@ -3418,7 +3418,10 @@ export const AnimeVideoPlayer = ({
     }, [settings.resultGroupingMode, settings.yomitanLanguage, settings.yomitanLookupMaxHistory, dictionaryHistoryIndex, applyDictionaryHighlight]);
 
     const handleWordClick = useCallback(async (text: string, position: number) => {
-        const cleanText = text.trim();
+        const textEncoder = new TextEncoder();
+        const prefixBytes = textEncoder.encode(text.slice(0, position)).length;
+        
+        const cleanText = cleanPunctuation(text, true).trim();
         if (!cleanText) return;
 
         const maxHistory = settings.yomitanLookupMaxHistory || 10;
@@ -3444,7 +3447,7 @@ export const AnimeVideoPlayer = ({
         
         const results = await lookupYomitan(
             cleanText,
-            position,
+            prefixBytes,
             settings.resultGroupingMode,
             settings.yomitanLanguage
         );
