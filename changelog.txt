@@ -1,3 +1,21 @@
+## Release v3.2.3
+
+- fix(windows): cast CEF event flags to u32 (5d5e88c)
+- fix sync and add highlights support to android (#222) (ce4ebf4)
+- Kanji full support (#221) (c751c88)
+- Fix workspace lint violations (23a3f89)
+- Fix workspace lint violations (ed98f84)
+- Update FFmpeg tool downloads for AV1 support (1f48323)
+- Downscale screenshot to fit under optional maximum width/height (px) values (#217) (5255312)
+- Fix iOS OAuth broker token embedding (d06d739)
+- Fix anime episode filter empty-state lock (034c3f2)
+- Fix downloaded episode flag fallback on iOS (2a966a5)
+- Fix iOS offline media paths after TestFlight updates (ea76f7e)
+- Fix offline playback for downloaded anime episodes (9796615)
+- Fix offline anime episodes fallback for downloaded shows (e67def5)
+- Fix windows not being able to login to jellyfin (6e4bed9)
+- Fix queue bug for downloading anime (ab614a2)
+
 ## Release v3.2.2
 
 - Update runtime so Jellyfin login works (9a68b30)
