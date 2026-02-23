@@ -748,24 +748,26 @@ pub fn import_zip(state: &AppState, data: &[u8]) -> Result<String> {
         }
         // Branch 3: Kanji bank (kanji_bank_*.json) - insert into terms table like pitch/freq
         else if name.contains("kanji_bank") && name.ends_with(".json") {
-            info!("   -> Processing kanji bank: {}", name);
-
             let parse_result = (|| -> Result<usize> {
                 let mut file = match open_zip_file_safe(&mut zip, name) {
                     Some(f) => f,
                     None => return Ok(0),
                 };
 
-                let mut stmt =
-                    tx.prepare("INSERT INTO terms (term, dictionary_id, json) VALUES (?, ?, ?)")?;
+                let mut stmt = tx.prepare(
+                    "INSERT OR REPLACE INTO kanji (character, dictionary_id, onyomi, kunyomi, tags, meanings, stats) VALUES (?, ?, ?, ?, ?, ?, ?)"
+                )?;
 
-                let rows = parse_json_array_stream::<_, Vec<Value>, _>(&mut file, |arr| {
+                let mut count = 0usize;
+
+                let _rows = parse_json_array_stream::<_, Vec<Value>, _>(&mut file, |arr| {
                     if arr.len() < 6 {
                         return Ok(());
                     }
 
                     let character = arr.first().and_then(|v| v.as_str()).unwrap_or("");
-                    if character.is_empty() || character.len() != 1 {
+                    // Use char count, not byte count - UTF-8 kanji are 3 bytes
+                    if character.chars().count() != 1 {
                         return Ok(());
                     }
 
@@ -779,39 +781,24 @@ pub fn import_zip(state: &AppState, data: &[u8]) -> Result<String> {
                         .unwrap_or_default();
                     let stats = arr.get(5).and_then(|v| v.as_object());
 
-                    let kanji_data = serde_json::json!({
-                        "onyomi": onyomi,
-                        "kunyomi": kunyomi,
-                        "tags": tags,
-                        "meanings": meanings,
-                        "stats": stats
-                    });
-                    let content = format!("Kanji:{kanji_data}");
+                    let meanings_json = serde_json::to_string(&meanings).unwrap_or_default();
+                    let stats_json = stats.map(|s| serde_json::to_string(s).unwrap_or_default()).unwrap_or_default();
 
-                    let record = Record::YomitanGlossary(Glossary {
-                        popularity: 0,
-                        tags: vec![],
-                        content: vec![structured::Content::String(content)],
-                    });
+                    stmt.execute(rusqlite::params![
+                        character,
+                        dict_id.0,
+                        onyomi,
+                        kunyomi,
+                        tags,
+                        meanings_json,
+                        stats_json
+                    ])?;
 
-                    let stored = StoredRecord {
-                        dictionary_id: dict_id,
-                        record,
-                        term_tags: None,
-                        reading: None,
-                        headword: Some(character.to_string()),
-                    };
-
-                    let json_bytes = serde_json::to_vec(&stored)?;
-                    let compressed = encoder.compress_vec(&json_bytes)?;
-
-                    stmt.execute(rusqlite::params![character, dict_id.0, compressed])?;
-                    bump_term_count(&mut terms_found)?;
-
+                    count += 1;
                     Ok(())
                 })?;
 
-                Ok(rows)
+                Ok(count)
             })();
 
             let rows = match parse_result {

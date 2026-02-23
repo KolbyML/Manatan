@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useState, useMemo } from 'react';
 import {
     Box,
     TextField,
@@ -18,6 +18,7 @@ import { DictionaryResult } from '@/Manatan/types';
 import { DictionaryView } from '@/Manatan/components/DictionaryView';
 import { useOCR } from '@/Manatan/context/OCRContext';
 import { cleanPunctuation, lookupYomitan } from '@/Manatan/utils/api';
+import { buildScopedCustomCss } from '@/Manatan/utils/customCss';
 import { useAppTitle } from '@/features/navigation-bar/hooks/useAppTitle';
 
 const getLookupTextFromHref = (href: string, fallback: string) => {
@@ -70,6 +71,7 @@ interface LookupHistoryEntry {
 export const Dictionary = () => {
     const [searchTerm, setSearchTerm] = useState('');
     const [results, setResults] = useState<DictionaryResult[]>([]);
+    const [kanjiResults, setKanjiResults] = useState<any[]>([]);
     const [isLoading, setIsLoading] = useState(false);
     const [hasSearched, setHasSearched] = useState(false);
     const { settings } = useOCR();
@@ -84,6 +86,11 @@ export const Dictionary = () => {
     // Configuration from settings (with defaults)
     const maxHistory = settings.yomitanLookupMaxHistory || 10;
     const navMode = settings.yomitanLookupNavigationMode || 'stacked'; // 'stacked' or 'tabs'
+
+    const customCss = useMemo(
+        () => settings.yomitanPopupCustomCss?.trim() || '',
+        [settings.yomitanPopupCustomCss],
+    );
 
     const currentEntry = historyIndex >= 0 && historyIndex < history.length ? history[historyIndex] : null;
     const displayResults = currentEntry ? currentEntry.results : results;
@@ -105,8 +112,13 @@ export const Dictionary = () => {
             settings.yomitanLanguage || 'japanese'
         );
         
-        const loadedResults = res === 'loading' ? [] : res;
+        console.log('[Dictionary] Raw lookup result:', JSON.stringify(res, null, 2));
+        
+        const loadedResults = res === 'loading' ? [] : (res as any).terms || res;
+        const loadedKanji = res === 'loading' ? [] : (res as any).kanji || [];
         const isSystemLoading = res === 'loading';
+
+        setKanjiResults(loadedKanji);
 
         if (!isFromHistory) {
             setResults(loadedResults);
@@ -229,8 +241,11 @@ export const Dictionary = () => {
                 settings.resultGroupingMode || 'grouped',
                 settings.yomitanLanguage || 'japanese'
             );
-            const loadedResults = res === 'loading' ? [] : (res || []);
+            const loadedResults = res === 'loading' ? [] : (res as any).terms || res || [];
+            const loadedKanji = res === 'loading' ? [] : (res as any).kanji || [];
             const isSystemLoading = res === 'loading';
+            
+            setKanjiResults(loadedKanji);
 
             setHistory(prev => {
                 const newHistory = [...prev];
@@ -362,22 +377,21 @@ export const Dictionary = () => {
     };
 
     return (
-        <Box
-            sx={{
-                height: '100%',
-                minHeight: 'calc(100vh - 64px)',
-                display: 'flex',
-                flexDirection: 'column',
-                bgcolor: 'background.default',
-                color: 'text.primary',
-            }}
-        >
+        <>
+            {customCss && <style>{customCss}</style>}
+            <div
+                style={{
+                    height: '100%',
+                    minHeight: 'calc(100vh - 64px)',
+                    display: 'flex',
+                    flexDirection: 'column',
+                }}
+            >
             {/* Header / Search Bar */}
             <Box
                 sx={{
                     p: 3,
                     borderBottom: `1px solid ${muiTheme.palette.divider}`,
-                    background: `linear-gradient(180deg, ${muiTheme.palette.background.default} 0%, ${alpha(muiTheme.palette.background.default, 0.93)} 100%)`,
                     position: 'sticky',
                     top: 0,
                     zIndex: 10,
@@ -388,6 +402,14 @@ export const Dictionary = () => {
                         fullWidth
                         value={searchTerm}
                         onChange={(e) => setSearchTerm(e.target.value)}
+                        onKeyDown={(e) => {
+                            if (e.key === 'Enter') {
+                                (e.target as HTMLInputElement).blur();
+                                if (typeof window !== 'undefined' && (window as any).ManatanNative?.hideKeyboard) {
+                                    (window as any).ManatanNative.hideKeyboard();
+                                }
+                            }
+                        }}
                         placeholder="Search..."
                         autoFocus
                         size="medium"
@@ -489,8 +511,6 @@ export const Dictionary = () => {
                                     sx={{
                                         maxWidth: 900,
                                         mx: 'auto',
-                                        backgroundColor: muiTheme.palette.background.paper,
-                                        color: muiTheme.palette.text.primary,
                                         backdropFilter: 'blur(10px)',
                                         borderRadius: '16px',
                                         border: `1px solid ${muiTheme.palette.divider}`,
@@ -504,6 +524,7 @@ export const Dictionary = () => {
                                         systemLoading={displaySystemLoading}
                                         onLinkClick={handleLinkClick}
                                         onWordClick={handleWordClick}
+                                        kanjiResults={kanjiResults}
                                     />
                                 </Paper>
                             </Box>
@@ -530,6 +551,7 @@ export const Dictionary = () => {
                     </Box>
                 </Fade>
             </Box>
-        </Box>
+        </div>
+        </>
     );
 };

@@ -206,8 +206,14 @@ export interface DictionaryResult {
             tags?: string[];
         }>;
     }>;
-    kanji?: Array<{
+    styles?: Record<string, string>;
+}
+
+export interface LookupResponse {
+    terms: DictionaryResult[];
+    kanji: Array<{
         character: string;
+        dictionaryName: string;
         onyomi: string[];
         kunyomi: string[];
         tags: string[];
@@ -218,7 +224,6 @@ export interface DictionaryResult {
             value: string;
         }>;
     }>;
-    styles?: Record<string, string>;
 }
 
 export interface DictionaryDefinition {
@@ -243,6 +248,7 @@ export interface DictPopupState {
     x: number;
     y: number;
     results: DictionaryResult[];
+    kanjiResults: any[];
     isLoading: boolean;
     systemLoading?: boolean;
     highlight?: {
