@@ -1157,10 +1157,12 @@ useEffect(() => {
             {/* Dynamic image sizing */}
             <style>{`
                 .paged-content img {
-                    max-width: 100%;
-                    max-height: ${layout.contentH}px;
+                    max-width: 100vw !important;
+                    max-height: ${layout ? layout.contentH : 1000}px;
+                    width: auto;
                     height: auto;
                     display: block;
+                    object-fit: contain;
                 }
             `}</style>
 

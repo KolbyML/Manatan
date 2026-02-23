@@ -243,7 +243,7 @@ const LNLibraryCard = ({ item, onOpen, onDelete, onEdit, isSelectionMode, isSele
                                                 <Box
                                                     sx={{
                                                         bgcolor: 'primary.main',
-                                                        color: 'white',
+                                                        color: 'primary.contrastText',
                                                         px: 1,
                                                         py: 0.5,
                                                         borderRadius: 1,
