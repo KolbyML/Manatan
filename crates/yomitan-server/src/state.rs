@@ -95,6 +95,32 @@ impl AppState {
         // Migration: Add styles column if it doesn't exist (ignore errors for existing columns)
         let _ = conn.execute("ALTER TABLE dictionaries ADD COLUMN styles TEXT", []);
 
+        // Create kanji tables
+        conn.execute_batch(
+            "CREATE TABLE IF NOT EXISTS kanji (
+                character TEXT NOT NULL,
+                dictionary_id INTEGER NOT NULL,
+                onyomi TEXT,
+                kunyomi TEXT,
+                tags TEXT,
+                meanings TEXT,
+                stats TEXT,
+                PRIMARY KEY (character, dictionary_id)
+            );
+
+            CREATE TABLE IF NOT EXISTS kanji_meta (
+                character TEXT NOT NULL,
+                dictionary_id INTEGER NOT NULL,
+                meta_type TEXT NOT NULL,
+                data TEXT,
+                PRIMARY KEY (character, dictionary_id, meta_type)
+            );
+
+            CREATE INDEX IF NOT EXISTS idx_kanji_character ON kanji(character);
+            CREATE INDEX IF NOT EXISTS idx_kanji_meta_character ON kanji_meta(character);",
+        )
+        .ok();
+
         // 2. Load Dictionaries from DB
         let mut dicts = HashMap::new();
         let mut max_id = 0;

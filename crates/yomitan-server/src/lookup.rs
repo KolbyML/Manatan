@@ -1,5 +1,6 @@
 use std::collections::{HashMap, HashSet};
 
+use serde::{Deserialize, Serialize};
 use tracing::error;
 use wordbase_api::{
     DictionaryId, FrequencyValue, Record, RecordEntry, RecordId, Span, Term,
@@ -10,6 +11,26 @@ use crate::{
     deinflector::{Deinflector, Language as DeinflectLanguage},
     state::{AppState, StoredRecord},
 };
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct KanjiEntry {
+    pub character: String,
+    pub dictionary_name: String,
+    pub onyomi: Vec<String>,
+    pub kunyomi: Vec<String>,
+    pub tags: Vec<String>,
+    pub meanings: Vec<String>,
+    pub stats: std::collections::HashMap<String, String>,
+    pub frequencies: Vec<KanjiFrequency>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct KanjiFrequency {
+    pub dictionary_name: String,
+    pub value: String,
+}
 
 pub struct LookupService {
     deinflector: Deinflector,
@@ -197,6 +218,180 @@ impl LookupService {
             };
             get_val(b.0.source_sorting_frequency.as_ref())
                 .cmp(&get_val(a.0.source_sorting_frequency.as_ref()))
+        });
+
+        results
+    }
+
+    pub fn search_kanji(
+        &self,
+        state: &AppState,
+        text: &str,
+        cursor_offset: usize,
+    ) -> Vec<KanjiEntry> {
+        use wordbase_api::DictionaryId;
+        let mut results = Vec::new();
+
+        let conn = match state.pool.get() {
+            Ok(c) => c,
+            Err(_) => return results,
+        };
+
+        let dict_configs: std::collections::HashMap<DictionaryId, (bool, String)> = {
+            let dicts = state.dictionaries.read().expect("lock");
+            dicts
+                .iter()
+                .map(|(id, d)| (*id, (d.enabled, d.name.clone())))
+                .collect()
+        };
+
+        let start_index = self.snap_to_char_boundary(text, cursor_offset);
+        if start_index >= text.len() {
+            return results;
+        }
+
+        let search_text = &text[start_index..];
+        let chars: Vec<char> = search_text.chars().take(10).collect();
+
+        for len in (1..=chars.len()).rev() {
+            let character: String = chars[0..len].iter().collect();
+            if character.chars().count() != len {
+                continue;
+            }
+
+            let mut kanji_stmt = match conn.prepare(
+                "SELECT dictionary_id, onyomi, kunyomi, tags, meanings, stats FROM kanji WHERE character = ?"
+            ) {
+                Ok(s) => s,
+                Err(_) => continue,
+            };
+
+            let mut meta_stmt = match conn.prepare(
+                "SELECT km.meta_type, km.data, d.name FROM kanji_meta km JOIN dictionaries d ON km.dictionary_id = d.id WHERE km.character = ?"
+            ) {
+                Ok(s) => s,
+                Err(_) => continue,
+            };
+
+            // Use query_map to get ALL kanji entries for this character (not just first)
+            let kanji_iter = match kanji_stmt.query_map(rusqlite::params![&character], |row| {
+                Ok((
+                    row.get::<_, i64>(0)?,
+                    row.get::<_, String>(1).unwrap_or_default(),
+                    row.get::<_, String>(2).unwrap_or_default(),
+                    row.get::<_, String>(3).unwrap_or_default(),
+                    row.get::<_, String>(4).unwrap_or_default(),
+                    row.get::<_, String>(5).unwrap_or_default(),
+                ))
+            }) {
+                Ok(iter) => iter,
+                Err(_) => continue,
+            };
+
+            // Query kanji_meta for frequencies
+            let meta_result = meta_stmt.query_map(rusqlite::params![&character], |row| {
+                Ok::<_, rusqlite::Error>((
+                    row.get::<_, String>(0)?,                    // meta_type
+                    row.get::<_, String>(1).unwrap_or_default(), // data
+                    row.get::<_, String>(2).unwrap_or_default(), // dict name
+                ))
+            });
+
+            // Build frequencies map: dict_id -> Vec<(dict_name, value)>
+            let mut freq_map: std::collections::HashMap<i64, Vec<(String, String)>> =
+                std::collections::HashMap::new();
+
+            if let Ok(meta_iter) = meta_result {
+                for meta_item in meta_iter {
+                    if let Ok((meta_type, data, dict_name)) = meta_item {
+                        if meta_type == "freq" {
+                            // Parse frequency data - try JSON first, otherwise use as-is
+                            let freq_value: String =
+                                serde_json::from_str(&data).unwrap_or_else(|_| data);
+                            freq_map.entry(0).or_default().push((dict_name, freq_value));
+                        }
+                    }
+                }
+            }
+
+            // Process ALL kanji entries for this character
+            for kanji_result in kanji_iter.flatten() {
+                let (dict_id, onyomi, kunyomi, tags, meanings_json, stats_json) = kanji_result;
+                let dict_id = DictionaryId(dict_id);
+
+                if let Some((enabled, _)) = dict_configs.get(&dict_id) {
+                    if !*enabled {
+                        continue;
+                    }
+                }
+
+                // Get dictionary name for this kanji - look up from DB directly to ensure we get the name
+                let dict_name: String = conn
+                    .query_row(
+                        "SELECT name FROM dictionaries WHERE id = ?",
+                        rusqlite::params![dict_id.0],
+                        |row| row.get(0),
+                    )
+                    .unwrap_or_else(|_| {
+                        // Fallback to dict_configs if DB query fails
+                        dict_configs
+                            .get(&dict_id)
+                            .map(|(_, name)| name.clone())
+                            .unwrap_or_default()
+                    });
+
+                let onyomi_vec: Vec<String> = onyomi.split_whitespace().map(String::from).collect();
+                let kunyomi_vec: Vec<String> =
+                    kunyomi.split_whitespace().map(String::from).collect();
+                let tags_vec: Vec<String> = tags.split_whitespace().map(String::from).collect();
+                let meanings: Vec<String> =
+                    serde_json::from_str(&meanings_json).unwrap_or_default();
+                let stats: std::collections::HashMap<String, String> =
+                    serde_json::from_str(&stats_json).unwrap_or_default();
+
+                // Get frequencies for this dictionary
+                let frequencies: Vec<KanjiFrequency> = freq_map
+                    .get(&dict_id.0)
+                    .map(|vec| {
+                        vec.iter()
+                            .map(|(dict_name, value)| KanjiFrequency {
+                                dictionary_name: dict_name.clone(),
+                                value: value.clone(),
+                            })
+                            .collect()
+                    })
+                    .unwrap_or_default();
+
+                results.push(KanjiEntry {
+                    character: character.clone(),
+                    dictionary_name: dict_name,
+                    onyomi: onyomi_vec,
+                    kunyomi: kunyomi_vec,
+                    tags: tags_vec,
+                    meanings,
+                    stats,
+                    frequencies,
+                });
+            }
+        }
+
+        results.sort_by(|a, b| {
+            let len_a = a.character.chars().count();
+            let len_b = b.character.chars().count();
+            if len_a != len_b {
+                return len_b.cmp(&len_a);
+            }
+            let freq_a = a
+                .frequencies
+                .first()
+                .and_then(|f| f.value.parse::<i64>().ok())
+                .unwrap_or(999999);
+            let freq_b = b
+                .frequencies
+                .first()
+                .and_then(|f| f.value.parse::<i64>().ok())
+                .unwrap_or(999999);
+            freq_a.cmp(&freq_b)
         });
 
         results

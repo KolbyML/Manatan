@@ -585,15 +585,20 @@ export const TextBox: React.FC<{
                 settings.yomitanLanguage
             );
 
+            const loadedResults = results === 'loading' ? [] : ((results as any).terms || results || []);
+
+            const loadedKanji = results === 'loading' ? [] : ((results as any).kanji || []);
+
             if (results === 'loading') {
-                 setDictPopup(prev => ({ ...prev, results: [], isLoading: false, systemLoading: true }));
+                 setDictPopup(prev => ({ ...prev, results: [], kanjiResults: [], isLoading: false, systemLoading: true }));
             } else {
                 setDictPopup(prev => ({ 
                     ...prev, 
-                    results: results, 
+                    results: loadedResults,
+                    kanjiResults: loadedKanji,
                     isLoading: false, 
                     systemLoading: false, 
-                    highlight: { imgSrc, index, startChar: charOffset, length: (results && results[0]?.matchLen) || 1 }
+                    highlight: { imgSrc, index, startChar: charOffset, length: (loadedResults && loadedResults[0]?.matchLen) || 1 }
                 }));
             }
         }

@@ -15,7 +15,6 @@ import {
 } from '@/Manatan/utils/wordAudio';
 import { DictionaryResult, WordAudioSource, WordAudioSourceSelection } from '@/Manatan/types';
 import { PronunciationSection, extractPronunciationData, getKanaMorae } from './Pronunciation';
-import { KanjiSection, extractKanjiData } from './KanjiView';
 import { PopupTheme } from '@/features/ln/reader/utils/themes';
 import VolumeUpIcon from '@mui/icons-material/VolumeUp';
 import StarIcon from '@mui/icons-material/Star';
@@ -235,6 +234,7 @@ const ContentNode: React.FC<{
         }
         if (tag === 'br') return <br />;
         const Component = tag as keyof JSX.IntrinsicElements;
+        if (!Component) return null;
         return <Component style={finalStyle} {...dataAttrs} className={className} />;
     }
     
@@ -263,6 +263,7 @@ const ContentNode: React.FC<{
     }
     
     const Component = tag as keyof JSX.IntrinsicElements;
+    if (!Component) return null;
     const element = (
         <Component style={finalStyle} {...dataAttrs} className={className} title={titleAttr}>
             <ContentNode node={content} {...childProps} />
@@ -813,8 +814,177 @@ const AudioMenu: React.FC<AudioMenuProps> = ({
     );
 };
 
+interface KanjiEntriesSectionProps {
+    kanjiResults: any[];
+    grouped: boolean;
+    colors: any;
+    layout: 'vertical' | 'horizontal';
+}
+
+const KanjiEntryDisplay: React.FC<{
+    kanji: any;
+    layout: 'vertical' | 'horizontal';
+    colors: any;
+    showNumber?: boolean;
+    number?: number;
+    showDictTag?: boolean;
+    showCharacter?: boolean;
+    showStatsByDefault?: boolean;
+}> = ({ kanji, layout, colors, showNumber, number, showDictTag, showCharacter = true, showStatsByDefault = false }) => {
+    const [showStats, setShowStats] = useState(false);
+    const hasStats = kanji.stats && Object.keys(kanji.stats).length > 0;
+
+    return (
+        <div style={{ display: 'flex', marginBottom: '8px', paddingLeft: '8px', borderLeft: `2px solid ${colors.border}` }}>
+            {showNumber && <div style={{ flexShrink: 0, width: '20px', color: colors.textMuted, fontWeight: 'bold' }}>{number}.</div>}
+            <div style={{ flexGrow: 1 }}>
+                <div style={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: '4px', marginBottom: '4px' }}>
+                    {showDictTag && kanji.dictionaryName && (
+                        <span style={getTagStyle(layout, colors.dictTagBg, colors.dictTagText)}>{kanji.dictionaryName}</span>
+                    )}
+                    {kanji.tags && kanji.tags.map((tag: string, ti: number) => (
+                        <span key={ti} style={getTagStyle(layout, colors.tagBg, colors.tagText)}>{tag}</span>
+                    ))}
+                </div>
+                {showCharacter && (
+                    <div style={{ fontSize: layout === 'horizontal' ? '1.3rem' : '1.6rem', fontWeight: 'bold', color: colors.text, marginBottom: '4px' }}>
+                        {kanji.character}
+                    </div>
+                )}
+                <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap', fontSize: '0.9em', marginBottom: '4px' }}>
+                    {kanji.onyomi && kanji.onyomi.length > 0 && (
+                        <div>
+                            <span style={{ color: colors.textSecondary, fontSize: '0.7rem', marginRight: '4px' }}>オ</span>
+                            {kanji.onyomi.map((r: string, i: number) => (
+                                <span key={i} style={{ marginRight: '6px' }}>{r}</span>
+                            ))}
+                        </div>
+                    )}
+                    {kanji.kunyomi && kanji.kunyomi.length > 0 && (
+                        <div>
+                            <span style={{ color: colors.textSecondary, fontSize: '0.7rem', marginRight: '4px' }}>ク</span>
+                            {kanji.kunyomi.map((r: string, i: number) => (
+                                <span key={i} style={{ marginRight: '6px' }}>{r}</span>
+                            ))}
+                        </div>
+                    )}
+                </div>
+                {kanji.meanings && kanji.meanings.length > 0 && (
+                    <div style={{ fontSize: '0.85em', color: colors.text, marginBottom: '4px' }}>
+                        {kanji.meanings.map((m: string, i: number) => (
+                            <span key={i}>{i > 0 && <span style={{ margin: '0 4px', color: colors.textSecondary }}>/</span>}{m}</span>
+                        ))}
+                    </div>
+                )}
+                {hasStats && (
+                    <div style={{ marginTop: '4px' }}>
+                        <button
+                            onClick={() => setShowStats(!showStats)}
+                            style={{
+                                background: 'none',
+                                border: 'none',
+                                color: colors.accent,
+                                cursor: 'pointer',
+                                fontSize: '0.75rem',
+                                padding: 0,
+                            }}
+                        >
+                            {showStats ? '▼ Hide Stats' : '▶ Show Stats'}
+                        </button>
+                        {showStats && (
+                            <div style={{ marginTop: '4px', display: 'flex', flexWrap: 'wrap', gap: '8px', fontSize: '0.75rem' }}>
+                                {Object.entries(kanji.stats).map(([key, value], i) => (
+                                    <span key={i} style={{ color: colors.textSecondary }}>
+                                        <span style={{ color: colors.textMuted }}>{key}:</span> {String(value)}
+                                    </span>
+                                ))}
+                            </div>
+                        )}
+                    </div>
+                )}
+            </div>
+        </div>
+    );
+};
+
+const KanjiEntriesSection: React.FC<KanjiEntriesSectionProps> = ({ kanjiResults, grouped, colors, layout }) => {
+    if (!kanjiResults || kanjiResults.length === 0) return null;
+
+    if (grouped) {
+        const byCharacter: Record<string, typeof kanjiResults> = {};
+        for (const kanji of kanjiResults) {
+            const char = kanji.character;
+            if (!byCharacter[char]) byCharacter[char] = [];
+            byCharacter[char].push(kanji);
+        }
+
+        const characters = Object.keys(byCharacter);
+
+        return (
+            <div className="kanji-entries" style={{ marginTop: '16px', paddingTop: '16px', borderTop: `1px solid ${colors.border}` }}>
+                {characters.map((char, charIdx) => (
+                    <div key={char} style={{ marginBottom: '16px' }}>
+                        <div style={{ fontSize: layout === 'horizontal' ? '1.5rem' : '2rem', fontWeight: 'bold', color: colors.text, marginBottom: '8px' }}>
+                            {char}
+                        </div>
+                        {byCharacter[char].map((kanji, kanjiIdx) => (
+                            <KanjiEntryDisplay
+                                key={kanjiIdx}
+                                kanji={kanji}
+                                layout={layout}
+                                colors={colors}
+                                showNumber
+                                number={kanjiIdx + 1}
+                                showDictTag
+                                showCharacter={false}
+                            />
+                        ))}
+                    </div>
+                ))}
+            </div>
+        );
+    }
+
+    const byDictionary: Record<string, typeof kanjiResults> = {};
+    for (const kanji of kanjiResults) {
+        const dict = kanji.dictionaryName || 'Unknown';
+        if (!byDictionary[dict]) byDictionary[dict] = [];
+        byDictionary[dict].push(kanji);
+    }
+
+    return (
+        <div className="kanji-entries" style={{ marginTop: '16px', paddingTop: '16px', borderTop: `1px solid ${colors.border}` }}>
+            {Object.entries(byDictionary).map(([dictName, kanjis], dictIdx) => (
+                <div key={dictName} style={{ marginBottom: '16px' }}>
+                    {Object.keys(byDictionary).length > 1 && (
+                        <div style={{ 
+                            fontSize: '0.7rem', 
+                            color: colors.textSecondary, 
+                            fontStyle: 'italic',
+                            marginBottom: '8px'
+                        }}>
+                            {dictName}
+                        </div>
+                    )}
+                    {kanjis.map((kanji, idx) => (
+                        <KanjiEntryDisplay
+                            key={idx}
+                            kanji={kanji}
+                            layout={layout}
+                            colors={colors}
+                            showNumber
+                            number={idx + 1}
+                        />
+                    ))}
+                </div>
+            ))}
+        </div>
+    );
+};
+
 interface DictionaryViewProps {
     results: DictionaryResult[];
+    kanjiResults?: any[];
     isLoading: boolean;
     systemLoading: boolean;
     onLinkClick?: (href: string, text: string) => void;
@@ -829,10 +999,11 @@ interface DictionaryViewProps {
     layout?: 'vertical' | 'horizontal';
     renderAnkiButtons?: (entry: DictionaryResult) => React.ReactNode;
     renderHistoryNav?: () => React.ReactNode;
+    grouped?: boolean;
 }
 
 export const DictionaryView: React.FC<DictionaryViewProps> = ({ 
-    results, isLoading, systemLoading, onLinkClick, onWordClick, context, variant = 'inline', popupTheme, layout = 'vertical', renderAnkiButtons, renderHistoryNav
+    results, kanjiResults = [], isLoading, systemLoading, onLinkClick, onWordClick, context, variant = 'inline', popupTheme, layout = 'vertical', renderAnkiButtons, renderHistoryNav, grouped = false
 }) => {
     const isPopup = variant === 'popup';
     const muiTheme = useTheme();
@@ -1112,11 +1283,6 @@ export const DictionaryView: React.FC<DictionaryViewProps> = ({
                             />
                         );
                     })()}
-                    {(() => {
-                        const kanjiData = extractKanjiData(entry);
-                        if (kanjiData.length === 0) return null;
-                        return <KanjiSection kanji={kanjiData} />;
-                    })()}
                     {entry.glossary && (
                         <div class="entry-body gloss-list definition-list">
                             {entry.glossary.map((def, defIdx) => (
@@ -1143,7 +1309,10 @@ export const DictionaryView: React.FC<DictionaryViewProps> = ({
                     )}
                 </div>
             ))}
-            {!isLoading && results.length === 0 && <div style={{ padding: '10px', textAlign: 'center', color: colors.textMuted }}>No results found</div>}
+            {!isLoading && kanjiResults.length > 0 && (
+                <KanjiEntriesSection kanjiResults={kanjiResults} grouped={grouped} colors={colors} layout={layout} />
+            )}
+            {!isLoading && results.length === 0 && kanjiResults.length === 0 && <div style={{ padding: '10px', textAlign: 'center', color: colors.textMuted }}>No results found</div>}
             {audioMenu && (
                 <AudioMenu
                     x={audioMenu.x} y={audioMenu.y} entry={audioMenu.entry}

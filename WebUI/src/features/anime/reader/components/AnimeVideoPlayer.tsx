@@ -737,6 +737,7 @@ export const AnimeVideoPlayer = ({
     );
     const [dictionaryVisible, setDictionaryVisible] = useState(false);
     const [dictionaryResults, setDictionaryResults] = useState<DictionaryResult[]>([]);
+    const [kanjiResults, setKanjiResults] = useState<any[]>([]);
     const [dictionaryLoading, setDictionaryLoading] = useState(false);
     const [dictionarySystemLoading, setDictionarySystemLoading] = useState(false);
     const [, setDictionaryQuery] = useState('');
@@ -2967,6 +2968,7 @@ export const AnimeVideoPlayer = ({
             setDictionaryVisible(true);
             setDictionaryQuery(text);
             setDictionaryResults([]);
+            setKanjiResults([]);
             setDictionaryLoading(true);
             setDictionarySystemLoading(false);
             setIsOverlayVisible(false);
@@ -2988,7 +2990,8 @@ export const AnimeVideoPlayer = ({
             if (dictionaryRequestRef.current !== requestId) {
                 return;
             }
-            const loadedResults = results === 'loading' ? [] : (results || []);
+            const loadedResults = results === 'loading' ? [] : ((results as any).terms || results || []);
+            const loadedKanji = results === 'loading' ? [] : ((results as any).kanji || []);
             const isSystemLoading = results === 'loading';
             
             setDictionaryHistory(prev => {
@@ -3002,12 +3005,13 @@ export const AnimeVideoPlayer = ({
             if (results === 'loading') {
                 setDictionaryLoading(false);
                 setDictionarySystemLoading(true);
+                setKanjiResults([]);
             } else {
-                const loadedResults = results || [];
                 setDictionaryResults(loadedResults);
+                setKanjiResults(loadedKanji);
                 setDictionaryLoading(false);
                 setDictionarySystemLoading(false);
-                const matchLen = results?.[0]?.matchLen;
+                const matchLen = (results as any)?.terms?.[0]?.matchLen || loadedResults[0]?.matchLen;
                 applyDictionaryHighlight(matchLen, {
                     cueKey,
                     text,
@@ -3079,10 +3083,12 @@ export const AnimeVideoPlayer = ({
 
         try {
             const results = await lookupYomitan(cleanText, prefixBytes, settings.resultGroupingMode || 'grouped', settings.yomitanLanguage || 'japanese');
-            const loadedResults = results === 'loading' ? [] : (results || []);
+            const loadedResults = results === 'loading' ? [] : ((results as any).terms || results || []);
+            const loadedKanji = results === 'loading' ? [] : ((results as any).kanji || []);
             const isSystemLoading = results === 'loading';
 
             setDictionaryResults(loadedResults);
+            setKanjiResults(loadedKanji);
             setDictionaryLoading(false);
             setDictionarySystemLoading(isSystemLoading);
 
@@ -3098,6 +3104,7 @@ export const AnimeVideoPlayer = ({
         } catch (err) {
             console.warn('Failed to lookup word', err);
             setDictionaryResults([]);
+            setKanjiResults([]);
             setDictionaryLoading(false);
             setDictionarySystemLoading(false);
             setDictionaryHistory(prev => {
@@ -3180,10 +3187,12 @@ export const AnimeVideoPlayer = ({
 
         try {
             const results = await lookupYomitan(cleanText, 0, settings.resultGroupingMode || 'grouped', settings.yomitanLanguage || 'japanese');
-            const loadedResults = results === 'loading' ? [] : (results || []);
+            const loadedResults = results === 'loading' ? [] : ((results as any).terms || results || []);
+            const loadedKanji = results === 'loading' ? [] : ((results as any).kanji || []);
             const isSystemLoading = results === 'loading';
 
             setDictionaryResults(loadedResults);
+            setKanjiResults(loadedKanji);
             setDictionaryLoading(false);
             setDictionarySystemLoading(isSystemLoading);
 
@@ -3198,6 +3207,7 @@ export const AnimeVideoPlayer = ({
         } catch (err) {
             console.warn('Failed to lookup link definition', err);
             setDictionaryResults([]);
+            setKanjiResults([]);
             setDictionaryLoading(false);
             setDictionarySystemLoading(false);
             setDictionaryHistory(prev => {
@@ -3373,6 +3383,7 @@ export const AnimeVideoPlayer = ({
         setIsOverlayVisible(false);
         dictionaryOpenedByHoverRef.current = false;
         setDictionaryResults([]);
+        setKanjiResults([]);
         setDictionaryLoading(true);
         setDictionarySystemLoading(false);
         
@@ -3385,7 +3396,8 @@ export const AnimeVideoPlayer = ({
         if (dictionaryRequestRef.current !== requestId) {
             return;
         }
-        const loadedResults = results === 'loading' ? [] : (results || []);
+        const loadedResults = results === 'loading' ? [] : ((results as any).terms || results || []);
+        const loadedKanji = results === 'loading' ? [] : ((results as any).kanji || []);
         const isSystemLoading = results === 'loading';
 
         setDictionaryHistory(prev => {
@@ -3397,6 +3409,7 @@ export const AnimeVideoPlayer = ({
             return newHistory;
         });
         setDictionaryResults(loadedResults);
+        setKanjiResults(loadedKanji);
         setDictionaryLoading(false);
         setDictionarySystemLoading(isSystemLoading);
         if (loadedResults.length > 0) {
@@ -3425,6 +3438,7 @@ export const AnimeVideoPlayer = ({
         setIsOverlayVisible(false);
         dictionaryOpenedByHoverRef.current = false;
         setDictionaryResults([]);
+        setKanjiResults([]);
         setDictionaryLoading(true);
         setDictionarySystemLoading(false);
         
@@ -3437,7 +3451,8 @@ export const AnimeVideoPlayer = ({
         if (dictionaryRequestRef.current !== requestId) {
             return;
         }
-        const loadedResults = results === 'loading' ? [] : (results || []);
+        const loadedResults = results === 'loading' ? [] : ((results as any).terms || results || []);
+        const loadedKanji = results === 'loading' ? [] : ((results as any).kanji || []);
         const isSystemLoading = results === 'loading';
 
         setDictionaryHistory(prev => {
@@ -3449,6 +3464,7 @@ export const AnimeVideoPlayer = ({
             return newHistory;
         });
         setDictionaryResults(loadedResults);
+        setKanjiResults(loadedKanji);
         setDictionaryLoading(false);
         setDictionarySystemLoading(isSystemLoading);
         if (loadedResults.length > 0) {
@@ -4802,6 +4818,8 @@ export const AnimeVideoPlayer = ({
                             variant="popup"
                             popupTheme={popupTheme}
                             layout="horizontal"
+                            kanjiResults={kanjiResults}
+                            grouped={settings.resultGroupingMode === 'grouped'}
                             renderHistoryNav={() => {
                                 if (!settings.yomitanLookupNavigationMode || dictionaryHistory.length <= 1) return null;
                                 const navMode = settings.yomitanLookupNavigationMode;
