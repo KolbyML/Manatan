@@ -35,6 +35,30 @@ fn read_limited_string<R: Read>(reader: R, byte_limit: u64, label: &str) -> Resu
     String::from_utf8(buf).map_err(|err| anyhow!("{label} is not valid UTF-8: {err}"))
 }
 
+fn should_skip_file(name: &str) -> bool {
+    // Skip macOS resource fork and metadata folders
+    if name.starts_with("__MACOSX/") || name.contains("/__MACOSX/") {
+        return true;
+    }
+    
+    // Skip hidden files (starting with .)
+    if name.starts_with('.') || name.contains("/.") {
+        return true;
+    }
+    
+    // Skip common system/temp files
+    if name.ends_with(".DS_Store") || name.ends_with("Thumbs.db") {
+        return true;
+    }
+    
+    // Skip Windows resource forks
+    if name.starts_with("._") || name.contains("/._") {
+        return true;
+    }
+    
+    false
+}
+
 fn validate_zip_archive<R: Read + std::io::Seek>(zip: &mut ZipArchive<R>) -> Result<()> {
     if zip.len() > MAX_ZIP_ENTRY_COUNT {
         return Err(anyhow!(
@@ -103,30 +127,6 @@ fn open_zip_file_safe<'a, R: std::io::Read + std::io::Seek>(
             None
         }
     }
-}
-
-fn should_skip_file(name: &str) -> bool {
-    // Skip macOS resource fork and metadata folders
-    if name.starts_with("__MACOSX/") || name.contains("/__MACOSX/") {
-        return true;
-    }
-    
-    // Skip hidden files (starting with .)
-    if name.starts_with('.') || name.contains("/.") {
-        return true;
-    }
-    
-    // Skip common system/temp files
-    if name.ends_with(".DS_Store") || name.ends_with("Thumbs.db") {
-        return true;
-    }
-    
-    // Skip Windows resource forks
-    if name.starts_with("._") || name.contains("/._") {
-        return true;
-    }
-    
-    false
 }
 
 fn bump_term_count(terms_found: &mut usize) -> Result<()> {
@@ -516,6 +516,11 @@ pub fn import_zip(state: &AppState, data: &[u8]) -> Result<String> {
             Err(_) => continue,
         };
         let file_name = file.name().to_string();
+
+        // Skip system files during media extraction
+        if should_skip_file(&file_name) {
+            continue;
+        }
 
         // Extract styles.css
         if file_name == "styles.css" {
