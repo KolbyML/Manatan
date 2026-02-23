@@ -79,14 +79,14 @@ export const SyncProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
     // Auto-sync on app start
     useEffect(() => {
-        if (config.sync_on_app_start && status?.connected && !is_syncing) {
+        if (config.syncOnAppStart && status?.connected && !is_syncing) {
             sync();
         }
-    }, [config.sync_on_app_start, status?.connected]);
+    }, [config.syncOnAppStart, status?.connected]);
 
     // Auto-sync on app resume (visibility change)
     useEffect(() => {
-        if (!config.sync_on_app_resume || !status?.connected) return;
+        if (!config.syncOnAppResume || !status?.connected) return;
 
         const handleVisibilityChange = () => {
             if (document.visibilityState === 'visible' && !is_syncing) {
@@ -96,7 +96,7 @@ export const SyncProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
         document.addEventListener('visibilitychange', handleVisibilityChange);
         return () => document.removeEventListener('visibilitychange', handleVisibilityChange);
-    }, [config.sync_on_app_resume, status?.connected, is_syncing]);
+    }, [config.syncOnAppResume, status?.connected, is_syncing]);
 
     const refreshStatus = useCallback(async () => {
         try {

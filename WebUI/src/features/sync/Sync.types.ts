@@ -121,10 +121,10 @@ export interface SyncConfig {
     ln_metadata: boolean;
     ln_content: boolean;
     ln_files: boolean;
-    sync_on_chapter_read: boolean;
-    sync_on_chapter_open: boolean;
-    sync_on_app_start: boolean;
-    sync_on_app_resume: boolean;
+    syncOnChapterRead: boolean;
+    syncOnChapterOpen: boolean;
+    syncOnAppStart: boolean;
+    syncOnAppResume: boolean;
     backend: SyncBackendType;
     google_drive_folder: string;
     google_drive_folder_type: GoogleDriveFolderType;

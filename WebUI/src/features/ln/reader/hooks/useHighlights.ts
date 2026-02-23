@@ -128,6 +128,11 @@ export function useHighlights(bookId: string) {
     }, [highlights]);
 
     const downloadFile = useCallback((content: string, filename: string, mimeType: string) => {
+        const manatanNative = (window as any).ManatanNative;
+        if (manatanNative?.saveFile) {
+            manatanNative.saveFile(filename, mimeType, content);
+            return;
+        }
         const blob = new Blob([content], { type: mimeType });
         const url = URL.createObjectURL(blob);
         const a = document.createElement('a');

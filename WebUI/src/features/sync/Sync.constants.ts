@@ -13,10 +13,10 @@ export const DEFAULT_SYNC_CONFIG: SyncConfig = {
     ln_metadata: true,
     ln_content: true,
     ln_files: false,
-    sync_on_chapter_read: false,
-    sync_on_chapter_open: false,
-    sync_on_app_start: false,
-    sync_on_app_resume: false,
+    syncOnChapterRead: false,
+    syncOnChapterOpen: false,
+    syncOnAppStart: false,
+    syncOnAppResume: false,
     backend: 'none',
     google_drive_folder: 'Manatan',
     google_drive_folder_type: 'public',
@@ -109,21 +109,21 @@ export const SYNC_DATA_OPTIONS: { key: keyof Pick<SyncConfig, 'ln_progress' | 'l
 ];
 
 // Sync trigger options
-export const SYNC_TRIGGER_OPTIONS: { key: keyof Pick<SyncConfig, 'sync_on_app_start' | 'sync_on_app_resume' | 'sync_on_chapter_read' | 'sync_on_chapter_open'>; labelKey: TranslationKey }[] = [
+export const SYNC_TRIGGER_OPTIONS: { key: keyof Pick<SyncConfig, 'syncOnAppStart' | 'syncOnAppResume' | 'syncOnChapterRead' | 'syncOnChapterOpen'>; labelKey: TranslationKey }[] = [
     {
-        key: 'sync_on_app_start',
+        key: 'syncOnAppStart',
         labelKey: 'sync.trigger.option.app_start.label',
     },
     {
-        key: 'sync_on_app_resume',
+        key: 'syncOnAppResume',
         labelKey: 'sync.trigger.option.app_resume.label',
     },
     {
-        key: 'sync_on_chapter_read',
+        key: 'syncOnChapterRead',
         labelKey: 'sync.trigger.option.chapter_read.label',
     },
     {
-        key: 'sync_on_chapter_open',
+        key: 'syncOnChapterOpen',
         labelKey: 'sync.trigger.option.chapter_open.label',
     },
 ];
