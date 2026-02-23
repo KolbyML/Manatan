@@ -18,6 +18,7 @@ import android.view.KeyEvent;
 import android.view.PixelCopy;
 import android.view.View;
 import android.view.Window;
+import android.view.inputmethod.InputMethodManager;
 import android.webkit.CookieManager;
 import android.webkit.JavascriptInterface;
 import android.webkit.ValueCallback;
@@ -38,6 +39,8 @@ import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.io.File;
 
 public class WebviewActivity extends Activity {
     private WebView myWebView;
@@ -307,6 +310,32 @@ public class WebviewActivity extends Activity {
                 } catch (Exception e) {
                     Log.e("Manatan", "Native capture failed", e);
                     sendCaptureCallback(callbackId, null);
+                }
+            });
+        }
+
+        @JavascriptInterface
+        public void hideKeyboard() {
+            runOnUiThread(() -> {
+                View view = getCurrentFocus();
+                if (view != null) {
+                    InputMethodManager imm = (InputMethodManager) getSystemService(INPUT_METHOD_SERVICE);
+                    imm.hideSoftInputFromWindow(view.getWindowToken(), 0);
+                }
+            });
+        }
+
+        @JavascriptInterface
+        public void saveFile(final String filename, final String mimeType, final String content) {
+            runOnUiThread(() -> {
+                try {
+                    File downloadsDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS);
+                    File file = new File(downloadsDir, filename);
+                    Files.write(file.toPath(), content.getBytes(StandardCharsets.UTF_8));
+                    Toast.makeText(WebviewActivity.this, "Saved to Downloads/" + filename, Toast.LENGTH_SHORT).show();
+                } catch (Exception e) {
+                    Log.e("Manatan", "Failed to save file", e);
+                    Toast.makeText(WebviewActivity.this, "Failed to save file", Toast.LENGTH_SHORT).show();
                 }
             });
         }

@@ -212,12 +212,14 @@ export function useTextLookup() {
             settings.yomitanLanguage
         );
 
+        const loadedResults = results === 'loading' ? [] : ((results as any).terms || results || []);
+
         if (results === 'loading') {
             setDictPopup(prev => ({ ...prev, results: [], isLoading: false, systemLoading: true }));
             return true;
         }
 
-        const matchLen = results?.[0]?.matchLen || 1;
+        const matchLen = loadedResults?.[0]?.matchLen || 1;
 
         // TextBox approach: use selection for visual highlight (faster than rects)
         try {
@@ -264,9 +266,12 @@ export function useTextLookup() {
             // Ignore selection errors
         }
 
+        const loadedKanji = results === 'loading' ? [] : ((results as any).kanji || []);
+
         setDictPopup(prev => ({
             ...prev,
-            results: results || [],
+            results: loadedResults || [],
+            kanjiResults: loadedKanji,
             isLoading: false,
             systemLoading: false,
             highlight: prev.highlight ? { ...prev.highlight, length: matchLen } : undefined

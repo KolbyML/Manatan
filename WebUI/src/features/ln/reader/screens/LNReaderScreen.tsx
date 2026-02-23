@@ -37,6 +37,7 @@ import { useHighlights } from '../hooks/useHighlights';
 import { VirtualReader } from '../components/VirtualReader';
 import { ReaderControls } from '../components/ReaderControls';
 import { YomitanPopup } from '@/Manatan/components/YomitanPopup';
+import { useSyncOnChapterOpen, useSyncOnChapterRead } from '@/features/sync/services/useSyncTriggers';
 
 const THEMES = {
     light: { bg: '#FFFFFF', fg: '#1a1a1a' },
@@ -71,6 +72,10 @@ export const LNReaderScreen: React.FC = () => {
         : 'env(safe-area-inset-top, 0px)';
 
     const bookId = id || '';
+    const chapterId = bookId ? `${bookId}-${currentChapter}` : null;
+    const { triggerSync } = useSyncOnChapterRead();
+    useSyncOnChapterOpen(chapterId);
+
     const { highlights, loading: highlightsLoading, addHighlight, removeHighlight, exportToTxt, exportToJson, downloadFile, refresh } = useHighlights(bookId);
 
     useEffect(() => {
