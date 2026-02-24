@@ -78,12 +78,16 @@ impl AppState {
 
              CREATE TABLE IF NOT EXISTS terms (
                 term TEXT NOT NULL,
+                reading TEXT,
                 dictionary_id INTEGER NOT NULL,
                 json BLOB NOT NULL
              );
-             
+
              CREATE INDEX IF NOT EXISTS idx_term ON terms(term);
+             CREATE INDEX IF NOT EXISTS idx_reading ON terms(reading);
              CREATE INDEX IF NOT EXISTS idx_dict_term ON terms(dictionary_id);
+             CREATE INDEX IF NOT EXISTS idx_term_dict ON terms(term, dictionary_id);
+             CREATE INDEX IF NOT EXISTS idx_reading_dict ON terms(reading, dictionary_id);
              
              CREATE TABLE IF NOT EXISTS metadata (
                 key TEXT PRIMARY KEY,
@@ -92,8 +96,14 @@ impl AppState {
         )
         .expect("Failed to initialize database tables");
 
-        // Migration: Add styles column if it doesn't exist (ignore errors for existing columns)
+        // Migration: add columns/indexes for existing installs (ignore errors for existing columns).
         let _ = conn.execute("ALTER TABLE dictionaries ADD COLUMN styles TEXT", []);
+        let _ = conn.execute("ALTER TABLE terms ADD COLUMN reading TEXT", []);
+        let _ = conn.execute_batch(
+            "CREATE INDEX IF NOT EXISTS idx_reading ON terms(reading);
+             CREATE INDEX IF NOT EXISTS idx_term_dict ON terms(term, dictionary_id);
+             CREATE INDEX IF NOT EXISTS idx_reading_dict ON terms(reading, dictionary_id);",
+        );
 
         // Create kanji tables
         conn.execute_batch(
