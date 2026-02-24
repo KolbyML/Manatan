@@ -1,10 +1,11 @@
 use std::collections::{HashMap, HashSet};
 
 use serde::{Deserialize, Serialize};
+use serde_json::value::RawValue;
 use tracing::error;
 use wordbase_api::{
     DictionaryId, FrequencyValue, Record, RecordEntry, RecordId, Span, Term,
-    dict::yomitan::GlossaryTag,
+    dict::yomitan::{Glossary, GlossaryTag, structured},
 };
 
 use crate::{
@@ -34,6 +35,23 @@ pub struct KanjiFrequency {
 
 pub struct LookupService {
     deinflector: Deinflector,
+}
+
+const COMPACT_GLOSSARY_BIN_V1_PREFIX: &[u8; 4] = b"MGB1";
+const COMPACT_GLOSSARY_JSON_V1_PREFIX: &[u8; 4] = b"MGC1";
+
+#[derive(Deserialize)]
+struct CompactGlossaryPayloadV1 {
+    popularity: i64,
+    content_raw: Vec<Box<RawValue>>,
+    #[serde(default)]
+    definition_tags_raw: Option<String>,
+    #[serde(default)]
+    term_tags_raw: Option<String>,
+    #[serde(default)]
+    reading: Option<String>,
+    #[serde(default)]
+    headword: Option<String>,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
@@ -142,9 +160,10 @@ impl LookupService {
                         }
 
                         if let Ok(decompressed) = decoder.decompress_vec(&compressed_data)
-                            && let Ok(stored) =
-                                serde_json::from_slice::<StoredRecord>(&decompressed)
+                            && let Some(mut stored) =
+                                Self::decode_stored_record_payload(&decompressed)
                         {
+                            stored.dictionary_id = dict_id;
                             let match_len = candidate.source_len;
 
                             let headword = stored
@@ -221,6 +240,161 @@ impl LookupService {
         });
 
         results
+    }
+
+    fn decode_stored_record_payload(payload: &[u8]) -> Option<StoredRecord> {
+        if payload.starts_with(COMPACT_GLOSSARY_BIN_V1_PREFIX) {
+            return Self::decode_compact_glossary_payload_binary(
+                &payload[COMPACT_GLOSSARY_BIN_V1_PREFIX.len()..],
+            );
+        }
+        if payload.starts_with(COMPACT_GLOSSARY_JSON_V1_PREFIX) {
+            return Self::decode_compact_glossary_payload_json(
+                &payload[COMPACT_GLOSSARY_JSON_V1_PREFIX.len()..],
+            );
+        }
+        serde_json::from_slice::<StoredRecord>(payload).ok()
+    }
+
+    fn decode_compact_glossary_payload_json(payload: &[u8]) -> Option<StoredRecord> {
+        let compact = serde_json::from_slice::<CompactGlossaryPayloadV1>(payload).ok()?;
+        let tags = compact
+            .definition_tags_raw
+            .as_deref()
+            .map(Self::parse_space_separated_tags)
+            .unwrap_or_default();
+        let term_tags = compact
+            .term_tags_raw
+            .as_deref()
+            .map(Self::parse_space_separated_tags)
+            .filter(|parsed| !parsed.is_empty());
+
+        let mut content = Vec::new();
+        for raw in compact.content_raw {
+            let raw = raw.get();
+            let trimmed = raw.trim_start();
+            if trimmed.starts_with('"') {
+                if let Ok(value) = serde_json::from_str::<String>(raw) {
+                    content.push(structured::Content::String(value));
+                }
+            } else if trimmed.starts_with('{') || trimmed.starts_with('[') {
+                content.push(structured::Content::String(raw.to_string()));
+            }
+        }
+
+        Some(StoredRecord {
+            dictionary_id: DictionaryId(0),
+            record: Record::YomitanGlossary(Glossary {
+                popularity: compact.popularity,
+                tags,
+                content,
+            }),
+            term_tags,
+            reading: compact.reading,
+            headword: compact.headword,
+        })
+    }
+
+    fn decode_compact_glossary_payload_binary(payload: &[u8]) -> Option<StoredRecord> {
+        let mut offset = 0usize;
+
+        let popularity = Self::read_i64_le(payload, &mut offset)?;
+        let content_count = Self::read_u32_le(payload, &mut offset)? as usize;
+        let mut content = Vec::with_capacity(content_count);
+        for _ in 0..content_count {
+            let raw = Self::read_len_prefixed_str(payload, &mut offset)?;
+            let trimmed = raw.trim_start();
+            if trimmed.starts_with('"') {
+                if let Ok(value) = serde_json::from_str::<String>(raw) {
+                    content.push(structured::Content::String(value));
+                }
+            } else if trimmed.starts_with('{') || trimmed.starts_with('[') {
+                content.push(structured::Content::String(raw.to_string()));
+            }
+        }
+
+        let definition_tags_raw = Self::read_opt_string(payload, &mut offset)?;
+        let term_tags_raw = Self::read_opt_string(payload, &mut offset)?;
+        let reading = Self::read_opt_string(payload, &mut offset)?;
+        let headword = Self::read_opt_string(payload, &mut offset)?;
+        if offset != payload.len() {
+            return None;
+        }
+
+        let tags = definition_tags_raw
+            .as_deref()
+            .map(Self::parse_space_separated_tags)
+            .unwrap_or_default();
+        let term_tags = term_tags_raw
+            .as_deref()
+            .map(Self::parse_space_separated_tags)
+            .filter(|parsed| !parsed.is_empty());
+
+        Some(StoredRecord {
+            dictionary_id: DictionaryId(0),
+            record: Record::YomitanGlossary(Glossary {
+                popularity,
+                tags,
+                content,
+            }),
+            term_tags,
+            reading,
+            headword,
+        })
+    }
+
+    fn read_u32_le(bytes: &[u8], offset: &mut usize) -> Option<u32> {
+        let end = offset.checked_add(4)?;
+        let slice = bytes.get(*offset..end)?;
+        let mut arr = [0u8; 4];
+        arr.copy_from_slice(slice);
+        *offset = end;
+        Some(u32::from_le_bytes(arr))
+    }
+
+    fn read_i64_le(bytes: &[u8], offset: &mut usize) -> Option<i64> {
+        let end = offset.checked_add(8)?;
+        let slice = bytes.get(*offset..end)?;
+        let mut arr = [0u8; 8];
+        arr.copy_from_slice(slice);
+        *offset = end;
+        Some(i64::from_le_bytes(arr))
+    }
+
+    fn read_len_prefixed_str<'a>(bytes: &'a [u8], offset: &mut usize) -> Option<&'a str> {
+        let len = Self::read_u32_le(bytes, offset)? as usize;
+        let end = offset.checked_add(len)?;
+        let slice = bytes.get(*offset..end)?;
+        *offset = end;
+        std::str::from_utf8(slice).ok()
+    }
+
+    fn read_opt_string(bytes: &[u8], offset: &mut usize) -> Option<Option<String>> {
+        let len = Self::read_u32_le(bytes, offset)?;
+        if len == u32::MAX {
+            return Some(None);
+        }
+        let len = len as usize;
+        let end = offset.checked_add(len)?;
+        let slice = bytes.get(*offset..end)?;
+        *offset = end;
+        Some(Some(String::from_utf8(slice.to_vec()).ok()?))
+    }
+
+    fn parse_space_separated_tags(raw: &str) -> Vec<GlossaryTag> {
+        let mut seen = HashSet::new();
+        let mut tags = Vec::new();
+        for tag in raw.split_whitespace() {
+            if !tag.is_empty() && seen.insert(tag.to_string()) {
+                tags.push(GlossaryTag {
+                    name: tag.to_string(),
+                    category: String::new(),
+                    description: String::new(),
+                    order: 0,
+                });
+            }
+        }
+        tags
     }
 
     pub fn search_kanji(
