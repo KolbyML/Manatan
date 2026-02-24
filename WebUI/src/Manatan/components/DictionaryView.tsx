@@ -45,7 +45,8 @@ export const StructuredContent: React.FC<{
     
     if (typeof parsedData === 'string') {
         const text = parsedData;
-        if (onWordClick && text.trim()) {
+        if (!text.trim()) return null;
+        if (onWordClick) {
             return (
                 <span 
                     onClick={(e) => {
@@ -438,6 +439,15 @@ const AnkiButtons: React.FC<{
                 return `<a href="${href}" target="_blank" style="text-decoration: underline;${dictStyle}" ${dataAttrs}${classAttr}>${generateHTML(content, glossaryDictionaryName)}</a>`;
             }
 
+            if (tag === 'table') {
+                const innerHTML = generateHTML(content, glossaryDictionaryName);
+                const hasTableSections = /<t(head|foot|body)[\s>]/.test(innerHTML);
+                if (hasTableSections) {
+                    return `<table${styleAttr} ${dataAttrs}${classAttr}>${innerHTML}</table>`;
+                }
+                return `<table${styleAttr} ${dataAttrs}${classAttr}><tbody>${innerHTML}</tbody></table>`;
+            }
+
             const innerHTML = generateHTML(content, glossaryDictionaryName);
             let element = `<${tag}${styleAttr} ${dataAttrs}${classAttr}>${innerHTML}</${tag}>`;
 
@@ -715,13 +725,14 @@ interface AudioMenuProps {
     wordAudioAvailability: Record<WordAudioSource, boolean> | null;
     wordAudioAutoAvailable: boolean | null;
     activeWordAudioSelection: WordAudioSourceSelection;
+    popupTheme?: PopupTheme;
     onPlayAudio: (source: WordAudioSourceSelection) => void;
     onSelectSource: (source: WordAudioSourceSelection) => void;
 }
 
 const AudioMenu: React.FC<AudioMenuProps> = ({
     x, y, entry, wordAudioOptions, wordAudioAvailability, wordAudioAutoAvailable,
-    activeWordAudioSelection, onPlayAudio, onSelectSource,
+    activeWordAudioSelection, popupTheme, onPlayAudio, onSelectSource,
 }) => {
     const menuRef = useRef<HTMLDivElement | null>(null);
     const [menuPosition, setMenuPosition] = useState({ top: y, left: x });
@@ -851,29 +862,28 @@ const KanjiEntryDisplay: React.FC<{
                         {kanji.character}
                     </div>
                 )}
-                <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap', fontSize: '0.9em', marginBottom: '4px' }}>
-                    {kanji.onyomi && kanji.onyomi.length > 0 && (
-                        <div>
-                            <span style={{ color: colors.textSecondary, fontSize: '0.7rem', marginRight: '4px' }}>オ</span>
-                            {kanji.onyomi.map((r: string, i: number) => (
-                                <span key={i} style={{ marginRight: '6px' }}>{r}</span>
-                            ))}
-                        </div>
-                    )}
-                    {kanji.kunyomi && kanji.kunyomi.length > 0 && (
-                        <div>
-                            <span style={{ color: colors.textSecondary, fontSize: '0.7rem', marginRight: '4px' }}>ク</span>
-                            {kanji.kunyomi.map((r: string, i: number) => (
-                                <span key={i} style={{ marginRight: '6px' }}>{r}</span>
-                            ))}
-                        </div>
-                    )}
-                </div>
-                {kanji.meanings && kanji.meanings.length > 0 && (
-                    <div style={{ fontSize: '0.85em', color: colors.text, marginBottom: '4px' }}>
-                        {kanji.meanings.map((m: string, i: number) => (
-                            <span key={i}>{i > 0 && <span style={{ margin: '0 4px', color: colors.textSecondary }}>/</span>}{m}</span>
+                {kanji.onyomi && kanji.onyomi.length > 0 && (
+                    <div style={{ whiteSpace: 'pre-wrap', fontSize: '0.9em', marginBottom: '4px', color: colors.text }}>
+                        {kanji.onyomi.map((r: string, i: number) => (
+                            <div key={i}>{r}</div>
                         ))}
+                    </div>
+                )}
+                {kanji.kunyomi && kanji.kunyomi.length > 0 && (
+                    <div style={{ whiteSpace: 'pre-wrap', fontSize: '0.9em', marginBottom: '4px', color: colors.text }}>
+                        {kanji.kunyomi.map((r: string, i: number) => (
+                            <div key={i}>{r}</div>
+                        ))}
+                    </div>
+                )}
+                {kanji.meanings && kanji.meanings.length > 0 && (
+                    <div style={{ whiteSpace: 'pre-wrap', fontSize: '0.85em', marginTop: '8px', color: colors.text }}>
+                        {kanji.meanings.map((m: string, i: number) => {
+                            const lines = m.split('\n').filter(Boolean);
+                            return lines.map((line, lineIdx) => (
+                                <div key={`${i}-${lineIdx}`}>{line}</div>
+                            ));
+                        })}
                     </div>
                 )}
                 {hasStats && (
@@ -1296,7 +1306,7 @@ export const DictionaryView: React.FC<DictionaryViewProps> = ({
                                             <span class="tag tag-label" style={getTagStyle(layout, colors.dictTagBg, colors.dictTagText)}>{def.dictionaryName}</span>
                                         </div>
                                         <div style={{ color: colors.text, whiteSpace: 'pre-wrap' }} class="gloss-content">
-                                            {def.content.map((jsonString, idx) => (
+                                            {def.content.filter((c: string) => c && c.trim()).map((jsonString, idx) => (
                                                 <div key={idx} style={{ marginBottom: '2px' }}>
                                                     <StructuredContent contentString={jsonString} dictionaryName={def.dictionaryName} onLinkClick={onLinkClick} onWordClick={onWordClick} colors={colors} />
                                                 </div>
@@ -1318,6 +1328,7 @@ export const DictionaryView: React.FC<DictionaryViewProps> = ({
                     x={audioMenu.x} y={audioMenu.y} entry={audioMenu.entry}
                     wordAudioOptions={wordAudioOptions} wordAudioAvailability={wordAudioAvailability}
                     wordAudioAutoAvailable={wordAudioAutoAvailable} activeWordAudioSelection={activeWordAudioSelection}
+                    popupTheme={popupTheme}
                     onPlayAudio={(source) => { handlePlayWordAudio(audioMenu.entry, source); setAudioMenu(null); }}
                     onSelectSource={(source) => { handleSelectWordAudioSource(source); setAudioMenu(null); }}
                 />

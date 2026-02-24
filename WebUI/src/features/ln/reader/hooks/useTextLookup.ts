@@ -7,7 +7,7 @@ import { useOCR } from '@/Manatan/context/OCRContext';
 import { lookupYomitan } from '@/Manatan/utils/api';
 
 const BLOCK_TAGS = new Set(['P', 'DIV', 'SECTION', 'ARTICLE', 'LI', 'TD', 'TH', 'BLOCKQUOTE', 'H1', 'H2', 'H3', 'H4', 'H5', 'H6']);
-const SENTENCE_END_SET = new Set(['。', '！', '？', '；', '，', '、', '.', '!', '?', ';']);
+const SENTENCE_END_SET = new Set(['。', '！', '？', '；', '.', '!', '?', ';']);
 const MAX_SENTENCE_LENGTH = 200;
 const INTERACTIVE_SELECTORS = 'a, button, input, ruby rt, img, .nav-btn, .reader-progress, .reader-slider-wrap';
 const WHITESPACE_REGEX = /\s/;

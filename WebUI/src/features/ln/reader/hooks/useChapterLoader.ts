@@ -26,7 +26,7 @@ export function useChapterLoader({
     const [loadingState, setLoadingState] = useState<Map<number, boolean>>(new Map());
     const loadedRef = useRef<Set<number>>(new Set());
 
-    const loadChapter = useCallback((index: number) => {
+    const loadChapter = useCallback((index: number, immediate = false) => {
         if (index < 0 || index >= chapters.length) return;
         if (loadedRef.current.has(index)) return;
 
@@ -54,7 +54,11 @@ export function useChapterLoader({
             });
         };
 
-        if ('requestIdleCallback' in window) {
+        // If immediate, execute NOW (for target chapter restoration)
+        // Otherwise defer using requestIdleCallback
+        if (immediate) {
+            load();
+        } else if ('requestIdleCallback' in window) {
             (window as any).requestIdleCallback(load, { timeout: 100 });
         } else {
             setTimeout(load, 0);
@@ -62,11 +66,17 @@ export function useChapterLoader({
     }, [chapters]);
 
     const loadChaptersAround = useCallback((centerIndex: number) => {
+        // FIRST: Immediately load the target chapter (highest priority for restoration)
+        loadChapter(centerIndex, true);
+        
+        // THEN: Load surrounding chapters with deferred priority
         const start = Math.max(0, centerIndex - preloadCount);
         const end = Math.min(chapters.length - 1, centerIndex + preloadCount);
 
         for (let i = start; i <= end; i++) {
-            loadChapter(i);
+            if (i !== centerIndex) {
+                loadChapter(i, false);
+            }
         }
     }, [chapters.length, preloadCount, loadChapter]);
 

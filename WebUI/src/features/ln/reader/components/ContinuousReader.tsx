@@ -183,7 +183,7 @@ export const ContinuousReader: React.FC<ContinuousReaderProps> = ({
     // Chapter Loader
     // ========================================================================
 
-    const { loadChaptersAround, getChapterHtml, loadingState } = useChapterLoader({
+    const { loadChaptersAround, getChapterHtml, loadingState, loadChapter } = useChapterLoader({
         chapters,
         preloadCount: 3,
     });
@@ -421,22 +421,35 @@ export const ContinuousReader: React.FC<ContinuousReaderProps> = ({
         const container = containerRef.current;
         const targetChapter = initialProgress.chapterIndex ?? 0;
 
-        // Wait for target chapter's content to be rendered before restoration
+        // Fast restoration: load target chapter immediately, then restore
         const tryRestore = async () => {
-            const maxWaitMs = 10000; // 10 seconds for weak devices
-            const checkIntervalMs = 200;
-
-            // Wait for target chapter's blocks to be in DOM
-            for (let elapsed = 0; elapsed < maxWaitMs; elapsed += checkIntervalMs) {
-                const blocks = container.querySelectorAll(`[data-block-id^="ch${targetChapter}-b"]`);
-                if (blocks.length > 0) {
-                    console.log('[ContinuousReader] Chapter content loaded after', elapsed, 'ms');
-                    break;
-                }
-                await new Promise(r => setTimeout(r, checkIntervalMs));
+            // Step 1: Ensure target chapter is loaded immediately
+            if (!getChapterHtml(targetChapter)) {
+                console.log('[ContinuousReader] Loading target chapter immediately:', targetChapter);
+                loadChapter(targetChapter, true);
+                
+                // Wait for React to render the chapter into DOM
+                await new Promise(resolve => setTimeout(resolve, 50));
             }
 
-            if (hasRestoredRef.current) return;
+            // Step 2: Verify blocks exist in DOM
+            const blocks = container.querySelectorAll(`[data-block-id^="ch${targetChapter}-b"]`);
+            if (blocks.length === 0) {
+                console.log('[ContinuousReader] No blocks found, waiting...');
+                // Wait a bit more for DOM to update
+                await new Promise(resolve => setTimeout(resolve, 100));
+            }
+
+            // Step 3: Check again and restore if ready
+            const finalBlocks = container.querySelectorAll(`[data-block-id^="ch${targetChapter}-b"]`);
+            if (finalBlocks.length === 0) {
+                console.log('[ContinuousReader] No blocks after wait, skipping restoration');
+                hasRestoredRef.current = true;
+                setRestorationComplete(true);
+                return;
+            }
+
+            console.log('[ContinuousReader] Chapter ready, restoring position');
 
             const result = restoreReadingPosition(
                 container,
@@ -476,7 +489,7 @@ export const ContinuousReader: React.FC<ContinuousReaderProps> = ({
         };
 
         tryRestore();
-    }, [contentLoaded, initialProgress, isVertical, isRTL, stats?.blockMaps]);
+    }, [contentLoaded, initialProgress, isVertical, isRTL, stats?.blockMaps, getChapterHtml, loadChapter]);
 
     // ========================================================================
     // Direct Navigation (for TOC/search - bypasses restoration)
