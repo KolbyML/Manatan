@@ -13,7 +13,7 @@ import { ReadingDirection, ReadingMode } from '@/features/reader/Reader.types.ts
 
 export const OCRManager = () => {
     const images = useMangaObserver(); 
-    const { showDialog, showAlert, isSettingsOpen, closeSettings } = useOCR();    
+    const { showDialog, showAlert, isSettingsOpen, openSettings, closeSettings } = useOCR();    
     
     // FIX: Removed 'refreshKey' state and resize listener.
     // This stops the app from destroying/recreating overlays every time you scroll (URL bar resize).
@@ -114,6 +114,17 @@ export const OCRManager = () => {
             document.documentElement.classList.remove('ocr-reader-mode');
         };
     }, []);
+
+    // Listen for custom event to open settings from LN Reader
+    useEffect(() => {
+        const handleOpenSettings = () => {
+            openSettings();
+        };
+        window.addEventListener('openManatanSettings', handleOpenSettings);
+        return () => {
+            window.removeEventListener('openManatanSettings', handleOpenSettings);
+        };
+    }, [openSettings]);
 
     return (
         <>

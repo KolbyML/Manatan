@@ -1,9 +1,47 @@
-import { AppStorage, LNMetadata, LNProgress, LNParsedBook } from '@/lib/storage/AppStorage';
+import { AppStorage, LNMetadata, LNProgress, LNParsedBook, LNReaderSettings } from '@/lib/storage/AppStorage';
 import { SyncApi } from './SyncApi';
 import { SyncConfig, SyncPayload, MergeResponse, SyncProgress } from '../Sync.types';
 
 const DEVICE_ID_KEY = 'manatan_device_id';
 const LAST_SYNC_KEY = 'manatan_last_sync';
+const LN_SETTINGS_PREFIX = 'ln_settings_';
+
+// ========================================================================
+// LocalStorage Settings Helpers
+// ========================================================================
+
+function getSettingsFromLocalStorage(): Record<string, LNReaderSettings> {
+    const settings: Record<string, LNReaderSettings> = {};
+    for (let i = 0; i < localStorage.length; i++) {
+        const key = localStorage.key(i);
+        if (key && key.startsWith(LN_SETTINGS_PREFIX)) {
+            try {
+                const language = key.substring(LN_SETTINGS_PREFIX.length);
+                const value = localStorage.getItem(key);
+                if (value) {
+                    settings[language] = JSON.parse(value);
+                }
+            } catch (e) {
+                console.warn('[SYNC] Failed to parse localStorage settings:', key, e);
+            }
+        }
+    }
+    return settings;
+}
+
+function applySettingsToLocalStorage(settings: Record<string, LNReaderSettings> | undefined): void {
+    if (!settings) return;
+    
+    for (const [language, lnSettings] of Object.entries(settings)) {
+        try {
+            const key = `${LN_SETTINGS_PREFIX}${language}`;
+            localStorage.setItem(key, JSON.stringify(lnSettings));
+            console.log('[SYNC] Applied settings to localStorage:', key);
+        } catch (e) {
+            console.warn('[SYNC] Failed to save settings to localStorage:', language, e);
+        }
+    }
+}
 
 export class SyncService {
     private static deviceId: string | null = null;
@@ -176,11 +214,19 @@ export class SyncService {
                             syncVersion: metadata.sync_version || metadata.syncVersion,
                             language: metadata.language,
                             categoryIds: metadata.categoryIds || metadata.category_ids || [],
+                            languageSettings: metadata.languageSettings || metadata.language_settings || {},
                         };
                         
                         // Save migrated data back to storage
                         await AppStorage.lnMetadata.setItem(key, metadata);
                     }
+                    
+                    // Merge localStorage settings into metadata before sync
+                    const localStorageSettings = getSettingsFromLocalStorage();
+                    const existingSettings = metadata.languageSettings || metadata.language_settings || {};
+                    
+                    // Merge: localStorage takes priority over stored metadata
+                    metadata.languageSettings = { ...existingSettings, ...localStorageSettings };
                     
                     payload.lnMetadata[key] = metadata;
                 }
@@ -364,10 +410,30 @@ export class SyncService {
             onProgress?.({ phase: 'applying', message: 'Applying book metadata...' });
             const entries = Object.entries(payload.lnMetadata);
             
+            // Collect all language settings from downloaded metadata
+            const allDownloadedSettings: Record<string, LNReaderSettings> = {};
+            
             for (let i = 0; i < entries.length; i++) {
                 const [bookId, metadata] = entries[i];
                 await AppStorage.lnMetadata.setItem(bookId, metadata);
+                
+                // Collect language settings for localStorage
+                const settings = metadata.languageSettings || metadata.language_settings;
+                if (settings) {
+                    for (const [lang, lnSettings] of Object.entries(settings)) {
+                        // Only keep the latest version for each language (first wins since we iterate sequentially)
+                        if (!allDownloadedSettings[lang]) {
+                            allDownloadedSettings[lang] = lnSettings;
+                        }
+                    }
+                }
             }
+            
+            // Apply downloaded settings to localStorage (merging with existing)
+            const existingLocalStorage = getSettingsFromLocalStorage();
+            const mergedSettings = { ...existingLocalStorage, ...allDownloadedSettings };
+            applySettingsToLocalStorage(mergedSettings);
+            console.log('[SYNC] Applied language settings to localStorage:', Object.keys(mergedSettings));
         }
 
         // Apply content
