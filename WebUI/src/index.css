@@ -28,6 +28,17 @@
     --secondary-accent-text-color: #ffffff;
 }
 
+[data-theme="dark"] {
+    --text-color: #e0e0e0;
+    --text-secondary-color: #aaaaaa;
+    --text-muted-color: #888888;
+    --border-color: #444444;
+    --tag-bg-color: #333333;
+    --tag-text-color: #e0e0e0;
+    --card-bg-color: #1a1a1a;
+    --card-text-color: #e0e0e0;
+}
+
 /* --- SCROLLING LOGIC --- */
 html, body {
     margin: 0;
