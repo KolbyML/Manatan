@@ -139,6 +139,42 @@ export interface LNMetadata {
     // Language and categories
     language?: string;
     categoryIds: string[];
+    
+    // Settings per language (synced)
+    languageSettings?: Record<string, LNReaderSettings>;
+}
+
+export interface LNReaderSettings {
+    lnFontSize: number;
+    lnLineHeight: number;
+    lnFontFamily: string;
+    lnTheme: 'light' | 'sepia' | 'dark' | 'black';
+    lnReadingDirection: 'horizontal' | 'vertical-rtl' | 'vertical-ltr';
+    lnPaginationMode: 'scroll' | 'paginated' | 'single-page';
+    lnPageWidth: number;
+    lnPageMargin: number;
+    lnEnableFurigana: boolean;
+    lnTextAlign: 'left' | 'center' | 'justify';
+    lnLetterSpacing: number;
+    lnParagraphSpacing: number;
+    lnTextBrightness: number;
+    lnFontWeight: number;
+    lnSecondaryFontFamily: string;
+    lnAutoBookmark: boolean;
+    lnBookmarkDelay: number;
+    lnLockProgressBar: boolean;
+    lnHideNavButtons: boolean;
+    lnEnableSwipe: boolean;
+    lnDragThreshold: number;
+    lnEnableClickZones: boolean;
+    lnClickZoneSize: number;
+    lnClickZonePlacement: 'vertical' | 'horizontal';
+    lnClickZonePosition: 'full' | 'start' | 'center' | 'end';
+    lnClickZoneCoverage: number;
+    lnDisableAnimations: boolean;
+    lnShowCharProgress: boolean;
+    enableYomitan: boolean;
+    interactionMode: 'hover' | 'click';
 }
 
 export interface LNProgress {

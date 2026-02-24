@@ -28,6 +28,18 @@
     --secondary-accent-text-color: #ffffff;
 }
 
+/* Yomitan Popup Dark Theme */
+.yomitan-popup-dark {
+    --text-color: #eeeeee;
+    --text-secondary-color: #aaaaaa;
+    --text-muted-color: #888888;
+    --border-color: #444444;
+    --tag-bg-color: #333333;
+    --tag-text-color: #eeeeee;
+    --card-bg-color: #1a1a1a;
+    --card-text-color: #eeeeee;
+}
+
 /* --- SCROLLING LOGIC --- */
 html, body {
     margin: 0;
