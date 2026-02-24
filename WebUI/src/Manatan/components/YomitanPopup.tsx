@@ -446,7 +446,7 @@ export const YomitanPopup = () => {
             <div
                 ref={popupRef}
                 tabIndex={0}
-                className="yomitan-popup"
+                className={`yomitan-popup ${settings.yomitanPopupTheme === 'dark' ? 'yomitan-popup-dark' : 'yomitan-popup-light'}`}
                 style={{
                     ...popupStyle,
                     outline: 'none',
