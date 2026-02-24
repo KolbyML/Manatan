@@ -1,3 +1,20 @@
+## Release v3.2.4
+
+- Improve yomitan audio latency/cache and harden lookup regressions (db1c3d2)
+- Fix short-kana lookup regression and add edge-case tests (f0761fc)
+- Bug fixes (#227) (eac6c23)
+- Speed up word audio playback with parallel source fetch and prefetch (0b7ee6d)
+- Speed up dictionary deletion with async row purge (4203387)
+- Optimize Yomitan lookup and popup responsiveness (5e18b67)
+- android: reduce background battery drain (9d63281)
+- Improve Yomitan popup responsiveness and remove scanning flash (f4b32d6)
+- Optimize yomitan importer hot path and add benchmark harness (78128dd)
+- Upgrade ffmpeg-manatan release to protocol (bfdb22f)
+- Improve dictionary empty-state messaging (855f862)
+- Improve lookup tap behavior for spaced languages (d5bd147)
+- Improve Jimaku matching and regenerate provider fixtures (acf1a4e)
+- Include browser console logs in desktop debug dumps (5cac806)
+
 ## Release v3.2.3
 
 - fix(windows): cast CEF event flags to u32 (5d5e88c)
