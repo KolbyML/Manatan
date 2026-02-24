@@ -41,8 +41,6 @@ Download the latest release for your platform from the [Releases](https://github
 
 Run the executable, then visit `http://127.0.0.1:4568/` in your web browser to access the Manatan web interface.
 
-https://github.com/user-attachments/assets/38c63c86-289d-45a4-ba85-e29f1b812ceb
-
 ## Roadmap
 
 - [x] Package Manatan, OCR Server, and Suwayomi into a single binary
