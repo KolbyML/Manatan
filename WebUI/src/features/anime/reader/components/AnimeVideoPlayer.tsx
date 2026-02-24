@@ -4788,7 +4788,7 @@ export const AnimeVideoPlayer = ({
                         return cssParts ? <style>{cssParts}</style> : null;
                     })()}
                     <Box
-                        className="anime-dictionary-popup"
+                        className={`anime-dictionary-popup ${settings.animePopupTheme === 'dark' ? 'yomitan-popup-dark' : 'yomitan-popup-light'}`}
                         tabIndex={0}
                         sx={{
                             position: 'absolute',

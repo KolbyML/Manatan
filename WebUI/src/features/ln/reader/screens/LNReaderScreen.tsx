@@ -29,11 +29,12 @@ import SearchIcon from '@mui/icons-material/Search';
 import FormatQuoteIcon from '@mui/icons-material/FormatQuote';
 import DeleteIcon from '@mui/icons-material/Delete';
 
-import { useOCR } from '@/Manatan/context/OCRContext';
 import ManatanLogo from '@/Manatan/assets/manatan_logo.png';
 import { AppStorage, LNHighlight } from '@/lib/storage/AppStorage';
 import { useBookContent } from '../hooks/useBookContent';
 import { useHighlights } from '../hooks/useHighlights';
+import { useLnSettings } from '../hooks/useLnSettings';
+import { getDefaultLnSettings } from '../utils/lnSettings';
 import { VirtualReader } from '../components/VirtualReader';
 import { ReaderControls } from '../components/ReaderControls';
 import { YomitanPopup } from '@/Manatan/components/YomitanPopup';
@@ -50,10 +51,19 @@ export const LNReaderScreen: React.FC = () => {
     const { id } = useParams<{ id: string }>();
     const navigate = useNavigate();
     const location = useLocation();
-    const { settings, setSettings, openSettings } = useOCR();
 
+    // Track re-renders
+    const renderCountRef = useRef(0);
+    renderCountRef.current++;
+
+    // Get language from content and use LN-specific settings
+    const { content, isLoading, error } = useBookContent(id);
+    const bookLanguage = content?.metadata?.language;
+    const { settings: lnSettings, setSettings: setLnSettings, fullSettings } = useLnSettings(bookLanguage);
+
+    // Use LN settings only (not OCR settings)
+    const settings = fullSettings;
     const [savedProgress, setSavedProgress] = useState<any>(null);
-    const [settingsOpen, setSettingsOpen] = useState(false);
     const [tocOpen, setTocOpen] = useState(false);
     const [searchOpen, setSearchOpen] = useState(false);
     const [highlightsOpen, setHighlightsOpen] = useState(false);
@@ -62,6 +72,7 @@ export const LNReaderScreen: React.FC = () => {
     const [progressLoaded, setProgressLoaded] = useState(false);
     const [currentChapter, setCurrentChapter] = useState(0);
     const [showMigrationDialog, setShowMigrationDialog] = useState(false);
+    const [settingsOpen, setSettingsOpen] = useState(false);
     const [expandedToc, setExpandedToc] = useState<Set<number>>(new Set());
     const navigationRef = useRef<{ scrollToBlock?: (blockId: string, offset?: number) => void; scrollToChapter?: (chapterIndex: number) => void }>({});
     const isIOS = typeof navigator !== 'undefined' && /iPhone|iPad|iPod/i.test(navigator.userAgent);
@@ -233,8 +244,6 @@ export const LNReaderScreen: React.FC = () => {
             }
         });
     }, [id]);
-
-    const { content, isLoading, error } = useBookContent(id);
 
     const themeKey = (settings.lnTheme || 'dark') as keyof typeof THEMES;
     const theme = THEMES[themeKey] || THEMES.dark;
@@ -552,7 +561,7 @@ export const LNReaderScreen: React.FC = () => {
                             </Typography>
 
                             <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-                                <IconButton onClick={() => openSettings()} sx={{ color: theme.fg }}>
+                                <IconButton onClick={() => window.dispatchEvent(new CustomEvent('openManatanSettings'))} sx={{ color: theme.fg }}>
                                     <Box
                                         component="img"
                                         src={ManatanLogo}
@@ -847,26 +856,11 @@ export const LNReaderScreen: React.FC = () => {
             <ReaderControls
                 open={settingsOpen}
                 onClose={() => setSettingsOpen(false)}
-                settings={settings}
-                onUpdateSettings={(k, v) => setSettings((p) => ({ ...p, [k]: v }))}
+                settings={fullSettings}
+                onUpdateSettings={(k, v) => setLnSettings({ [k]: v })}
                 onResetSettings={() => {
-                    import('@/Manatan/types').then(({ DEFAULT_SETTINGS }) => {
-                        setSettings((prev) => ({
-                            ...prev,
-                            lnFontSize: DEFAULT_SETTINGS.lnFontSize,
-                            lnLineHeight: DEFAULT_SETTINGS.lnLineHeight,
-                            lnFontFamily: DEFAULT_SETTINGS.lnFontFamily,
-                            lnTheme: DEFAULT_SETTINGS.lnTheme,
-                            lnReadingDirection: DEFAULT_SETTINGS.lnReadingDirection,
-                            lnPaginationMode: DEFAULT_SETTINGS.lnPaginationMode,
-                            lnPageWidth: DEFAULT_SETTINGS.lnPageWidth,
-                            lnPageMargin: DEFAULT_SETTINGS.lnPageMargin,
-                            lnEnableFurigana: DEFAULT_SETTINGS.lnEnableFurigana,
-                            lnTextAlign: DEFAULT_SETTINGS.lnTextAlign,
-                            lnLetterSpacing: DEFAULT_SETTINGS.lnLetterSpacing,
-                            lnParagraphSpacing: DEFAULT_SETTINGS.lnParagraphSpacing,
-                        }));
-                    });
+                    const defaults = getDefaultLnSettings();
+                    setLnSettings(defaults);
                 }}
                 theme={theme}
             />

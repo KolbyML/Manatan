@@ -395,6 +395,10 @@ export const LNLibrary: React.FC = () => {
     const [editingItem, setEditingItem] = useState<LibraryItem | null>(null);
     const [editForm, setEditForm] = useState({ title: '', author: '', language: '', categoryIds: [] as string[] });
 
+    // Add category dialog state
+    const [addCategoryDialogOpen, setAddCategoryDialogOpen] = useState(false);
+    const [newCategoryName, setNewCategoryName] = useState('');
+
     const { navBarWidth } = useNavBarContext();
     const { settings: { mangaGridItemWidth } } = useMetadataServerSettings();
 
@@ -847,8 +851,21 @@ export const LNLibrary: React.FC = () => {
     }, [currentSort, selectedCategoryId]);
 
     const handleCategoryChange = useCallback((categoryId: string) => {
+        if (categoryId === '__add__') {
+            setAddCategoryDialogOpen(true);
+            return;
+        }
         setSelectedCategoryId(categoryId);
     }, []);
+
+    const handleCreateCategory = useCallback(async () => {
+        if (newCategoryName.trim()) {
+            await LNCategoriesService.createCategory(newCategoryName.trim());
+            await loadCategories();
+            setNewCategoryName('');
+            setAddCategoryDialogOpen(false);
+        }
+    }, [newCategoryName]);
 
     const getSortLabel = (sortBy: string): string => {
         const labels: Record<string, string> = {
@@ -1075,13 +1092,6 @@ export const LNLibrary: React.FC = () => {
                         value="__add__"
                         icon={<AddIcon />}
                         iconPosition="start"
-                        onClick={async () => {
-                            const name = prompt('Enter category name:');
-                            if (name) {
-                                await LNCategoriesService.createCategory(name);
-                                await loadCategories();
-                            }
-                        }}
                     />
                 </Tabs>
             </Box>
@@ -1204,6 +1214,42 @@ export const LNLibrary: React.FC = () => {
                     </Button>
                     <Button onClick={() => handleConfirmClose(true)} autoFocus color="primary">
                         {confirmOptions.confirmText || 'Confirm'}
+                    </Button>
+                </DialogActions>
+            </Dialog>
+
+            {/* Add Category Dialog */}
+            <Dialog
+                open={addCategoryDialogOpen}
+                onClose={() => setAddCategoryDialogOpen(false)}
+                maxWidth="xs"
+                fullWidth
+            >
+                <DialogTitle>Create Category</DialogTitle>
+                <DialogContent>
+                    <TextField
+                        autoFocus
+                        fullWidth
+                        margin="dense"
+                        label="Category Name"
+                        value={newCategoryName}
+                        onChange={(e) => setNewCategoryName(e.target.value)}
+                        onKeyDown={(e) => {
+                            if (e.key === 'Enter' && newCategoryName.trim()) {
+                                handleCreateCategory();
+                            }
+                        }}
+                    />
+                </DialogContent>
+                <DialogActions>
+                    <Button onClick={() => setAddCategoryDialogOpen(false)}>
+                        Cancel
+                    </Button>
+                    <Button
+                        onClick={handleCreateCategory}
+                        disabled={!newCategoryName.trim()}
+                    >
+                        Create
                     </Button>
                 </DialogActions>
             </Dialog>

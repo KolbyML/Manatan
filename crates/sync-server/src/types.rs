@@ -114,6 +114,96 @@ impl LNProgress {
 }
 
 // ============================================================================
+// LN Reader Settings (for sync)
+// ============================================================================
+
+/// LN Reader settings - matches TypeScript LNReaderSettings
+#[derive(Debug, Clone, Serialize, Deserialize, Default)]
+#[serde(rename_all = "camelCase")]
+pub struct LNReaderSettings {
+    // Basic display
+    pub ln_font_size: f64,
+    pub ln_line_height: f64,
+    pub ln_font_family: String,
+    pub ln_theme: String,
+    pub ln_reading_direction: String,
+    pub ln_pagination_mode: String,
+    pub ln_page_width: f64,
+    pub ln_page_margin: f64,
+    pub ln_enable_furigana: bool,
+    pub ln_text_align: String,
+    pub ln_letter_spacing: f64,
+    pub ln_paragraph_spacing: f64,
+
+    // Additional display settings
+    pub ln_text_brightness: f64,
+    pub ln_font_weight: f64,
+    pub ln_secondary_font_family: String,
+
+    // Bookmark settings
+    pub ln_auto_bookmark: bool,
+    pub ln_bookmark_delay: f64,
+    pub ln_lock_progress_bar: bool,
+
+    // Navigation settings
+    pub ln_hide_nav_buttons: bool,
+    pub ln_enable_swipe: bool,
+    pub ln_drag_threshold: f64,
+
+    // Click zones (paged mode)
+    pub ln_enable_click_zones: bool,
+    pub ln_click_zone_size: f64,
+    pub ln_click_zone_placement: String,
+    pub ln_click_zone_position: String,
+    pub ln_click_zone_coverage: f64,
+
+    // Animations & extras
+    pub ln_disable_animations: bool,
+    pub ln_show_char_progress: bool,
+
+    // Yomitan integration
+    pub enable_yomitan: bool,
+    pub interaction_mode: String,
+}
+
+impl LNReaderSettings {
+    pub fn default_settings() -> Self {
+        Self {
+            ln_font_size: 18.0,
+            ln_line_height: 1.8,
+            ln_font_family: "\"Noto Serif JP\", serif".to_string(),
+            ln_theme: "dark".to_string(),
+            ln_reading_direction: "vertical-rtl".to_string(),
+            ln_pagination_mode: "paginated".to_string(),
+            ln_page_width: 800.0,
+            ln_page_margin: 20.0,
+            ln_enable_furigana: true,
+            ln_text_align: "justify".to_string(),
+            ln_letter_spacing: 0.0,
+            ln_paragraph_spacing: 0.0,
+            ln_text_brightness: 100.0,
+            ln_font_weight: 400.0,
+            ln_secondary_font_family: String::new(),
+            ln_auto_bookmark: true,
+            ln_bookmark_delay: 5.0,
+            ln_lock_progress_bar: false,
+            ln_hide_nav_buttons: false,
+            ln_enable_swipe: true,
+            ln_drag_threshold: 10.0,
+            ln_enable_click_zones: true,
+            ln_click_zone_size: 10.0,
+            ln_click_zone_placement: "vertical".to_string(),
+            ln_click_zone_position: "full".to_string(),
+            ln_click_zone_coverage: 60.0,
+            ln_disable_animations: false,
+            ln_show_char_progress: false,
+            enable_yomitan: true,
+            interaction_mode: "hover".to_string(),
+        }
+    }
+}
+
+// ============================================================================
 // Light Novel Metadata
 // ============================================================================
 
@@ -201,6 +291,11 @@ pub struct LNMetadata {
     pub language: Option<String>,
     #[serde(default, skip_serializing_if = "Vec::is_empty")]
     pub category_ids: Vec<String>,
+
+    // Settings per language (synced)
+    #[serde(default, skip_serializing_if = "HashMap::is_empty")]
+    #[serde(alias = "languageSettings")]
+    pub language_settings: HashMap<String, LNReaderSettings>,
 }
 
 // ============================================================================

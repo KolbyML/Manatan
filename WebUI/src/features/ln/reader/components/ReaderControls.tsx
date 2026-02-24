@@ -41,7 +41,7 @@ const FONT_PRESETS = [
 interface Props {
     open: boolean;
     onClose: () => void;
-    settings: Settings;
+    settings: Partial<Settings>;
     onUpdateSettings: (key: keyof Settings, value: any) => void;
     onResetSettings?: () => void;
     theme: { bg: string; fg: string };

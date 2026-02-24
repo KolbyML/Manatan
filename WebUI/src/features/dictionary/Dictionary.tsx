@@ -508,6 +508,7 @@ export const Dictionary = () => {
                                 {renderHistoryNav()}
                                 <Paper
                                     elevation={0}
+                                    className={muiTheme.palette.mode === 'dark' ? 'yomitan-popup-dark' : 'yomitan-popup-light'}
                                     sx={{
                                         maxWidth: 900,
                                         mx: 'auto',
