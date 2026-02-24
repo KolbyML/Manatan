@@ -641,19 +641,18 @@ export const PagedReader: React.FC<PagedReaderProps> = ({
         const anchorBlockId = anchor?.blockId;
         const anchorChapter = anchor?.chapterIndex ?? 0;
 
-        // Wait for target chapter's content to be rendered before restoration
+        // Fast restoration: no polling, just verify and restore
         const tryRestore = async () => {
-            const maxWaitMs = 10000; // 10 seconds for weak devices
-            const checkIntervalMs = 200;
+            // Wait for next frame to ensure DOM is ready
+            await new Promise(resolve => requestAnimationFrame(resolve));
 
-            // Wait for target chapter's blocks to be in DOM
-            for (let elapsed = 0; elapsed < maxWaitMs; elapsed += checkIntervalMs) {
-                const blocks = contentRef.current.querySelectorAll(`[data-block-id^="ch${anchorChapter}-b"]`);
-                if (blocks.length > 0) {
-                    console.log('[PagedReader] Chapter content loaded after', elapsed, 'ms');
-                    break;
-                }
-                await new Promise(r => setTimeout(r, checkIntervalMs));
+            // Verify blocks exist for the anchor chapter
+            const blocks = contentRef.current.querySelectorAll(`[data-block-id^="ch${anchorChapter}-b"]`);
+            
+            if (blocks.length === 0) {
+                console.log('[PagedReader] No blocks found for chapter', anchorChapter, '- skipping restoration');
+                lastRestoreKeyRef.current = restoreKey;
+                return;
             }
 
             // Block detection until we finish
@@ -690,6 +689,7 @@ export const PagedReader: React.FC<PagedReaderProps> = ({
             }
 
             if (!blockEl) {
+                console.log('[PagedReader] Block element not found - skipping restoration');
                 lastRestoreKeyRef.current = restoreKey;
                 restorePendingRef.current = false;
                 return;
@@ -1157,10 +1157,12 @@ useEffect(() => {
             {/* Dynamic image sizing */}
             <style>{`
                 .paged-content img {
-                    max-width: 100%;
-                    max-height: ${layout.contentH}px;
+                    max-width: 100vw !important;
+                    max-height: ${layout ? layout.contentH : 1000}px;
+                    width: auto;
                     height: auto;
                     display: block;
+                    object-fit: contain;
                 }
             `}</style>
 

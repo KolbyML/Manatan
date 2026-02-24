@@ -8,11 +8,13 @@
     z-index: 100;
     pointer-events: none;
     opacity: 1;
-    transition: opacity 0.2s ease-in-out;
+    transition: opacity 0.2s ease-in-out, visibility 0.2s ease-in-out;
 }
 
 .reader-navigation-ui.hidden {
     opacity: 0;
+    pointer-events: none;
+    visibility: hidden;
 }
 
 .reader-navigation-ui>* {

@@ -35,6 +35,30 @@ fn read_limited_string<R: Read>(reader: R, byte_limit: u64, label: &str) -> Resu
     String::from_utf8(buf).map_err(|err| anyhow!("{label} is not valid UTF-8: {err}"))
 }
 
+fn should_skip_file(name: &str) -> bool {
+    // Skip macOS resource fork and metadata folders
+    if name.starts_with("__MACOSX/") || name.contains("/__MACOSX/") {
+        return true;
+    }
+    
+    // Skip hidden files (starting with .)
+    if name.starts_with('.') || name.contains("/.") {
+        return true;
+    }
+    
+    // Skip common system/temp files
+    if name.ends_with(".DS_Store") || name.ends_with("Thumbs.db") {
+        return true;
+    }
+    
+    // Skip Windows resource forks
+    if name.starts_with("._") || name.contains("/._") {
+        return true;
+    }
+    
+    false
+}
+
 fn validate_zip_archive<R: Read + std::io::Seek>(zip: &mut ZipArchive<R>) -> Result<()> {
     if zip.len() > MAX_ZIP_ENTRY_COUNT {
         return Err(anyhow!(
@@ -47,6 +71,11 @@ fn validate_zip_archive<R: Read + std::io::Seek>(zip: &mut ZipArchive<R>) -> Res
     for i in 0..zip.len() {
         let file = zip.by_index(i)?;
         if file.is_dir() {
+            continue;
+        }
+        
+        // Skip system files and folders during validation
+        if should_skip_file(file.name()) {
             continue;
         }
 
@@ -396,6 +425,7 @@ pub fn import_zip(state: &AppState, data: &[u8]) -> Result<String> {
     let mut index_file_name = None;
     for i in 0..zip.len() {
         if let Ok(file) = zip.by_index(i)
+            && !should_skip_file(file.name())
             && file.name().ends_with("index.json")
         {
             index_file_name = Some(file.name().to_string());
@@ -487,6 +517,11 @@ pub fn import_zip(state: &AppState, data: &[u8]) -> Result<String> {
         };
         let file_name = file.name().to_string();
 
+        // Skip system files during media extraction
+        if should_skip_file(&file_name) {
+            continue;
+        }
+
         // Extract styles.css
         if file_name == "styles.css" {
             let mut contents = String::new();
@@ -531,7 +566,16 @@ pub fn import_zip(state: &AppState, data: &[u8]) -> Result<String> {
 
     // 4. Scan for term banks and insert
     let file_names: Vec<String> = (0..zip.len())
-        .filter_map(|i| zip.by_index(i).ok().map(|f| f.name().to_string()))
+        .filter_map(|i| {
+            zip.by_index(i).ok().and_then(|f| {
+                let name = f.name().to_string();
+                if should_skip_file(&name) {
+                    None
+                } else {
+                    Some(name)
+                }
+            })
+        })
         .collect();
 
     let mut terms_found = 0usize;
