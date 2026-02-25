@@ -741,7 +741,14 @@ export const AnimeVideoPlayer = ({
     const [dictionaryLoading, setDictionaryLoading] = useState(false);
     const [dictionarySystemLoading, setDictionarySystemLoading] = useState(false);
     const [, setDictionaryQuery] = useState('');
-    const [dictionaryHistory, setDictionaryHistory] = useState<{ term: string; results: DictionaryResult[]; isLoading: boolean; systemLoading: boolean }[]>([]);
+    const [dictionaryHistory, setDictionaryHistory] = useState<{
+        term: string;
+        results: DictionaryResult[];
+        kanjiResults?: any[];
+        isLoading: boolean;
+        systemLoading: boolean;
+        isKanjiOnly?: boolean;
+    }[]>([]);
     const [dictionaryHistoryIndex, setDictionaryHistoryIndex] = useState(-1);
     const [wordAudioMenuAnchor, setWordAudioMenuAnchor] = useState<{ top: number; left: number } | null>(null);
     const [wordAudioMenuEntry, setWordAudioMenuEntry] = useState<DictionaryResult | null>(null);
@@ -2974,7 +2981,13 @@ export const AnimeVideoPlayer = ({
             setIsOverlayVisible(false);
             dictionaryOpenedByHoverRef.current = source === 'hover';
 
-            const newEntry = { term: text, results: [], isLoading: true, systemLoading: false };
+            const newEntry = {
+                term: text,
+                results: [],
+                kanjiResults: [],
+                isLoading: true,
+                systemLoading: false
+            };
             setDictionaryHistory([newEntry]);
             setDictionaryHistoryIndex(0);
 
@@ -2997,7 +3010,13 @@ export const AnimeVideoPlayer = ({
             setDictionaryHistory(prev => {
                 const newHistory = [...prev];
                 if (newHistory.length > 0) {
-                    newHistory[0] = { ...newHistory[0], results: loadedResults, isLoading: false, systemLoading: isSystemLoading };
+                    newHistory[0] = {
+                        ...newHistory[0],
+                        results: loadedResults,
+                        kanjiResults: loadedKanji,
+                        isLoading: false,
+                        systemLoading: isSystemLoading
+                    };
                 }
                 return newHistory;
             });
@@ -3071,7 +3090,13 @@ export const AnimeVideoPlayer = ({
         setIsOverlayVisible(false);
 
         const maxHistory = settings.yomitanLookupMaxHistory || 10;
-        const newEntry = { term: cleanText, results: [], isLoading: true, systemLoading: false };
+        const newEntry = {
+            term: cleanText,
+            results: [],
+            kanjiResults: [],
+            isLoading: true,
+            systemLoading: false
+        };
 
         setDictionaryHistory(prev => {
             const newHistory = prev.slice(0, dictionaryHistoryIndex + 1);
@@ -3097,7 +3122,14 @@ export const AnimeVideoPlayer = ({
                 const idx = Math.min(dictionaryHistoryIndex + 1, maxHistory - 1);
                 if (newHistory[idx]) {
                     const matchedTerm = loadedResults[0]?.headword || cleanText;
-                    newHistory[idx] = { ...newHistory[idx], term: matchedTerm, results: loadedResults, isLoading: false, systemLoading: isSystemLoading };
+                    newHistory[idx] = {
+                        ...newHistory[idx],
+                        term: matchedTerm,
+                        results: loadedResults,
+                        kanjiResults: loadedKanji,
+                        isLoading: false,
+                        systemLoading: isSystemLoading
+                    };
                 }
                 return newHistory;
             });
@@ -3175,7 +3207,13 @@ export const AnimeVideoPlayer = ({
         setIsOverlayVisible(false);
 
         const maxHistory = settings.yomitanLookupMaxHistory || 10;
-        const newEntry = { term: cleanText, results: [], isLoading: true, systemLoading: false };
+        const newEntry = {
+            term: cleanText,
+            results: [],
+            kanjiResults: [],
+            isLoading: true,
+            systemLoading: false
+        };
 
         setDictionaryHistory(prev => {
             const newHistory = prev.slice(0, dictionaryHistoryIndex + 1);
@@ -3200,7 +3238,13 @@ export const AnimeVideoPlayer = ({
                 const newHistory = [...prev];
                 const idx = Math.min(dictionaryHistoryIndex + 1, maxHistory - 1);
                 if (newHistory[idx]) {
-                    newHistory[idx] = { ...newHistory[idx], results: loadedResults, isLoading: false, systemLoading: isSystemLoading };
+                    newHistory[idx] = {
+                        ...newHistory[idx],
+                        results: loadedResults,
+                        kanjiResults: loadedKanji,
+                        isLoading: false,
+                        systemLoading: isSystemLoading
+                    };
                 }
                 return newHistory;
             });
@@ -3226,6 +3270,7 @@ export const AnimeVideoPlayer = ({
             const entry = dictionaryHistory[index];
             setDictionaryHistoryIndex(index);
             setDictionaryResults(entry.results);
+            setKanjiResults(entry.kanjiResults || []);
             setDictionaryLoading(entry.isLoading);
             setDictionarySystemLoading(entry.systemLoading);
         }
@@ -3367,7 +3412,13 @@ export const AnimeVideoPlayer = ({
         if (!cleanText) return;
 
         const maxHistory = settings.yomitanLookupMaxHistory || 10;
-        const newEntry = { term: cleanText, results: [], isLoading: true, systemLoading: false };
+        const newEntry = {
+            term: cleanText,
+            results: [],
+            kanjiResults: [],
+            isLoading: true,
+            systemLoading: false
+        };
         setDictionaryHistory(prev => {
             const newHistory = prev.slice(0, dictionaryHistoryIndex + 1);
             newHistory.push(newEntry);
@@ -3404,7 +3455,13 @@ export const AnimeVideoPlayer = ({
             const newHistory = [...prev];
             const idx = newHistory.findIndex(e => e.term === cleanText && e.isLoading);
             if (idx >= 0) {
-                newHistory[idx] = { ...newHistory[idx], results: loadedResults, isLoading: false, systemLoading: isSystemLoading };
+                newHistory[idx] = {
+                    ...newHistory[idx],
+                    results: loadedResults,
+                    kanjiResults: loadedKanji,
+                    isLoading: false,
+                    systemLoading: isSystemLoading
+                };
             }
             return newHistory;
         });
@@ -3425,7 +3482,13 @@ export const AnimeVideoPlayer = ({
         if (!cleanText) return;
 
         const maxHistory = settings.yomitanLookupMaxHistory || 10;
-        const newEntry = { term: cleanText, results: [], isLoading: true, systemLoading: false };
+        const newEntry = {
+            term: cleanText,
+            results: [],
+            kanjiResults: [],
+            isLoading: true,
+            systemLoading: false
+        };
         setDictionaryHistory(prev => {
             const newHistory = prev.slice(0, dictionaryHistoryIndex + 1);
             newHistory.push(newEntry);
@@ -3462,7 +3525,13 @@ export const AnimeVideoPlayer = ({
             const newHistory = [...prev];
             const idx = newHistory.findIndex(e => e.term === cleanText && e.isLoading);
             if (idx >= 0) {
-                newHistory[idx] = { ...newHistory[idx], results: loadedResults, isLoading: false, systemLoading: isSystemLoading };
+                newHistory[idx] = {
+                    ...newHistory[idx],
+                    results: loadedResults,
+                    kanjiResults: loadedKanji,
+                    isLoading: false,
+                    systemLoading: isSystemLoading
+                };
             }
             return newHistory;
         });
@@ -3538,9 +3607,81 @@ export const AnimeVideoPlayer = ({
         const sumOfReciprocals = numbers.reduce((sum, n) => sum + (1 / n), 0);
         return Math.round(numbers.length / sumOfReciprocals);
     }, []);
+    const handleKanjiLookup = useCallback(async (char: string) => {
+        const cleanText = char.trim();
+        if (!cleanText) return;
+
+        const maxHistory = settings.yomitanLookupMaxHistory || 10;
+        const newEntry = {
+            term: cleanText,
+            results: [],
+            kanjiResults: [],
+            isLoading: true,
+            systemLoading: false,
+            isKanjiOnly: true
+        };
+        setDictionaryHistory(prev => {
+            const newHistory = prev.slice(0, dictionaryHistoryIndex + 1);
+            newHistory.push(newEntry);
+            if (newHistory.length > maxHistory) newHistory.shift();
+            return newHistory;
+        });
+        setDictionaryHistoryIndex(prev => Math.min(prev + 1, maxHistory - 1));
+
+        dictionaryRequestRef.current += 1;
+        const requestId = dictionaryRequestRef.current;
+
+        setDictionaryVisible(true);
+        setIsOverlayVisible(false);
+        dictionaryOpenedByHoverRef.current = false;
+        setDictionaryResults([]);
+        setKanjiResults([]);
+        setDictionaryLoading(true);
+        setDictionarySystemLoading(false);
+
+        try {
+            const results = await lookupYomitan(
+                cleanText,
+                0,
+                settings.resultGroupingMode,
+                settings.yomitanLanguage
+            );
+            if (dictionaryRequestRef.current !== requestId) {
+                return;
+            }
+            const loadedResults = results === 'loading' ? [] : ((results as any).terms || results || []);
+            const loadedKanji = results === 'loading' ? [] : ((results as any).kanji || []);
+            const isSystemLoading = results === 'loading';
+
+            setDictionaryHistory(prev => {
+                const newHistory = [...prev];
+                const idx = Math.min(dictionaryHistoryIndex + 1, maxHistory - 1);
+                if (newHistory[idx]) {
+                    newHistory[idx] = {
+                        ...newHistory[idx],
+                        results: loadedResults,
+                        kanjiResults: loadedKanji,
+                        isLoading: false,
+                        systemLoading: isSystemLoading,
+                        isKanjiOnly: true
+                    };
+                }
+                return newHistory;
+            });
+            setDictionaryResults(loadedResults);
+            setKanjiResults(loadedKanji);
+            setDictionaryLoading(false);
+            setDictionarySystemLoading(isSystemLoading);
+        } catch (err) {
+            console.error('[AnimeVideoPlayer] Kanji lookup failed', err);
+            setDictionaryLoading(false);
+            setDictionarySystemLoading(false);
+        }
+    }, [settings.resultGroupingMode, settings.yomitanLanguage, settings.yomitanLookupMaxHistory, dictionaryHistoryIndex]);
+
     const processedDictionaryResults = useMemo(() => {
         const currentEntry = dictionaryHistoryIndex >= 0 && dictionaryHistoryIndex < dictionaryHistory.length ? dictionaryHistory[dictionaryHistoryIndex] : null;
-        const resultsToProcess = currentEntry ? currentEntry.results : dictionaryResults;
+        const resultsToProcess = currentEntry ? (currentEntry.isKanjiOnly ? [] : currentEntry.results) : dictionaryResults;
         if (!settings.showHarmonicMeanFreq) return resultsToProcess;
         return resultsToProcess.map(entry => {
             if (!entry.frequencies || entry.frequencies.length === 0) return entry;
@@ -3553,6 +3694,9 @@ export const AnimeVideoPlayer = ({
         });
     }, [dictionaryResults, dictionaryHistory, dictionaryHistoryIndex, settings.showHarmonicMeanFreq, calculateHarmonicMean]);
     const currentDictionaryEntry = dictionaryHistoryIndex >= 0 && dictionaryHistoryIndex < dictionaryHistory.length ? dictionaryHistory[dictionaryHistoryIndex] : null;
+    const currentKanjiResults = useMemo(() => {
+        return currentDictionaryEntry ? (currentDictionaryEntry.kanjiResults || []) : kanjiResults;
+    }, [currentDictionaryEntry, kanjiResults]);
     const isDictionaryLoading = currentDictionaryEntry ? currentDictionaryEntry.isLoading : dictionaryLoading;
     const isDictionarySystemLoading = currentDictionaryEntry ? currentDictionaryEntry.systemLoading : false;
     const singleGlossaryPrefix = 'Single Glossary ';
@@ -4813,15 +4957,16 @@ export const AnimeVideoPlayer = ({
                     >
                         <DictionaryView
                             results={processedDictionaryResults}
-                            isLoading={dictionaryLoading}
-                            systemLoading={dictionarySystemLoading}
+                            isLoading={isDictionaryLoading}
+                            systemLoading={isDictionarySystemLoading}
                             onLinkClick={handleDefinitionLink}
                             onWordClick={handleWordClick}
+                            onKanjiClick={handleKanjiLookup}
                             context={dictionaryContext}
                             variant="popup"
                             popupTheme={popupTheme}
                             layout="horizontal"
-                            kanjiResults={kanjiResults}
+                            kanjiResults={currentKanjiResults}
                             grouped={settings.resultGroupingMode === 'grouped'}
                             renderHistoryNav={() => {
                                 if (!settings.yomitanLookupNavigationMode || dictionaryHistory.length <= 1) return null;
