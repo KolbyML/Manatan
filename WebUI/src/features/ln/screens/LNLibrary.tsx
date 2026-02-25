@@ -479,15 +479,6 @@ export const LNLibrary: React.FC = () => {
     }, []);
 
     useEffect(() => {
-        const init = async () => {
-            await AppStorage.migrateLnMetadata();
-            await loadCategories();
-            await loadLibrary();
-        };
-        init();
-    }, []);
-
-    useEffect(() => {
         loadSortSettings();
     }, [selectedCategoryId, loadSortSettings]);
 
@@ -506,7 +497,8 @@ export const LNLibrary: React.FC = () => {
 
     const gridColumns = Math.max(1, Math.ceil(dimensions / mangaGridItemWidth));
 
-    const loadLibrary = async () => {
+    // Load library data
+    const loadLibrary = useCallback(async () => {
         try {
             const keys = await AppStorage.lnMetadata.keys();
             const items: LibraryItem[] = [];
@@ -528,7 +520,30 @@ export const LNLibrary: React.FC = () => {
         } catch (e) {
             console.error('Failed to load library:', e);
         }
-    };
+    }, []);
+
+    // Initial load on mount
+    useEffect(() => {
+        const init = async () => {
+            await AppStorage.migrateLnMetadata();
+            await loadCategories();
+            await loadLibrary();
+        };
+        init();
+    }, [loadCategories, loadLibrary]);
+
+    // Reload library when tab becomes visible again (handles browser suspending connections after long background time)
+    useEffect(() => {
+        const handleVisibilityChange = async () => {
+            if (document.visibilityState === 'visible') {
+                await loadLibrary();
+                await loadCategories();
+            }
+        };
+
+        document.addEventListener('visibilitychange', handleVisibilityChange);
+        return () => document.removeEventListener('visibilitychange', handleVisibilityChange);
+    }, [loadLibrary, loadCategories]);
 
     // Normalize title for comparison
     const normalizeTitle = (title: string): string => {

@@ -171,6 +171,7 @@ const DOWNSCALE_OPTIONS = [
 export const SettingsModal: React.FC<{ onClose: () => void }> = ({ onClose }) => {
     const { settings, setSettings, showConfirm, showAlert, showProgress, closeDialog, showDialog, openSetup } = useOCR();
     const [localSettings, setLocalSettings] = useState(settings);
+    const [showAdvancedAnki, setShowAdvancedAnki] = useState(false);
     const fileInputRef = useRef<HTMLInputElement>(null);
     const [dictManagerKey, setDictManagerKey] = useState(0);
     const [dictionaryNames, setDictionaryNames] = useState<string[]>([]);
@@ -475,6 +476,20 @@ export const SettingsModal: React.FC<{ onClose: () => void }> = ({ onClose }) =>
 
         handleChange('ankiFieldMap', newMap);
     };
+
+    const handleUpdateModeChange = (field: string, mode: string) => {
+        const currentModes = localSettings.ankiFieldUpdateModes || {};
+        handleChange('ankiFieldUpdateModes', { ...currentModes, [field]: mode });
+    };
+
+    const updateModes = [
+        { value: 'overwrite', label: 'Overwrite' },
+        { value: 'overwrite-if-available', label: 'Overwrite if available' },
+        { value: 'append', label: 'Append' },
+        { value: 'prepend', label: 'Prepend' },
+        { value: 'fill-if-empty', label: 'Fill if empty' },
+        { value: 'skip', label: 'Skip' },
+    ];
 
     // New helper to handle the inverted selection (Content -> Field)
     const handleContentToFieldChange = (contentType: string, targetField: string) => {
@@ -1159,7 +1174,7 @@ ${detail}`,
 
                                     {localSettings.enableYomitan && (
                                         <div style={{ marginBottom: '15px', padding: '10px', backgroundColor: 'rgba(255,255,255,0.05)', borderRadius: '6px', border: '1px solid rgba(255,255,255,0.1)' }}>
-                                            <label style={{ ...checkboxLabelStyle, marginBottom: '0' }}>
+                                            <label style={{ ...checkboxLabelStyle }}>
                                                 <input 
                                                     type="checkbox" 
                                                     checked={localSettings.ankiCheckDuplicates ?? true} 
@@ -1169,10 +1184,62 @@ ${detail}`,
                                                 <div>
                                                     Check for Duplicates
                                                     <div style={{ opacity: 0.5, fontSize: '0.9em' }}>
-                                                        Checks if the word already exists in the selected deck
+                                                        Checks if the word already exists in Anki
                                                     </div>
                                                 </div>
                                             </label>
+
+                                            {localSettings.ankiCheckDuplicates && (
+                                                <div style={{ marginTop: '10px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                                                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                                                        <span style={{ fontSize: '0.9em', color: '#ccc' }}>Duplicate Action</span>
+                                                        <select
+                                                            value={localSettings.ankiDuplicateAction || 'prevent'}
+                                                            onChange={e => handleChange('ankiDuplicateAction', e.target.value)}
+                                                            style={{ padding: '4px', borderRadius: '4px', border: '1px solid #444', background: '#222', color: 'white', minWidth: '120px' }}
+                                                        >
+                                                            <option value="prevent">Prevent</option>
+                                                            <option value="overwrite">Overwrite</option>
+                                                            <option value="add">Add Anyway</option>
+                                                        </select>
+                                                    </div>
+
+                                                    <button
+                                                        onClick={() => setShowAdvancedAnki(!showAdvancedAnki)}
+                                                        style={{ background: 'none', border: 'none', color: '#7cc8ff', cursor: 'pointer', fontSize: '0.8em', padding: 0, textAlign: 'left', width: 'fit-content' }}
+                                                    >
+                                                        {showAdvancedAnki ? 'Less...' : 'More...'}
+                                                    </button>
+
+                                                    {showAdvancedAnki && (
+                                                        <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', paddingLeft: '10px', borderLeft: '1px solid rgba(255,255,255,0.1)' }}>
+                                                            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                                                                <span style={{ fontSize: '0.85em', color: '#aaa' }}>Check Scope</span>
+                                                                <select
+                                                                    value={localSettings.ankiDuplicateScope || 'deck'}
+                                                                    onChange={e => handleChange('ankiDuplicateScope', e.target.value)}
+                                                                    style={{ padding: '4px', borderRadius: '4px', border: '1px solid #444', background: '#222', color: 'white', minWidth: '120px' }}
+                                                                >
+                                                                    <option value="deck">Current Deck</option>
+                                                                    <option value="deck-root">Deck Root</option>
+                                                                    <option value="collection">Collection</option>
+                                                                </select>
+                                                            </div>
+                                                            <label style={{ ...checkboxLabelStyle, marginBottom: 0 }}>
+                                                                <input
+                                                                    type="checkbox"
+                                                                    checked={localSettings.ankiCheckDuplicatesAllModels ?? false}
+                                                                    onChange={e => handleChange('ankiCheckDuplicatesAllModels', e.target.checked)}
+                                                                    style={checkboxInputStyle}
+                                                                />
+                                                                <div style={{ fontSize: '0.85em', color: '#aaa' }}>
+                                                                    Check across all models
+                                                                </div>
+                                                            </label>
+                                                        </div>
+                                                    )}
+                                                </div>
+                                            )}
                                         </div>
                                     )}
 
@@ -1234,6 +1301,9 @@ ${detail}`,
                                                                     <tr style={{borderBottom: '1px solid rgba(255,255,255,0.2)'}}>
                                                                         <th style={{textAlign: 'left', padding: '8px', color: '#aaa'}}>Anki Field</th>
                                                                         <th style={{textAlign: 'left', padding: '8px', color: '#aaa'}}>Content</th>
+                                                                        {localSettings.ankiDuplicateAction === 'overwrite' && (
+                                                                            <th style={{textAlign: 'left', padding: '8px', color: '#aaa'}}>Update Mode</th>
+                                                                        )}
                                                                     </tr>
                                                                 </thead>
                                                                 <tbody>
@@ -1253,6 +1323,19 @@ ${detail}`,
                                                                                     ))}
                                                                                 </select>
                                                                             </td>
+                                                                            {localSettings.ankiDuplicateAction === 'overwrite' && (
+                                                                                <td style={{padding: '8px'}}>
+                                                                                    <select
+                                                                                        style={{width: '100%', padding: '4px', borderRadius: '4px', border: '1px solid #444', background: '#222', color: 'white'}}
+                                                                                        value={localSettings.ankiFieldUpdateModes?.[field] || 'overwrite'}
+                                                                                        onChange={e => handleUpdateModeChange(field, e.target.value)}
+                                                                                    >
+                                                                                        {updateModes.map(m => (
+                                                                                            <option key={m.value} value={m.value}>{m.label}</option>
+                                                                                        ))}
+                                                                                    </select>
+                                                                                </td>
+                                                                            )}
                                                                         </tr>
                                                                     ))}
                                                                 </tbody>

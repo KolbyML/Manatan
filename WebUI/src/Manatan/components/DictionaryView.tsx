@@ -21,7 +21,10 @@ import StarIcon from '@mui/icons-material/Star';
 import StarBorderIcon from '@mui/icons-material/StarBorder';
 import MenuBookIcon from '@mui/icons-material/MenuBook';
 import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
+import AddIcon from '@mui/icons-material/Add';
+import SystemUpdateAltIcon from '@mui/icons-material/SystemUpdateAlt';
 import { CropperModal } from '@/Manatan/components/CropperModal';
+import { notesInfo, calculateUpdatedFields, updateNote } from '@/Manatan/utils/anki';
 
 export const StructuredContent: React.FC<{
     contentString: string;
@@ -335,9 +338,27 @@ const AnkiButtons: React.FC<{
         if (!settings.ankiConnectEnabled || !settings.ankiCheckDuplicates) return;
         try {
             const url = settings.ankiConnectUrl || 'http://127.0.0.1:8765';
-            let query = `deck:"${settings.ankiDeck}"`;
-            if (targetField) query += ` "${targetField}:${entry.headword}"`;
-            else query += ` "${entry.headword}"`; 
+            const scope = settings.ankiDuplicateScope || 'deck';
+
+            const queryParts = [];
+            if (scope === 'deck' && settings.ankiDeck) {
+                queryParts.push(`deck:"${settings.ankiDeck}"`);
+            } else if (scope === 'deck-root' && settings.ankiDeck) {
+                const rootDeck = settings.ankiDeck.split('::')[0];
+                queryParts.push(`deck:"${rootDeck}::*"`);
+            }
+
+            if (!settings.ankiCheckDuplicatesAllModels && settings.ankiModel) {
+                queryParts.push(`note:"${settings.ankiModel}"`);
+            }
+
+            if (targetField) {
+                queryParts.push(`"${targetField}:${entry.headword}"`);
+            } else {
+                queryParts.push(`"${entry.headword}"`);
+            }
+
+            const query = queryParts.join(' ');
             const ids = await findNotes(url, query);
             if (ids.length > 0) {
                 setStatus('exists');
@@ -359,7 +380,14 @@ const AnkiButtons: React.FC<{
         } else {
             setStatus('missing'); 
         }
-    }, [entry.headword, settings.ankiCheckDuplicates, targetField]);
+    }, [
+        entry.headword,
+        settings.ankiCheckDuplicates,
+        settings.ankiDuplicateScope,
+        settings.ankiCheckDuplicatesAllModels,
+        settings.ankiDeck,
+        targetField
+    ]);
 
     const handleAddClick = (e: React.MouseEvent) => {
         e.stopPropagation();
@@ -372,12 +400,17 @@ const AnkiButtons: React.FC<{
         if (settings.ankiEnableCropper && hasImageField && dictPopup.context?.imgSrc) {
             setShowCropper(true);
         } else {
-            addNoteToAnki();
+            const isExists = status === 'exists';
+            const action = settings.ankiDuplicateAction || 'prevent';
+            if (isExists && action === 'overwrite') {
+                handleOverwrite();
+            } else {
+                addNoteToAnki();
+            }
         }
     };
 
-    const addNoteToAnki = async (croppedBase64?: string) => {
-        const url = settings.ankiConnectUrl || 'http://127.0.0.1:8765';
+    const prepareNoteData = async (croppedBase64?: string) => {
         const fields: Record<string, string> = {};
         const map = settings.ankiFieldMap || {};
         const singleGlossaryPrefix = 'Single Glossary ';
@@ -657,28 +690,39 @@ const AnkiButtons: React.FC<{
                 if (name) fields[ankiField] = buildGlossaryHtml(name);
             }
         }
-        try {
-            setStatus('loading');
-            let pictureData;
-            const imgField = Object.keys(map).find(k => map[k] === 'Image');
-            if (imgField && dictPopup.context?.imgSrc) {
-                if (croppedBase64) {
+
+        let pictureData;
+        const imgField = Object.keys(map).find(k => map[k] === 'Image');
+        if (imgField && dictPopup.context?.imgSrc) {
+            if (croppedBase64) {
+                pictureData = {
+                    data: croppedBase64.split(';base64,')[1],
+                    filename: `manatan_card_${Date.now()}.webp`,
+                    fields: [imgField]
+                };
+            } else {
+                const b64 = await imageUrlToBase64Webp(dictPopup.context.imgSrc, settings.ankiImageQuality || 0.92, settings.ankiDownscaleMaxWidth, settings.ankiDownscaleMaxHeight);
+                if (b64) {
                     pictureData = {
-                        data: croppedBase64.split(';base64,')[1],
+                        data: b64.split(';base64,')[1],
                         filename: `manatan_card_${Date.now()}.webp`,
                         fields: [imgField]
                     };
-                } else {
-                    const b64 = await imageUrlToBase64Webp(dictPopup.context.imgSrc, settings.ankiImageQuality || 0.92, settings.ankiDownscaleMaxWidth, settings.ankiDownscaleMaxHeight);
-                    if (b64) {
-                        pictureData = {
-                            data: b64.split(';base64,')[1],
-                            filename: `manatan_card_${Date.now()}.webp`,
-                            fields: [imgField]
-                        };
-                    }
                 }
             }
+        }
+        return { fields, pictureData, wordAudioData };
+    };
+
+    const addNoteToAnki = async (croppedBase64?: string) => {
+        const url = settings.ankiConnectUrl || 'http://127.0.0.1:8765';
+        try {
+            setStatus('loading');
+            const { fields, pictureData, wordAudioData } = await prepareNoteData(croppedBase64);
+
+            const isExists = status === 'exists';
+            const action = settings.ankiDuplicateAction || 'prevent';
+
             const res = await addNote(
                 url,
                 settings.ankiDeck!,
@@ -687,6 +731,10 @@ const AnkiButtons: React.FC<{
                 ['manatan'],
                 pictureData,
                 wordAudioData,
+                {
+                    allowDuplicate: isExists && action === 'add',
+                    duplicateScope: settings.ankiDuplicateScope || 'deck'
+                }
             );
             if (res) {
                 setStatus('exists');
@@ -698,6 +746,44 @@ const AnkiButtons: React.FC<{
             console.error(e);
             showAlert("Add Failed", String(e));
             setStatus('missing');
+        }
+    };
+
+    const handleOverwrite = async (croppedBase64?: string) => {
+        if (!existingNoteId) return;
+        const url = settings.ankiConnectUrl || 'http://127.0.0.1:8765';
+        try {
+            setStatus('loading');
+            const { fields, pictureData, wordAudioData } = await prepareNoteData(croppedBase64);
+            const info = await notesInfo(url, [existingNoteId]);
+            if (!info || !info[0]) throw new Error("Could not fetch existing note info");
+
+            const currentFields = info[0].fields;
+            const mergedFields = calculateUpdatedFields(
+                currentFields,
+                fields,
+                settings.ankiFieldUpdateModes || {}
+            );
+
+            const updatePayload: any = {
+                note: {
+                    id: existingNoteId,
+                    fields: mergedFields
+                }
+            };
+
+            if (pictureData) updatePayload.note.picture = pictureData;
+            if (wordAudioData) updatePayload.note.audio = [wordAudioData];
+
+            await updateNote(url, updatePayload.note);
+
+            // Re-fetch to confirm and update status
+            await checkStatus();
+            showAlert("Updated", "Existing card updated successfully.");
+        } catch (e: any) {
+            logAnkiError("Overwrite failed", e);
+            showAlert("Overwrite Failed", String(e));
+            setStatus('exists');
         }
     };
     const handleOpen = async (e: React.MouseEvent) => {
@@ -716,29 +802,61 @@ const AnkiButtons: React.FC<{
         } catch(e) { console.error(e); }
     };
     if (status === 'unknown') return null;
+    const isExists = status === 'exists';
+    const action = settings.ankiDuplicateAction || 'prevent';
+
+    const onCropperComplete = (b64: string) => {
+        setShowCropper(false);
+        if (isExists && action === 'overwrite') {
+            handleOverwrite(b64);
+        } else {
+            addNoteToAnki(b64);
+        }
+    };
+
     return (
-        <>
-            <button 
-                onClick={status === 'exists' ? handleOpen : handleAddClick}
-                disabled={status === 'loading'}
-                style={{
-                    background: 'none', border: 'none', cursor: 'pointer', padding: '2px',
-                    display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
-                    lineHeight: 1, color: '#2ecc71', opacity: status === 'loading' ? 0.5 : 1, marginInlineStart: '10px'
-                }}
-                title={status === 'exists' ? "Open in Anki" : "Add to Anki"}
-            >
-                {status === 'exists' ? (
+        <div style={{ display: 'inline-flex', alignItems: 'center' }}>
+            {(!isExists || action === 'add' || action === 'overwrite') && (
+                <button
+                    onClick={handleAddClick}
+                    disabled={status === 'loading'}
+                    style={{
+                        background: 'none', border: 'none', cursor: 'pointer', padding: '2px',
+                        display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
+                        lineHeight: 1, color: isExists && action === 'overwrite' ? '#3498db' : '#2ecc71', opacity: status === 'loading' ? 0.5 : 1, marginInlineStart: '10px'
+                    }}
+                    title={isExists && action === 'overwrite' ? "Overwrite in Anki" : (isExists && action === 'add' ? "Add Duplicate to Anki" : "Add to Anki")}
+                >
+                    {isExists && action === 'overwrite' ? (
+                        <SystemUpdateAltIcon sx={{ fontSize: 22 }} />
+                    ) : (isExists && action === 'add' ? (
+                        <AddIcon sx={{ fontSize: 22 }} />
+                    ) : (
+                        <AddCircleOutlineIcon sx={{ fontSize: 22, '& path': { transform: 'scale(0.9167)', transformOrigin: 'center', transformBox: 'fill-box' } }} />
+                    ))}
+                </button>
+            )}
+
+            {isExists && (
+                <button
+                    onClick={handleOpen}
+                    disabled={status === 'loading'}
+                    style={{
+                        background: 'none', border: 'none', cursor: 'pointer', padding: '2px',
+                        display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
+                        lineHeight: 1, color: '#f1c40f', opacity: status === 'loading' ? 0.5 : 1, marginInlineStart: (action === 'prevent' ? '10px' : '4px')
+                    }}
+                    title="Open in Anki"
+                >
                     <MenuBookIcon sx={{ fontSize: 22, transform: 'translateY(-0.5px)' }} />
-                ) : (
-                    <AddCircleOutlineIcon sx={{ fontSize: 22, '& path': { transform: 'scale(0.9167)', transformOrigin: 'center', transformBox: 'fill-box' } }} />
-                )}
-            </button>
+                </button>
+            )}
+
             {showCropper && createPortal(
                 <CropperModal 
                     imageSrc={dictPopup.context?.imgSrc || ''}
                     spreadData={dictPopup.context?.spreadData}
-                    onComplete={(b64) => { setShowCropper(false); addNoteToAnki(b64); }}
+                    onComplete={onCropperComplete}
                     onCancel={() => setShowCropper(false)}
                     quality={settings.ankiImageQuality || 0.92}
                     downscaleMaxWidth={settings.ankiDownscaleMaxWidth}
@@ -746,7 +864,7 @@ const AnkiButtons: React.FC<{
                 />,
                 document.body
             )}
-        </>
+        </div>
     );
 };
 
@@ -1279,7 +1397,6 @@ export const DictionaryView: React.FC<DictionaryViewProps> = ({
                                             entry={entry}
                                             wordAudioSelection={wordAudioSelection}
                                             wordAudioSelectionKey={wordAudioSelectionKey}
-                                            mediaName={mediaName}
                                         />
                                     )}
                                     <button
