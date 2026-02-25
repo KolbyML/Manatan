@@ -960,6 +960,21 @@ ${detail}`,
                                     <label style={checkboxLabelStyle}>
                                         <input
                                             type="checkbox"
+                                            checked={localSettings.yomitanShowKanjiInNormalLookup}
+                                            onChange={(e) => handleChange('yomitanShowKanjiInNormalLookup', e.target.checked)}
+                                            style={checkboxInputStyle}
+                                        />
+                                        <div>
+                                            Show Kanji in Normal Lookup
+                                            <div style={{ opacity: 0.6, fontSize: '0.85em' }}>
+                                                Always shows kanji results at the bottom of the popup.
+                                            </div>
+                                        </div>
+                                    </label>
+
+                                    <label style={checkboxLabelStyle}>
+                                        <input
+                                            type="checkbox"
                                             checked={localSettings.autoPlayWordAudio}
                                             onChange={(e) => handleChange('autoPlayWordAudio', e.target.checked)}
                                             style={checkboxInputStyle}

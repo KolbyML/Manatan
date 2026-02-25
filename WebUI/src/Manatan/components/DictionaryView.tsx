@@ -105,6 +105,39 @@ const ELEMENT_CONFIG: Record<string, {
 
 const VOID_TAGS = ['br', 'img', 'hr', 'input', 'meta', 'link', 'area', 'base', 'col', 'embed', 'source', 'track', 'wbr'];
 
+const isKanji = (ch: string) => /[\u4e00-\u9fff\u3400-\u4dbf\u{20000}-\u{2ebe0}\u{2f800}-\u{2fa1f}々ヶ]/u.test(ch);
+
+const ClickableHeadwordText: React.FC<{
+    text: string;
+    onKanjiClick?: (char: string) => void;
+    className?: string;
+    style?: React.CSSProperties;
+    colors?: any;
+}> = ({ text, onKanjiClick, className, style, colors }) => {
+    if (!onKanjiClick) return <span className={className} style={style}>{text}</span>;
+
+    return (
+        <span className={className} style={style}>
+            {Array.from(text).map((char, i) => (
+                isKanji(char) ? (
+                    <span
+                        key={i}
+                        onClick={(e) => { e.stopPropagation(); onKanjiClick(char); }}
+                        style={{ cursor: 'pointer' }}
+                        className="clickable-kanji"
+                        onMouseEnter={(e) => { if (colors?.accent) e.currentTarget.style.color = colors.accent; }}
+                        onMouseLeave={(e) => { e.currentTarget.style.color = ''; }}
+                    >
+                        {char}
+                    </span>
+                ) : (
+                    <span key={i}>{char}</span>
+                )
+            ))}
+        </span>
+    );
+};
+
 const tagStyle: React.CSSProperties = {
     display: 'inline-block', padding: '1px 5px', borderRadius: '3px',
     fontSize: '0.75em', fontWeight: 'bold', marginRight: '6px',
@@ -921,23 +954,25 @@ const KanjiEntriesSection: React.FC<KanjiEntriesSectionProps> = ({ kanjiResults,
     if (!kanjiResults || kanjiResults.length === 0) return null;
 
     if (grouped) {
-        const byCharacter: Record<string, typeof kanjiResults> = {};
+        // Group by character while preserving the order from backend
+        const charGroups: Array<{ char: string; entries: any[] }> = [];
         for (const kanji of kanjiResults) {
-            const char = kanji.character;
-            if (!byCharacter[char]) byCharacter[char] = [];
-            byCharacter[char].push(kanji);
+            let group = charGroups.find((g) => g.char === kanji.character);
+            if (!group) {
+                group = { char: kanji.character, entries: [] };
+                charGroups.push(group);
+            }
+            group.entries.push(kanji);
         }
-
-        const characters = Object.keys(byCharacter);
 
         return (
             <div className="kanji-entries" style={{ marginTop: '16px', paddingTop: '16px', borderTop: `1px solid ${colors.border}` }}>
-                {characters.map((char, charIdx) => (
-                    <div key={char} style={{ marginBottom: '16px' }}>
+                {charGroups.map((group, charIdx) => (
+                    <div key={group.char} style={{ marginBottom: '16px' }}>
                         <div style={{ fontSize: layout === 'horizontal' ? '1.5rem' : '2rem', fontWeight: 'bold', color: colors.text, marginBottom: '8px' }}>
-                            {char}
+                            {group.char}
                         </div>
-                        {byCharacter[char].map((kanji, kanjiIdx) => (
+                        {group.entries.map((kanji, kanjiIdx) => (
                             <KanjiEntryDisplay
                                 key={kanjiIdx}
                                 kanji={kanji}
@@ -955,37 +990,19 @@ const KanjiEntriesSection: React.FC<KanjiEntriesSectionProps> = ({ kanjiResults,
         );
     }
 
-    const byDictionary: Record<string, typeof kanjiResults> = {};
-    for (const kanji of kanjiResults) {
-        const dict = kanji.dictionaryName || 'Unknown';
-        if (!byDictionary[dict]) byDictionary[dict] = [];
-        byDictionary[dict].push(kanji);
-    }
-
+    // Flat view - preserve exact order from backend (sorted by priority)
     return (
         <div className="kanji-entries" style={{ marginTop: '16px', paddingTop: '16px', borderTop: `1px solid ${colors.border}` }}>
-            {Object.entries(byDictionary).map(([dictName, kanjis], dictIdx) => (
-                <div key={dictName} style={{ marginBottom: '16px' }}>
-                    {Object.keys(byDictionary).length > 1 && (
-                        <div style={{ 
-                            fontSize: '0.7rem', 
-                            color: colors.textSecondary, 
-                            fontStyle: 'italic',
-                            marginBottom: '8px'
-                        }}>
-                            {dictName}
-                        </div>
-                    )}
-                    {kanjis.map((kanji, idx) => (
-                        <KanjiEntryDisplay
-                            key={idx}
-                            kanji={kanji}
-                            layout={layout}
-                            colors={colors}
-                            showNumber
-                            number={idx + 1}
-                        />
-                    ))}
+            {kanjiResults.map((kanji, idx) => (
+                <div key={idx} style={{ marginBottom: '16px' }}>
+                    <KanjiEntryDisplay
+                        kanji={kanji}
+                        layout={layout}
+                        colors={colors}
+                        showNumber
+                        number={idx + 1}
+                        showDictTag
+                    />
                 </div>
             ))}
         </div>
@@ -999,6 +1016,7 @@ interface DictionaryViewProps {
     systemLoading: boolean;
     onLinkClick?: (href: string, text: string) => void;
     onWordClick?: (text: string, position: number) => void;
+    onKanjiClick?: (char: string) => void;
     context?: {
         imgSrc?: string;
         sentence?: string;
@@ -1013,7 +1031,7 @@ interface DictionaryViewProps {
 }
 
 export const DictionaryView: React.FC<DictionaryViewProps> = ({ 
-    results, kanjiResults = [], isLoading, systemLoading, onLinkClick, onWordClick, context, variant = 'inline', popupTheme, layout = 'vertical', renderAnkiButtons, renderHistoryNav, grouped = false
+    results, kanjiResults = [], isLoading, systemLoading, onLinkClick, onWordClick, onKanjiClick, context, variant = 'inline', popupTheme, layout = 'vertical', renderAnkiButtons, renderHistoryNav, grouped = false
 }) => {
     const isPopup = variant === 'popup';
     const muiTheme = useTheme();
@@ -1198,27 +1216,43 @@ export const DictionaryView: React.FC<DictionaryViewProps> = ({
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '8px' }}>
                         <div style={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: layout === 'horizontal' ? '6px' : '0' }}>
                             {i === 0 && layout === 'horizontal' && renderHistoryNav && renderHistoryNav()}
-                            <div style={{ fontSize: layout === 'horizontal' ? '1.5rem' : '1.8em', lineHeight: '1', marginRight: layout === 'horizontal' ? '8px' : '10px', color: colors.text }} class="headword">
+                            <div style={{ fontSize: layout === 'horizontal' ? '1.5rem' : '1.8em', lineHeight: '1', marginRight: layout === 'horizontal' ? '8px' : '10px', color: colors.text }} className="headword">
                                 {layout === 'horizontal' ? (
                                     <>
-                                        <span class="headword-term">{entry.headword}</span>
+                                        <ClickableHeadwordText
+                                            text={entry.headword}
+                                            onKanjiClick={onKanjiClick}
+                                            className="headword-term"
+                                            colors={colors}
+                                        />
                                         {entry.reading && (
-                                            <span style={{ fontSize: '0.75rem', color: colors.textSecondary, marginLeft: '4px' }} class="headword-reading">({entry.reading})</span>
+                                            <span style={{ fontSize: '0.75rem', color: colors.textSecondary, marginLeft: '4px' }} className="headword-reading">({entry.reading})</span>
                                         )}
                                     </>
                                 ) : (
                                     entry.furigana && entry.furigana.length > 0 ? (
-                                        <ruby style={{ rubyPosition: 'over' }} class="headword-text-container">
+                                        <ruby style={{ rubyPosition: 'over' }} className="headword-text-container">
                                             {entry.furigana.map((seg, idx) => (
                                                 <React.Fragment key={idx}>
-                                                    <span class="headword-term">{seg[0]}</span><rt style={{ fontSize: '0.5em', color: colors.textSecondary }} class="headword-reading">{seg[1]}</rt>
+                                                    <ClickableHeadwordText
+                                                        text={seg[0]}
+                                                        onKanjiClick={onKanjiClick}
+                                                        className="headword-term"
+                                                        colors={colors}
+                                                    />
+                                                    <rt style={{ fontSize: '0.5em', color: colors.textSecondary }} className="headword-reading">{seg[1]}</rt>
                                                 </React.Fragment>
                                             ))}
                                         </ruby>
                                     ) : (
-                                        <ruby class="headword-text-container">
-                                            <span class="headword-term">{entry.headword}</span>
-                                            <rt style={{ fontSize: '0.5em', color: colors.textSecondary }} class="headword-reading">{entry.reading}</rt>
+                                        <ruby className="headword-text-container">
+                                            <ClickableHeadwordText
+                                                text={entry.headword}
+                                                onKanjiClick={onKanjiClick}
+                                                className="headword-term"
+                                                colors={colors}
+                                            />
+                                            <rt style={{ fontSize: '0.5em', color: colors.textSecondary }} className="headword-reading">{entry.reading}</rt>
                                         </ruby>
                                     )
                                 )}
