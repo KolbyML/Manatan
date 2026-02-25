@@ -21,6 +21,7 @@ import { NavigationBarUtil } from '@/features/navigation-bar/NavigationBar.util.
 import { useMetadataServerSettings } from '@/features/settings/services/ServerSettingsMetadata.ts';
 import { NavbarItem, NavBarItemMoreGroup } from '@/features/navigation-bar/NavigationBar.types.ts';
 import { useAppTitle } from '@/features/navigation-bar/hooks/useAppTitle.ts';
+import { useNavigationSettings } from '@/features/navigation-bar/NavigationBar.hooks.ts';
 
 export const More = () => {
     const { t } = useTranslation();
@@ -31,13 +32,14 @@ export const More = () => {
     const {
         settings: { hideHistory },
     } = useMetadataServerSettings();
+    const { visibleTabs } = useNavigationSettings();
 
-    const hiddenNavBarItems = NavigationBarUtil.filterItems(NAVIGATION_BAR_ITEMS, {
+    const hiddenNavBarItems = NavigationBarUtil.getHiddenItems(NAVIGATION_BAR_ITEMS, {
         hideHistory,
-        hideMore: true,
-        hideBoth: true,
-        hideDesktop: !isMobileWidth,
-        hideMobile: isMobileWidth,
+        hideBoth: false,
+        hideDesktop: isMobileWidth,
+        hideMobile: !isMobileWidth,
+        visibleTabs,
     });
 
     const hiddenNavBarItemsByMoreGroup = Object.groupBy(hiddenNavBarItems, (item) => item.moreGroup);
@@ -63,16 +65,23 @@ export const More = () => {
         <List sx={{ p: 0 }}>
             {Object.entries(finalHiddenNavBarItemsByGroup).map(([group, items], index, list) => (
                 <Fragment key={group}>
-                    {items.map((item) => (
-                        <ListItemLink key={item.path} to={item.path}>
-                            <ListItemIcon>
-                                <item.IconComponent />
-                            </ListItemIcon>
-                            <ListItemText
-                                primary={t(item.moreTitle ?? item.title)}
-                                secondary={item.useBadge?.().title}
-                            />
-                        </ListItemLink>
+                    {items.map((item, itemIndex) => (
+                        <Fragment key={item.path}>
+                            <ListItemLink key={item.path} to={item.path}>
+                                <ListItemIcon>
+                                    <item.IconComponent />
+                                </ListItemIcon>
+                                <ListItemText
+                                    primary={t(item.moreTitle ?? item.title)}
+                                    secondary={item.useBadge?.().title}
+                                />
+                            </ListItemLink>
+                            {group === NavBarItemMoreGroup[NavBarItemMoreGroup.SETTING_INFO] &&
+                                item.path === AppRoutes.settings.path &&
+                                itemIndex === 0 && (
+                                <div id="manatan-nav-anchor-mobile" style={{ display: 'contents' }} />
+                            )}
+                        </Fragment>
                     ))}
                     {index !== list.length - 1 && <Divider />}
                 </Fragment>

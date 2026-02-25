@@ -21,12 +21,14 @@ import { useBackButton } from '@/base/hooks/useBackButton.ts';
 import { useGetOptionForDirection } from '@/features/theme/services/ThemeCreator.ts';
 import { MediaQuery } from '@/base/utils/MediaQuery.tsx';
 import { DesktopSideBar } from '@/features/navigation-bar/components/DesktopSideBar.tsx';
+import { AppRoutes } from '@/base/AppRoute.constants.ts';
 import { useResizeObserver } from '@/base/hooks/useResizeObserver.tsx';
 import { MobileBottomBar } from '@/features/navigation-bar/components/MobileBottomBar.tsx';
 import { useNavBarContext } from '@/features/navigation-bar/NavbarContext.tsx';
 import { useMetadataServerSettings } from '@/features/settings/services/ServerSettingsMetadata.ts';
 import { NAVIGATION_BAR_ITEMS } from '@/features/navigation-bar/NavigationBar.constants.ts';
 import { NavigationBarUtil } from '@/features/navigation-bar/NavigationBar.util.ts';
+import { useNavigationSettings } from '@/features/navigation-bar/NavigationBar.hooks.ts';
 
 export function DefaultNavBar() {
     const { title, action, override, isCollapsed, setIsCollapsed, setAppBarHeight, navBarWidth, setNavBarWidth } =
@@ -41,32 +43,35 @@ export function DefaultNavBar() {
     const {
         settings: { hideHistory },
     } = useMetadataServerSettings();
+    const { visibleTabs } = useNavigationSettings();
 
     const appBarRef = useRef<HTMLDivElement | null>(null);
 
-    const isMainRoute = NAVIGATION_BAR_ITEMS.some(({ path, show }) => {
-        if (isMobileWidth && show === 'desktop') {
-            return false;
-        }
-
-        if (!isMobileWidth && show === 'mobile') {
-            return false;
-        }
-
-        return path === pathname;
-    });
     const actualNavBarWidth = isMobileWidth || isCollapsed ? 0 : navBarWidth;
 
-    const visibleNavBarItems = useMemo(
-        () =>
-            NavigationBarUtil.filterItems(NAVIGATION_BAR_ITEMS, {
-                hideHistory,
-                hideBoth: false,
-                hideDesktop: isMobileWidth,
-                hideMobile: !isMobileWidth,
-            }),
-        [isMobileWidth, hideHistory],
+    const visibleNavBarItems = useMemo(() => {
+        const items = NavigationBarUtil.filterItems(NAVIGATION_BAR_ITEMS, {
+            hideHistory,
+            hideBoth: false,
+            hideDesktop: isMobileWidth,
+            hideMobile: !isMobileWidth,
+            visibleTabs,
+        });
+
+        // Ensure "More" is always available
+        const moreItem = NAVIGATION_BAR_ITEMS.find((item) => item.path === AppRoutes.more.path);
+        if (moreItem && !items.some((item) => item.path === moreItem.path)) {
+            return [...items, moreItem];
+        }
+
+        return items;
+    }, [isMobileWidth, hideHistory, visibleTabs]);
+
+    const isMainRoute = useMemo(
+        () => visibleNavBarItems.some(({ path }) => path === pathname),
+        [visibleNavBarItems, pathname],
     );
+
     const NavBarComponent = useMemo(() => (isMobileWidth ? MobileBottomBar : DesktopSideBar), [isMobileWidth]);
 
     const navBar = useMemo(
