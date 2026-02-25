@@ -1,3 +1,15 @@
+## Release v3.2.5
+
+- Support Jimaku drama/live-action matching and add fallback regression tests (07112f2)
+- decouple Novel Reader settings and add language profiles (#229) (ab36c61)
+- Force fresh Android WebUI assets and clear stale WebView cache on update (7e18909)
+- Fix manga chapter source order normalization and migrate affected sources (3837d7e)
+- Add anime category management and fix anime library tab behavior (1a2b84f)
+- Make Yomitan importer serde-only and remove legacy mode (4460c31)
+- Fix Android dictionary list clipping in settings (5261101)
+- Fix spaced-language tap lookup edge cases and add regression tests (5d42a78)
+- Scope audio cache to popup lifecycle and remove lookup cache (b692bb5)
+
 ## Release v3.2.4
 
 - Improve yomitan audio latency/cache and harden lookup regressions (db1c3d2)
