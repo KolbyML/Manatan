@@ -17,7 +17,7 @@ import ChevronLeftIcon from '@mui/icons-material/ChevronLeft';
 import ChevronRightIcon from '@mui/icons-material/ChevronRight';
 import Divider from '@mui/material/Divider';
 import { styled, useTheme } from '@mui/material/styles';
-import { useCallback, useMemo, useRef } from 'react';
+import { useCallback, useMemo, useRef, Fragment } from 'react';
 import Box from '@mui/material/Box';
 import ListItem from '@mui/material/ListItem';
 import Badge from '@mui/material/Badge';
@@ -28,6 +28,7 @@ import { useGetOptionForDirection } from '@/features/theme/services/ThemeCreator
 import { useNavBarContext } from '@/features/navigation-bar/NavbarContext.tsx';
 import { useResizeObserver } from '@/base/hooks/useResizeObserver.tsx';
 import { NavbarItem } from '@/features/navigation-bar/NavigationBar.types.ts';
+import { AppRoutes } from '@/base/AppRoute.constants.ts';
 import { TypographyMaxLines } from '@/base/components/texts/TypographyMaxLines.tsx';
 
 const DrawerHeader = styled('div')(({ theme }) => ({
@@ -157,8 +158,16 @@ export const DesktopSideBar = ({ navBarItems }: { navBarItems: NavbarItem[] }) =
                 <Divider />
                 <List sx={{ p: 1 }} dense={isCollapsed}>
                     {navBarItems.map((navBarItem) => (
-                        <NavigationBarItem key={navBarItem.path} {...navBarItem} />
+                        <Fragment key={navBarItem.path}>
+                            {navBarItem.path === AppRoutes.more.path && (
+                                <div id="manatan-nav-anchor-desktop" style={{ display: 'contents' }} />
+                            )}
+                            <NavigationBarItem {...navBarItem} />
+                        </Fragment>
                     ))}
+                    {!navBarItems.some((item) => item.path === AppRoutes.more.path) && (
+                        <div id="manatan-nav-anchor-desktop" style={{ display: 'contents' }} />
+                    )}
                 </List>
             </Box>
         </Drawer>

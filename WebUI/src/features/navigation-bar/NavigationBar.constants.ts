@@ -165,10 +165,10 @@ export const NAVIGATION_BAR_MOBILE_ITEMS = [
         title: 'global.label.more',
         SelectedIconComponent: MoreHorizIcon,
         IconComponent: MoreHorizIcon,
-        show: 'mobile',
+        show: 'both',
         moreGroup: NavBarItemMoreGroup.GENERAL,
     },
-] as const satisfies RestrictedNavBarItem<'mobile'>[];
+] as const satisfies RestrictedNavBarItem<'both'>[];
 
 export const NAVIGATION_BAR_ITEMS = [
     ...NAVIGATION_BAR_BASE_ITEMS,

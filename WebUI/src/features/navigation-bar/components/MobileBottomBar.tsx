@@ -86,6 +86,7 @@ export const MobileBottomBar = ({ navBarItems }: { navBarItems: NavbarItem[] }) 
             >
                 {navBarItems.map(({ path, title, IconComponent, SelectedIconComponent, useBadge }) => (
                     <BottomNavigationAction
+                        key={path}
                         value={path}
                         label={t(title)}
                         icon={

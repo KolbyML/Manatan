@@ -20,8 +20,8 @@ import { ErrorBoundary } from '@/base/components/feedback/ErrorBoundary.tsx';
 import { useNavBarContext } from '@/features/navigation-bar/NavbarContext.tsx';
 import { AppRoutes } from '@/base/AppRoute.constants.ts';
 import { useMetadataServerSettings } from '@/features/settings/services/ServerSettingsMetadata.ts';
-import { MediaQuery } from '@/base/utils/MediaQuery.tsx';
 import { BrowseTab } from '@/features/browse/Browse.types.ts';
+import { useNavigationSettings } from '@/features/navigation-bar/NavigationBar.hooks.ts';
 import { LoginPage } from '@/features/authentication/screens/LoginPage.tsx';
 import { AuthGuard } from '@/features/authentication/components/AuthGuard.tsx';
 import { SearchParam } from '@/base/Base.types.ts';
@@ -193,11 +193,11 @@ const PrivateRoutes = () => {
 
 const MainApp = () => {
     const { navBarWidth, appBarHeight, bottomBarHeight } = useNavBarContext();
-    const isMobileWidth = MediaQuery.useIsMobileWidth();
 
     const {
         settings: { hideHistory },
     } = useMetadataServerSettings();
+    const { defaultStartupPage } = useNavigationSettings();
 
     return (
         <Box
@@ -222,15 +222,12 @@ const MainApp = () => {
 
                     <Route element={<PrivateRoutes />}>
                         {/* General Routes */}
-                        <Route
-                            path={AppRoutes.root.match}
-                            element={<Navigate to={AppRoutes.library.path()} replace />}
-                        />
+                        <Route path={AppRoutes.root.match} element={<Navigate to={defaultStartupPage} replace />} />
                         <Route
                             path={AppRoutes.matchAll.match}
                             element={<Navigate to={AppRoutes.root.path} replace />}
                         />
-                        {isMobileWidth && <Route path={AppRoutes.more.match} element={<More />} />}
+                        <Route path={AppRoutes.more.match} element={<More />} />
                         <Route path={AppRoutes.about.match} element={<About />} />
                         <Route path={AppRoutes.settings.match}>
                             <Route index element={<Settings />} />
@@ -404,31 +401,27 @@ export const App: React.FC = () => (
             <OCRProvider>
                 <OCRManager />
                 <SyncProvider>
+                    <Routes>
+                        {/* Fullscreen Reader Routes */}
+                        <Route
+                            path={`${AppRoutes.ln.match}/${AppRoutes.ln.childRoutes.reader.match}/*`}
+                            element={<LNReaderApp />}
+                        />
+                        <Route path={AppRoutes.reader.match} element={<ReaderLayout />} />
 
-                <Routes>
-                    {/* Fullscreen Reader Routes */}
-                    <Route
-                        path={`${AppRoutes.ln.match}/${AppRoutes.ln.childRoutes.reader.match}/*`}
-                        element={<LNReaderApp />}
-                    />
-                    <Route
-                        path={AppRoutes.reader.match}
-                        element={<ReaderLayout />}
-                    />
-
-                    {/* Main App Layout with Sidebar */}
-                    <Route
-                        path="*"
-                        element={
-                            <Box sx={{ display: 'flex' }}>
-                                <Box sx={{ flexShrink: 0, position: 'relative', height: '100vh' }}>
-                                    <DefaultNavBar />
+                        {/* Main App Layout with Sidebar */}
+                        <Route
+                            path="*"
+                            element={
+                                <Box sx={{ display: 'flex' }}>
+                                    <Box sx={{ flexShrink: 0, position: 'relative', height: '100vh' }}>
+                                        <DefaultNavBar />
+                                    </Box>
+                                    <MainApp />
                                 </Box>
-                                <MainApp />
-                            </Box>
-                        }
-                    />
-                </Routes>
+                            }
+                        />
+                    </Routes>
                 </SyncProvider>
             </OCRProvider>
         </AuthGuard>
