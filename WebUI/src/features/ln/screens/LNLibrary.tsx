@@ -479,15 +479,6 @@ export const LNLibrary: React.FC = () => {
     }, []);
 
     useEffect(() => {
-        const init = async () => {
-            await AppStorage.migrateLnMetadata();
-            await loadCategories();
-            await loadLibrary();
-        };
-        init();
-    }, [loadCategories, loadLibrary]);
-
-    useEffect(() => {
         loadSortSettings();
     }, [selectedCategoryId, loadSortSettings]);
 
@@ -506,6 +497,7 @@ export const LNLibrary: React.FC = () => {
 
     const gridColumns = Math.max(1, Math.ceil(dimensions / mangaGridItemWidth));
 
+    // Load library data
     const loadLibrary = useCallback(async () => {
         try {
             const keys = await AppStorage.lnMetadata.keys();
@@ -529,6 +521,16 @@ export const LNLibrary: React.FC = () => {
             console.error('Failed to load library:', e);
         }
     }, []);
+
+    // Initial load on mount
+    useEffect(() => {
+        const init = async () => {
+            await AppStorage.migrateLnMetadata();
+            await loadCategories();
+            await loadLibrary();
+        };
+        init();
+    }, [loadCategories, loadLibrary]);
 
     // Reload library when tab becomes visible again (handles browser suspending connections after long background time)
     useEffect(() => {
