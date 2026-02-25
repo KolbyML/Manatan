@@ -65,21 +65,27 @@ export const More = () => {
         <List sx={{ p: 0 }}>
             {Object.entries(finalHiddenNavBarItemsByGroup).map(([group, items], index, list) => (
                 <Fragment key={group}>
-                    {items.map((item) => (
-                        <ListItemLink key={item.path} to={item.path}>
-                            <ListItemIcon>
-                                <item.IconComponent />
-                            </ListItemIcon>
-                            <ListItemText
-                                primary={t(item.moreTitle ?? item.title)}
-                                secondary={item.useBadge?.().title}
-                            />
-                        </ListItemLink>
+                    {items.map((item, itemIndex) => (
+                        <Fragment key={item.path}>
+                            <ListItemLink key={item.path} to={item.path}>
+                                <ListItemIcon>
+                                    <item.IconComponent />
+                                </ListItemIcon>
+                                <ListItemText
+                                    primary={t(item.moreTitle ?? item.title)}
+                                    secondary={item.useBadge?.().title}
+                                />
+                            </ListItemLink>
+                            {group === NavBarItemMoreGroup[NavBarItemMoreGroup.SETTING_INFO] &&
+                                item.path === AppRoutes.settings.path &&
+                                itemIndex === 0 && (
+                                <div id="manatan-nav-anchor-mobile" style={{ display: 'contents' }} />
+                            )}
+                        </Fragment>
                     ))}
                     {index !== list.length - 1 && <Divider />}
                 </Fragment>
             ))}
-            <div id="manatan-nav-anchor-mobile" style={{ display: 'contents' }} />
         </List>
     );
 };
