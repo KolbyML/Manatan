@@ -487,19 +487,6 @@ export const LNLibrary: React.FC = () => {
         init();
     }, [loadCategories, loadLibrary]);
 
-    // Reload library when tab becomes visible again (handles browser suspending connections after long background time)
-    useEffect(() => {
-        const handleVisibilityChange = async () => {
-            if (document.visibilityState === 'visible') {
-                await loadLibrary();
-                await loadCategories();
-            }
-        };
-
-        document.addEventListener('visibilitychange', handleVisibilityChange);
-        return () => document.removeEventListener('visibilitychange', handleVisibilityChange);
-    }, [loadLibrary, loadCategories]);
-
     useEffect(() => {
         loadSortSettings();
     }, [selectedCategoryId, loadSortSettings]);
@@ -542,6 +529,19 @@ export const LNLibrary: React.FC = () => {
             console.error('Failed to load library:', e);
         }
     }, []);
+
+    // Reload library when tab becomes visible again (handles browser suspending connections after long background time)
+    useEffect(() => {
+        const handleVisibilityChange = async () => {
+            if (document.visibilityState === 'visible') {
+                await loadLibrary();
+                await loadCategories();
+            }
+        };
+
+        document.addEventListener('visibilitychange', handleVisibilityChange);
+        return () => document.removeEventListener('visibilitychange', handleVisibilityChange);
+    }, [loadLibrary, loadCategories]);
 
     // Normalize title for comparison
     const normalizeTitle = (title: string): string => {
