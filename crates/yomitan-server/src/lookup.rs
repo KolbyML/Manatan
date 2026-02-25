@@ -24,6 +24,8 @@ pub struct KanjiEntry {
     pub meanings: Vec<String>,
     pub stats: std::collections::HashMap<String, String>,
     pub frequencies: Vec<KanjiFrequency>,
+    #[serde(skip_serializing)]
+    pub priority: i64,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -411,11 +413,11 @@ impl LookupService {
             Err(_) => return results,
         };
 
-        let dict_configs: std::collections::HashMap<DictionaryId, (bool, String)> = {
+        let dict_configs: std::collections::HashMap<DictionaryId, (bool, String, i64)> = {
             let dicts = state.dictionaries.read().expect("lock");
             dicts
                 .iter()
-                .map(|(id, d)| (*id, (d.enabled, d.name.clone())))
+                .map(|(id, d)| (*id, (d.enabled, d.name.clone(), d.priority)))
                 .collect()
         };
 
@@ -476,14 +478,11 @@ impl LookupService {
                 std::collections::HashMap::new();
 
             if let Ok(meta_iter) = meta_result {
-                for meta_item in meta_iter {
-                    if let Ok((meta_type, data, dict_name)) = meta_item {
-                        if meta_type == "freq" {
-                            // Parse frequency data - try JSON first, otherwise use as-is
-                            let freq_value: String =
-                                serde_json::from_str(&data).unwrap_or_else(|_| data);
-                            freq_map.entry(0).or_default().push((dict_name, freq_value));
-                        }
+                for (meta_type, data, dict_name) in meta_iter.flatten() {
+                    if meta_type == "freq" {
+                        // Parse frequency data - try JSON first, otherwise use as-is
+                        let freq_value: String = serde_json::from_str(&data).unwrap_or(data);
+                        freq_map.entry(0).or_default().push((dict_name, freq_value));
                     }
                 }
             }
@@ -493,26 +492,31 @@ impl LookupService {
                 let (dict_id, onyomi, kunyomi, tags, meanings_json, stats_json) = kanji_result;
                 let dict_id = DictionaryId(dict_id);
 
-                if let Some((enabled, _)) = dict_configs.get(&dict_id) {
-                    if !*enabled {
+                let (enabled, dict_name, priority) = if let Some(config) = dict_configs.get(&dict_id)
+                {
+                    if !config.0 {
                         continue;
                     }
-                }
-
-                // Get dictionary name for this kanji - look up from DB directly to ensure we get the name
-                let dict_name: String = conn
-                    .query_row(
-                        "SELECT name FROM dictionaries WHERE id = ?",
+                    (config.0, config.1.clone(), config.2)
+                } else {
+                    // Get dictionary name and priority for this kanji - look up from DB directly to ensure we get the name
+                    conn.query_row(
+                        "SELECT enabled, name, priority FROM dictionaries WHERE id = ?",
                         rusqlite::params![dict_id.0],
-                        |row| row.get(0),
+                        |row| {
+                            Ok((
+                                row.get::<_, bool>(0)?,
+                                row.get::<_, String>(1)?,
+                                row.get::<_, i64>(2)?,
+                            ))
+                        },
                     )
-                    .unwrap_or_else(|_| {
-                        // Fallback to dict_configs if DB query fails
-                        dict_configs
-                            .get(&dict_id)
-                            .map(|(_, name)| name.clone())
-                            .unwrap_or_default()
-                    });
+                    .unwrap_or((true, "Unknown".to_string(), 999))
+                };
+
+                if !enabled {
+                    continue;
+                }
 
                 let onyomi_vec: Vec<String> = onyomi.split_whitespace().map(String::from).collect();
                 let kunyomi_vec: Vec<String> =
@@ -545,6 +549,7 @@ impl LookupService {
                     meanings,
                     stats,
                     frequencies,
+                    priority,
                 });
             }
         }
@@ -555,6 +560,13 @@ impl LookupService {
             if len_a != len_b {
                 return len_b.cmp(&len_a);
             }
+
+            // Primary sort by character length (desc), secondary by dictionary priority (asc)
+            let prio_cmp = a.priority.cmp(&b.priority);
+            if prio_cmp != std::cmp::Ordering::Equal {
+                return prio_cmp;
+            }
+
             let freq_a = a
                 .frequencies
                 .first()

@@ -64,8 +64,10 @@ const getLookupTextFromHref = (href: string, fallback: string) => {
 interface LookupHistoryEntry {
     term: string;
     results: DictionaryResult[];
+    kanjiResults?: any[];
     isLoading: boolean;
     systemLoading: boolean;
+    isKanjiOnly?: boolean;
 }
 
 export const Dictionary = () => {
@@ -93,7 +95,8 @@ export const Dictionary = () => {
     );
 
     const currentEntry = historyIndex >= 0 && historyIndex < history.length ? history[historyIndex] : null;
-    const displayResults = currentEntry ? currentEntry.results : results;
+    const displayResults = currentEntry ? (currentEntry.isKanjiOnly ? [] : currentEntry.results) : results;
+    const displayKanjiResults = currentEntry ? (currentEntry.kanjiResults || []) : kanjiResults;
     const displayIsLoading = currentEntry ? currentEntry.isLoading : isLoading;
     const displaySystemLoading = currentEntry ? currentEntry.systemLoading : false;
 
@@ -125,7 +128,7 @@ export const Dictionary = () => {
             setIsLoading(false);
         }
 
-        return { results: loadedResults, isSystemLoading };
+        return { results: loadedResults, kanjiResults: loadedKanji, isSystemLoading };
     }, [settings.resultGroupingMode, settings.yomitanLanguage]);
 
     // Debounced search for text input
@@ -145,7 +148,13 @@ export const Dictionary = () => {
             if (result) {
                 // Initialize history with first search
                 const term = result.results[0]?.headword || trimmed;
-                setHistory([{ term, results: result.results, isLoading: false, systemLoading: result.isSystemLoading }]);
+                setHistory([{
+                    term,
+                    results: result.results,
+                    kanjiResults: result.kanjiResults,
+                    isLoading: false,
+                    systemLoading: result.isSystemLoading
+                }]);
                 setHistoryIndex(0);
             }
         }, 300);
@@ -190,6 +199,7 @@ export const Dictionary = () => {
                         newHistory[idx] = { 
                             term: matchedTerm, 
                             results: result.results, 
+                            kanjiResults: result.kanjiResults,
                             isLoading: false, 
                             systemLoading: result.isSystemLoading 
                         };
@@ -255,6 +265,7 @@ export const Dictionary = () => {
                     newHistory[idx] = { 
                         term: matchedTerm, 
                         results: loadedResults, 
+                        kanjiResults: loadedKanji,
                         isLoading: false, 
                         systemLoading: isSystemLoading 
                     };
@@ -273,6 +284,67 @@ export const Dictionary = () => {
             });
         }
     }, [historyIndex, maxHistory, settings.resultGroupingMode, settings.yomitanLanguage]);
+
+    const handleKanjiLookup = useCallback(async (char: string) => {
+        const cleanText = char.trim();
+        if (!cleanText) return;
+
+        const maxHistory = settings.yomitanLookupMaxHistory || 10;
+        const newEntry: LookupHistoryEntry = {
+            term: cleanText,
+            results: [],
+            kanjiResults: [],
+            isLoading: true,
+            systemLoading: false,
+            isKanjiOnly: true
+        };
+
+        setHistory(prev => {
+            const newHistory = prev.slice(0, historyIndex + 1);
+            newHistory.push(newEntry);
+            if (newHistory.length > maxHistory) newHistory.shift();
+            return newHistory;
+        });
+        setHistoryIndex(prev => Math.min(prev + 1, maxHistory - 1));
+
+        try {
+            const res = await lookupYomitan(
+                cleanText,
+                0,
+                settings.resultGroupingMode || 'grouped',
+                settings.yomitanLanguage || 'japanese'
+            );
+            const loadedResults = res === 'loading' ? [] : (res as any).terms || res || [];
+            const loadedKanji = res === 'loading' ? [] : (res as any).kanji || [];
+            const isSystemLoading = res === 'loading';
+
+            setHistory(prev => {
+                const newHistory = [...prev];
+                const idx = Math.min(historyIndex + 1, maxHistory - 1);
+                if (newHistory[idx]) {
+                    newHistory[idx] = {
+                        term: cleanText,
+                        results: loadedResults,
+                        kanjiResults: loadedKanji,
+                        isLoading: false,
+                        systemLoading: isSystemLoading,
+                        isKanjiOnly: true
+                    };
+                }
+                return newHistory;
+            });
+        } catch (err) {
+            console.warn('Failed to lookup kanji', err);
+            setHistory(prev => {
+                const newHistory = [...prev];
+                const idx = Math.min(historyIndex + 1, maxHistory - 1);
+                if (newHistory[idx]) {
+                    newHistory[idx] = { ...newHistory[idx], results: [], isLoading: false, systemLoading: false };
+                }
+                return newHistory;
+            });
+        }
+    }, [historyIndex, settings.resultGroupingMode, settings.yomitanLanguage, settings.yomitanLookupMaxHistory]);
 
     const navigateToHistory = useCallback((index: number) => {
         if (index >= 0 && index < history.length) {
@@ -525,7 +597,8 @@ export const Dictionary = () => {
                                         systemLoading={displaySystemLoading}
                                         onLinkClick={handleLinkClick}
                                         onWordClick={handleWordClick}
-                                        kanjiResults={kanjiResults}
+                                        onKanjiClick={handleKanjiLookup}
+                                        kanjiResults={displayKanjiResults}
                                     />
                                 </Paper>
                             </Box>
