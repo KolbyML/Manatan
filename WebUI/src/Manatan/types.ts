@@ -131,6 +131,10 @@ export interface Settings {
     ankiModel?: string;
     ankiFieldMap?: Record<string, string>;
     ankiCheckDuplicates?: boolean;
+    ankiDuplicateScope: 'collection' | 'deck' | 'deck-root';
+    ankiDuplicateAction: 'add' | 'overwrite' | 'prevent';
+    ankiCheckDuplicatesAllModels: boolean;
+    ankiFieldUpdateModes: Record<string, string>;
     skipAnkiUpdateConfirm: boolean;
     showHarmonicMeanFreq: boolean;
     ankiFreqMode: string;
@@ -369,6 +373,10 @@ export const DEFAULT_SETTINGS: Settings = {
     ankiModel: '',
     ankiFieldMap: {},
     ankiCheckDuplicates: true,
+    ankiDuplicateScope: 'deck',
+    ankiDuplicateAction: 'prevent',
+    ankiCheckDuplicatesAllModels: false,
+    ankiFieldUpdateModes: {},
     skipAnkiUpdateConfirm: false,
     showHarmonicMeanFreq: false,
     ankiFreqMode: 'lowest',

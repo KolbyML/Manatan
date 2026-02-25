@@ -124,6 +124,104 @@ export async function findNotes(url: string, query: string): Promise<number[]> {
 }
 
 /**
+ * Get detailed information about notes
+ */
+export async function notesInfo(url: string, notes: number[]): Promise<any[]> {
+    return await ankiConnect("notesInfo", { notes }, url);
+}
+
+/**
+ * Update a note, including fields and optional media
+ */
+export async function updateNote(
+    url: string,
+    note: {
+        id: number;
+        fields: Record<string, string>;
+        picture?: { url?: string; data?: string; filename: string; fields: string[] } | Array<{ url?: string; data?: string; filename: string; fields: string[] }>;
+        audio?: { url?: string; data?: string; filename: string; fields: string[] } | Array<{ url?: string; data?: string; filename: string; fields: string[] }>;
+    }
+) {
+    // Both AnkiConnect (via updateNoteFields) and our Android bridge handle field updates.
+    // Our Android bridge specifically handles "picture" and "audio" in the note object for updates.
+    // For Desktop AnkiConnect, we should ideally use storeMediaFile then update fields,
+    // but the most compatible way for now is to just call updateNoteFields.
+    return await ankiConnect("updateNoteFields", { note }, url);
+}
+
+/**
+ * Deprecated: Use updateNote instead
+ */
+export async function updateNoteFields(url: string, id: number, fields: Record<string, string>) {
+    return await updateNote(url, { id, fields });
+}
+
+/**
+ * Calculate updated fields based on modes (Append, Prepend, etc.)
+ */
+export function calculateUpdatedFields(
+    currentFields: Record<string, { value: string }>,
+    newFields: Record<string, string>,
+    modes: Record<string, string>
+): Record<string, string> {
+    const updated: Record<string, string> = {};
+
+    // We iterate over newFields because those are the ones we might want to change.
+    // We should also consider fields that are in modes but NOT in newFields if we want to support 'skip' explicitly,
+    // but usually newFields contains all mapped fields.
+    for (const [field, newValue] of Object.entries(newFields)) {
+        const currentVal = currentFields[field]?.value || '';
+        const mode = modes[field] || 'overwrite';
+
+        switch (mode) {
+            case 'overwrite':
+                updated[field] = newValue;
+                break;
+            case 'overwrite-if-available':
+                if (newValue && newValue.trim()) {
+                    updated[field] = newValue;
+                } else {
+                    updated[field] = currentVal;
+                }
+                break;
+            case 'append':
+                if (!currentVal) {
+                    updated[field] = newValue;
+                } else if (newValue) {
+                    const separator = (currentVal.includes('<') || newValue.includes('<')) ? '<br>' : ' ';
+                    updated[field] = currentVal + separator + newValue;
+                } else {
+                    updated[field] = currentVal;
+                }
+                break;
+            case 'prepend':
+                if (!currentVal) {
+                    updated[field] = newValue;
+                } else if (newValue) {
+                    const separator = (currentVal.includes('<') || newValue.includes('<')) ? '<br>' : ' ';
+                    updated[field] = newValue + separator + currentVal;
+                } else {
+                    updated[field] = currentVal;
+                }
+                break;
+            case 'fill-if-empty':
+                if (!currentVal || !currentVal.trim()) {
+                    updated[field] = newValue;
+                } else {
+                    updated[field] = currentVal;
+                }
+                break;
+            case 'skip':
+                updated[field] = currentVal;
+                break;
+            default:
+                updated[field] = newValue;
+        }
+    }
+    return updated;
+}
+
+/**
  * Open the Anki Browser to a specific query
  */
 export async function guiBrowse(url: string, query: string) {
@@ -140,7 +238,11 @@ export async function addNote(
     fields: Record<string, string>, 
     tags: string[] = [],
     picture?: { url?: string; data?: string; filename: string; fields: string[] },
-    audio?: { url?: string; data?: string; filename: string; fields: string[] } | Array<{ url?: string; data?: string; filename: string; fields: string[] }>
+    audio?: { url?: string; data?: string; filename: string; fields: string[] } | Array<{ url?: string; data?: string; filename: string; fields: string[] }>,
+    options?: {
+        allowDuplicate?: boolean;
+        duplicateScope?: string;
+    }
 ) {
     const params: any = {
         note: {
@@ -149,8 +251,8 @@ export async function addNote(
             fields,
             tags,
             options: {
-                allowDuplicate: false,
-                duplicateScope: 'deck'
+                allowDuplicate: options?.allowDuplicate ?? false,
+                duplicateScope: options?.duplicateScope ?? 'deck'
             }
         }
     };

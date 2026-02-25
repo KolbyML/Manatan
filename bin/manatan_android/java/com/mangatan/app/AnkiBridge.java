@@ -8,7 +8,6 @@ import android.net.Uri;
 import android.text.TextUtils;
 import android.util.Base64;
 import android.util.Log;
-import android.content.ContentValues;
 import android.provider.MediaStore;
 import android.os.Environment;
 import java.io.OutputStream;
@@ -355,6 +354,9 @@ public class AnkiBridge {
                     updateNote(context, params);
                     result = JSONObject.NULL;
                     break;
+                case "notesInfo":
+                    result = notesInfo(context, params);
+                    break;
                 case "canAddNotes":
                     result = canAddNotes(context, params);
                     break;
@@ -454,10 +456,94 @@ public class AnkiBridge {
     private static JSONArray findNotes(Context ctx, JSONObject params) throws Exception {
         String query = params.getString("query");
         JSONArray ids = new JSONArray();
-        try (Cursor c = ctx.getContentResolver().query(NOTES_URI, new String[]{NOTE_ID}, query, null, null)) {
-            if (c != null) while (c.moveToNext()) ids.put(c.getLong(0));
+
+        // Parse Manatan-style query: "\"Field:Value\" \"note:Model\" \"deck:Deck\""
+        String searchValue = null;
+        String targetModel = null;
+        String targetDeck = null;
+
+        Pattern fieldPattern = Pattern.compile("\"[^\"]+:([^\"]+)\"");
+        Pattern notePattern = Pattern.compile("\"note:([^\"]+)\"");
+        Pattern deckPattern = Pattern.compile("\"deck:([^\"]+)\"");
+
+        Matcher m = fieldPattern.matcher(query);
+        if (m.find()) searchValue = m.group(1);
+
+        m = notePattern.matcher(query);
+        if (m.find()) targetModel = m.group(1);
+
+        m = deckPattern.matcher(query);
+        if (m.find()) targetDeck = m.group(1);
+
+        if (searchValue == null) {
+            // Fallback to direct SQL if it doesn't look like our specific search
+            try (Cursor c = ctx.getContentResolver().query(NOTES_URI, new String[]{NOTE_ID}, query, null, null)) {
+                if (c != null) while (c.moveToNext()) ids.put(c.getLong(0));
+            }
+            return ids;
         }
+
+        // Search by checksum (first field)
+        long csum = fieldChecksum(searchValue);
+        try (Cursor c = ctx.getContentResolver().query(NOTES_V2_URI, new String[]{NOTE_ID, NOTE_MID}, NOTE_CSUM + "=?", new String[]{String.valueOf(csum)}, null)) {
+            if (c != null) {
+                while (c.moveToNext()) {
+                    long nid = c.getLong(0);
+                    long mid = c.getLong(1);
+
+                    // Filter by model if requested
+                    if (targetModel != null) {
+                        String modelName = findModelName(ctx, mid);
+                        if (!targetModel.equals(modelName)) continue;
+                    }
+
+                    // Filter by deck if requested
+                    if (targetDeck != null) {
+                        if (!isNoteInDeck(ctx, nid, targetDeck)) continue;
+                    }
+
+                    ids.put(nid);
+                }
+            }
+        }
+
         return ids;
+    }
+
+    private static boolean isNoteInDeck(Context ctx, long noteId, String targetDeckName) {
+        try {
+            boolean isPrefixMatch = targetDeckName.endsWith("*");
+            String cleanTarget = isPrefixMatch ? targetDeckName.substring(0, targetDeckName.length() - 1) : targetDeckName;
+
+            Uri cardsUri = Uri.withAppendedPath(NOTES_URI, noteId + "/cards");
+            try (Cursor c = ctx.getContentResolver().query(cardsUri, new String[]{"deck_id"}, null, null, null)) {
+                if (c != null) {
+                    while (c.moveToNext()) {
+                        long deckId = c.getLong(0);
+                        String actualDeckName = findDeckName(ctx, deckId);
+                        if (actualDeckName == null) continue;
+
+                        if (isPrefixMatch) {
+                            if (actualDeckName.startsWith(cleanTarget)) return true;
+                        } else {
+                            if (actualDeckName.equals(cleanTarget)) return true;
+                        }
+                    }
+                }
+            }
+        } catch (Exception e) {
+            Log.e(TAG, "isNoteInDeck error", e);
+        }
+        return false;
+    }
+
+    private static String findDeckName(Context ctx, long deckId) {
+        try (Cursor c = ctx.getContentResolver().query(DECKS_URI, new String[]{DECK_NAME}, DECK_ID + "=?", new String[]{String.valueOf(deckId)}, null)) {
+            if (c != null && c.moveToFirst()) return c.getString(0);
+        } catch (Exception e) {
+            Log.e(TAG, "findDeckName", e);
+        }
+        return null;
     }
 
     private static JSONArray guiBrowse(Context ctx, JSONObject params) throws Exception {
@@ -586,6 +672,61 @@ public class AnkiBridge {
         }
     }
 
+    private static JSONArray notesInfo(Context ctx, JSONObject params) throws Exception {
+        JSONArray noteIds = params.getJSONArray("notes");
+        JSONArray result = new JSONArray();
+
+        for (int i = 0; i < noteIds.length(); i++) {
+            long nid = noteIds.getLong(i);
+            boolean found = false;
+            Uri uri = Uri.withAppendedPath(NOTES_URI, String.valueOf(nid));
+            try (Cursor c = ctx.getContentResolver().query(uri, new String[]{NOTE_MID, NOTE_FLDS, NOTE_TAGS}, null, null, null)) {
+                if (c != null && c.moveToFirst()) {
+                    found = true;
+                    long mid = c.getLong(0);
+                    String[] fieldVals = splitFields(c.getString(1));
+                    String tags = c.getString(2);
+                    String modelName = findModelName(ctx, mid);
+                    String[] fieldNames = getModelFields(ctx, mid);
+
+                    JSONObject noteObj = new JSONObject();
+                    noteObj.put("noteId", nid);
+                    noteObj.put("modelName", modelName);
+
+                    JSONArray tagsArr = new JSONArray();
+                    if (tags != null) {
+                        for (String t : tags.split(" ")) {
+                            if (!t.isEmpty()) tagsArr.put(t);
+                        }
+                    }
+                    noteObj.put("tags", tagsArr);
+
+                    JSONObject fieldsObj = new JSONObject();
+                    for (int j = 0; j < fieldNames.length; j++) {
+                        JSONObject fVal = new JSONObject();
+                        fVal.put("value", j < fieldVals.length ? fieldVals[j] : "");
+                        fVal.put("order", j);
+                        fieldsObj.put(fieldNames[j], fVal);
+                    }
+                    noteObj.put("fields", fieldsObj);
+                    result.put(noteObj);
+                }
+            }
+            if (!found) {
+                result.put(JSONObject.NULL);
+            }
+        }
+        return result;
+    }
+
+    private static String findModelName(Context ctx, long modelId) {
+        try (Cursor c = ctx.getContentResolver().query(MODELS_URI, new String[]{MODEL_NAME}, MODEL_ID + "=?", new String[]{String.valueOf(modelId)}, null)) {
+            if (c != null && c.moveToFirst()) return c.getString(0);
+        } catch (Exception e) {
+            Log.e(TAG, "findModelName", e);
+        }
+        return "Unknown";
+    }
 
     private static JSONArray canAddNotes(Context ctx, JSONObject params) throws Exception {
         JSONArray notes = params.getJSONArray("notes");
@@ -808,8 +949,6 @@ public class AnkiBridge {
     }
 
     private static long findDeckId(Context ctx, String targetDeckName) throws Exception {
-
-
         try (Cursor c = ctx.getContentResolver().query(
                 DECKS_URI,
                 new String[]{DECK_ID, DECK_NAME},
@@ -818,14 +957,18 @@ public class AnkiBridge {
                 null)) {
 
             if (c != null) {
-                while (c.moveToNext()) {
-                    long deckId = c.getLong(c.getColumnIndex(DECK_ID));
-                    String deckName = c.getString(c.getColumnIndex(DECK_NAME));
+                int idIdx = c.getColumnIndex(DECK_ID);
+                int nameIdx = c.getColumnIndex(DECK_NAME);
 
-                    // Manual string comparison
-                    if (deckName != null && deckName.equals(targetDeckName)) {
-                        Log.d(TAG, "✅ Found deck: '" + deckName + "' with ID: " + deckId);
-                        return deckId;
+                if (idIdx != -1 && nameIdx != -1) {
+                    while (c.moveToNext()) {
+                        long deckId = c.getLong(idIdx);
+                        String deckName = c.getString(nameIdx);
+
+                        // Manual string comparison
+                        if (deckName != null && deckName.equals(targetDeckName)) {
+                            return deckId;
+                        }
                     }
                 }
             }

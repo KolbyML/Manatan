@@ -1234,7 +1234,7 @@ pub async fn manage_dictionaries_handler(
 
     let res = match tokio::task::spawn_blocking(move || -> Result<(), String> {
         let mut conn = app_state.pool.get().map_err(|e| e.to_string())?;
-        
+
         let mut should_vacuum = false;
 
         {
@@ -1255,26 +1255,26 @@ pub async fn manage_dictionaries_handler(
                 }
                 DictionaryAction::Delete { id } => {
                     info!("🗑️ [Yomitan] Deleting dictionary {}...", id);
-                    
+
                     // Delete from all related tables
                     tx.execute(
                         "DELETE FROM terms WHERE dictionary_id = ?",
                         rusqlite::params![id],
                     )
                     .map_err(|e| e.to_string())?;
-                    
+
                     tx.execute(
                         "DELETE FROM kanji WHERE dictionary_id = ?",
                         rusqlite::params![id],
                     )
                     .map_err(|e| e.to_string())?;
-                    
+
                     tx.execute(
                         "DELETE FROM kanji_meta WHERE dictionary_id = ?",
                         rusqlite::params![id],
                     )
                     .map_err(|e| e.to_string())?;
-                    
+
                     tx.execute(
                         "DELETE FROM dictionaries WHERE id = ?",
                         rusqlite::params![id],
@@ -1283,7 +1283,7 @@ pub async fn manage_dictionaries_handler(
 
                     let mut dicts = app_state.dictionaries.write().expect("lock");
                     dicts.remove(&DictionaryId(id));
-                    
+
                     // Keep VACUUM to reclaim disk space
                     should_vacuum = true;
                 }
@@ -1776,7 +1776,9 @@ pub async fn lookup_handler(
     }
 
     // Get kanji results separately
-    let kanji_results = state.lookup.search_kanji(&state.app, &params.text, cursor_idx);
+    let kanji_results = state
+        .lookup
+        .search_kanji(&state.app, &params.text, cursor_idx);
 
     if should_group {
         let final_results: Vec<ApiGroupedResult> = map
