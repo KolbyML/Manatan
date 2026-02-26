@@ -8,7 +8,7 @@
 
 import React, { ReactNode, useCallback, useContext, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Direction, ThemeProvider } from '@mui/material/styles';
+import { Direction, ThemeProvider, useColorScheme } from '@mui/material/styles';
 import { CacheProvider } from '@emotion/react';
 import { AppTheme, getTheme } from '@/features/theme/services/AppThemes.ts';
 import {
@@ -38,6 +38,16 @@ export const AppThemeContext = React.createContext<TAppThemeContext>({
 
 export const useAppThemeContext = () => useContext(AppThemeContext);
 
+const ThemeModeInitializer = ({ children, mode }: { children: ReactNode; mode: ThemeMode }) => {
+    const { setMode } = useColorScheme();
+
+    useEffect(() => {
+        setMode(mode);
+    }, [mode, setMode]);
+
+    return <>{children}</>;
+};
+
 export const AppThemeContextProvider = ({ children }: { children: ReactNode }) => {
     const { t, i18n } = useTranslation();
     const {
@@ -49,7 +59,7 @@ export const AppThemeContextProvider = ({ children }: { children: ReactNode }) =
         getTheme(serverAppTheme, customThemes),
     );
     const [pendingAppTheme, setPendingAppTheme] = useState<AppThemes | null>(null);
-    const [localThemeMode] = useLocalStorage(MUI_THEME_MODE_KEY, themeMode);
+    const [localThemeMode] = useLocalStorage(MUI_THEME_MODE_KEY, ThemeMode.LIGHT);
 
     const directionRef = useRef<Direction>('ltr');
 
@@ -137,6 +147,11 @@ export const AppThemeContextProvider = ({ children }: { children: ReactNode }) =
         AppStorage.local.setItem('theme_background', theme.palette.background.default);
     }, [theme.palette.background.default]);
 
+    useEffect(() => {
+        const mode = theme.palette.mode;
+        document.documentElement.style.colorScheme = mode;
+    }, [theme.palette.mode]);
+
     if (directionRef.current !== currentDirection) {
         document.dir = currentDirection;
         directionRef.current = currentDirection;
@@ -145,7 +160,11 @@ export const AppThemeContextProvider = ({ children }: { children: ReactNode }) =
     return (
         <AppThemeContext.Provider value={appThemeContext}>
             <CacheProvider value={DIRECTION_TO_CACHE[currentDirection]}>
-                <ThemeProvider theme={theme}>{children}</ThemeProvider>
+                <ThemeProvider theme={theme}>
+                    <ThemeModeInitializer mode={actualThemeMode as ThemeMode}>
+                        {children}
+                    </ThemeModeInitializer>
+                </ThemeProvider>
             </CacheProvider>
         </AppThemeContext.Provider>
     );
