@@ -66,7 +66,7 @@ export const DictionaryManager: React.FC<{ onImportClick: () => void }> = ({ onI
                 <div style={{ fontSize: '12px', color: '#aaa', fontStyle: 'italic' }}>No dictionaries installed.</div>
             )}
 
-            <div style={{ maxHeight: '200px', overflowY: 'auto' }}>
+            <div style={{ maxHeight: '200px', overflowY: 'auto', touchAction: 'pan-y', WebkitOverflowScrolling: 'touch' }}>
                 {dicts.map((d, i) => (
                     <div key={d.id} style={{ 
                         display: 'flex', alignItems: 'center', gap: '8px', 
