@@ -1,3 +1,8 @@
+## Release v3.2.7
+
+- fix themes and scroll in dict. manager (#236) (aef3e4a)
+- Fix legacy Yomitan schema migration and add regression tests (d956e56)
+
 ## Release v3.2.6
 
 - add Anki duplicate handling and overwrite support (#235) (2dd4ecc)
