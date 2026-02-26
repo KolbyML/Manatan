@@ -92,40 +92,69 @@ const DEFAULT_LN_SETTINGS: LNReaderSettings = {
     interactionMode: 'hover',
 };
 
-const STORAGE_KEY_PREFIX = 'ln_settings_';
+const LEGACY_STORAGE_KEY_PREFIX = 'ln_settings_';
 
-function getStorageKey(language: string): string {
+function getLegacyStorageKey(language: string): string {
     // Normalize language: use 'default' for unknown/empty
     const normalized = (!language || language === 'unknown') ? 'default' : language.toLowerCase();
-    return `${STORAGE_KEY_PREFIX}${normalized}`;
-}
-
-export function getLnSettings(language: string): LNReaderSettings {
-    try {
-        const key = getStorageKey(language);
-        const saved = localStorage.getItem(key);
-        if (saved) {
-            const parsed = JSON.parse(saved);
-            return { ...DEFAULT_LN_SETTINGS, ...parsed };
-        }
-    } catch (e) {
-        console.warn('[LNSettings] Failed to load settings:', e);
-    }
-    return { ...DEFAULT_LN_SETTINGS };
-}
-
-export function saveLnSettings(settings: LNReaderSettings, language: string): void {
-    try {
-        const key = getStorageKey(language);
-        localStorage.setItem(key, JSON.stringify(settings));
-        console.log('[LNSettings] Saved to:', key);
-    } catch (e) {
-        console.error('[LNSettings] Failed to save settings:', e);
-    }
+    return `${LEGACY_STORAGE_KEY_PREFIX}${normalized}`;
 }
 
 export function getDefaultLnSettings(): LNReaderSettings {
     return { ...DEFAULT_LN_SETTINGS };
+}
+
+export function normalizeLnSettingsLanguage(language?: string): string {
+    return (!language || language === 'unknown') ? 'default' : language.toLowerCase();
+}
+
+export function mergeWithDefaultLnSettings(settings?: Partial<LNReaderSettings> | null): LNReaderSettings {
+    return {
+        ...DEFAULT_LN_SETTINGS,
+        ...(settings ?? {}),
+    };
+}
+
+export function readLegacyLnSettingsFromLocalStorage(): Record<string, LNReaderSettings> {
+    if (typeof window === 'undefined') {
+        return {};
+    }
+
+    const settingsByLanguage: Record<string, LNReaderSettings> = {};
+    for (let i = 0; i < localStorage.length; i++) {
+        const key = localStorage.key(i);
+        if (key && key.startsWith(LEGACY_STORAGE_KEY_PREFIX)) {
+            const language = key.slice(LEGACY_STORAGE_KEY_PREFIX.length);
+            if (language) {
+                try {
+                    const raw = localStorage.getItem(key);
+                    if (raw) {
+                        const parsed = JSON.parse(raw) as Partial<LNReaderSettings>;
+                        settingsByLanguage[language] = mergeWithDefaultLnSettings(parsed);
+                    }
+                } catch (error) {
+                    console.warn('[LNSettings] Failed to parse legacy settings from localStorage:', key, error);
+                }
+            }
+        }
+    }
+
+    return settingsByLanguage;
+}
+
+export function saveLegacyLnSettingsToLocalStorage(settingsByLanguage: Record<string, LNReaderSettings>): void {
+    if (typeof window === 'undefined') {
+        return;
+    }
+
+    Object.entries(settingsByLanguage).forEach(([language, settings]) => {
+        try {
+            const key = getLegacyStorageKey(language);
+            localStorage.setItem(key, JSON.stringify(settings));
+        } catch (error) {
+            console.warn('[LNSettings] Failed to cache legacy settings in localStorage:', language, error);
+        }
+    });
 }
 
 export function getLnSettingsAsFullSettings(lnSettings: LNReaderSettings): Partial<Settings> {
