@@ -54,7 +54,7 @@ export const SelectSetting = <SettingValue extends string | number>({
     const [dialogValue, setDialogValue] = useState(value);
 
     const valueDisplayText = useMemo(() => values.find(([key]) => key === value)?.[1]?.text, [value]);
-    const dialogValueDisplayInfo = useMemo(() => values.find(([key]) => key === dialogValue)![1], [dialogValue]);
+    const dialogValueDisplayInfo = useMemo(() => values.find(([key]) => key === dialogValue)?.[1], [dialogValue]);
 
     useEffect(() => {
         if (!value) {
@@ -93,7 +93,7 @@ export const SelectSetting = <SettingValue extends string | number>({
                     {!!dialogDescription && (
                         <DialogContentText sx={{ paddingBottom: '10px' }}>{dialogDescription}</DialogContentText>
                     )}
-                    {(!!dialogValueDisplayInfo.description || !!dialogValueDisplayInfo.disclaimer) && (
+                    {(dialogValueDisplayInfo && (!!dialogValueDisplayInfo.description || !!dialogValueDisplayInfo.disclaimer)) && (
                         <DialogContentText sx={{ paddingBottom: '10px' }} component="div">
                             {dialogValueDisplayInfo.description && (
                                 <Typography
