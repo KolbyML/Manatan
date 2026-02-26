@@ -110,7 +110,7 @@ export const Appearance = () => {
     const actualThemeMode = (mode ?? themeMode) as ThemeMode;
 
     useEffect(() => {
-        if (!mode && themeMode) {
+        if (!mode && themeMode !== undefined) {
             setMode(themeMode);
         }
     }, [mode, themeMode, setMode]);
