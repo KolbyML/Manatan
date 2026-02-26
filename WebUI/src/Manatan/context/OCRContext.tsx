@@ -11,6 +11,12 @@ import {
 } from '@/Manatan/utils/api';
 import { requestManager } from '@/lib/requests/RequestManager';
 import { AppStorage } from '@/lib/storage/AppStorage.ts';
+import { normalizeLookupTrigger } from '@/Manatan/utils/lookupTrigger';
+import {
+    normalizeLegacyTextBoxContextMenuTrigger,
+    normalizeTextBoxContextMenuHotkeys,
+} from '@/Manatan/utils/contextMenuTrigger';
+import { MANATAN_SETTINGS_META_KEY, getServerMetaJson, setServerMetaJson } from '@/Manatan/services/ServerMetaStorage.ts';
 
 interface OCRContextType {
     settings: Settings;
@@ -61,37 +67,83 @@ interface OCRContextType {
 
 const OCRContext = createContext<OCRContextType | undefined>(undefined);
 
+const LEGACY_MANATAN_SETTINGS_KEY = 'mangatan_settings_v3';
+
+const isMobileUserAgent = (): boolean => {
+    if (typeof navigator === 'undefined') {
+        return false;
+    }
+
+    return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+};
+
+const normalizeSavedSettings = (savedSettings?: Partial<Settings> | null): Partial<Settings> => {
+    if (!savedSettings) {
+        return {};
+    }
+
+    const normalizedSettings = { ...savedSettings };
+    if ('brightnessMode' in normalizedSettings) {
+        delete (normalizedSettings as Partial<Record<'brightnessMode', unknown>>).brightnessMode;
+    }
+
+    const legacySettings = normalizedSettings as Partial<Settings> & {
+        textBoxContextMenuHotkey?: string;
+        textBoxContextMenuTrigger?: string;
+    };
+
+    normalizedSettings.yomitanLookupTrigger = normalizeLookupTrigger(normalizedSettings.yomitanLookupTrigger);
+    const normalizedContextMenuHotkeys = normalizeTextBoxContextMenuHotkeys(
+        normalizedSettings.textBoxContextMenuHotkeys ?? legacySettings.textBoxContextMenuHotkey,
+    );
+    normalizedSettings.textBoxContextMenuHotkeys = normalizedContextMenuHotkeys.length
+        ? normalizedContextMenuHotkeys
+        : [normalizeLegacyTextBoxContextMenuTrigger(legacySettings.textBoxContextMenuTrigger)];
+
+    if (normalizedSettings.ankiFieldMap) {
+        normalizedSettings.ankiFieldMap = Object.fromEntries(
+            Object.entries(normalizedSettings.ankiFieldMap).map(([key, value]) => [
+                key,
+                value === 'Definition' ? 'Glossary' : value,
+            ]),
+        );
+    }
+
+    return normalizedSettings;
+};
+
+const getDefaultSettings = (): Settings => ({
+    ...DEFAULT_SETTINGS,
+    mobileMode: isMobileUserAgent(),
+});
+
+const getSettingsWithDefaults = (settings?: Partial<Settings> | null): Settings => ({
+    ...getDefaultSettings(),
+    ...normalizeSavedSettings(settings),
+});
+
+const readLegacyManatanSettings = (): Partial<Settings> | null => {
+    try {
+        const saved = AppStorage.local.getItem(LEGACY_MANATAN_SETTINGS_KEY);
+        if (!saved) {
+            return null;
+        }
+
+        return JSON.parse(saved);
+    } catch (error) {
+        console.error('Failed to load legacy Manatan settings', error);
+        return null;
+    }
+};
+
 export const OCRProvider = ({ children }: { children: ReactNode }) => {
     const location = useLocation();
     const { data: serverSettingsData } = requestManager.useGetServerSettings();
     const serverSettings: ServerSettingsData | null = serverSettingsData?.settings || null;
 
-    const [settings, setSettings] = useState<Settings>(() => {
-        try {
-            const saved = AppStorage.local.getItem('mangatan_settings_v3');
-            if (saved) {
-                // Ensure legacy settings are cleaned up if necessary
-                const parsed = JSON.parse(saved);
-                if ('brightnessMode' in parsed) delete parsed.brightnessMode;
-                if (parsed.ankiFieldMap) {
-                    parsed.ankiFieldMap = Object.fromEntries(
-                        Object.entries(parsed.ankiFieldMap).map(([key, value]) => [
-                            key,
-                            value === 'Definition' ? 'Glossary' : value,
-                        ]),
-                    );
-                }
-                return { ...DEFAULT_SETTINGS, ...parsed };
-            }
-        } catch (e) { console.error("Failed to load settings", e); }
-        
-        const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
-        
-        return { 
-            ...DEFAULT_SETTINGS, 
-            mobileMode: isMobile, 
-        };
-    });
+    const [settings, setSettings] = useState<Settings>(() => getSettingsWithDefaults(readLegacyManatanSettings()));
+    const hasHydratedServerSettingsRef = useRef(false);
+    const saveServerSettingsTimeoutRef = useRef<number | undefined>(undefined);
 
     const [isSettingsOpen, setIsSettingsOpen] = useState(false);
     const openSettings = useCallback(() => setIsSettingsOpen(true), []);
@@ -329,7 +381,62 @@ export const OCRProvider = ({ children }: { children: ReactNode }) => {
     }, [showDialog]);
 
     useEffect(() => {
-        AppStorage.local.setItem('mangatan_settings_v3', JSON.stringify(settings));
+        let cancelled = false;
+
+        const loadSettingsFromServer = async () => {
+            const legacySettings = readLegacyManatanSettings();
+            try {
+                const serverSettings = await getServerMetaJson<Partial<Settings> | null>(MANATAN_SETTINGS_META_KEY, null);
+                if (cancelled) {
+                    return;
+                }
+
+                if (serverSettings && typeof serverSettings === 'object') {
+                    setSettings(getSettingsWithDefaults(serverSettings));
+                } else if (legacySettings) {
+                    const migratedSettings = getSettingsWithDefaults(legacySettings);
+                    setSettings(migratedSettings);
+                    await setServerMetaJson(MANATAN_SETTINGS_META_KEY, migratedSettings);
+                }
+            } catch (error) {
+                console.error('[Manatan Settings] Failed to load server settings metadata:', error);
+            } finally {
+                if (!cancelled) {
+                    hasHydratedServerSettingsRef.current = true;
+                }
+            }
+        };
+
+        void loadSettingsFromServer();
+
+        return () => {
+            cancelled = true;
+        };
+    }, []);
+
+    useEffect(() => {
+        if (!hasHydratedServerSettingsRef.current) {
+            return;
+        }
+
+        if (saveServerSettingsTimeoutRef.current !== undefined) {
+            window.clearTimeout(saveServerSettingsTimeoutRef.current);
+        }
+
+        saveServerSettingsTimeoutRef.current = window.setTimeout(() => {
+            void setServerMetaJson(MANATAN_SETTINGS_META_KEY, settings).catch((error) => {
+                console.error('[Manatan Settings] Failed to persist settings to server metadata:', error);
+            });
+        }, 300);
+
+        return () => {
+            if (saveServerSettingsTimeoutRef.current !== undefined) {
+                window.clearTimeout(saveServerSettingsTimeoutRef.current);
+            }
+        };
+    }, [settings]);
+
+    useEffect(() => {
         const theme = COLOR_THEMES[settings.colorTheme] || COLOR_THEMES.blue;
         document.documentElement.style.setProperty('--ocr-accent', theme.accent);
 

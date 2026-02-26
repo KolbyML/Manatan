@@ -6,7 +6,6 @@ import AddIcon from '@mui/icons-material/Add';
 import RestartAltIcon from '@mui/icons-material/RestartAlt';
 import { bindTrigger, usePopupState } from 'material-ui-popup-state/hooks';
 import { useOCR } from '@/Manatan/context/OCRContext';
-import { AppStorage } from '@/lib/storage/AppStorage.ts';
 import { COLOR_THEMES, DEFAULT_SETTINGS } from '@/Manatan/types';
 import { apiRequest, getAppVersion, checkForUpdates, triggerAppUpdate, installAppUpdate, getFrequencyDictionaries, getDictionaries } from '@/Manatan/utils/api';
 import { DictionaryManager } from './DictionaryManager';
@@ -203,7 +202,6 @@ export const SettingsModal: React.FC<{ onClose: () => void }> = ({ onClose }) =>
     const yomitanPopupThemeValue = localSettings.yomitanPopupTheme || 'dark';
     const animePopupThemeValue = localSettings.animePopupTheme || 'dark';
     const persistSettings = useCallback((nextSettings: typeof settings) => {
-        AppStorage.local.setItem('mangatan_settings_v3', JSON.stringify(nextSettings));
         setSettings(nextSettings);
     }, [setSettings]);
     const animeHotkeys = useMemo(

@@ -1,46 +1,56 @@
 import { AppStorage, LNMetadata, LNProgress, LNParsedBook, LNReaderSettings } from '@/lib/storage/AppStorage';
 import { SyncApi } from './SyncApi';
 import { SyncConfig, SyncPayload, MergeResponse, SyncProgress } from '../Sync.types';
+import { MANATAN_LN_SETTINGS_META_KEY, getServerMetaJson, setServerMetaJson } from '@/Manatan/services/ServerMetaStorage.ts';
+import {
+    mergeWithDefaultLnSettings,
+    readLegacyLnSettingsFromLocalStorage,
+    saveLegacyLnSettingsToLocalStorage,
+} from '@/features/ln/reader/utils/lnSettings';
 
 const DEVICE_ID_KEY = 'manatan_device_id';
 const LAST_SYNC_KEY = 'manatan_last_sync';
-const LN_SETTINGS_PREFIX = 'ln_settings_';
 
 // ========================================================================
-// LocalStorage Settings Helpers
+// LN Settings Helpers
 // ========================================================================
 
-function getSettingsFromLocalStorage(): Record<string, LNReaderSettings> {
-    const settings: Record<string, LNReaderSettings> = {};
-    for (let i = 0; i < localStorage.length; i++) {
-        const key = localStorage.key(i);
-        if (key && key.startsWith(LN_SETTINGS_PREFIX)) {
-            try {
-                const language = key.substring(LN_SETTINGS_PREFIX.length);
-                const value = localStorage.getItem(key);
-                if (value) {
-                    settings[language] = JSON.parse(value);
-                }
-            } catch (e) {
-                console.warn('[SYNC] Failed to parse localStorage settings:', key, e);
-            }
-        }
+async function getSettingsForSync(): Promise<Record<string, LNReaderSettings>> {
+    const legacySettings = readLegacyLnSettingsFromLocalStorage();
+
+    try {
+        const serverSettings = await getServerMetaJson<Record<string, Partial<LNReaderSettings>> | null>(
+            MANATAN_LN_SETTINGS_META_KEY,
+            null,
+        );
+        const normalizedServerSettings = Object.entries(serverSettings ?? {}).reduce<Record<string, LNReaderSettings>>(
+            (acc, [language, settings]) => {
+                acc[language] = mergeWithDefaultLnSettings(settings);
+                return acc;
+            },
+            {},
+        );
+        return {
+            ...legacySettings,
+            ...normalizedServerSettings,
+        };
+    } catch (error) {
+        console.warn('[SYNC] Failed to read LN settings from server metadata, using local cache only:', error);
+        return legacySettings;
     }
-    return settings;
 }
 
-function applySettingsToLocalStorage(settings: Record<string, LNReaderSettings> | undefined): void {
+async function applySettingsForSync(settings: Record<string, LNReaderSettings> | undefined): Promise<void> {
     if (!settings) return;
-    
-    for (const [language, lnSettings] of Object.entries(settings)) {
-        try {
-            const key = `${LN_SETTINGS_PREFIX}${language}`;
-            localStorage.setItem(key, JSON.stringify(lnSettings));
-            console.log('[SYNC] Applied settings to localStorage:', key);
-        } catch (e) {
-            console.warn('[SYNC] Failed to save settings to localStorage:', language, e);
-        }
+
+    try {
+        await setServerMetaJson(MANATAN_LN_SETTINGS_META_KEY, settings);
+    } catch (error) {
+        console.warn('[SYNC] Failed to persist LN settings to server metadata:', error);
     }
+
+    // Keep legacy local cache in sync for backward compatibility.
+    saveLegacyLnSettingsToLocalStorage(settings);
 }
 
 export class SyncService {
@@ -221,12 +231,12 @@ export class SyncService {
                         await AppStorage.lnMetadata.setItem(key, metadata);
                     }
                     
-                    // Merge localStorage settings into metadata before sync
-                    const localStorageSettings = getSettingsFromLocalStorage();
+                    // Merge persisted LN settings into metadata before sync
+                    const persistedLnSettings = await getSettingsForSync();
                     const existingSettings = metadata.languageSettings || metadata.language_settings || {};
                     
-                    // Merge: localStorage takes priority over stored metadata
-                    metadata.languageSettings = { ...existingSettings, ...localStorageSettings };
+                    // Merge: persisted settings take priority over stored metadata
+                    metadata.languageSettings = { ...existingSettings, ...persistedLnSettings };
                     
                     payload.lnMetadata[key] = metadata;
                 }
@@ -429,11 +439,11 @@ export class SyncService {
                 }
             }
             
-            // Apply downloaded settings to localStorage (merging with existing)
-            const existingLocalStorage = getSettingsFromLocalStorage();
-            const mergedSettings = { ...existingLocalStorage, ...allDownloadedSettings };
-            applySettingsToLocalStorage(mergedSettings);
-            console.log('[SYNC] Applied language settings to localStorage:', Object.keys(mergedSettings));
+            // Apply downloaded settings to server metadata (merging with existing persisted values)
+            const existingPersistedSettings = await getSettingsForSync();
+            const mergedSettings = { ...existingPersistedSettings, ...allDownloadedSettings };
+            await applySettingsForSync(mergedSettings);
+            console.log('[SYNC] Applied language settings to persisted metadata:', Object.keys(mergedSettings));
         }
 
         // Apply content
