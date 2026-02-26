@@ -1,3 +1,13 @@
+## Release v3.2.6
+
+- add Anki duplicate handling and overwrite support (#235) (2dd4ecc)
+- implement kanji dictionary ordering and headword lookup (#234) (bb1f359)
+- feat: add default startup page and tab selection settings (#233) (160d696)
+- Improve local manga change detection and page ordering (8baf3d1)
+- Fix manga chapter read-state updates without full list refetch (aed7ac1)
+- Add Apple-native embedded subtitle extraction and switching fixes (812de18)
+- Fix Android stale WebView assets and harden lookup ranking (4332508)
+
 ## Release v3.2.5
 
 - Support Jimaku drama/live-action matching and add fallback regression tests (07112f2)
