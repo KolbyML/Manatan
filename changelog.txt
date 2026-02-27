@@ -1,3 +1,7 @@
+## Release v3.2.9
+
+- Fix anime subtitle lookup/index sync and add regression tests (cff8c7a)
+
 ## Release v3.2.8
 
 - Fix katakana lookup ranking and add JMdict import regression test (5cfa79e)
