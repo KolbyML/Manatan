@@ -3577,6 +3577,7 @@ dependencies = [
  "image",
  "libc",
  "manatan-audio-server",
+ "manatan-ln-server",
  "manatan-ocr-server",
  "manatan-server-public",
  "manatan-sync-server",
@@ -3610,6 +3611,30 @@ dependencies = [
  "tokio",
  "tracing",
  "url",
+]
+
+[[package]]
+name = "manatan-ln-server"
+version = "0.1.0"
+dependencies = [
+ "anyhow",
+ "axum",
+ "base64",
+ "chrono",
+ "futures",
+ "http",
+ "manatan-sync-server",
+ "mime_guess",
+ "serde",
+ "serde_json",
+ "sled",
+ "thiserror 2.0.18",
+ "tokio",
+ "tower",
+ "tower-http 0.6.8",
+ "tracing",
+ "uuid",
+ "walkdir",
 ]
 
 [[package]]
@@ -3728,6 +3753,7 @@ dependencies = [
  "libc",
  "libloading",
  "manatan-audio-server",
+ "manatan-ln-server",
  "manatan-ocr-server",
  "manatan-server-public",
  "manatan-sync-server",

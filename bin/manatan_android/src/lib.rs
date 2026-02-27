@@ -398,20 +398,22 @@ fn prepare_shared_local_media_dirs(
     app: &AndroidApp,
     legacy_bases: &[PathBuf],
     fallback_base: &Path,
-) -> (PathBuf, PathBuf) {
+) -> (PathBuf, PathBuf, PathBuf) {
     // Prefer shared external storage so users can manage files directly.
     let shared_root = resolve_manatan_shared_root_with_migration(app);
 
-    let (local_manga_dir, local_anime_dir) = if let Some(shared_root) = shared_root {
+    let (local_manga_dir, local_anime_dir, local_ln_dir) = if let Some(shared_root) = shared_root {
         (
             shared_root.join("local-manga"),
             shared_root.join("local-anime"),
+            shared_root.join("local-ln"),
         )
     } else {
         // Fallback: app data storage.
         (
             fallback_base.join("local-manga"),
             fallback_base.join("local-anime"),
+            fallback_base.join("local-ln"),
         )
     };
 
@@ -419,6 +421,7 @@ fn prepare_shared_local_media_dirs(
     for base in legacy_bases {
         migrate_internal_dir_to_external(&base.join("local-manga"), &local_manga_dir);
         migrate_internal_dir_to_external(&base.join("local-anime"), &local_anime_dir);
+        migrate_internal_dir_to_external(&base.join("local-ln"), &local_ln_dir);
     }
 
     // Ensure directories exist.
@@ -434,18 +437,25 @@ fn prepare_shared_local_media_dirs(
             local_anime_dir.display()
         );
     }
+    if let Err(err) = fs::create_dir_all(&local_ln_dir) {
+        warn!(
+            "Failed to create local-ln directory {}: {err}",
+            local_ln_dir.display()
+        );
+    }
 
     ensure_nomedia(&local_manga_dir);
     ensure_nomedia(&local_anime_dir);
+    ensure_nomedia(&local_ln_dir);
 
-    (local_manga_dir, local_anime_dir)
+    (local_manga_dir, local_anime_dir, local_ln_dir)
 }
 
 fn should_skip_app_data_entry(name: &str) -> bool {
     matches!(
         name,
         // These are migrated/configured elsewhere.
-        "local-manga" | "local-anime" | "local-sources" |
+        "local-manga" | "local-anime" | "local-ln" | "local-sources" |
         // This is migrated separately so it lives in shared root.
         TACHI_DATA_DIR_NAME
     )
@@ -978,7 +988,7 @@ fn android_main(app: AndroidApp) {
         external_app_dir,
         files_dir.clone(),
     ];
-    let (default_local_manga_dir, default_local_anime_dir) =
+    let (default_local_manga_dir, default_local_anime_dir, default_local_ln_dir) =
         prepare_shared_local_media_dirs(&app, &legacy_bases, &files_dir);
 
     let app_bg = app.clone();
@@ -997,6 +1007,7 @@ fn android_main(app: AndroidApp) {
 
     let default_local_manga_dir_clone = default_local_manga_dir.clone();
     let default_local_anime_dir_clone = default_local_anime_dir.clone();
+    let default_local_ln_dir_clone = default_local_ln_dir.clone();
     thread::spawn(move || {
         info!("Starting Web Server Runtime...");
         let rt = tokio::runtime::Runtime::new().expect("Failed to build Tokio runtime");
@@ -1036,6 +1047,7 @@ fn android_main(app: AndroidApp) {
                 internal_runtime_dir,
                 default_local_manga_dir_clone,
                 default_local_anime_dir_clone,
+                default_local_ln_dir_clone,
             )
             .await
             {
@@ -1147,6 +1159,7 @@ async fn start_web_server(
     internal_runtime_dir: PathBuf,
     default_local_manga_dir: PathBuf,
     default_local_anime_dir: PathBuf,
+    default_local_ln_dir: PathBuf,
 ) -> Result<(), Box<dyn std::error::Error>> {
     info!("🚀 Initializing Manatan Server on port 4568...");
     configure_oauth_broker_env();
@@ -1203,6 +1216,8 @@ async fn start_web_server(
         .unwrap_or_else(|_| default_local_manga_dir.to_string_lossy().to_string());
     let local_anime_path = std::env::var("MANATAN_LOCAL_ANIME_PATH")
         .unwrap_or_else(|_| default_local_anime_dir.to_string_lossy().to_string());
+    let local_ln_path = std::env::var("MANATAN_LOCAL_LN_PATH")
+        .unwrap_or_else(|_| default_local_ln_dir.to_string_lossy().to_string());
     let manatan_config = ManatanServerConfig {
         host: "0.0.0.0".to_string(),
         port: 4568,
@@ -1219,9 +1234,13 @@ async fn start_web_server(
         local_manga_path,
         local_anime_path,
     };
+
+    // Note: ManatanServerConfig might need update if it's supposed to hold local_ln_path
+    // but the actual router initialization below uses it.
     let manatan_state = build_state(manatan_config).await?;
     let manatan_router = build_router_without_cors(manatan_state);
     let sync_router = manatan_sync_server::create_router(data_dir.clone());
+    let ln_router = manatan_ln_server::create_router(data_dir.clone(), PathBuf::from(local_ln_path.clone()));
 
     let ocr_router = manatan_ocr_server::create_router(data_dir.clone());
     let yomitan_router = manatan_yomitan_server::create_router(data_dir.clone());
@@ -1256,6 +1275,7 @@ async fn start_web_server(
         )
         .route("/api/system/install-update", any(install_update_handler))
         .nest("/api/sync", sync_router)
+        .nest("/api/ln", ln_router)
         .nest_service("/api/ocr", ocr_router)
         .nest_service("/api/yomitan", yomitan_router)
         .nest_service("/api/audio", audio_router)

@@ -139,6 +139,11 @@ const InitialBackgroundRequests = () => {
         // Fetch extension list on startup to show up-to-date number of available extension updates in the navigation bar
         // without having to open the extensions page.
         fetchExtensionList().catch(defaultPromiseErrorHandler('App::InitialBackgroundRequests: extension list'));
+
+        // Trigger LN migration from IndexedDB to server
+        import('@/lib/storage/AppStorage').then(({ AppStorage }) => {
+            AppStorage.migrateLnMetadata().catch(err => console.error('[App] LN migration failed:', err));
+        });
     }, []);
 
     return null;

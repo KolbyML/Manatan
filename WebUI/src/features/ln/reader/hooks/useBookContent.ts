@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react';
 import { AppStorage, LNMetadata, BookStats } from '@/lib/storage/AppStorage';
+import { requestManager } from '@/lib/requests/RequestManager';
 
 export interface BookContent {
     chapters: string[];
@@ -40,69 +41,37 @@ export function useBookContent(bookId: string | undefined): UseBookContentReturn
 
             try {
 
-                const [metadata, parsedBook] = await Promise.all([
-                    AppStorage.getLnMetadata(bookId),
-                    AppStorage.getLnContent(bookId),
-                ]);
+                const metadata = await AppStorage.getLnMetadata(bookId);
 
                 if (cancelled) return;
 
-                if (!metadata || !parsedBook) {
+                if (!metadata) {
                     setError('Book not found. It may need to be re-imported.');
                     setIsLoading(false);
                     return;
                 }
 
+                // Check for static content on server
+                const baseUrl = requestManager.getBaseUrl();
+                const staticBase = `${baseUrl}/api/ln/static/${bookId}`;
 
-                let bookBlobUrls = blobUrlCache.get(bookId);
+                // Fetch chapter list (just to be sure we have the filenames/count)
+                const parsedBook = await AppStorage.getLnContent(bookId);
 
-                if (!bookBlobUrls) {
+                if (cancelled) return;
 
-                    bookBlobUrls = new Map<string, string>();
-
-                    for (const [path, blob] of Object.entries(parsedBook.imageBlobs)) {
-                        const url = URL.createObjectURL(blob);
-                        bookBlobUrls.set(path, url);
-                        objectUrlsRef.current.push(url);
-                    }
-
-                    blobUrlCache.set(bookId, bookBlobUrls);
+                if (!parsedBook) {
+                     setError('Book content not found.');
+                     setIsLoading(false);
+                     return;
                 }
 
-
-                const processedChapters = parsedBook.chapters.map((html) => {
+                const processedChapters = parsedBook.chapters.map((html, i) => {
+                    // Re-route images to static server
                     return html.replace(/data-epub-src="([^"]+)"/g, (match, path) => {
-
-                        let blobUrl = bookBlobUrls!.get(path);
-
-
-                        if (!blobUrl) {
-                            blobUrl = bookBlobUrls!.get('/' + path);
-                        }
-
-                        if (!blobUrl) {
-                            blobUrl = bookBlobUrls!.get(path.replace(/^\//, ''));
-                        }
-
-
-                        if (!blobUrl) {
-                            const filename = path.split('/').pop() || '';
-                            for (const [storedPath, url] of bookBlobUrls!.entries()) {
-                                if (storedPath.endsWith('/' + filename) || storedPath === filename) {
-                                    blobUrl = url;
-                                    break;
-                                }
-                            }
-                        }
-
-                        if (blobUrl) {
-                            console.log(`[useBookContent] Resolved image: ${path} -> ${blobUrl.substring(0, 30)}...`);
-                            return `src="${blobUrl}" href="${blobUrl}" xlink:href="${blobUrl}" data-epub-src="${path}"`;
-                        }
-
-                        console.warn(`[useBookContent] Failed to resolve image path: ${path} in book ${bookId}`);
-                        console.log('[useBookContent] Available paths:', Array.from(bookBlobUrls!.keys()));
-                        return match;
+                        const normalizedPath = path.startsWith('/') ? path.substring(1) : path;
+                        const staticUrl = `${staticBase}/extracted/images/${normalizedPath}`;
+                        return `src="${staticUrl}" href="${staticUrl}" xlink:href="${staticUrl}" data-epub-src="${path}"`;
                     });
                 });
 

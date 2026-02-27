@@ -1,0 +1,27 @@
+[package]
+name = "manatan-ln-server"
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+license.workspace = true
+repository.workspace = true
+
+[dependencies]
+anyhow.workspace = true
+axum.workspace = true
+serde.workspace = true
+serde_json.workspace = true
+tokio.workspace = true
+tower = "0.5"
+tracing.workspace = true
+thiserror = "2.0"
+http = "1.0"
+sled = "0.34"
+uuid = { version = "1.0", features = ["v4"] }
+chrono = "0.4"
+futures.workspace = true
+tower-http.workspace = true
+manatan-sync-server.workspace = true
+mime_guess.workspace = true
+walkdir = "2.3"
+base64 = "0.22"
