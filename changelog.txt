@@ -1,3 +1,16 @@
+## Release v3.2.8
+
+- Fix katakana lookup ranking and add JMdict import regression test (5cfa79e)
+- Fix Anki not-connected state for add/open buttons (a46f34e)
+- Add regression test for local sidecar subtitle matching (bd49223)
+- Map local anime season layouts to flat show season keys (2c50e58)
+- Add swipe page turning for paged manga reader (35fd310)
+- Reset paged reader zoom when flipping pages (5d7d502)
+- Fix mobile dictionary settings clipping and add regression tests (0bddc9d)
+- Ignore broken anime repo links and hide local-only anime extension rows (6bbb41c)
+- Fix lookup index regressions in TextBox/LN and add regression tests (a568799)
+- Persist Manatan user settings in server metadata (5b6fac8)
+
 ## Release v3.2.7
 
 - fix themes and scroll in dict. manager (#236) (aef3e4a)
