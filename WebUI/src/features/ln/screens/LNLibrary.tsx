@@ -125,7 +125,7 @@ const LNLibraryCard = ({ item, onOpen, onDelete, onEdit, isSelectionMode, isSele
     };
 
     return (
-        <PopupState variant="popover" popupId={`ln-card-action-menu-${item.id}`}>
+        <PopupState variant="popover" popupId={`novel-card-action-menu-${item.id}`}>
             {(popupState) => (
                 <>
                     <Box
@@ -134,7 +134,7 @@ const LNLibraryCard = ({ item, onOpen, onDelete, onEdit, isSelectionMode, isSele
                             flexDirection: 'column',
                             m: 0.25,
                             '@media (hover: hover) and (pointer: fine)': {
-                                '&:hover .ln-option-button': {
+                                '&:hover .novel-option-button': {
                                     visibility: 'visible',
                                     pointerEvents: 'all',
                                 },
@@ -270,7 +270,7 @@ const LNLibraryCard = ({ item, onOpen, onDelete, onEdit, isSelectionMode, isSele
                                                             },
                                                         })}
                                                         aria-label="Options"
-                                                        className="ln-option-button"
+                                                        className="novel-option-button"
                                                         size="small"
                                                         sx={{
                                                             minWidth: 'unset',
@@ -332,8 +332,9 @@ const LNLibraryCard = ({ item, onOpen, onDelete, onEdit, isSelectionMode, isSele
                     {popupState.isOpen && !isSelectionMode && (
                         <Menu {...bindMenu(popupState)}>
                             {(onClose) => (
-                                <>
+                                <Box>
                                     <MenuItem
+                                        key="edit"
                                         onClick={(event: React.MouseEvent<HTMLElement>) => {
                                             onClose();
                                             onEdit(item);
@@ -345,6 +346,7 @@ const LNLibraryCard = ({ item, onOpen, onDelete, onEdit, isSelectionMode, isSele
                                         Edit
                                     </MenuItem>
                                     <MenuItem
+                                        key="delete"
                                         onClick={(event: React.MouseEvent<HTMLElement>) => {
                                             onClose();
                                             onDelete(item.id, event);
@@ -355,7 +357,7 @@ const LNLibraryCard = ({ item, onOpen, onDelete, onEdit, isSelectionMode, isSele
                                         </ListItemIcon>
                                         Delete
                                     </MenuItem>
-                                </>
+                                </Box>
                             )}
                         </Menu>
                     )}
@@ -598,7 +600,7 @@ export const LNLibrary: React.FC = () => {
                 setLibrary(prev => prev.filter(item => item.id !== existingBook.id));
             }
 
-            const bookId = `ln_${Date.now()}_${fileIndex}`;
+            const bookId = `novel_${Date.now()}_${fileIndex}`;
 
             const placeholder: LibraryItem = {
                 id: bookId,
@@ -810,7 +812,7 @@ export const LNLibrary: React.FC = () => {
     }, []);
 
     const handleOpen = useCallback((id: string) => {
-        navigate(AppRoutes.ln.childRoutes.reader.path(id));
+        navigate(AppRoutes.novel.childRoutes.reader.path(id));
     }, [navigate]);
 
     // Drag and Drop handlers
@@ -983,50 +985,57 @@ export const LNLibrary: React.FC = () => {
                                     </CustomTooltip>
                                     <Menu {...bindMenu(popupState)}>
                                         {(onClose) => (
-                                            <>
+                                            <Box>
                                                 <MenuItem
+                                                    key="dateAdded"
                                                     selected={currentSort.sortBy === 'dateAdded'}
                                                     onClick={() => { handleSortChange('dateAdded'); onClose(); }}
                                                 >
                                                     Date Added {currentSort.sortBy === 'dateAdded' && (currentSort.sortDesc ? '↓' : '↑')}
                                                 </MenuItem>
                                                 <MenuItem
+                                                    key="title"
                                                     selected={currentSort.sortBy === 'title'}
                                                     onClick={() => { handleSortChange('title'); onClose(); }}
                                                 >
                                                     Title {currentSort.sortBy === 'title' && (currentSort.sortDesc ? '↓' : '↑')}
                                                 </MenuItem>
                                                 <MenuItem
+                                                    key="author"
                                                     selected={currentSort.sortBy === 'author'}
                                                     onClick={() => { handleSortChange('author'); onClose(); }}
                                                 >
                                                     Author {currentSort.sortBy === 'author' && (currentSort.sortDesc ? '↓' : '↑')}
                                                 </MenuItem>
                                                 <MenuItem
+                                                    key="length"
                                                     selected={currentSort.sortBy === 'length'}
                                                     onClick={() => { handleSortChange('length'); onClose(); }}
                                                 >
                                                     Length {currentSort.sortBy === 'length' && (currentSort.sortDesc ? '↓' : '↑')}
                                                 </MenuItem>
                                                 <MenuItem
+                                                    key="language"
                                                     selected={currentSort.sortBy === 'language'}
                                                     onClick={() => { handleSortChange('language'); onClose(); }}
                                                 >
                                                     Language {currentSort.sortBy === 'language' && (currentSort.sortDesc ? '↓' : '↑')}
                                                 </MenuItem>
                                                 <MenuItem
+                                                    key="lastRead"
                                                     selected={currentSort.sortBy === 'lastRead'}
                                                     onClick={() => { handleSortChange('lastRead'); onClose(); }}
                                                 >
                                                     Last Read {currentSort.sortBy === 'lastRead' && (currentSort.sortDesc ? '↓' : '↑')}
                                                 </MenuItem>
                                                 <MenuItem
+                                                    key="progress"
                                                     selected={currentSort.sortBy === 'progress'}
                                                     onClick={() => { handleSortChange('progress'); onClose(); }}
                                                 >
                                                     Progress {currentSort.sortBy === 'progress' && (currentSort.sortDesc ? '↓' : '↑')}
                                                 </MenuItem>
-                                            </>
+                                            </Box>
                                         )}
                                     </Menu>
                                 </>
