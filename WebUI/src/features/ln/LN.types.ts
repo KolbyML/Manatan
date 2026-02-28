@@ -1,4 +1,4 @@
-import { BlockIndexMap } from '@/features/novel/reader/types/block';
+import { BlockIndexMap } from '@/features/ln/reader/types/block';
 
 export interface BookStats {
     chapterLengths: number[];
