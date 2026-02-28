@@ -10,7 +10,7 @@ import { jsonSaveParse } from '@/lib/HelperFunctions.ts';
 import localforage from 'localforage';
 import { requestManager } from '@/lib/requests/RequestManager.ts';
 import { HttpMethod } from '@/lib/requests/client/RestClient.ts';
-import { LNMetadata, LNProgress, LNParsedBook, LnCategory, LnCategoryMetadata } from '@/features/novel/LN.types';
+import { LNMetadata, LNProgress, LNParsedBook, LnCategory, LnCategoryMetadata } from '@/features/ln/LN.types';
 
 type StorageBackend = typeof window.localStorage | null;
 
@@ -106,7 +106,7 @@ export class Storage {
 // Types
 // ============================================================================
 
-export * from '@/features/novel/LN.types';
+export * from '@/features/ln/LN.types';
 
 // ============================================================================
 // Device ID Helper
