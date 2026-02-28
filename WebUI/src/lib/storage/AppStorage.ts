@@ -6,9 +6,11 @@
  * file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
 
-import { BlockIndexMap } from '@/features/ln/reader/types/block';
 import { jsonSaveParse } from '@/lib/HelperFunctions.ts';
 import localforage from 'localforage';
+import { requestManager } from '@/lib/requests/RequestManager.ts';
+import { HttpMethod } from '@/lib/requests/client/RestClient.ts';
+import { LNMetadata, LNProgress, LNParsedBook, LnCategory, LnCategoryMetadata } from '@/features/novel/LN.types';
 
 type StorageBackend = typeof window.localStorage | null;
 
@@ -104,132 +106,7 @@ export class Storage {
 // Types
 // ============================================================================
 
-export interface BookStats {
-    chapterLengths: number[];
-    totalLength: number;
-    blockMaps?: BlockIndexMap[];
-}
-
-export interface TocItem {
-    label: string;
-    href: string;
-    chapterIndex: number;
-}
-
-export interface LNMetadata {
-    id: string;
-    title: string;
-    author: string;
-    cover?: string;
-    addedAt: number;
-
-    // Processing state
-    isProcessing?: boolean;
-    isError?: boolean;
-    errorMsg?: string;
-
-    // Pre-calculated on import
-    stats: BookStats;
-    chapterCount: number;
-    toc: TocItem[];
-
-    // For library display
-    hasProgress?: boolean;
-
-    // Language and categories
-    language?: string;
-    categoryIds: string[];
-    
-    // Settings per language (synced)
-    languageSettings?: Record<string, LNReaderSettings>;
-}
-
-export interface LNReaderSettings {
-    lnFontSize: number;
-    lnLineHeight: number;
-    lnFontFamily: string;
-    lnTheme: 'light' | 'sepia' | 'dark' | 'black';
-    lnReadingDirection: 'horizontal' | 'vertical-rtl' | 'vertical-ltr';
-    lnPaginationMode: 'scroll' | 'paginated' | 'single-page';
-    lnPageWidth: number;
-    lnPageMargin: number;
-    lnEnableFurigana: boolean;
-    lnTextAlign: 'left' | 'center' | 'justify';
-    lnLetterSpacing: number;
-    lnParagraphSpacing: number;
-    lnTextBrightness: number;
-    lnFontWeight: number;
-    lnSecondaryFontFamily: string;
-    lnAutoBookmark: boolean;
-    lnBookmarkDelay: number;
-    lnLockProgressBar: boolean;
-    lnHideNavButtons: boolean;
-    lnEnableSwipe: boolean;
-    lnDragThreshold: number;
-    lnEnableClickZones: boolean;
-    lnClickZoneSize: number;
-    lnClickZonePlacement: 'vertical' | 'horizontal';
-    lnClickZonePosition: 'full' | 'start' | 'center' | 'end';
-    lnClickZoneCoverage: number;
-    lnDisableAnimations: boolean;
-    lnShowCharProgress: boolean;
-    enableYomitan: boolean;
-    interactionMode: 'hover' | 'click';
-}
-
-export interface LNProgress {
-    // Current reading position (the bookmark)
-    chapterIndex: number;
-    pageNumber?: number;
-    chapterCharOffset: number;
-    totalCharsRead: number;
-    sentenceText: string;
-    chapterProgress: number;
-    totalProgress: number;
-
-    // Block tracking
-    blockId?: string;
-    blockLocalOffset?: number;
-    contextSnippet?: string;
-
-    // Sync metadata
-    lastRead?: number;
-    lastModified?: number;
-    syncVersion?: number;
-    deviceId?: string; // Track which device saved this
-
-    // Highlights
-    highlights?: LNHighlight[];
-}
-
-export interface LNHighlight {
-    id: string;
-    chapterIndex: number;
-    blockId: string;
-    text: string;
-    startOffset: number;
-    endOffset: number;
-    createdAt: number;
-}
-
-export interface LNParsedBook {
-    chapters: string[];
-    imageBlobs: Record<string, Blob>;
-    chapterFilenames: string[];
-}
-
-export interface LnCategory {
-    id: string;
-    name: string;
-    order: number;
-    createdAt: number;
-    lastModified: number;
-}
-
-export interface LnCategoryMetadata {
-    sortBy: string;
-    sortDesc: boolean;
-}
+export * from '@/features/novel/LN.types';
 
 // ============================================================================
 // Device ID Helper
@@ -238,13 +115,99 @@ export interface LnCategoryMetadata {
 function getDeviceId(): string {
     const key = 'manatan_device_id';
     let deviceId = localStorage.getItem(key);
-    
+
     if (!deviceId) {
         deviceId = `device-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
         localStorage.setItem(key, deviceId);
     }
-    
+
     return deviceId;
+}
+
+// ============================================================================
+// Server-backed Storage Implementation
+// ============================================================================
+
+class ServerStorage<T> {
+    private memCache = new Map<string, T>();
+
+    constructor(
+        private readonly endpoint: string,
+        private readonly storeName: string,
+    ) {}
+
+    async getItem<R = T>(key: string): Promise<R | null> {
+        if (this.memCache.has(key)) {
+            return this.memCache.get(key) as unknown as R;
+        }
+
+        // Check localStorage mirror for instant UI
+        if (this.storeName === 'novel_metadata_list') {
+            const cached = localStorage.getItem('manatan_novel_metadata_list');
+            if (cached) {
+                return JSON.parse(cached) as unknown as R;
+            }
+        }
+
+        return await this.fetchFromServer<R>(key);
+    }
+
+    private async fetchFromServer<R = T>(key: string): Promise<R | null> {
+        try {
+            const response = await requestManager.getClient().fetcher(`${this.endpoint}/${key}`);
+            if (response.status === 404) return null;
+            const data = await response.json();
+
+            this.memCache.set(key, data);
+            return data as R;
+        } catch (e) {
+            console.error(`[AppStorage] Failed to get item ${key} from ${this.storeName}:`, e);
+            return null;
+        }
+    }
+
+    async setItem(key: string, value: T): Promise<T> {
+        try {
+            await requestManager.getClient().fetcher(`${this.endpoint}/${key}`, {
+                httpMethod: HttpMethod.POST,
+                data: this.wrapPayload(value),
+            });
+            this.memCache.set(key, value);
+            return value;
+        } catch (e) {
+            console.error(`[AppStorage] Failed to set item ${key} in ${this.storeName}:`, e);
+            throw e;
+        }
+    }
+
+    async removeItem(key: string): Promise<void> {
+        try {
+            await requestManager.getClient().fetcher(`${this.endpoint}/${key}`, {
+                httpMethod: HttpMethod.DELETE,
+            });
+            this.memCache.delete(key);
+        } catch (e) {
+            console.error(`[AppStorage] Failed to remove item ${key} from ${this.storeName}:`, e);
+            throw e;
+        }
+    }
+
+    async keys(): Promise<string[]> {
+        if (this.storeName === 'novel_metadata') {
+            const response = await requestManager.getClient().fetcher(this.endpoint);
+            const data = await response.json() as LNMetadata[];
+            return data.map(m => m.id);
+        }
+        return Array.from(this.memCache.keys());
+    }
+
+    private wrapPayload(value: any) {
+        if (this.storeName === 'novel_metadata') return { metadata: value };
+        if (this.storeName === 'novel_progress') return { progress: value };
+        if (this.storeName === 'novel_categories') return value;
+        if (this.storeName === 'novel_category_metadata') return value;
+        return value;
+    }
 }
 
 // ============================================================================
@@ -256,46 +219,80 @@ export class AppStorage {
     static readonly session = new Storage(AppStorage.getSafeStorage(() => window.sessionStorage));
 
     // Raw EPUB files
-    static readonly files = localforage.createInstance({
-        name: 'Manatan',
-        storeName: 'ln_files',
-        description: 'EPUB source files',
-    });
+    static readonly files = {
+        async setItem(key: string, file: File | Blob): Promise<void> {
+            const formData = new FormData();
+            formData.append('file', file);
+            await requestManager.getClient().fetcher(`/api/novel/upload/${key}`, {
+                httpMethod: HttpMethod.POST,
+                data: formData,
+            });
+        },
+        async getItem(key: string): Promise<Blob | null> {
+            try {
+                const response = await requestManager.getClient().fetcher(`/api/novel/file/${key}`, {
+                    checkResponseIsJson: false
+                });
+                if (response.status === 404) return null;
+                return await response.blob();
+            } catch (e) {
+                return null;
+            }
+        },
+        async removeItem(key: string): Promise<void> {}
+    };
 
     // Book metadata with stats
-    static readonly lnMetadata = localforage.createInstance({
-        name: 'Manatan',
-        storeName: 'ln_metadata',
-        description: 'Light Novel metadata',
-    });
+    static readonly lnMetadata = new ServerStorage<LNMetadata>('/api/novel/metadata', 'novel_metadata');
 
     // Pre-parsed book content
-    static readonly lnContent = localforage.createInstance({
-        name: 'Manatan',
-        storeName: 'ln_content',
-        description: 'Pre-parsed book chapters and images',
-    });
+    static readonly lnContent = {
+        async getItem(key: string): Promise<LNParsedBook | null> {
+            try {
+                const response = await requestManager.getClient().fetcher(`/api/novel/content/${key}`);
+                if (response.status === 404) return null;
+                const data = await response.json();
+
+                // Static serving means we don't need to rebuild blobs for images
+                return { ...data, imageBlobs: {} };
+            } catch (e) {
+                return null;
+            }
+        },
+        async setItem(key: string, content: LNParsedBook): Promise<void> {
+            const imageBlobs: Record<string, string> = {};
+            for (const [path, blob] of Object.entries(content.imageBlobs)) {
+                if (typeof blob === 'string') {
+                    imageBlobs[path] = blob;
+                    continue;
+                }
+                const reader = new FileReader();
+                const base64Promise = new Promise<string>((resolve) => {
+                    reader.onloadend = () => {
+                        const base64 = (reader.result as string).split(',')[1];
+                        resolve(base64);
+                    };
+                });
+                reader.readAsDataURL(blob);
+                imageBlobs[path] = await base64Promise;
+            }
+
+            await requestManager.getClient().fetcher(`/api/novel/content/${key}`, {
+                httpMethod: HttpMethod.POST,
+                data: { ...content, imageBlobs },
+            });
+        },
+        async removeItem(key: string): Promise<void> {}
+    };
 
     // Reading progress (the bookmark)
-    static readonly lnProgress = localforage.createInstance({
-        name: 'Manatan',
-        storeName: 'ln_progress',
-        description: 'Reading progress',
-    });
+    static readonly lnProgress = new ServerStorage<LNProgress>('/api/novel/progress', 'novel_progress');
 
     // LN Categories
-    static readonly lnCategories = localforage.createInstance({
-        name: 'Manatan',
-        storeName: 'ln_categories',
-        description: 'Light Novel categories',
-    });
+    static readonly lnCategories = new ServerStorage<LnCategory>('/api/novel/categories', 'novel_categories');
 
     // LN Category metadata (sort settings per category)
-    static readonly lnCategoryMetadata = localforage.createInstance({
-        name: 'Manatan',
-        storeName: 'ln_category_metadata',
-        description: 'Light Novel category metadata',
-    });
+    static readonly lnCategoryMetadata = new ServerStorage<LnCategoryMetadata>('/api/novel/categories/metadata', 'novel_category_metadata');
 
     // Custom imported fonts
     static readonly customFonts = localforage.createInstance({
@@ -333,15 +330,11 @@ export class AppStorage {
             lastModified: now,
             syncVersion: (existing?.syncVersion || 0) + 1,
             deviceId: getDeviceId(),
-        });
+        } as LNProgress);
     }
 
     static async getLnProgress(bookId: string): Promise<LNProgress | null> {
-        try {
-            return await this.lnProgress.getItem<LNProgress>(bookId);
-        } catch {
-            return null;
-        }
+        return await this.lnProgress.getItem(bookId);
     }
 
     static async hasProgress(bookId: string): Promise<boolean> {
@@ -354,11 +347,7 @@ export class AppStorage {
     // ========================================================================
 
     static async getLnMetadata(bookId: string): Promise<LNMetadata | null> {
-        try {
-            return await this.lnMetadata.getItem<LNMetadata>(bookId);
-        } catch {
-            return null;
-        }
+        return await this.lnMetadata.getItem(bookId);
     }
 
     static async saveLnMetadata(metadata: LNMetadata): Promise<void> {
@@ -376,17 +365,17 @@ export class AppStorage {
     }
 
     static async getAllLnMetadata(): Promise<LNMetadata[]> {
-        const keys = await this.lnMetadata.keys();
-        const allMetadata: LNMetadata[] = [];
-
-        for (const key of keys) {
-            const metadata = await this.getLnMetadata(key as string);
-            if (metadata) {
-                allMetadata.push(metadata);
-            }
+        try {
+            const response = await requestManager.getClient().fetcher('/api/novel/metadata');
+            const data = await response.json() as LNMetadata[];
+            // Instant library mirror update
+            localStorage.setItem('manatan_novel_metadata_list', JSON.stringify(data));
+            return data;
+        } catch (e) {
+            // Fallback to local mirror if server offline
+            const cached = localStorage.getItem('manatan_novel_metadata_list');
+            return cached ? JSON.parse(cached) : [];
         }
-
-        return allMetadata.sort((a, b) => b.addedAt - a.addedAt);
     }
 
     // ========================================================================
@@ -394,11 +383,7 @@ export class AppStorage {
     // ========================================================================
 
     static async getLnContent(bookId: string): Promise<LNParsedBook | null> {
-        try {
-            return await this.lnContent.getItem<LNParsedBook>(bookId);
-        } catch {
-            return null;
-        }
+        return await this.lnContent.getItem(bookId);
     }
 
     static async saveLnContent(bookId: string, content: LNParsedBook): Promise<void> {
@@ -410,12 +395,9 @@ export class AppStorage {
     // ========================================================================
 
     static async deleteLnData(bookId: string): Promise<void> {
-        await Promise.all([
-            this.files.removeItem(bookId),
-            this.lnMetadata.removeItem(bookId),
-            this.lnContent.removeItem(bookId),
-            this.lnProgress.removeItem(bookId),
-        ]);
+        await requestManager.getClient().fetcher(`/api/novel/metadata/${bookId}`, {
+            httpMethod: HttpMethod.DELETE
+        });
         console.log('[AppStorage] All data deleted for:', bookId);
     }
 
@@ -428,13 +410,13 @@ export class AppStorage {
     // ========================================================================
 
     static async getAllProgressForSync(): Promise<Array<{ bookId: string; progress: LNProgress }>> {
-        const keys = await this.lnProgress.keys();
+        const metadata = await this.getAllLnMetadata();
         const allProgress: Array<{ bookId: string; progress: LNProgress }> = [];
 
-        for (const bookId of keys) {
-            const progress = await this.getLnProgress(bookId as string);
+        for (const m of metadata) {
+            const progress = await this.getLnProgress(m.id);
             if (progress) {
-                allProgress.push({ bookId: bookId as string, progress });
+                allProgress.push({ bookId: m.id, progress });
             }
         }
 
@@ -452,13 +434,11 @@ export class AppStorage {
     ): Promise<{ result: 'local' | 'remote' | 'conflict'; merged?: LNProgress }> {
         const localProgress = await this.getLnProgress(bookId);
 
-        // No local progress, use remote
         if (!localProgress) {
             await this.lnProgress.setItem(bookId, remoteProgress);
             return { result: 'remote' };
         }
 
-        // No timestamps, use whichever has more progress
         if (!localProgress.lastModified || !remoteProgress.lastModified) {
             if (remoteProgress.totalProgress > localProgress.totalProgress) {
                 await this.lnProgress.setItem(bookId, remoteProgress);
@@ -467,7 +447,6 @@ export class AppStorage {
             return { result: 'local' };
         }
 
-        // Same device, use latest
         if (localProgress.deviceId === remoteProgress.deviceId) {
             if (remoteProgress.lastModified > localProgress.lastModified) {
                 await this.lnProgress.setItem(bookId, remoteProgress);
@@ -476,15 +455,12 @@ export class AppStorage {
             return { result: 'local' };
         }
 
-        // Different devices - conflict resolution
-        // Strategy: Use whichever is further ahead, or more recent if same progress
         if (remoteProgress.totalProgress > localProgress.totalProgress) {
             await this.lnProgress.setItem(bookId, remoteProgress);
             return { result: 'remote' };
         } else if (localProgress.totalProgress > remoteProgress.totalProgress) {
             return { result: 'local' };
         } else {
-            // Same progress, use most recent
             if (remoteProgress.lastModified > localProgress.lastModified) {
                 await this.lnProgress.setItem(bookId, remoteProgress);
                 return { result: 'remote' };
@@ -532,7 +508,7 @@ export class AppStorage {
         const metadata = await this.getLnMetadata(bookId);
         if (!metadata) return false;
 
-        return metadata.stats.blockMaps && metadata.stats.blockMaps.length > 0;
+        return !!(metadata.stats.blockMaps && metadata.stats.blockMaps.length > 0);
     }
 
     // ========================================================================
@@ -540,69 +516,79 @@ export class AppStorage {
     // ========================================================================
 
     static async migrateLnMetadata(): Promise<void> {
-        const keys = await this.lnMetadata.keys();
-        
+        const legacyMetadata = localforage.createInstance({
+            name: 'Manatan',
+            storeName: 'novel_metadata',
+        });
+
+        const keys = await legacyMetadata.keys();
+        if (keys.length === 0) return;
+
+        console.log(`[Migration] Found ${keys.length} books in legacy storage. Migrating...`);
+
+        const legacyFiles = localforage.createInstance({
+            name: 'Manatan',
+            storeName: 'novel_files',
+        });
+        const legacyContent = localforage.createInstance({
+            name: 'Manatan',
+            storeName: 'novel_content',
+        });
+        const legacyProgress = localforage.createInstance({
+            name: 'Manatan',
+            storeName: 'novel_progress',
+        });
+        const legacyCategories = localforage.createInstance({
+            name: 'Manatan',
+            storeName: 'novel_categories',
+        });
+        const legacyCatMeta = localforage.createInstance({
+            name: 'Manatan',
+            storeName: 'novel_category_metadata',
+        });
+
+        const catKeys = await legacyCategories.keys();
+        for (const key of catKeys) {
+            const cat = await legacyCategories.getItem<LnCategory>(key);
+            if (cat) await this.saveLnCategory(cat);
+        }
+
+        const catMetaKeys = await legacyCatMeta.keys();
+        for (const key of catMetaKeys) {
+            const meta = await legacyCatMeta.getItem<LnCategoryMetadata>(key);
+            if (meta) await this.setLnCategoryMetadata(key, meta);
+        }
+
         for (const key of keys) {
-            const metadata = await this.lnMetadata.getItem<any>(key as string);
-            if (!metadata) continue;
+            try {
+                const metadata = await legacyMetadata.getItem<LNMetadata>(key);
+                if (!metadata) continue;
 
-            let needsUpdate = false;
-            const migrated = { ...metadata };
+                const file = await legacyFiles.getItem<Blob>(key);
+                const content = await legacyContent.getItem<LNParsedBook>(key);
+                const progress = await legacyProgress.getItem<LNProgress>(key);
 
-            // Migrate language field
-            if (migrated.language === undefined) {
-                migrated.language = 'unknown';
-                needsUpdate = true;
-            }
+                if (file) await this.files.setItem(key, file);
+                if (content) await this.saveLnContent(key, content);
+                if (progress) await this.lnProgress.setItem(key, progress);
+                await this.saveLnMetadata(metadata);
 
-            // Migrate categoryIds field
-            if (!migrated.categoryIds) {
-                migrated.categoryIds = migrated.category_ids || [];
-                needsUpdate = true;
-            }
-
-            // Migrate snake_case to camelCase for stats
-            if (migrated.stats?.chapter_lengths !== undefined) {
-                migrated.stats = {
-                    chapterLengths: migrated.stats.chapter_lengths || migrated.stats.chapterLengths || [],
-                    totalLength: migrated.stats.total_length || migrated.stats.totalLength || 0,
-                    blockMaps: migrated.stats.block_maps || migrated.stats.blockMaps || [],
-                };
-                needsUpdate = true;
-            }
-
-            // Migrate old reader-format blockMaps (nested blocks array) to flat format
-            const blockMaps = migrated.stats?.blockMaps || [];
-            if (blockMaps.length > 0 && blockMaps[0]?.blocks !== undefined) {
-                console.log(`[Migration] Converting reader-format blockMaps for ${key}`);
-                migrated.stats.blockMaps = blockMaps.flatMap((chapter: any) => {
-                    if (!chapter.blocks || !Array.isArray(chapter.blocks)) return [];
-                    return chapter.blocks.map((block: any) => ({
-                        blockId: block.id || `ch${chapter.chapterIndex}-b${block.order || 0}`,
-                        startOffset: block.cleanCharStart || 0,
-                        endOffset: (block.cleanCharStart || 0) + (block.cleanCharCount || 0),
-                    }));
-                });
-                needsUpdate = true;
-            }
-
-            if (blockMaps.length > 1 && typeof blockMaps[0]?.startOffset === 'number') {
-                const firstBlock = blockMaps[0];
-                const secondBlock = blockMaps[1];
-                
-                // If startOffset looks like it's using order (0, 1, 2...) instead of character offsets
-                if (firstBlock.startOffset === 0 && secondBlock.startOffset === (blockMaps[0]?.endOffset || 0)) {
-                    // This looks correct - endOffset of first = startOffset of second
-                } else if (firstBlock.startOffset === 0 && secondBlock.startOffset < 100 && blockMaps[0]?.endOffset > 100) {
-                    // Suspicious: startOffset is small but endOffset is large
-                    console.warn(`[Migration] BlockMaps for ${key} may have incorrect offsets. Consider re-importing the book.`);
-                }
-            }
-
-            if (needsUpdate) {
-                await this.lnMetadata.setItem(key as string, migrated);
+                console.log(`[Migration] Successfully migrated: ${metadata.title}`);
+            } catch (e) {
+                console.error(`[Migration] Failed to migrate book ${key}:`, e);
             }
         }
+
+        await Promise.all([
+            legacyMetadata.clear(),
+            legacyFiles.clear(),
+            legacyContent.clear(),
+            legacyProgress.clear(),
+            legacyCategories.clear(),
+            legacyCatMeta.clear(),
+        ]);
+
+        console.log('[Migration] Migration complete. Legacy storage cleared.');
     }
 
     // ========================================================================
@@ -610,25 +596,16 @@ export class AppStorage {
     // ========================================================================
 
     static async getLnCategories(): Promise<LnCategory[]> {
-        const keys = await this.lnCategories.keys();
-        const categories: LnCategory[] = [];
-
-        for (const key of keys) {
-            const category = await this.lnCategories.getItem<LnCategory>(key as string);
-            if (category) {
-                categories.push(category);
-            }
+        try {
+            const response = await requestManager.getClient().fetcher('/api/novel/categories');
+            return await response.json();
+        } catch (e) {
+            return [];
         }
-
-        return categories.sort((a, b) => a.order - b.order);
     }
 
     static async getLnCategory(categoryId: string): Promise<LnCategory | null> {
-        try {
-            return await this.lnCategories.getItem<LnCategory>(categoryId);
-        } catch {
-            return null;
-        }
+        return await this.lnCategories.getItem(categoryId);
     }
 
     static async saveLnCategory(category: LnCategory): Promise<void> {
@@ -647,7 +624,10 @@ export class AppStorage {
             lastModified: Date.now(),
         };
 
-        await this.saveLnCategory(newCategory);
+        await requestManager.getClient().fetcher('/api/novel/categories', {
+            httpMethod: HttpMethod.POST,
+            data: newCategory,
+        });
         return newCategory;
     }
 
@@ -655,33 +635,21 @@ export class AppStorage {
         const existing = await this.getLnCategory(categoryId);
         if (!existing) return;
 
-        await this.lnCategories.setItem(categoryId, {
+        const updated = {
             ...existing,
             ...updates,
             lastModified: Date.now(),
-        });
+        };
+
+        await this.lnCategories.setItem(categoryId, updated);
     }
 
     static async deleteLnCategory(categoryId: string): Promise<void> {
         await this.lnCategories.removeItem(categoryId);
-        await this.lnCategoryMetadata.removeItem(categoryId);
-
-        const keys = await this.lnMetadata.keys();
-        for (const key of keys) {
-            const metadata = await this.lnMetadata.getItem<LNMetadata>(key as string);
-            if (metadata && metadata.categoryIds?.includes(categoryId)) {
-                metadata.categoryIds = metadata.categoryIds.filter(id => id !== categoryId);
-                await this.lnMetadata.setItem(key as string, metadata);
-            }
-        }
     }
 
     static async getLnCategoryMetadata(categoryId: string): Promise<LnCategoryMetadata | null> {
-        try {
-            return await this.lnCategoryMetadata.getItem<LnCategoryMetadata>(categoryId);
-        } catch {
-            return null;
-        }
+        return await this.lnCategoryMetadata.getItem(categoryId);
     }
 
     static async setLnCategoryMetadata(categoryId: string, metadata: LnCategoryMetadata): Promise<void> {
@@ -689,16 +657,11 @@ export class AppStorage {
     }
 
     static async getAllLnCategoryMetadata(): Promise<Record<string, LnCategoryMetadata>> {
-        const keys = await this.lnCategoryMetadata.keys();
-        const metadata: Record<string, LnCategoryMetadata> = {};
-
-        for (const key of keys) {
-            const catMeta = await this.lnCategoryMetadata.getItem<LnCategoryMetadata>(key as string);
-            if (catMeta) {
-                metadata[key as string] = catMeta;
-            }
+        try {
+            const response = await requestManager.getClient().fetcher('/api/novel/categories/metadata');
+            return await response.json();
+        } catch (e) {
+            return {};
         }
-
-        return metadata;
     }
 }

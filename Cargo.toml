@@ -4,6 +4,7 @@ members = [
     "bin/manatan",
     "bin/manatan_android",
     "crates/audio-server",
+    "crates/novel-server",
     "crates/ocr-server",
     "crates/sync-server",
     "crates/yomitan-server",
@@ -67,7 +68,7 @@ tao = "0.34"
 tar = "0.4"
 tokio = { version = "1.0", features = ["full"] }
 tokio-tungstenite = { version = "0.28", features = ["rustls-tls-native-roots"] }
-tower-http = { version = "0.6.7", features = ["fs", "cors", "trace"] }
+tower-http = { version = "0.6.7", features = ["fs", "cors", "trace", "set-header"] }
 tracing = "0.1"
 tracing-log = "0.2"
 tracing-subscriber = { version = "0.3.20", features = ["env-filter"] }
@@ -78,6 +79,7 @@ manatan-audio-server = { path = "crates/audio-server" }
 manatan-ocr-server = { path = "crates/ocr-server" }
 manatan-server-public = { git = "https://github.com/KolbyML/Manatan-Server-Public", rev = "c0f1c9696bf8bdacfa3663a5b1d863d0a77fc428" }
 manatan-sync-server = { path = "crates/sync-server" }
+manatan-novel-server = { path = "crates/novel-server" }
 manatan-yomitan-server = { path = "crates/yomitan-server" }
 
 [profile.test]

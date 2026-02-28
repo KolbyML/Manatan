@@ -110,8 +110,8 @@ const { GlobalReaderSettings } = loadable(
 const { More } = loadable(() => import('@/features/settings/screens/More.tsx'), lazyLoadFallback);
 const { Reader } = loadable(() => import('@/features/reader/screens/Reader.tsx'), lazyLoadFallback);
 const { HistorySettings } = loadable(() => import('@/features/history/screens/HistorySettings.tsx'), lazyLoadFallback);
-const { LNLibrary } = loadable(() => import('@/features/ln/screens/LNLibrary.tsx'), lazyLoadFallback);
-const { LNReaderScreen } = loadable(() => import('@/features/ln/reader/screens/LNReaderScreen.tsx'), lazyLoadFallback);
+const { LNLibrary } = loadable(() => import('@/features/novel/screens/LNLibrary.tsx'), lazyLoadFallback);
+const { LNReaderScreen } = loadable(() => import('@/features/novel/reader/screens/LNReaderScreen.tsx'), lazyLoadFallback);
 const { Dictionary } = loadable(() => import('@/features/dictionary/Dictionary.tsx'), lazyLoadFallback);
 const { SyncSettings } = loadable(() => import('@/features/sync/screens/SyncSettings.tsx'), lazyLoadFallback);
 
@@ -139,6 +139,11 @@ const InitialBackgroundRequests = () => {
         // Fetch extension list on startup to show up-to-date number of available extension updates in the navigation bar
         // without having to open the extensions page.
         fetchExtensionList().catch(defaultPromiseErrorHandler('App::InitialBackgroundRequests: extension list'));
+
+        // Trigger LN migration from IndexedDB to server
+        import('@/lib/storage/AppStorage').then(({ AppStorage }) => {
+            AppStorage.migrateLnMetadata().catch(err => console.error('[App] LN migration failed:', err));
+        });
     }, []);
 
     return null;
@@ -347,7 +352,7 @@ const MainApp = () => {
                             <Route path={AppRoutes.migrate.childRoutes.search.match} element={<SearchAll />} />
                         </Route>
                         {/* LN Library Route */}
-                        <Route path={AppRoutes.ln.match} element={<LNLibrary />} />
+                        <Route path={AppRoutes.novel.match} element={<LNLibrary />} />
                         <Route path={AppRoutes.tracker.match} element={<TrackerOAuthLogin />} />
                     </Route>
                 </Routes>
@@ -404,7 +409,7 @@ export const App: React.FC = () => (
                     <Routes>
                         {/* Fullscreen Reader Routes */}
                         <Route
-                            path={`${AppRoutes.ln.match}/${AppRoutes.ln.childRoutes.reader.match}/*`}
+                            path={`${AppRoutes.novel.match}/${AppRoutes.novel.childRoutes.reader.match}/*`}
                             element={<LNReaderApp />}
                         />
                         <Route path={AppRoutes.reader.match} element={<ReaderLayout />} />

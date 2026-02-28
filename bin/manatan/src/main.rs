@@ -179,6 +179,10 @@ struct Cli {
     /// Local anime directory (absolute or relative to data dir)
     #[arg(long, env = "MANATAN_LOCAL_ANIME_PATH")]
     local_anime_path: Option<PathBuf>,
+
+    /// Local novel directory (absolute or relative to data dir)
+    #[arg(long, env = "MANATAN_LOCAL_LN_PATH")]
+    local_novel_path: Option<PathBuf>,
 }
 
 fn parse_boolish(value: &str) -> Result<bool, String> {
@@ -1013,6 +1017,15 @@ async fn run_server(
             local_anime_dir.display()
         );
     }
+    let local_novel_dir = data_dir.join("local-novel");
+    if !local_novel_dir.exists()
+        && let Err(err) = fs::create_dir_all(&local_novel_dir)
+    {
+        warn!(
+            "Failed to create local novel dir {}: {err}",
+            local_novel_dir.display()
+        );
+    }
     let bin_dir = data_dir.join("bin");
     if !bin_dir.exists() {
         fs::create_dir_all(&bin_dir).map_err(|err| anyhow!("Failed to create bin dir {err:?}"))?;
@@ -1140,6 +1153,8 @@ async fn run_server(
         resolve_path_option(cli.local_manga_path.as_ref(), data_dir, "local-manga");
     let local_anime_path =
         resolve_path_option(cli.local_anime_path.as_ref(), data_dir, "local-anime");
+    let local_novel_path_str =
+        resolve_path_option(cli.local_novel_path.as_ref(), data_dir, "local-novel");
     let manatan_config = ManatanServerConfig {
         host: host.to_string(),
         port,
@@ -1170,6 +1185,7 @@ async fn run_server(
     let yomitan_router = manatan_yomitan_server::create_router(data_dir.clone());
     let audio_router = manatan_audio_server::create_router(data_dir.clone());
     let sync_router = manatan_sync_server::create_router(data_dir.clone());
+    let novel_router = manatan_novel_server::create_router(data_dir.clone(), PathBuf::from(local_novel_path_str));
     let system_router = Router::new().route("/version", any(current_version_handler));
 
     let cors = CorsLayer::new()
@@ -1196,6 +1212,7 @@ async fn run_server(
         .nest("/api/ocr", ocr_router)
         .nest("/api/audio", audio_router)
         .nest("/api/sync", sync_router)
+        .nest("/api/novel", novel_router)
         .nest("/api/system", system_router)
         .nest("/api/yomitan", yomitan_router)
         .merge(manatan_router)
