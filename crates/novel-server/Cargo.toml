@@ -1,5 +1,5 @@
 [package]
-name = "manatan-ln-server"
+name = "manatan-novel-server"
 version.workspace = true
 edition.workspace = true
 authors.workspace = true

@@ -3577,7 +3577,7 @@ dependencies = [
  "image",
  "libc",
  "manatan-audio-server",
- "manatan-ln-server",
+ "manatan-novel-server",
  "manatan-ocr-server",
  "manatan-server-public",
  "manatan-sync-server",
@@ -3614,7 +3614,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "manatan-ln-server"
+name = "manatan-novel-server"
 version = "0.1.0"
 dependencies = [
  "anyhow",
@@ -3753,7 +3753,7 @@ dependencies = [
  "libc",
  "libloading",
  "manatan-audio-server",
- "manatan-ln-server",
+ "manatan-novel-server",
  "manatan-ocr-server",
  "manatan-server-public",
  "manatan-sync-server",

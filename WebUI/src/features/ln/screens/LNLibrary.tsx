@@ -125,7 +125,7 @@ const LNLibraryCard = ({ item, onOpen, onDelete, onEdit, isSelectionMode, isSele
     };
 
     return (
-        <PopupState variant="popover" popupId={`ln-card-action-menu-${item.id}`}>
+        <PopupState variant="popover" popupId={`novel-card-action-menu-${item.id}`}>
             {(popupState) => (
                 <>
                     <Box
@@ -134,7 +134,7 @@ const LNLibraryCard = ({ item, onOpen, onDelete, onEdit, isSelectionMode, isSele
                             flexDirection: 'column',
                             m: 0.25,
                             '@media (hover: hover) and (pointer: fine)': {
-                                '&:hover .ln-option-button': {
+                                '&:hover .novel-option-button': {
                                     visibility: 'visible',
                                     pointerEvents: 'all',
                                 },
@@ -270,7 +270,7 @@ const LNLibraryCard = ({ item, onOpen, onDelete, onEdit, isSelectionMode, isSele
                                                             },
                                                         })}
                                                         aria-label="Options"
-                                                        className="ln-option-button"
+                                                        className="novel-option-button"
                                                         size="small"
                                                         sx={{
                                                             minWidth: 'unset',
@@ -600,7 +600,7 @@ export const LNLibrary: React.FC = () => {
                 setLibrary(prev => prev.filter(item => item.id !== existingBook.id));
             }
 
-            const bookId = `ln_${Date.now()}_${fileIndex}`;
+            const bookId = `novel_${Date.now()}_${fileIndex}`;
 
             const placeholder: LibraryItem = {
                 id: bookId,
@@ -812,7 +812,7 @@ export const LNLibrary: React.FC = () => {
     }, []);
 
     const handleOpen = useCallback((id: string) => {
-        navigate(AppRoutes.ln.childRoutes.reader.path(id));
+        navigate(AppRoutes.novel.childRoutes.reader.path(id));
     }, [navigate]);
 
     // Drag and Drop handlers

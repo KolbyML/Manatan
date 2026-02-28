@@ -10,7 +10,7 @@ import { jsonSaveParse } from '@/lib/HelperFunctions.ts';
 import localforage from 'localforage';
 import { requestManager } from '@/lib/requests/RequestManager.ts';
 import { HttpMethod } from '@/lib/requests/client/RestClient.ts';
-import { LNMetadata, LNProgress, LNParsedBook, LnCategory, LnCategoryMetadata } from '@/features/ln/LN.types';
+import { LNMetadata, LNProgress, LNParsedBook, LnCategory, LnCategoryMetadata } from '@/features/novel/LN.types';
 
 type StorageBackend = typeof window.localStorage | null;
 
@@ -106,7 +106,7 @@ export class Storage {
 // Types
 // ============================================================================
 
-export * from '@/features/ln/LN.types';
+export * from '@/features/novel/LN.types';
 
 // ============================================================================
 // Device ID Helper
@@ -142,8 +142,8 @@ class ServerStorage<T> {
         }
 
         // Check localStorage mirror for instant UI
-        if (this.storeName === 'ln_metadata_list') {
-            const cached = localStorage.getItem('manatan_ln_metadata_list');
+        if (this.storeName === 'novel_metadata_list') {
+            const cached = localStorage.getItem('manatan_novel_metadata_list');
             if (cached) {
                 return JSON.parse(cached) as unknown as R;
             }
@@ -193,7 +193,7 @@ class ServerStorage<T> {
     }
 
     async keys(): Promise<string[]> {
-        if (this.storeName === 'ln_metadata') {
+        if (this.storeName === 'novel_metadata') {
             const response = await requestManager.getClient().fetcher(this.endpoint);
             const data = await response.json() as LNMetadata[];
             return data.map(m => m.id);
@@ -202,10 +202,10 @@ class ServerStorage<T> {
     }
 
     private wrapPayload(value: any) {
-        if (this.storeName === 'ln_metadata') return { metadata: value };
-        if (this.storeName === 'ln_progress') return { progress: value };
-        if (this.storeName === 'ln_categories') return value;
-        if (this.storeName === 'ln_category_metadata') return value;
+        if (this.storeName === 'novel_metadata') return { metadata: value };
+        if (this.storeName === 'novel_progress') return { progress: value };
+        if (this.storeName === 'novel_categories') return value;
+        if (this.storeName === 'novel_category_metadata') return value;
         return value;
     }
 }
@@ -223,14 +223,14 @@ export class AppStorage {
         async setItem(key: string, file: File | Blob): Promise<void> {
             const formData = new FormData();
             formData.append('file', file);
-            await requestManager.getClient().fetcher(`/api/ln/upload/${key}`, {
+            await requestManager.getClient().fetcher(`/api/novel/upload/${key}`, {
                 httpMethod: HttpMethod.POST,
                 data: formData,
             });
         },
         async getItem(key: string): Promise<Blob | null> {
             try {
-                const response = await requestManager.getClient().fetcher(`/api/ln/file/${key}`, {
+                const response = await requestManager.getClient().fetcher(`/api/novel/file/${key}`, {
                     checkResponseIsJson: false
                 });
                 if (response.status === 404) return null;
@@ -243,13 +243,13 @@ export class AppStorage {
     };
 
     // Book metadata with stats
-    static readonly lnMetadata = new ServerStorage<LNMetadata>('/api/ln/metadata', 'ln_metadata');
+    static readonly lnMetadata = new ServerStorage<LNMetadata>('/api/novel/metadata', 'novel_metadata');
 
     // Pre-parsed book content
     static readonly lnContent = {
         async getItem(key: string): Promise<LNParsedBook | null> {
             try {
-                const response = await requestManager.getClient().fetcher(`/api/ln/content/${key}`);
+                const response = await requestManager.getClient().fetcher(`/api/novel/content/${key}`);
                 if (response.status === 404) return null;
                 const data = await response.json();
 
@@ -277,7 +277,7 @@ export class AppStorage {
                 imageBlobs[path] = await base64Promise;
             }
 
-            await requestManager.getClient().fetcher(`/api/ln/content/${key}`, {
+            await requestManager.getClient().fetcher(`/api/novel/content/${key}`, {
                 httpMethod: HttpMethod.POST,
                 data: { ...content, imageBlobs },
             });
@@ -286,13 +286,13 @@ export class AppStorage {
     };
 
     // Reading progress (the bookmark)
-    static readonly lnProgress = new ServerStorage<LNProgress>('/api/ln/progress', 'ln_progress');
+    static readonly lnProgress = new ServerStorage<LNProgress>('/api/novel/progress', 'novel_progress');
 
     // LN Categories
-    static readonly lnCategories = new ServerStorage<LnCategory>('/api/ln/categories', 'ln_categories');
+    static readonly lnCategories = new ServerStorage<LnCategory>('/api/novel/categories', 'novel_categories');
 
     // LN Category metadata (sort settings per category)
-    static readonly lnCategoryMetadata = new ServerStorage<LnCategoryMetadata>('/api/ln/categories/metadata', 'ln_category_metadata');
+    static readonly lnCategoryMetadata = new ServerStorage<LnCategoryMetadata>('/api/novel/categories/metadata', 'novel_category_metadata');
 
     // Custom imported fonts
     static readonly customFonts = localforage.createInstance({
@@ -366,14 +366,14 @@ export class AppStorage {
 
     static async getAllLnMetadata(): Promise<LNMetadata[]> {
         try {
-            const response = await requestManager.getClient().fetcher('/api/ln/metadata');
+            const response = await requestManager.getClient().fetcher('/api/novel/metadata');
             const data = await response.json() as LNMetadata[];
             // Instant library mirror update
-            localStorage.setItem('manatan_ln_metadata_list', JSON.stringify(data));
+            localStorage.setItem('manatan_novel_metadata_list', JSON.stringify(data));
             return data;
         } catch (e) {
             // Fallback to local mirror if server offline
-            const cached = localStorage.getItem('manatan_ln_metadata_list');
+            const cached = localStorage.getItem('manatan_novel_metadata_list');
             return cached ? JSON.parse(cached) : [];
         }
     }
@@ -395,7 +395,7 @@ export class AppStorage {
     // ========================================================================
 
     static async deleteLnData(bookId: string): Promise<void> {
-        await requestManager.getClient().fetcher(`/api/ln/metadata/${bookId}`, {
+        await requestManager.getClient().fetcher(`/api/novel/metadata/${bookId}`, {
             httpMethod: HttpMethod.DELETE
         });
         console.log('[AppStorage] All data deleted for:', bookId);
@@ -518,7 +518,7 @@ export class AppStorage {
     static async migrateLnMetadata(): Promise<void> {
         const legacyMetadata = localforage.createInstance({
             name: 'Manatan',
-            storeName: 'ln_metadata',
+            storeName: 'novel_metadata',
         });
 
         const keys = await legacyMetadata.keys();
@@ -528,23 +528,23 @@ export class AppStorage {
 
         const legacyFiles = localforage.createInstance({
             name: 'Manatan',
-            storeName: 'ln_files',
+            storeName: 'novel_files',
         });
         const legacyContent = localforage.createInstance({
             name: 'Manatan',
-            storeName: 'ln_content',
+            storeName: 'novel_content',
         });
         const legacyProgress = localforage.createInstance({
             name: 'Manatan',
-            storeName: 'ln_progress',
+            storeName: 'novel_progress',
         });
         const legacyCategories = localforage.createInstance({
             name: 'Manatan',
-            storeName: 'ln_categories',
+            storeName: 'novel_categories',
         });
         const legacyCatMeta = localforage.createInstance({
             name: 'Manatan',
-            storeName: 'ln_category_metadata',
+            storeName: 'novel_category_metadata',
         });
 
         const catKeys = await legacyCategories.keys();
@@ -597,7 +597,7 @@ export class AppStorage {
 
     static async getLnCategories(): Promise<LnCategory[]> {
         try {
-            const response = await requestManager.getClient().fetcher('/api/ln/categories');
+            const response = await requestManager.getClient().fetcher('/api/novel/categories');
             return await response.json();
         } catch (e) {
             return [];
@@ -624,7 +624,7 @@ export class AppStorage {
             lastModified: Date.now(),
         };
 
-        await requestManager.getClient().fetcher('/api/ln/categories', {
+        await requestManager.getClient().fetcher('/api/novel/categories', {
             httpMethod: HttpMethod.POST,
             data: newCategory,
         });
@@ -658,7 +658,7 @@ export class AppStorage {
 
     static async getAllLnCategoryMetadata(): Promise<Record<string, LnCategoryMetadata>> {
         try {
-            const response = await requestManager.getClient().fetcher('/api/ln/categories/metadata');
+            const response = await requestManager.getClient().fetcher('/api/novel/categories/metadata');
             return await response.json();
         } catch (e) {
             return {};

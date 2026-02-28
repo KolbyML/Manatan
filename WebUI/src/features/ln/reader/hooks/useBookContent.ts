@@ -53,7 +53,7 @@ export function useBookContent(bookId: string | undefined): UseBookContentReturn
 
                 // Check for static content on server
                 const baseUrl = requestManager.getBaseUrl();
-                const staticBase = `${baseUrl}/api/ln/static/${bookId}`;
+                const staticBase = `${baseUrl}/api/novel/static/${bookId}`;
 
                 // Fetch chapter list (just to be sure we have the filenames/count)
                 const parsedBook = await AppStorage.getLnContent(bookId);

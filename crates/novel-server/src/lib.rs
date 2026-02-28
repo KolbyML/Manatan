@@ -7,7 +7,7 @@ pub mod routes;
 pub mod state;
 pub mod types;
 
-pub use state::LnState;
+pub use state::NovelState;
 use tower::ServiceBuilder;
 use std::fs;
 use std::collections::HashMap;
@@ -18,13 +18,13 @@ use walkdir::WalkDir;
 use tracing::{info, warn};
 use crate::types::*;
 
-pub fn create_router(data_dir: PathBuf, local_ln_path: PathBuf) -> Router {
-    let state = LnState::new(data_dir, local_ln_path);
+pub fn create_router(data_dir: PathBuf, local_novel_path: PathBuf) -> Router {
+    let state = NovelState::new(data_dir, local_novel_path);
 
     let state_clone = state.clone();
     tokio::spawn(async move {
-        if let Err(e) = scan_local_ln(&state_clone) {
-            warn!("Failed to scan local-ln: {:?}", e);
+        if let Err(e) = scan_local_novel(&state_clone) {
+            warn!("Failed to scan local-novel: {:?}", e);
         }
     });
 
@@ -33,14 +33,14 @@ pub fn create_router(data_dir: PathBuf, local_ln_path: PathBuf) -> Router {
         .allow_methods(Any)
         .allow_headers(Any);
 
-    let local_ln_path_clone = state.get_local_ln_path();
+    let local_novel_path_clone = state.get_local_novel_path();
     let cache_layer = SetResponseHeaderLayer::if_not_present(
         CACHE_CONTROL,
         HeaderValue::from_static("public, max-age=31536000, immutable"),
     );
     let static_service = ServiceBuilder::new()
         .layer(cache_layer)
-        .service(ServeDir::new(local_ln_path_clone));
+        .service(ServeDir::new(local_novel_path_clone));
 
     routes::router()
         .nest_service("/static", static_service)
@@ -49,14 +49,14 @@ pub fn create_router(data_dir: PathBuf, local_ln_path: PathBuf) -> Router {
         .with_state(state)
 }
 
-fn scan_local_ln(state: &LnState) -> anyhow::Result<()> {
-    let local_path = state.get_local_ln_path();
+fn scan_local_novel(state: &NovelState) -> anyhow::Result<()> {
+    let local_path = state.get_local_novel_path();
 
     if !local_path.exists() {
         return Ok(());
     }
 
-    info!("Scanning local-ln for novels: {}", local_path.display());
+    info!("Scanning local-novel for novels: {}", local_path.display());
 
     for entry in WalkDir::new(&local_path)
         .max_depth(2)

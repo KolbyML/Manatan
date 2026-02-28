@@ -45,7 +45,7 @@ zip.workspace = true
 
 # Internal Crates
 manatan-audio-server.workspace = true
-manatan-ln-server.workspace = true
+manatan-novel-server.workspace = true
 manatan-ocr-server.workspace = true
 manatan-server-public.workspace = true
 manatan-sync-server.workspace = true

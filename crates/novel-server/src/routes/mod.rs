@@ -5,12 +5,12 @@ use axum::{
     extract::{State, Path, Multipart},
     Json,
 };
-use crate::state::LnState;
+use crate::state::NovelState;
 use crate::types::*;
 use std::fs;
-use crate::error::LnError;
+use crate::error::NovelError;
 
-pub fn router() -> Router<LnState> {
+pub fn router() -> Router<NovelState> {
     Router::new()
         .route("/metadata", get(get_all_metadata))
         .route("/metadata/{id}", get(get_metadata))
@@ -31,7 +31,7 @@ pub fn router() -> Router<LnState> {
         .route("/file/{id}", get(get_epub))
 }
 
-async fn get_all_metadata(State(state): State<LnState>) -> Result<Json<Vec<LNMetadata>>, LnError> {
+async fn get_all_metadata(State(state): State<NovelState>) -> Result<Json<Vec<LNMetadata>>, NovelError> {
     let mut all_metadata = Vec::new();
     for item in state.db.scan_prefix("metadata:") {
         let (_, v) = item?;
@@ -42,14 +42,14 @@ async fn get_all_metadata(State(state): State<LnState>) -> Result<Json<Vec<LNMet
     Ok(Json(all_metadata))
 }
 
-async fn get_metadata(State(state): State<LnState>, Path(id): Path<String>) -> Result<Json<LNMetadata>, LnError> {
+async fn get_metadata(State(state): State<NovelState>, Path(id): Path<String>) -> Result<Json<LNMetadata>, NovelError> {
     let key = format!("metadata:{}", id);
-    let v = state.db.get(key)?.ok_or(LnError::NotFound)?;
+    let v = state.db.get(key)?.ok_or(NovelError::NotFound)?;
     let metadata: LNMetadata = serde_json::from_slice(&v)?;
     Ok(Json(metadata))
 }
 
-async fn update_metadata(State(state): State<LnState>, Path(id): Path<String>, Json(req): Json<UpdateMetadataRequest>) -> Result<(), LnError> {
+async fn update_metadata(State(state): State<NovelState>, Path(id): Path<String>, Json(req): Json<UpdateMetadataRequest>) -> Result<(), NovelError> {
     let key = format!("metadata:{}", id);
     let bytes = serde_json::to_vec(&req.metadata)?;
     state.db.insert(key, bytes)?;
@@ -73,7 +73,7 @@ async fn update_metadata(State(state): State<LnState>, Path(id): Path<String>, J
     Ok(())
 }
 
-async fn delete_book(State(state): State<LnState>, Path(id): Path<String>) -> Result<(), LnError> {
+async fn delete_book(State(state): State<NovelState>, Path(id): Path<String>) -> Result<(), NovelError> {
     state.db.remove(format!("metadata:{}", id))?;
     state.db.remove(format!("progress:{}", id))?;
     state.db.remove(format!("content:{}", id))?;
@@ -87,9 +87,9 @@ async fn delete_book(State(state): State<LnState>, Path(id): Path<String>) -> Re
     Ok(())
 }
 
-async fn get_content(State(state): State<LnState>, Path(id): Path<String>) -> Result<Json<LNParsedBook>, LnError> {
+async fn get_content(State(state): State<NovelState>, Path(id): Path<String>) -> Result<Json<LNParsedBook>, NovelError> {
     let key = format!("content:{}", id);
-    let v = state.db.get(key)?.ok_or(LnError::NotFound)?;
+    let v = state.db.get(key)?.ok_or(NovelError::NotFound)?;
     let mut content: LNParsedBook = serde_json::from_slice(&v)?;
 
     // Optimization: Don't send large image blobs over the wire, use static serving instead
@@ -98,7 +98,7 @@ async fn get_content(State(state): State<LnState>, Path(id): Path<String>) -> Re
     Ok(Json(content))
 }
 
-async fn save_content(State(state): State<LnState>, Path(id): Path<String>, Json(content): Json<LNParsedBook>) -> Result<(), LnError> {
+async fn save_content(State(state): State<NovelState>, Path(id): Path<String>, Json(content): Json<LNParsedBook>) -> Result<(), NovelError> {
     let key = format!("content:{}", id);
 
     // Save to DB for sync compatibility
@@ -133,7 +133,7 @@ async fn save_content(State(state): State<LnState>, Path(id): Path<String>, Json
     fs::create_dir_all(&img_dir)?;
     for (path, base64) in content.image_blobs {
         let data = base64::Engine::decode(&base64::engine::general_purpose::STANDARD, &base64)
-            .map_err(|e| LnError::BadRequest(format!("Invalid base64 image: {}", e)))?;
+            .map_err(|e| NovelError::BadRequest(format!("Invalid base64 image: {}", e)))?;
 
         let normalized_path = if path.starts_with('/') { &path[1..] } else { &path };
         let img_path = img_dir.join(normalized_path);
@@ -155,7 +155,7 @@ async fn save_content(State(state): State<LnState>, Path(id): Path<String>, Json
     Ok(())
 }
 
-async fn get_progress(State(state): State<LnState>, Path(id): Path<String>) -> Result<Json<Option<LNProgress>>, LnError> {
+async fn get_progress(State(state): State<NovelState>, Path(id): Path<String>) -> Result<Json<Option<LNProgress>>, NovelError> {
     let key = format!("progress:{}", id);
     let v = state.db.get(key)?;
     if let Some(bytes) = v {
@@ -166,7 +166,7 @@ async fn get_progress(State(state): State<LnState>, Path(id): Path<String>) -> R
     }
 }
 
-async fn update_progress(State(state): State<LnState>, Path(id): Path<String>, Json(req): Json<UpdateProgressRequest>) -> Result<(), LnError> {
+async fn update_progress(State(state): State<NovelState>, Path(id): Path<String>, Json(req): Json<UpdateProgressRequest>) -> Result<(), NovelError> {
     let key = format!("progress:{}", id);
     let bytes = serde_json::to_vec(&req.progress)?;
     state.db.insert(key, bytes)?;
@@ -190,7 +190,7 @@ async fn update_progress(State(state): State<LnState>, Path(id): Path<String>, J
     Ok(())
 }
 
-async fn get_categories(State(state): State<LnState>) -> Result<Json<Vec<LnCategory>>, LnError> {
+async fn get_categories(State(state): State<NovelState>) -> Result<Json<Vec<LnCategory>>, NovelError> {
     let mut categories = Vec::new();
     for item in state.db.scan_prefix("category:") {
         let (_, v) = item?;
@@ -201,7 +201,7 @@ async fn get_categories(State(state): State<LnState>) -> Result<Json<Vec<LnCateg
     Ok(Json(categories))
 }
 
-async fn save_global_categories(state: &LnState) -> Result<(), LnError> {
+async fn save_global_categories(state: &NovelState) -> Result<(), NovelError> {
     let mut categories = Vec::new();
     for item in state.db.scan_prefix("category:") {
         let (_, v) = item?;
@@ -218,7 +218,7 @@ async fn save_global_categories(state: &LnState) -> Result<(), LnError> {
         meta_map.insert(id, meta);
     }
 
-    let local_path = state.get_local_ln_path();
+    let local_path = state.get_local_novel_path();
     fs::create_dir_all(&local_path)?;
     let sidecar_path = local_path.join("categories.json");
 
@@ -231,7 +231,7 @@ async fn save_global_categories(state: &LnState) -> Result<(), LnError> {
     Ok(())
 }
 
-async fn create_category(State(state): State<LnState>, Json(category): Json<LnCategory>) -> Result<Json<LnCategory>, LnError> {
+async fn create_category(State(state): State<NovelState>, Json(category): Json<LnCategory>) -> Result<Json<LnCategory>, NovelError> {
     let key = format!("category:{}", category.id);
     let bytes = serde_json::to_vec(&category)?;
     state.db.insert(key, bytes)?;
@@ -240,7 +240,7 @@ async fn create_category(State(state): State<LnState>, Json(category): Json<LnCa
     Ok(Json(category))
 }
 
-async fn update_category(State(state): State<LnState>, Path(id): Path<String>, Json(category): Json<LnCategory>) -> Result<(), LnError> {
+async fn update_category(State(state): State<NovelState>, Path(id): Path<String>, Json(category): Json<LnCategory>) -> Result<(), NovelError> {
     let key = format!("category:{}", id);
     let bytes = serde_json::to_vec(&category)?;
     state.db.insert(key, bytes)?;
@@ -249,7 +249,7 @@ async fn update_category(State(state): State<LnState>, Path(id): Path<String>, J
     Ok(())
 }
 
-async fn delete_category(State(state): State<LnState>, Path(id): Path<String>) -> Result<(), LnError> {
+async fn delete_category(State(state): State<NovelState>, Path(id): Path<String>) -> Result<(), NovelError> {
     state.db.remove(format!("category:{}", id))?;
     state.db.remove(format!("category_metadata:{}", id))?;
 
@@ -268,7 +268,7 @@ async fn delete_category(State(state): State<LnState>, Path(id): Path<String>) -
     Ok(())
 }
 
-async fn get_all_category_metadata(State(state): State<LnState>) -> Result<Json<HashMap<String, LnCategoryMetadata>>, LnError> {
+async fn get_all_category_metadata(State(state): State<NovelState>) -> Result<Json<HashMap<String, LnCategoryMetadata>>, NovelError> {
     let mut map = HashMap::new();
     for item in state.db.scan_prefix("category_metadata:") {
         let (k, v) = item?;
@@ -280,7 +280,7 @@ async fn get_all_category_metadata(State(state): State<LnState>) -> Result<Json<
     Ok(Json(map))
 }
 
-async fn get_category_metadata(State(state): State<LnState>, Path(id): Path<String>) -> Result<Json<Option<LnCategoryMetadata>>, LnError> {
+async fn get_category_metadata(State(state): State<NovelState>, Path(id): Path<String>) -> Result<Json<Option<LnCategoryMetadata>>, NovelError> {
     let key = format!("category_metadata:{}", id);
     let v = state.db.get(key)?;
     if let Some(bytes) = v {
@@ -291,7 +291,7 @@ async fn get_category_metadata(State(state): State<LnState>, Path(id): Path<Stri
     }
 }
 
-async fn update_category_metadata(State(state): State<LnState>, Path(id): Path<String>, Json(meta): Json<LnCategoryMetadata>) -> Result<(), LnError> {
+async fn update_category_metadata(State(state): State<NovelState>, Path(id): Path<String>, Json(meta): Json<LnCategoryMetadata>) -> Result<(), NovelError> {
     let key = format!("category_metadata:{}", id);
     let bytes = serde_json::to_vec(&meta)?;
     state.db.insert(key, bytes)?;
@@ -300,7 +300,7 @@ async fn update_category_metadata(State(state): State<LnState>, Path(id): Path<S
     Ok(())
 }
 
-async fn upload_epub(State(state): State<LnState>, Path(id): Path<String>, mut multipart: Multipart) -> Result<(), LnError> {
+async fn upload_epub(State(state): State<NovelState>, Path(id): Path<String>, mut multipart: Multipart) -> Result<(), NovelError> {
     while let Some(field) = multipart.next_field().await? {
         if let Some(name) = field.name() {
             if name == "file" {
@@ -313,13 +313,13 @@ async fn upload_epub(State(state): State<LnState>, Path(id): Path<String>, mut m
             }
         }
     }
-    Err(LnError::BadRequest("No file field found".into()))
+    Err(NovelError::BadRequest("No file field found".into()))
 }
 
-async fn get_epub(State(state): State<LnState>, Path(id): Path<String>) -> Result<Vec<u8>, LnError> {
+async fn get_epub(State(state): State<NovelState>, Path(id): Path<String>) -> Result<Vec<u8>, NovelError> {
     let path = state.get_novel_dir(&id).join(format!("{}.epub", id));
     if !path.exists() {
-        return Err(LnError::NotFound);
+        return Err(NovelError::NotFound);
     }
     Ok(fs::read(path)?)
 }

@@ -7,7 +7,7 @@ use serde_json::json;
 use thiserror::Error;
 
 #[derive(Error, Debug)]
-pub enum LnError {
+pub enum NovelError {
     #[error("Not found")]
     NotFound,
     #[error("Database error: {0}")]
@@ -22,15 +22,15 @@ pub enum LnError {
     BadRequest(String),
 }
 
-impl IntoResponse for LnError {
+impl IntoResponse for NovelError {
     fn into_response(self) -> Response {
         let (status, error_message) = match self {
-            LnError::NotFound => (StatusCode::NOT_FOUND, "Not Found"),
-            LnError::Sled(_) => (StatusCode::INTERNAL_SERVER_ERROR, "Database Error"),
-            LnError::Serde(_) => (StatusCode::INTERNAL_SERVER_ERROR, "Serialization Error"),
-            LnError::Io(_) => (StatusCode::INTERNAL_SERVER_ERROR, "IO Error"),
-            LnError::Multipart(_) => (StatusCode::BAD_REQUEST, "Multipart Error"),
-            LnError::BadRequest(ref msg) => (StatusCode::BAD_REQUEST, msg.as_str()),
+            NovelError::NotFound => (StatusCode::NOT_FOUND, "Not Found"),
+            NovelError::Sled(_) => (StatusCode::INTERNAL_SERVER_ERROR, "Database Error"),
+            NovelError::Serde(_) => (StatusCode::INTERNAL_SERVER_ERROR, "Serialization Error"),
+            NovelError::Io(_) => (StatusCode::INTERNAL_SERVER_ERROR, "IO Error"),
+            NovelError::Multipart(_) => (StatusCode::BAD_REQUEST, "Multipart Error"),
+            NovelError::BadRequest(ref msg) => (StatusCode::BAD_REQUEST, msg.as_str()),
         };
 
         let body = Json(json!({

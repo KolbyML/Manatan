@@ -4,7 +4,7 @@ members = [
     "bin/manatan",
     "bin/manatan_android",
     "crates/audio-server",
-    "crates/ln-server",
+    "crates/novel-server",
     "crates/ocr-server",
     "crates/sync-server",
     "crates/yomitan-server",
@@ -79,7 +79,7 @@ manatan-audio-server = { path = "crates/audio-server" }
 manatan-ocr-server = { path = "crates/ocr-server" }
 manatan-server-public = { git = "https://github.com/KolbyML/Manatan-Server-Public", rev = "c0f1c9696bf8bdacfa3663a5b1d863d0a77fc428" }
 manatan-sync-server = { path = "crates/sync-server" }
-manatan-ln-server = { path = "crates/ln-server" }
+manatan-novel-server = { path = "crates/novel-server" }
 manatan-yomitan-server = { path = "crates/yomitan-server" }
 
 [profile.test]
