@@ -1,3 +1,17 @@
+## Release v3.2.11
+
+- Mark finished novels as completed in library status (23953e8)
+- Lower anime watch completion threshold to 90% (f1cb111)
+- Auto-import dropped local-novel EPUBs with discovery tests (0081e75)
+- Add Yomitan-style pitch accent positions and categories fields (1929b26)
+- Add Arabic variants and default term+pronunciation installs (c7a0b80)
+- Match pitch accent export HTML shape to Yomitan (2422970)
+- Match harmonic frequency behavior to Yomitan (6bb7e92)
+- Fix sentence mapping modes and ruby bold regression (3f4fa88)
+- Fix local ComicInfo.xml metadata detection (590e596)
+- Refine nav bar More visibility and Manatan anchor placement (d751efe)
+- Migrate LN reader storage from IndexedDB to server-side local storage (#238) (cf172d4)
+
 ## Release v3.2.10
 
 
