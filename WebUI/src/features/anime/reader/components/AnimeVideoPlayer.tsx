@@ -2758,6 +2758,17 @@ export const AnimeVideoPlayer = ({
             }
 
             Object.entries(map).forEach(([ankiField, mapType]) => {
+                const mappedSentenceValue = mapSentenceFieldValue(
+                    mapType,
+                    sentence,
+                    sentenceFurigana,
+                    entry.headword,
+                );
+                if (mappedSentenceValue !== null) {
+                    fields[ankiField] = mappedSentenceValue;
+                    return;
+                }
+
                 if (mapType === 'Target Word') fields[ankiField] = entry.headword;
                 else if (mapType === 'Word (Again)') fields[ankiField] = entry.headword;
                 else if (mapType === 'Reading') fields[ankiField] = entry.reading;
