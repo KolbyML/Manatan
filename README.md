@@ -41,6 +41,8 @@ Download the latest release for your platform from the [Releases](https://github
 
 Run the executable, then visit `http://127.0.0.1:4568/` in your web browser to access the Manatan web interface.
 
+For Nix and NixOS, a [Flake](https://github.com/GKHWB/Manatan-Flake) is available.
+
 ## Roadmap
 
 - [x] Package Manatan, OCR Server, and Suwayomi into a single binary
