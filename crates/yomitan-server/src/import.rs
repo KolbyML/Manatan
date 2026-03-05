@@ -2085,6 +2085,12 @@ pub fn import_zip(state: &AppState, data: &[u8]) -> Result<String> {
         "💾 [Import] Database transaction committed. Total Terms: {}",
         terms_found
     );
+    if let Err(err) = conn.execute_batch("ANALYZE; PRAGMA optimize;") {
+        warn!(
+            "⚠️ [Import] Failed to run ANALYZE/optimize after import: {}",
+            err
+        );
+    }
 
     // Update in-memory dictionary registry only after a successful commit.
     {

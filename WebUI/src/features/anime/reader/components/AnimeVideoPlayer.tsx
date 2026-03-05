@@ -797,6 +797,8 @@ export const AnimeVideoPlayer = ({
     const overlayVisibilityRef = useRef(false);
     const dictionaryOpenedByHoverRef = useRef(false);
     const autoPlayWordAudioKeyRef = useRef<string | null>(null);
+    const autoPlayWordAudioTimerRef = useRef<number | null>(null);
+    const lookupTermsInFlightRef = useRef(false);
     const hoverLookupRef = useRef<{ cueKey: string; charOffset: number } | null>(null);
     const hoverLookupTimerRef = useRef<number | null>(null);
     const braveMutedRef = useRef(false);
@@ -2941,6 +2943,20 @@ export const AnimeVideoPlayer = ({
         [dictionaryContext?.sentence, highlightedSubtitle],
     );
 
+    const beginLookupTermsRequest = useCallback(() => {
+        lookupTermsInFlightRef.current = true;
+        if (autoPlayWordAudioTimerRef.current !== null) {
+            window.clearTimeout(autoPlayWordAudioTimerRef.current);
+            autoPlayWordAudioTimerRef.current = null;
+        }
+    }, []);
+
+    const finishLookupTermsRequest = useCallback((requestId: number) => {
+        if (dictionaryRequestRef.current === requestId) {
+            lookupTermsInFlightRef.current = false;
+        }
+    }, []);
+
     const performSubtitleLookup = useCallback(
         async (
             text: string,
@@ -3042,14 +3058,22 @@ export const AnimeVideoPlayer = ({
                 setDictionaryHistory(prev => {
                     const newHistory = [...prev];
                     if (newHistory.length > 0) {
-                        newHistory[0] = { ...newHistory[0], term: headword };
+                        newHistory[0] = {
+                            ...newHistory[0],
+                            results: loadedResults,
+                            kanjiResults: loadedKanji,
+                            isLoading: false,
+                            systemLoading: isSystemLoading
+                        };
                     }
                     return newHistory;
                 });
             }
         },
         [
+            beginLookupTermsRequest,
             dictionaryVisible,
+            finishLookupTermsRequest,
             isOverlayVisible,
             safeSubtitleOffsetMs,
             settings.resultGroupingMode,
@@ -3429,6 +3453,7 @@ export const AnimeVideoPlayer = ({
 
         dictionaryRequestRef.current += 1;
         const requestId = dictionaryRequestRef.current;
+        beginLookupTermsRequest();
         
         setDictionaryVisible(true);
         setIsOverlayVisible(false);
@@ -3499,6 +3524,7 @@ export const AnimeVideoPlayer = ({
 
         dictionaryRequestRef.current += 1;
         const requestId = dictionaryRequestRef.current;
+        beginLookupTermsRequest();
         
         setDictionaryVisible(true);
         setIsOverlayVisible(false);
@@ -3887,8 +3913,36 @@ export const AnimeVideoPlayer = ({
         if (autoPlayWordAudioKeyRef.current === key) {
             return;
         }
-        autoPlayWordAudioKeyRef.current = key;
-        handlePlayWordAudio(entry, undefined, false);
+        const dictionarySnapshotRequestId = dictionaryRequestRef.current;
+        let cancelled = false;
+
+        const tryAutoPlay = () => {
+            if (cancelled) {
+                return;
+            }
+            if (dictionaryRequestRef.current !== dictionarySnapshotRequestId) {
+                return;
+            }
+            if (lookupTermsInFlightRef.current) {
+                autoPlayWordAudioTimerRef.current = window.setTimeout(tryAutoPlay, 120);
+                return;
+            }
+            if (!dictionaryVisibleRef.current) {
+                return;
+            }
+            autoPlayWordAudioTimerRef.current = null;
+            autoPlayWordAudioKeyRef.current = key;
+            void handlePlayWordAudio(entry, undefined, false);
+        };
+
+        autoPlayWordAudioTimerRef.current = window.setTimeout(tryAutoPlay, 180);
+        return () => {
+            cancelled = true;
+            if (autoPlayWordAudioTimerRef.current !== null) {
+                window.clearTimeout(autoPlayWordAudioTimerRef.current);
+                autoPlayWordAudioTimerRef.current = null;
+            }
+        };
     }, [dictionaryResults, dictionaryVisible, handlePlayWordAudio, settings.autoPlayWordAudio]);
 
     const handleAnkiOpen = useCallback(

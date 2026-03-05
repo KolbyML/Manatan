@@ -180,7 +180,12 @@ export function useTextLookup() {
             return false;
         }
 
-        const sentenceContext = getSentenceContext(charInfo.node, charInfo.offset);
+        const lookupOffset = getLookupStartOffset(
+            charInfo.node.textContent || '',
+            charInfo.offset,
+            settings.yomitanLanguage
+        );
+        const sentenceContext = getSentenceContext(charInfo.node, lookupOffset);
         if (!sentenceContext?.sentence.trim()) return false;
 
         const { sentence, byteOffset } = sentenceContext;

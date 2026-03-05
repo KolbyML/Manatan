@@ -1,5 +1,6 @@
 import type { DictionaryResult, WordAudioSource, WordAudioSourceSelection, YomitanLanguage } from '@/Manatan/types';
 import { apiRequest } from '@/Manatan/utils/api';
+import { resolveFirstAvailableWordAudioSource } from '@/Manatan/utils/wordAudioSourceResolver';
 
 const WORD_AUDIO_SOURCE_LABELS: Record<WordAudioSource, string> = {
     'jpod101': 'JapanesePod101',
@@ -183,11 +184,12 @@ export const playWordAudio = async (
         if (!url) {
             continue;
         }
-        const played = await tryPlayAudioUrl(url);
-        if (played) {
-            return source;
+        const fallbackPlayed = await tryPlayAudioUrl(fallbackUrl);
+        if (fallbackPlayed) {
+            return fallbackSource;
         }
     }
+
     return null;
 };
 

@@ -121,8 +121,10 @@ impl LookupService {
         let chars: Vec<char> = search_text.chars().take(24).collect();
         let mut decoder = snap::raw::Decoder::new();
 
+        let mut substrings = Vec::new();
         for len in (1..=chars.len()).rev() {
             let substring: String = chars[0..len].iter().collect();
+            substrings.push((len, substring.clone()));
 
             // Skip single character Latin/Symbol lookups unless explicitly desired
             if should_skip_single_character(language)
@@ -492,27 +494,27 @@ impl LookupService {
                 let (dict_id, onyomi, kunyomi, tags, meanings_json, stats_json) = kanji_result;
                 let dict_id = DictionaryId(dict_id);
 
-                let (enabled, dict_name, priority) = if let Some(config) = dict_configs.get(&dict_id)
-                {
-                    if !config.0 {
-                        continue;
-                    }
-                    (config.0, config.1.clone(), config.2)
-                } else {
-                    // Get dictionary name and priority for this kanji - look up from DB directly to ensure we get the name
-                    conn.query_row(
-                        "SELECT enabled, name, priority FROM dictionaries WHERE id = ?",
-                        rusqlite::params![dict_id.0],
-                        |row| {
-                            Ok((
-                                row.get::<_, bool>(0)?,
-                                row.get::<_, String>(1)?,
-                                row.get::<_, i64>(2)?,
-                            ))
-                        },
-                    )
-                    .unwrap_or((true, "Unknown".to_string(), 999))
-                };
+                let (enabled, dict_name, priority) =
+                    if let Some(config) = dict_configs.get(&dict_id) {
+                        if !config.0 {
+                            continue;
+                        }
+                        (config.0, config.1.clone(), config.2)
+                    } else {
+                        // Get dictionary name and priority for this kanji - look up from DB directly to ensure we get the name
+                        conn.query_row(
+                            "SELECT enabled, name, priority FROM dictionaries WHERE id = ?",
+                            rusqlite::params![dict_id.0],
+                            |row| {
+                                Ok((
+                                    row.get::<_, bool>(0)?,
+                                    row.get::<_, String>(1)?,
+                                    row.get::<_, i64>(2)?,
+                                ))
+                            },
+                        )
+                        .unwrap_or((true, "Unknown".to_string(), 999))
+                    };
 
                 if !enabled {
                     continue;
