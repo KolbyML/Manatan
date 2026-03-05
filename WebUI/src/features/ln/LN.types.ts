@@ -59,6 +59,10 @@ export interface LNReaderSettings {
     lnAutoBookmark: boolean;
     lnBookmarkDelay: number;
     lnLockProgressBar: boolean;
+    lnMarginTop: number;
+    lnMarginBottom: number;
+    lnMarginLeft: number;
+    lnMarginRight: number;
     lnHideNavButtons: boolean;
     lnEnableSwipe: boolean;
     lnDragThreshold: number;

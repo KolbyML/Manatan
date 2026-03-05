@@ -74,7 +74,6 @@ export const PagedReader: React.FC<PagedReaderProps> = ({
     settings,
     isVertical,
     isRTL,
-    css,
     initialChapter = 0,
     initialPage = 0,
     initialProgress,
@@ -89,6 +88,7 @@ export const PagedReader: React.FC<PagedReaderProps> = ({
     highlights = [],
     onAddHighlight,
     onRemoveHighlight,
+    css,
 }) => {
     // ========================================================================
     // Refs
@@ -276,39 +276,51 @@ export const PagedReader: React.FC<PagedReaderProps> = ({
     const layout = useMemo(() => {
         if (dimensions.width === 0 || dimensions.height === 0) return null;
 
-        const gap =160;
-        const padding = settings.lnPageMargin || 24;
+        const gap = 40;
 
-        const contentW = dimensions.width - (padding * 2) - safeInsets.left - safeInsets.right;
-        const contentH = dimensions.height - (padding * 2) - safeInsets.top - safeInsets.bottom;
+        const marginTop = settings.lnMarginTop ?? 0;
+        const marginBottom = settings.lnMarginBottom ?? 0;
+        const marginLeft = settings.lnMarginLeft ?? 0;
+        const marginRight = settings.lnMarginRight ?? 0;
+
+        // Calculate available space AFTER margins
+        const totalHorizontalMargin = marginLeft + marginRight + safeInsets.left + safeInsets.right;
+        const totalVerticalMargin = marginTop + marginBottom + safeInsets.top + safeInsets.bottom;
+
+        const contentW = dimensions.width - totalHorizontalMargin;
+        const contentH = dimensions.height - totalVerticalMargin;
 
         const columnWidth = isVertical ? contentH : contentW;
 
         return {
             gap,
-            padding,
-            width: dimensions.width,
-            height: dimensions.height,
             contentW,
             contentH,
             columnWidth,
+            margins: {
+                top: marginTop,
+                right: marginRight,
+                bottom: marginBottom,
+                left: marginLeft,
+            },
         };
-    }, [dimensions, settings.lnPageMargin, isVertical, safeInsets.bottom, safeInsets.left, safeInsets.right, safeInsets.top]);
+    }, [
+    dimensions, 
+    settings.lnMarginTop, 
+    settings.lnMarginBottom, 
+    settings.lnMarginLeft, 
+    settings.lnMarginRight,
+    isVertical, 
+    safeInsets.top,
+    safeInsets.right,
+    safeInsets.bottom,
+    safeInsets.left,
+]);
 
     const currentHtml = useMemo(
         () => chapters[currentSection] || '',
         [chapters, currentSection]
     );
-
-    const isKorean = useMemo(() => {
-        if (stats?.language === 'ko') return true;
-
-        const koreanFonts = ['KR', 'Malgun', 'Nanum', 'Gothic', 'Noto Sans CJK KR'];
-        if (koreanFonts.some(f => settings.lnFontFamily?.includes(f))) return true;
-
-        const sample = currentHtml.slice(0, 2000);
-        return /[\uAC00-\uD7A3]/.test(sample);
-    }, [stats?.language, settings.lnFontFamily, currentHtml]);
 
     const typographyStyles = useMemo(
         () => buildTypographyStyles(settings, isVertical),
@@ -1177,35 +1189,38 @@ useEffect(() => {
                 }
             `}</style>
 
-            {/* Viewport */}
+            {/* Outer margin container - STATIC, does not transform */}
             <div
-                ref={viewportRef}
-                className="paged-viewport"
-                style={{
-                    position: 'absolute',
-                    inset: 0,
-                    overflow: 'hidden',
-                    clipPath: 'inset(0px)',
-                    paddingTop: `${layout.padding + safeInsets.top}px`,
-                    paddingRight: `${layout.padding + safeInsets.right}px`,
-                    paddingBottom: `${layout.padding + safeInsets.bottom}px`,
-                    paddingLeft: `${layout.padding + safeInsets.left}px`,
-                }}
-                onClick={handleContentClick}
-                onPointerDown={handlePointerDown}
-                onPointerMove={handlePointerMove}
-                onTouchStart={handleTouchStart}
-                onTouchEnd={handleTouchEnd}
-            >
-                {/* Content */}
+    className="paged-margin-container"
+    style={{
+        position: 'absolute',
+        inset: 0,
+        overflow: 'hidden',
+        paddingTop: `${(layout?.margins.top ?? 0) + safeInsets.top}px`,
+        paddingRight: `${(layout?.margins.right ?? 0) + safeInsets.right}px`,
+        paddingBottom: `${(layout?.margins.bottom ?? 0) + safeInsets.bottom}px`,
+        paddingLeft: `${(layout?.margins.left ?? 0) + safeInsets.left}px`,
+    }}
+>
+                {/* Viewport - no padding, just clips */}
                 <div
-                    ref={contentRef}
-                    className={`paged-content ${!settings.lnEnableFurigana ? 'furigana-hidden' : ''}`}
-                    lang={isKorean ? "ko" : undefined}
-                    style={contentStyle}
+                    ref={viewportRef}
+                    className="paged-viewport"
+                    onClick={handleContentClick}
+                    onPointerDown={handlePointerDown}
+                    onPointerMove={handlePointerMove}
+                    onTouchStart={handleTouchStart}
+                    onTouchEnd={handleTouchEnd}
                 >
-                    {css && <style>{css}</style>}
-                    <div dangerouslySetInnerHTML={{ __html: currentHtml }} />
+                    {/* Content - transforms happen here */}
+                    <div
+                        ref={contentRef}
+                        className={`paged-content ${!settings.lnEnableFurigana ? 'furigana-hidden' : ''}`}
+                        style={contentStyle}
+                    >
+                        {css && <style>{css}</style>}
+                        <div dangerouslySetInnerHTML={{ __html: currentHtml }} />
+                    </div>
                 </div>
             </div>
 
