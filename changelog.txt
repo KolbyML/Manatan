@@ -1,3 +1,7 @@
+## Release v3.2.13
+
+- Fix browse sources update loop and add regression safeguards (274b30a)
+
 ## Release v3.2.12
 
 - fix(ln): respect iOS safe-area insets in reader layouts (25cbf65)
