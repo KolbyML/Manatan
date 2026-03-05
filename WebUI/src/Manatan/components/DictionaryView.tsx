@@ -13,6 +13,11 @@ import {
     playWordAudio,
     resolveWordAudioUrl,
 } from '@/Manatan/utils/wordAudio';
+import {
+    applyPerEntryHarmonicMean,
+    getHarmonicMeanFrequencyFromFrequencies,
+    getLowestFrequencyFromFrequencies,
+} from '@/Manatan/utils/frequency';
 import { DictionaryResult, WordAudioSource, WordAudioSourceSelection } from '@/Manatan/types';
 import { PronunciationSection, extractPronunciationData, getKanaMorae } from './Pronunciation';
 import { PopupTheme } from '@/features/ln/reader/utils/themes';
@@ -545,21 +550,10 @@ const AnkiButtons: React.FC<{
             }).join('');
         };
         const getLowestFrequency = (): string => {
-            if (!entry.frequencies || entry.frequencies.length === 0) return '';
-            const numbers = entry.frequencies
-                .map(f => parseInt(f.value.replace(/[^\d]/g, ''), 10))
-                .filter(n => !isNaN(n));
-            if (numbers.length === 0) return '';
-            return Math.min(...numbers).toString();
+            return getLowestFrequencyFromFrequencies(entry.frequencies);
         };
         const getHarmonicMeanFrequency = (): string => {
-            if (!entry.frequencies || entry.frequencies.length === 0) return '';
-            const numbers = entry.frequencies
-                .map(f => parseInt(f.value.replace(/[^\d]/g, ''), 10))
-                .filter(n => !isNaN(n) && n > 0);
-            if (numbers.length === 0) return '';
-            const sumOfReciprocals = numbers.reduce((sum, n) => sum + (1 / n), 0);
-            return Math.round(numbers.length / sumOfReciprocals).toString();
+            return getHarmonicMeanFrequencyFromFrequencies(entry.frequencies);
         };
         const getHarmonicFrequency = (): string => {
             return getHarmonicMeanFrequency();
@@ -1223,15 +1217,6 @@ export const DictionaryView: React.FC<DictionaryViewProps> = ({
     const [wordAudioAvailability, setWordAudioAvailability] = useState<Record<WordAudioSource, boolean> | null>(null);
     const [wordAudioAutoAvailable, setWordAudioAutoAvailable] = useState<boolean | null>(null);
     const wordAudioOptions = React.useMemo(() => getWordAudioSourceOptions(settings.yomitanLanguage), [settings.yomitanLanguage]);
-    const calculateHarmonicMean = useCallback((frequencies: any[]): number | null => {
-        if (!frequencies || frequencies.length === 0) return null;
-        const numbers = frequencies
-            .map(f => parseInt(f.value.replace(/[^\d]/g, ''), 10))
-            .filter(n => !isNaN(n) && n > 0);
-        if (numbers.length === 0) return null;
-        const sumOfReciprocals = numbers.reduce((sum, n) => sum + (1 / n), 0);
-        return Math.round(numbers.length / sumOfReciprocals);
-    }, []);
     const processedEntries = useMemo(() => {
         if (!settings.showHarmonicMeanFreq) return results;
         const firstFrequencies = results

@@ -75,6 +75,11 @@ import {
     playWordAudio,
     resolveWordAudioUrl,
 } from '@/Manatan/utils/wordAudio';
+import {
+    applyPerEntryHarmonicMean,
+    getHarmonicMeanFrequencyFromFrequencies,
+    getLowestFrequencyFromFrequencies,
+} from '@/Manatan/utils/frequency.ts';
 import { DictionaryResult, WordAudioSource, WordAudioSourceSelection } from '@/Manatan/types.ts';
 import { StructuredContent, DictionaryView } from '@/Manatan/components/DictionaryView.tsx';
 import { PronunciationSection, extractPronunciationData } from '@/Manatan/components/Pronunciation.tsx';
@@ -409,36 +414,11 @@ const generateAnkiFurigana = (entry: DictionaryResult): string => {
 
 
 const getLowestFrequency = (entry: DictionaryResult): string => {
-    if (!entry.frequencies || entry.frequencies.length === 0) {
-        return '';
-    }
-    const numbers = entry.frequencies
-        .map((frequency) => {
-            const cleaned = frequency.value?.replace?.(/[^\d]/g, '') ?? '';
-            return parseInt(cleaned, 10);
-        })
-        .filter((value) => Number.isFinite(value));
-    if (!numbers.length) {
-        return '';
-    }
-    return Math.min(...numbers).toString();
+    return getLowestFrequencyFromFrequencies(entry.frequencies);
 };
 
 const getHarmonicMeanFrequency = (entry: DictionaryResult): string => {
-    if (!entry.frequencies || entry.frequencies.length === 0) {
-        return '';
-    }
-    const numbers = entry.frequencies
-        .map((frequency) => {
-            const cleaned = frequency.value?.replace?.(/[^\d]/g, '') ?? '';
-            return parseInt(cleaned, 10);
-        })
-        .filter((value) => Number.isFinite(value) && value > 0);
-    if (!numbers.length) {
-        return '';
-    }
-    const sumOfReciprocals = numbers.reduce((sum, n) => sum + (1 / n), 0);
-    return Math.round(numbers.length / sumOfReciprocals).toString();
+    return getHarmonicMeanFrequencyFromFrequencies(entry.frequencies);
 };
 
 const generateAnkiPitchAccent = (entry: DictionaryResult): string => {
