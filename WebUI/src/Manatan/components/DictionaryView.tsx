@@ -18,7 +18,11 @@ import {
     getHarmonicMeanFrequencyFromFrequencies,
     getLowestFrequencyFromFrequencies,
 } from '@/Manatan/utils/frequency';
-import { renderAnkiPitchAccents } from '@/Manatan/utils/pitchAccentExport';
+import {
+    renderAnkiPitchAccents,
+    renderAnkiPitchAccentCategories,
+    renderAnkiPitchAccentPositions,
+} from '@/Manatan/utils/pitchAccentExport';
 import { DictionaryResult, WordAudioSource, WordAudioSourceSelection } from '@/Manatan/types';
 import { PronunciationSection, extractPronunciationData } from './Pronunciation';
 import { PopupTheme } from '@/features/ln/reader/utils/themes';
@@ -569,6 +573,18 @@ const AnkiButtons: React.FC<{
         const getPitchAccent = (): string => {
             const { pitchAccents } = extractPronunciationData(entry);
             return renderAnkiPitchAccents(pitchAccents, entry.reading || entry.headword);
+        };
+        const getPitchAccentPositions = (): string => {
+            const { pitchAccents } = extractPronunciationData(entry);
+            return renderAnkiPitchAccentPositions(pitchAccents, entry.reading || entry.headword);
+        };
+        const getPitchAccentCategories = (): string => {
+            const { pitchAccents } = extractPronunciationData(entry);
+            return renderAnkiPitchAccentCategories(
+                pitchAccents,
+                entry.reading || entry.headword,
+                entry.termTags,
+            );
         };
         const buildGlossaryHtml = (dictionaryName?: string): string => {
             const glossaryEntries = dictionaryName
