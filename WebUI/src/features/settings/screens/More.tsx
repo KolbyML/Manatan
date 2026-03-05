@@ -11,15 +11,12 @@ import { useTranslation } from 'react-i18next';
 import List from '@mui/material/List';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
-import ListAltIcon from '@mui/icons-material/ListAlt';
 import Divider from '@mui/material/Divider';
-import { AppRoutes } from '@/base/AppRoute.constants.ts';
 import { ListItemLink } from '@/base/components/lists/ListItemLink.tsx';
 import { NAVIGATION_BAR_ITEMS } from '@/features/navigation-bar/NavigationBar.constants.ts';
 import { MediaQuery } from '@/base/utils/MediaQuery.tsx';
 import { NavigationBarUtil } from '@/features/navigation-bar/NavigationBar.util.ts';
 import { useMetadataServerSettings } from '@/features/settings/services/ServerSettingsMetadata.ts';
-import { NavbarItem, NavBarItemMoreGroup } from '@/features/navigation-bar/NavigationBar.types.ts';
 import { useAppTitle } from '@/features/navigation-bar/hooks/useAppTitle.ts';
 import { useNavigationSettings } from '@/features/navigation-bar/NavigationBar.hooks.ts';
 
@@ -63,9 +60,9 @@ export const More = () => {
 
     return (
         <List sx={{ p: 0 }}>
-            {Object.entries(finalHiddenNavBarItemsByGroup).map(([group, items], index, list) => (
+            {Object.entries(hiddenNavBarItemsByMoreGroup).map(([group, items], index, list) => (
                 <Fragment key={group}>
-                    {items.map((item, itemIndex) => (
+                    {items.map((item) => (
                         <Fragment key={item.path}>
                             <ListItemLink key={item.path} to={item.path}>
                                 <ListItemIcon>
@@ -76,11 +73,6 @@ export const More = () => {
                                     secondary={item.useBadge?.().title}
                                 />
                             </ListItemLink>
-                            {group === NavBarItemMoreGroup[NavBarItemMoreGroup.SETTING_INFO] &&
-                                item.path === AppRoutes.settings.path &&
-                                itemIndex === 0 && (
-                                <div id="manatan-nav-anchor-mobile" style={{ display: 'contents' }} />
-                            )}
                         </Fragment>
                     ))}
                     {index !== list.length - 1 && <Divider />}

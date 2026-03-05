@@ -29,6 +29,7 @@ import { useMetadataServerSettings } from '@/features/settings/services/ServerSe
 import { NAVIGATION_BAR_ITEMS } from '@/features/navigation-bar/NavigationBar.constants.ts';
 import { NavigationBarUtil } from '@/features/navigation-bar/NavigationBar.util.ts';
 import { useNavigationSettings } from '@/features/navigation-bar/NavigationBar.hooks.ts';
+import { getVisibleNavBarItems } from '@/features/navigation-bar/DefaultNavBar.util.ts';
 
 export function DefaultNavBar() {
     const { title, action, override, isCollapsed, setIsCollapsed, setAppBarHeight, navBarWidth, setNavBarWidth } =
