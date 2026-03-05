@@ -1,8 +1,8 @@
-use serde::{Deserialize, Serialize};
 pub use manatan_sync_server::types::{
-    LNMetadata, LNProgress, LNHighlight, LNParsedBook, LnCategory, LnCategoryMetadata,
-    BookStats, TocItem, BlockIndexMap
+    BlockIndexMap, BookStats, LNHighlight, LNMetadata, LNParsedBook, LNProgress, LnCategory,
+    LnCategoryMetadata, TocItem,
 };
+use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
@@ -20,4 +20,11 @@ pub struct UpdateProgressRequest {
 #[serde(rename_all = "camelCase")]
 pub struct UpdateCategoryRequest {
     pub category: LnCategory,
+}
+
+#[derive(Debug, Serialize, Deserialize, Clone)]
+#[serde(rename_all = "camelCase")]
+pub struct DiscoveredEpub {
+    pub id: String,
+    pub file_name: String,
 }

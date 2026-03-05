@@ -1,5 +1,7 @@
-use std::path::PathBuf;
 use sled::Db;
+use std::path::PathBuf;
+
+pub const NOVEL_METADATA_DIR_NAME: &str = ".manatan-metadata";
 
 #[derive(Clone)]
 pub struct NovelState {
@@ -27,7 +29,23 @@ impl NovelState {
         self.local_novel_path.clone()
     }
 
+    pub fn get_novel_metadata_root(&self) -> PathBuf {
+        self.local_novel_path.join(NOVEL_METADATA_DIR_NAME)
+    }
+
     pub fn get_novel_dir(&self, id: &str) -> PathBuf {
+        self.get_novel_metadata_root().join(id)
+    }
+
+    pub fn get_epub_path(&self, id: &str) -> PathBuf {
+        self.local_novel_path.join(format!("{id}.epub"))
+    }
+
+    pub fn get_legacy_novel_dir(&self, id: &str) -> PathBuf {
         self.local_novel_path.join(id)
+    }
+
+    pub fn get_legacy_epub_path(&self, id: &str) -> PathBuf {
+        self.get_legacy_novel_dir(id).join(format!("{id}.epub"))
     }
 }

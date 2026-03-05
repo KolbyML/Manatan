@@ -1,17 +1,17 @@
-use std::collections::HashMap;
-use axum::{
-    Router,
-    routing::{get, post, delete},
-    extract::{State, Path, Multipart},
-    Json,
-};
+use crate::error::NovelError;
 use crate::state::NovelState;
 use crate::types::*;
+use axum::{
+    Json, Router,
+    extract::{Multipart, Path, State},
+    routing::{delete, get, post},
+};
+use std::collections::HashMap;
 use std::fs;
-use crate::error::NovelError;
 
 pub fn router() -> Router<NovelState> {
     Router::new()
+        .route("/discover", get(discover_epubs))
         .route("/metadata", get(get_all_metadata))
         .route("/metadata/{id}", get(get_metadata))
         .route("/metadata/{id}", post(update_metadata))
@@ -31,7 +31,59 @@ pub fn router() -> Router<NovelState> {
         .route("/file/{id}", get(get_epub))
 }
 
-async fn get_all_metadata(State(state): State<NovelState>) -> Result<Json<Vec<LNMetadata>>, NovelError> {
+fn discover_pending_epubs(state: &NovelState) -> Result<Vec<DiscoveredEpub>, NovelError> {
+    let local_path = state.get_local_novel_path();
+    if !local_path.exists() {
+        return Ok(Vec::new());
+    }
+
+    let metadata_root = state.get_novel_metadata_root();
+    let mut discovered = Vec::new();
+
+    for entry in fs::read_dir(local_path)? {
+        let entry = entry?;
+        let path = entry.path();
+
+        if path == metadata_root || !path.is_file() {
+            continue;
+        }
+
+        let Some(extension) = path.extension().and_then(|value| value.to_str()) else {
+            continue;
+        };
+        if !extension.eq_ignore_ascii_case("epub") {
+            continue;
+        }
+
+        let Some(id) = path.file_stem().and_then(|value| value.to_str()) else {
+            continue;
+        };
+        if id.trim().is_empty() {
+            continue;
+        }
+        if state.db.get(format!("metadata:{id}"))?.is_some() {
+            continue;
+        }
+
+        discovered.push(DiscoveredEpub {
+            id: id.to_string(),
+            file_name: entry.file_name().to_string_lossy().to_string(),
+        });
+    }
+
+    discovered.sort_by(|a, b| a.file_name.cmp(&b.file_name));
+    Ok(discovered)
+}
+
+async fn discover_epubs(
+    State(state): State<NovelState>,
+) -> Result<Json<Vec<DiscoveredEpub>>, NovelError> {
+    Ok(Json(discover_pending_epubs(&state)?))
+}
+
+async fn get_all_metadata(
+    State(state): State<NovelState>,
+) -> Result<Json<Vec<LNMetadata>>, NovelError> {
     let mut all_metadata = Vec::new();
     for item in state.db.scan_prefix("metadata:") {
         let (_, v) = item?;
@@ -42,14 +94,21 @@ async fn get_all_metadata(State(state): State<NovelState>) -> Result<Json<Vec<LN
     Ok(Json(all_metadata))
 }
 
-async fn get_metadata(State(state): State<NovelState>, Path(id): Path<String>) -> Result<Json<LNMetadata>, NovelError> {
+async fn get_metadata(
+    State(state): State<NovelState>,
+    Path(id): Path<String>,
+) -> Result<Json<LNMetadata>, NovelError> {
     let key = format!("metadata:{}", id);
     let v = state.db.get(key)?.ok_or(NovelError::NotFound)?;
     let metadata: LNMetadata = serde_json::from_slice(&v)?;
     Ok(Json(metadata))
 }
 
-async fn update_metadata(State(state): State<NovelState>, Path(id): Path<String>, Json(req): Json<UpdateMetadataRequest>) -> Result<(), NovelError> {
+async fn update_metadata(
+    State(state): State<NovelState>,
+    Path(id): Path<String>,
+    Json(req): Json<UpdateMetadataRequest>,
+) -> Result<(), NovelError> {
     let key = format!("metadata:{}", id);
     let bytes = serde_json::to_vec(&req.metadata)?;
     state.db.insert(key, bytes)?;
@@ -73,7 +132,10 @@ async fn update_metadata(State(state): State<NovelState>, Path(id): Path<String>
     Ok(())
 }
 
-async fn delete_book(State(state): State<NovelState>, Path(id): Path<String>) -> Result<(), NovelError> {
+async fn delete_book(
+    State(state): State<NovelState>,
+    Path(id): Path<String>,
+) -> Result<(), NovelError> {
     state.db.remove(format!("metadata:{}", id))?;
     state.db.remove(format!("progress:{}", id))?;
     state.db.remove(format!("content:{}", id))?;
@@ -83,11 +145,24 @@ async fn delete_book(State(state): State<NovelState>, Path(id): Path<String>) ->
         fs::remove_dir_all(novel_dir)?;
     }
 
+    let legacy_novel_dir = state.get_legacy_novel_dir(&id);
+    if legacy_novel_dir.exists() {
+        fs::remove_dir_all(legacy_novel_dir)?;
+    }
+
+    let epub_path = state.get_epub_path(&id);
+    if epub_path.exists() {
+        fs::remove_file(epub_path)?;
+    }
+
     state.db.flush()?;
     Ok(())
 }
 
-async fn get_content(State(state): State<NovelState>, Path(id): Path<String>) -> Result<Json<LNParsedBook>, NovelError> {
+async fn get_content(
+    State(state): State<NovelState>,
+    Path(id): Path<String>,
+) -> Result<Json<LNParsedBook>, NovelError> {
     let key = format!("content:{}", id);
     let v = state.db.get(key)?.ok_or(NovelError::NotFound)?;
     let mut content: LNParsedBook = serde_json::from_slice(&v)?;
@@ -98,7 +173,11 @@ async fn get_content(State(state): State<NovelState>, Path(id): Path<String>) ->
     Ok(Json(content))
 }
 
-async fn save_content(State(state): State<NovelState>, Path(id): Path<String>, Json(content): Json<LNParsedBook>) -> Result<(), NovelError> {
+async fn save_content(
+    State(state): State<NovelState>,
+    Path(id): Path<String>,
+    Json(content): Json<LNParsedBook>,
+) -> Result<(), NovelError> {
     let key = format!("content:{}", id);
 
     // Save to DB for sync compatibility
@@ -135,7 +214,11 @@ async fn save_content(State(state): State<NovelState>, Path(id): Path<String>, J
         let data = base64::Engine::decode(&base64::engine::general_purpose::STANDARD, &base64)
             .map_err(|e| NovelError::BadRequest(format!("Invalid base64 image: {}", e)))?;
 
-        let normalized_path = if path.starts_with('/') { &path[1..] } else { &path };
+        let normalized_path = if path.starts_with('/') {
+            &path[1..]
+        } else {
+            &path
+        };
         let img_path = img_dir.join(normalized_path);
         if let Some(parent) = img_path.parent() {
             fs::create_dir_all(parent)?;
@@ -155,7 +238,10 @@ async fn save_content(State(state): State<NovelState>, Path(id): Path<String>, J
     Ok(())
 }
 
-async fn get_progress(State(state): State<NovelState>, Path(id): Path<String>) -> Result<Json<Option<LNProgress>>, NovelError> {
+async fn get_progress(
+    State(state): State<NovelState>,
+    Path(id): Path<String>,
+) -> Result<Json<Option<LNProgress>>, NovelError> {
     let key = format!("progress:{}", id);
     let v = state.db.get(key)?;
     if let Some(bytes) = v {
@@ -166,7 +252,11 @@ async fn get_progress(State(state): State<NovelState>, Path(id): Path<String>) -
     }
 }
 
-async fn update_progress(State(state): State<NovelState>, Path(id): Path<String>, Json(req): Json<UpdateProgressRequest>) -> Result<(), NovelError> {
+async fn update_progress(
+    State(state): State<NovelState>,
+    Path(id): Path<String>,
+    Json(req): Json<UpdateProgressRequest>,
+) -> Result<(), NovelError> {
     let key = format!("progress:{}", id);
     let bytes = serde_json::to_vec(&req.progress)?;
     state.db.insert(key, bytes)?;
@@ -190,7 +280,9 @@ async fn update_progress(State(state): State<NovelState>, Path(id): Path<String>
     Ok(())
 }
 
-async fn get_categories(State(state): State<NovelState>) -> Result<Json<Vec<LnCategory>>, NovelError> {
+async fn get_categories(
+    State(state): State<NovelState>,
+) -> Result<Json<Vec<LnCategory>>, NovelError> {
     let mut categories = Vec::new();
     for item in state.db.scan_prefix("category:") {
         let (_, v) = item?;
@@ -213,7 +305,10 @@ async fn save_global_categories(state: &NovelState) -> Result<(), NovelError> {
     for item in state.db.scan_prefix("category_metadata:") {
         let (k, v) = item?;
         let key_str = String::from_utf8_lossy(&k);
-        let id = key_str.strip_prefix("category_metadata:").unwrap_or(&key_str).to_string();
+        let id = key_str
+            .strip_prefix("category_metadata:")
+            .unwrap_or(&key_str)
+            .to_string();
         let meta: LnCategoryMetadata = serde_json::from_slice(&v)?;
         meta_map.insert(id, meta);
     }
@@ -231,7 +326,10 @@ async fn save_global_categories(state: &NovelState) -> Result<(), NovelError> {
     Ok(())
 }
 
-async fn create_category(State(state): State<NovelState>, Json(category): Json<LnCategory>) -> Result<Json<LnCategory>, NovelError> {
+async fn create_category(
+    State(state): State<NovelState>,
+    Json(category): Json<LnCategory>,
+) -> Result<Json<LnCategory>, NovelError> {
     let key = format!("category:{}", category.id);
     let bytes = serde_json::to_vec(&category)?;
     state.db.insert(key, bytes)?;
@@ -240,7 +338,11 @@ async fn create_category(State(state): State<NovelState>, Json(category): Json<L
     Ok(Json(category))
 }
 
-async fn update_category(State(state): State<NovelState>, Path(id): Path<String>, Json(category): Json<LnCategory>) -> Result<(), NovelError> {
+async fn update_category(
+    State(state): State<NovelState>,
+    Path(id): Path<String>,
+    Json(category): Json<LnCategory>,
+) -> Result<(), NovelError> {
     let key = format!("category:{}", id);
     let bytes = serde_json::to_vec(&category)?;
     state.db.insert(key, bytes)?;
@@ -249,7 +351,10 @@ async fn update_category(State(state): State<NovelState>, Path(id): Path<String>
     Ok(())
 }
 
-async fn delete_category(State(state): State<NovelState>, Path(id): Path<String>) -> Result<(), NovelError> {
+async fn delete_category(
+    State(state): State<NovelState>,
+    Path(id): Path<String>,
+) -> Result<(), NovelError> {
     state.db.remove(format!("category:{}", id))?;
     state.db.remove(format!("category_metadata:{}", id))?;
 
@@ -268,19 +373,27 @@ async fn delete_category(State(state): State<NovelState>, Path(id): Path<String>
     Ok(())
 }
 
-async fn get_all_category_metadata(State(state): State<NovelState>) -> Result<Json<HashMap<String, LnCategoryMetadata>>, NovelError> {
+async fn get_all_category_metadata(
+    State(state): State<NovelState>,
+) -> Result<Json<HashMap<String, LnCategoryMetadata>>, NovelError> {
     let mut map = HashMap::new();
     for item in state.db.scan_prefix("category_metadata:") {
         let (k, v) = item?;
         let key_str = String::from_utf8_lossy(&k);
-        let id = key_str.strip_prefix("category_metadata:").unwrap_or(&key_str).to_string();
+        let id = key_str
+            .strip_prefix("category_metadata:")
+            .unwrap_or(&key_str)
+            .to_string();
         let meta: LnCategoryMetadata = serde_json::from_slice(&v)?;
         map.insert(id, meta);
     }
     Ok(Json(map))
 }
 
-async fn get_category_metadata(State(state): State<NovelState>, Path(id): Path<String>) -> Result<Json<Option<LnCategoryMetadata>>, NovelError> {
+async fn get_category_metadata(
+    State(state): State<NovelState>,
+    Path(id): Path<String>,
+) -> Result<Json<Option<LnCategoryMetadata>>, NovelError> {
     let key = format!("category_metadata:{}", id);
     let v = state.db.get(key)?;
     if let Some(bytes) = v {
@@ -291,7 +404,11 @@ async fn get_category_metadata(State(state): State<NovelState>, Path(id): Path<S
     }
 }
 
-async fn update_category_metadata(State(state): State<NovelState>, Path(id): Path<String>, Json(meta): Json<LnCategoryMetadata>) -> Result<(), NovelError> {
+async fn update_category_metadata(
+    State(state): State<NovelState>,
+    Path(id): Path<String>,
+    Json(meta): Json<LnCategoryMetadata>,
+) -> Result<(), NovelError> {
     let key = format!("category_metadata:{}", id);
     let bytes = serde_json::to_vec(&meta)?;
     state.db.insert(key, bytes)?;
@@ -300,14 +417,19 @@ async fn update_category_metadata(State(state): State<NovelState>, Path(id): Pat
     Ok(())
 }
 
-async fn upload_epub(State(state): State<NovelState>, Path(id): Path<String>, mut multipart: Multipart) -> Result<(), NovelError> {
+async fn upload_epub(
+    State(state): State<NovelState>,
+    Path(id): Path<String>,
+    mut multipart: Multipart,
+) -> Result<(), NovelError> {
     while let Some(field) = multipart.next_field().await? {
         if let Some(name) = field.name() {
             if name == "file" {
                 let data = field.bytes().await?;
-                let novel_dir = state.get_novel_dir(&id);
-                fs::create_dir_all(&novel_dir)?;
-                let path = novel_dir.join(format!("{}.epub", id));
+                let path = state.get_epub_path(&id);
+                if let Some(parent) = path.parent() {
+                    fs::create_dir_all(parent)?;
+                }
                 fs::write(path, data)?;
                 return Ok(());
             }
@@ -316,10 +438,93 @@ async fn upload_epub(State(state): State<NovelState>, Path(id): Path<String>, mu
     Err(NovelError::BadRequest("No file field found".into()))
 }
 
-async fn get_epub(State(state): State<NovelState>, Path(id): Path<String>) -> Result<Vec<u8>, NovelError> {
-    let path = state.get_novel_dir(&id).join(format!("{}.epub", id));
-    if !path.exists() {
-        return Err(NovelError::NotFound);
+async fn get_epub(
+    State(state): State<NovelState>,
+    Path(id): Path<String>,
+) -> Result<Vec<u8>, NovelError> {
+    let primary_path = state.get_epub_path(&id);
+    if primary_path.exists() {
+        return Ok(fs::read(primary_path)?);
     }
-    Ok(fs::read(path)?)
+
+    // Backward compatibility for pre-migration layout.
+    let legacy_path = state.get_legacy_epub_path(&id);
+    if legacy_path.exists() {
+        return Ok(fs::read(legacy_path)?);
+    }
+
+    Err(NovelError::NotFound)
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use std::time::{SystemTime, UNIX_EPOCH};
+
+    fn unique_temp_dir(label: &str) -> std::path::PathBuf {
+        let nanos = SystemTime::now()
+            .duration_since(UNIX_EPOCH)
+            .map(|d| d.as_nanos())
+            .unwrap_or_default();
+        let dir = std::env::temp_dir().join(format!("manatan-novel-routes-{label}-{nanos}"));
+        let _ = fs::remove_dir_all(&dir);
+        fs::create_dir_all(&dir).expect("temp dir should be created");
+        dir
+    }
+
+    #[test]
+    fn discover_pending_epubs_ignores_indexed_and_non_epub_files() {
+        let root = unique_temp_dir("discover");
+        let data_dir = root.join("data");
+        let local_novel_dir = root.join("local-novel");
+        fs::create_dir_all(&local_novel_dir).expect("local dir should be created");
+        fs::create_dir_all(local_novel_dir.join(".manatan-metadata"))
+            .expect("metadata root should exist");
+
+        fs::write(local_novel_dir.join("indexed.epub"), b"epub").expect("epub should be written");
+        fs::write(local_novel_dir.join("pending.EPUB"), b"epub").expect("epub should be written");
+        fs::write(local_novel_dir.join("readme.txt"), b"text").expect("txt should be written");
+
+        let state = NovelState::new(data_dir, local_novel_dir);
+        state
+            .db
+            .insert("metadata:indexed", b"{}".as_slice())
+            .expect("metadata insert should succeed");
+
+        let discovered = discover_pending_epubs(&state).expect("discovery should succeed");
+        assert_eq!(discovered.len(), 1);
+        assert_eq!(discovered[0].id, "pending");
+        assert_eq!(discovered[0].file_name, "pending.EPUB");
+    }
+
+    #[test]
+    fn discover_pending_epubs_returns_sorted_file_names() {
+        let root = unique_temp_dir("discover-sorted");
+        let data_dir = root.join("data");
+        let local_novel_dir = root.join("local-novel");
+        fs::create_dir_all(&local_novel_dir).expect("local dir should be created");
+
+        fs::write(local_novel_dir.join("zeta.epub"), b"epub").expect("epub should be written");
+        fs::write(local_novel_dir.join("alpha.epub"), b"epub").expect("epub should be written");
+
+        let state = NovelState::new(data_dir, local_novel_dir);
+        let discovered = discover_pending_epubs(&state).expect("discovery should succeed");
+        let names: Vec<String> = discovered.into_iter().map(|item| item.file_name).collect();
+
+        assert_eq!(
+            names,
+            vec!["alpha.epub".to_string(), "zeta.epub".to_string()]
+        );
+    }
+
+    #[test]
+    fn discover_pending_epubs_returns_empty_when_local_folder_is_missing() {
+        let root = unique_temp_dir("discover-missing");
+        let data_dir = root.join("data");
+        let local_novel_dir = root.join("local-novel-not-created");
+        let state = NovelState::new(data_dir, local_novel_dir);
+
+        let discovered = discover_pending_epubs(&state).expect("discovery should succeed");
+        assert!(discovered.is_empty());
+    }
 }

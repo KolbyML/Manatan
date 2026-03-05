@@ -37,6 +37,7 @@ import { styled } from '@mui/material/styles';
 
 import { AppStorage, LNMetadata, LnCategory, LnCategoryMetadata } from '@/lib/storage/AppStorage';
 import { AppRoutes } from '@/base/AppRoute.constants';
+import { importDiscoveredEpubs } from '@/features/ln/services/discoveredEpubImport.ts';
 import { parseEpub, ParseProgress } from '../services/epubParser';
 import { clearBookCache } from '../reader/hooks/useBookContent';
 import { LNCategoriesService, LnSortMode, LnSortModeType } from '../services/LNCategories';
@@ -524,20 +525,33 @@ export const LNLibrary: React.FC = () => {
         }
     }, []);
 
+    const importDiscoveredBooks = useCallback(async () => {
+        setIsImporting(true);
+        try {
+            await importDiscoveredEpubs();
+        } catch (e) {
+            console.error('Failed to auto-import discovered EPUB files:', e);
+        } finally {
+            setIsImporting(false);
+        }
+    }, []);
+
     // Initial load on mount
     useEffect(() => {
         const init = async () => {
             await AppStorage.migrateLnMetadata();
             await loadCategories();
+            await importDiscoveredBooks();
             await loadLibrary();
         };
         init();
-    }, [loadCategories, loadLibrary]);
+    }, [importDiscoveredBooks, loadCategories, loadLibrary]);
 
     // Reload library when tab becomes visible again (handles browser suspending connections after long background time)
     useEffect(() => {
         const handleVisibilityChange = async () => {
             if (document.visibilityState === 'visible') {
+                await importDiscoveredBooks();
                 await loadLibrary();
                 await loadCategories();
             }
@@ -545,7 +559,7 @@ export const LNLibrary: React.FC = () => {
 
         document.addEventListener('visibilitychange', handleVisibilityChange);
         return () => document.removeEventListener('visibilitychange', handleVisibilityChange);
-    }, [loadLibrary, loadCategories]);
+    }, [importDiscoveredBooks, loadLibrary, loadCategories]);
 
     // Normalize title for comparison
     const normalizeTitle = (title: string): string => {
