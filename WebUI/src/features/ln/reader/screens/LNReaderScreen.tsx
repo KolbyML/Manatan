@@ -76,11 +76,15 @@ export const LNReaderScreen: React.FC = () => {
     const [expandedToc, setExpandedToc] = useState<Set<number>>(new Set());
     const navigationRef = useRef<{ scrollToBlock?: (blockId: string, offset?: number) => void; scrollToChapter?: (chapterIndex: number) => void }>({});
     const isIOS = typeof navigator !== 'undefined' && /iPhone|iPad|iPod/i.test(navigator.userAgent);
-    const readerSafeTopOffsetPx = isIOS ? 24 : 0;
+    const [readerSafeInsetsPx, setReaderSafeInsetsPx] = useState({
+        top: isIOS ? 24 : 0,
+        right: 0,
+        bottom: 0,
+        left: 0,
+    });
+    const readerSafeTopOffsetPx = readerSafeInsetsPx.top;
     const readerSafeTopInset = `${readerSafeTopOffsetPx}px`;
-    const headerSafeTopInset = isIOS
-        ? 'min(env(safe-area-inset-top, 0px), 44px)'
-        : 'env(safe-area-inset-top, 0px)';
+    const headerSafeTopInset = `${readerSafeInsetsPx.top}px`;
 
     const bookId = id || '';
     const chapterId = bookId ? `${bookId}-${currentChapter}` : null;
@@ -88,6 +92,50 @@ export const LNReaderScreen: React.FC = () => {
     useSyncOnChapterOpen(chapterId);
 
     const { highlights, loading: highlightsLoading, addHighlight, removeHighlight, exportToTxt, exportToJson, downloadFile, refresh } = useHighlights(bookId);
+
+    useEffect(() => {
+        if (typeof window === 'undefined' || typeof document === 'undefined' || !document.body) {
+            return;
+        }
+
+        const readSafeInsets = () => {
+            const probe = document.createElement('div');
+            probe.style.position = 'fixed';
+            probe.style.visibility = 'hidden';
+            probe.style.pointerEvents = 'none';
+            probe.style.paddingTop = 'env(safe-area-inset-top, 0px)';
+            probe.style.paddingRight = 'env(safe-area-inset-right, 0px)';
+            probe.style.paddingBottom = 'env(safe-area-inset-bottom, 0px)';
+            probe.style.paddingLeft = 'env(safe-area-inset-left, 0px)';
+            document.body.appendChild(probe);
+
+            const computed = window.getComputedStyle(probe);
+            const topInset = Number.parseFloat(computed.paddingTop) || 0;
+            const rightInset = Number.parseFloat(computed.paddingRight) || 0;
+            const bottomInset = Number.parseFloat(computed.paddingBottom) || 0;
+            const leftInset = Number.parseFloat(computed.paddingLeft) || 0;
+            probe.remove();
+
+            setReaderSafeInsetsPx({
+                top: isIOS ? Math.max(topInset, 24) : topInset,
+                right: rightInset,
+                bottom: bottomInset,
+                left: leftInset,
+            });
+        };
+
+        readSafeInsets();
+
+        window.addEventListener('resize', readSafeInsets);
+        window.addEventListener('orientationchange', readSafeInsets);
+        window.visualViewport?.addEventListener('resize', readSafeInsets);
+
+        return () => {
+            window.removeEventListener('resize', readSafeInsets);
+            window.removeEventListener('orientationchange', readSafeInsets);
+            window.visualViewport?.removeEventListener('resize', readSafeInsets);
+        };
+    }, [isIOS]);
 
     useEffect(() => {
         if (highlightsOpen) {
@@ -521,6 +569,7 @@ export const LNReaderScreen: React.FC = () => {
                 navigationRef={navigationRef}
                 safeAreaTopInset={readerSafeTopInset}
                 safeAreaTopOffsetPx={readerSafeTopOffsetPx}
+                safeAreaInsetsPx={readerSafeInsetsPx}
                 renderHeader={(showUI, toggleUI) => (
                     <Fade in={showUI}>
                         <Box

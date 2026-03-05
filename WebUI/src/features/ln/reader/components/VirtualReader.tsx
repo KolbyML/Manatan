@@ -44,6 +44,12 @@ interface VirtualReaderProps {
     onAddHighlight?: (chapterIndex: number, blockId: string, text: string, startOffset: number, endOffset: number) => void;
     safeAreaTopInset?: string;
     safeAreaTopOffsetPx?: number;
+    safeAreaInsetsPx?: {
+        top: number;
+        right: number;
+        bottom: number;
+        left: number;
+    };
     navigationRef?: React.MutableRefObject<{ scrollToBlock?: (blockId: string, offset?: number) => void; scrollToChapter?: (chapterIndex: number) => void }>;
 }
 
@@ -78,6 +84,7 @@ export const VirtualReader: React.FC<VirtualReaderProps> = ({
     onAddHighlight,
     safeAreaTopInset,
     safeAreaTopOffsetPx,
+    safeAreaInsetsPx,
     navigationRef: externalNavRef,
 
 }) => {

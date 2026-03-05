@@ -51,6 +51,7 @@ export const ContinuousReader: React.FC<ContinuousReaderProps> = ({
     onToggleUI,
     showNavigation = false,
     safeAreaTopInset,
+    safeAreaInsetsPx,
     onPositionUpdate,
     onRegisterSave,
     onUpdateSettings,
@@ -911,7 +912,10 @@ export const ContinuousReader: React.FC<ContinuousReaderProps> = ({
                 className={`continuous-reader-container ${isVertical ? 'vertical' : 'horizontal'}`}
                 style={{
                     ...containerStyles,
-                    paddingTop: safeAreaTopInset ?? 'env(safe-area-inset-top)',
+                    paddingTop: safeAreaTopInset ?? `${safeAreaInsetsPx?.top ?? 0}px`,
+                    paddingRight: `${safeAreaInsetsPx?.right ?? 0}px`,
+                    paddingBottom: `${safeAreaInsetsPx?.bottom ?? 0}px`,
+                    paddingLeft: `${safeAreaInsetsPx?.left ?? 0}px`,
                     boxSizing: 'border-box',
                 }}
                 onClick={handleContentClick}
