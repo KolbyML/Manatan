@@ -108,6 +108,11 @@ export class Storage {
 
 export * from '@/features/ln/LN.types';
 
+export interface LNDiscoveredEpub {
+    id: string;
+    fileName: string;
+}
+
 // ============================================================================
 // Device ID Helper
 // ============================================================================
@@ -154,7 +159,9 @@ class ServerStorage<T> {
 
     private async fetchFromServer<R = T>(key: string): Promise<R | null> {
         try {
-            const response = await requestManager.getClient().fetcher(`${this.endpoint}/${key}`);
+            const response = await requestManager.getClient().fetcher(
+                `${this.endpoint}/${encodeURIComponent(key)}`,
+            );
             if (response.status === 404) return null;
             const data = await response.json();
 
@@ -168,7 +175,9 @@ class ServerStorage<T> {
 
     async setItem(key: string, value: T): Promise<T> {
         try {
-            await requestManager.getClient().fetcher(`${this.endpoint}/${key}`, {
+            await requestManager
+                .getClient()
+                .fetcher(`${this.endpoint}/${encodeURIComponent(key)}`, {
                 httpMethod: HttpMethod.POST,
                 data: this.wrapPayload(value),
             });
@@ -182,7 +191,9 @@ class ServerStorage<T> {
 
     async removeItem(key: string): Promise<void> {
         try {
-            await requestManager.getClient().fetcher(`${this.endpoint}/${key}`, {
+            await requestManager
+                .getClient()
+                .fetcher(`${this.endpoint}/${encodeURIComponent(key)}`, {
                 httpMethod: HttpMethod.DELETE,
             });
             this.memCache.delete(key);
@@ -223,20 +234,32 @@ export class AppStorage {
         async setItem(key: string, file: File | Blob): Promise<void> {
             const formData = new FormData();
             formData.append('file', file);
-            await requestManager.getClient().fetcher(`/api/novel/upload/${key}`, {
+            await requestManager.getClient().fetcher(`/api/novel/upload/${encodeURIComponent(key)}`, {
                 httpMethod: HttpMethod.POST,
                 data: formData,
             });
         },
         async getItem(key: string): Promise<Blob | null> {
             try {
-                const response = await requestManager.getClient().fetcher(`/api/novel/file/${key}`, {
+                const response = await requestManager
+                    .getClient()
+                    .fetcher(`/api/novel/file/${encodeURIComponent(key)}`, {
                     checkResponseIsJson: false
                 });
                 if (response.status === 404) return null;
                 return await response.blob();
             } catch (e) {
                 return null;
+            }
+        },
+        async discoverPendingEpubs(): Promise<LNDiscoveredEpub[]> {
+            try {
+                const response = await requestManager.getClient().fetcher('/api/novel/discover');
+                if (response.status === 404) return [];
+                return await response.json() as LNDiscoveredEpub[];
+            } catch (e) {
+                console.error('[AppStorage] Failed to discover pending EPUB files:', e);
+                return [];
             }
         },
         async removeItem(key: string): Promise<void> {}
@@ -249,7 +272,9 @@ export class AppStorage {
     static readonly lnContent = {
         async getItem(key: string): Promise<LNParsedBook | null> {
             try {
-                const response = await requestManager.getClient().fetcher(`/api/novel/content/${key}`);
+                const response = await requestManager
+                    .getClient()
+                    .fetcher(`/api/novel/content/${encodeURIComponent(key)}`);
                 if (response.status === 404) return null;
                 const data = await response.json();
 
@@ -277,7 +302,9 @@ export class AppStorage {
                 imageBlobs[path] = await base64Promise;
             }
 
-            await requestManager.getClient().fetcher(`/api/novel/content/${key}`, {
+            await requestManager
+                .getClient()
+                .fetcher(`/api/novel/content/${encodeURIComponent(key)}`, {
                 httpMethod: HttpMethod.POST,
                 data: { ...content, imageBlobs },
             });
@@ -395,7 +422,7 @@ export class AppStorage {
     // ========================================================================
 
     static async deleteLnData(bookId: string): Promise<void> {
-        await requestManager.getClient().fetcher(`/api/novel/metadata/${bookId}`, {
+        await requestManager.getClient().fetcher(`/api/novel/metadata/${encodeURIComponent(bookId)}`, {
             httpMethod: HttpMethod.DELETE
         });
         console.log('[AppStorage] All data deleted for:', bookId);
