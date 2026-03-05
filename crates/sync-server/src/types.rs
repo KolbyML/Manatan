@@ -341,6 +341,9 @@ pub struct LNParsedBook {
     /// Original filenames of chapters
     #[serde(alias = "chapterFilenames")]
     pub chapter_filenames: Vec<String>,
+
+    /// Combined CSS from all CSS files in the EPUB
+    pub css: Option<String>,
 }
 
 /// Reference to a synced file (for file manifest)

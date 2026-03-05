@@ -121,6 +121,7 @@ export interface LNParsedBook {
     chapters: string[];
     imageBlobs: Record<string, string>;
     chapterFilenames: string[];
+    css?: string;
 }
 
 export interface FileReference {

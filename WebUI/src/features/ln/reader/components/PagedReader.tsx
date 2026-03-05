@@ -74,6 +74,7 @@ export const PagedReader: React.FC<PagedReaderProps> = ({
     settings,
     isVertical,
     isRTL,
+    css,
     initialChapter = 0,
     initialPage = 0,
     initialProgress,
@@ -1202,8 +1203,10 @@ useEffect(() => {
                     className={`paged-content ${!settings.lnEnableFurigana ? 'furigana-hidden' : ''}`}
                     lang={isKorean ? "ko" : undefined}
                     style={contentStyle}
-                    dangerouslySetInnerHTML={{ __html: currentHtml }}
-                />
+                >
+                    {css && <style>{css}</style>}
+                    <div dangerouslySetInnerHTML={{ __html: currentHtml }} />
+                </div>
             </div>
 
             {/* Loading Overlay */}

@@ -112,6 +112,7 @@ export interface LNParsedBook {
     chapters: string[];
     imageBlobs: Record<string, Blob | string>;
     chapterFilenames: string[];
+    css?: string;
 }
 
 export interface LnCategory {

@@ -545,6 +545,7 @@ export const LNReaderScreen: React.FC = () => {
                 items={content.chapters}
                 stats={content.stats}
                 chapterFilenames={content.chapterFilenames || []}
+                css={content.css}
                 settings={settings}
                 initialIndex={savedProgress?.chapterIndex ?? 0}
                 initialPage={savedProgress?.pageNumber ?? 0}

@@ -13,6 +13,7 @@ interface VirtualReaderProps {
     items: string[];
     stats: BookStats | null;
     settings: Settings;
+    css?: string;
     initialIndex?: number;
     initialPage?: number;
     initialProgress?: {
@@ -71,6 +72,7 @@ export const VirtualReader: React.FC<VirtualReaderProps> = ({
     items,
     stats,
     settings,
+    css,
     initialIndex = 0,
     initialPage = 0,
     initialProgress: externalInitialProgress,
@@ -294,6 +296,7 @@ export const VirtualReader: React.FC<VirtualReaderProps> = ({
         chapters: chaptersWithHighlights,
         stats,
         settings,
+        css,
         isVertical: !!isVertical,
         isRTL: !!isRTL,
         onToggleUI: toggleUI,

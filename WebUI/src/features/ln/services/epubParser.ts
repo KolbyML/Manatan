@@ -376,6 +376,26 @@ export async function parseEpub(
         });
 
         // ====================================================================
+        // 4.1 Extract CSS Files
+        // ====================================================================
+
+        const cssFiles = Object.entries(manifest)
+            .filter(([_, val]) => val.type === 'text/css')
+            .map(([_, val]) => val.href);
+
+        let combinedCss = '';
+        if (cssFiles.length > 0) {
+            const uniqueCssPaths = [...new Set(cssFiles)];
+            for (const cssPath of uniqueCssPaths) {
+                const fullPath = resolvePath(opfPath, cssPath);
+                const cssContent = await content.file(fullPath)?.async('string');
+                if (cssContent) {
+                    combinedCss += cssContent + '\n';
+                }
+            }
+        }
+
+        // ====================================================================
         // 5. Get Spine Order
         // ====================================================================
 
@@ -622,6 +642,7 @@ export async function parseEpub(
             chapters,
             chapterFilenames,
             imageBlobs,
+            css: combinedCss || undefined,
         };
 
         return {

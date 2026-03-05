@@ -845,7 +845,7 @@ export const LNLibrary: React.FC = () => {
     }, []);
 
     const handleOpen = useCallback((id: string) => {
-        navigate(AppRoutes.novel.childRoutes.reader.path(id));
+        navigate(AppRoutes.ln.childRoutes.reader.path(id));
     }, [navigate]);
 
     // Drag and Drop handlers
