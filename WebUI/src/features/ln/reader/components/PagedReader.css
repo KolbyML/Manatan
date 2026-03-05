@@ -7,11 +7,10 @@
     inset: 0;
     overflow: hidden;
 
-    /* Safe area support for notches */
     padding-top: 0;
-    padding-bottom: env(safe-area-inset-bottom);
-    padding-left: env(safe-area-inset-left);
-    padding-right: env(safe-area-inset-right);
+    padding-bottom: 0;
+    padding-left: 0;
+    padding-right: 0;
 }
 
 /* =====================================================

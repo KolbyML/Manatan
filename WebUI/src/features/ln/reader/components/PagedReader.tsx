@@ -79,8 +79,8 @@ export const PagedReader: React.FC<PagedReaderProps> = ({
     initialProgress,
     onToggleUI,
     showNavigation = false,
-    safeAreaTopInset,
     safeAreaTopOffsetPx = 0,
+    safeAreaInsetsPx,
     onPositionUpdate,
     onRegisterSave,
     onUpdateSettings,
@@ -228,6 +228,16 @@ export const PagedReader: React.FC<PagedReaderProps> = ({
         [isVertical, isRTL]
     );
 
+    const safeInsets = useMemo(
+        () => ({
+            top: safeAreaInsetsPx?.top ?? safeAreaTopOffsetPx,
+            right: safeAreaInsetsPx?.right ?? 0,
+            bottom: safeAreaInsetsPx?.bottom ?? 0,
+            left: safeAreaInsetsPx?.left ?? 0,
+        }),
+        [safeAreaInsetsPx?.bottom, safeAreaInsetsPx?.left, safeAreaInsetsPx?.right, safeAreaInsetsPx?.top, safeAreaTopOffsetPx],
+    );
+
     const { tryLookup } = useTextLookup();
 
     // ========================================================================
@@ -268,8 +278,8 @@ export const PagedReader: React.FC<PagedReaderProps> = ({
         const gap =160;
         const padding = settings.lnPageMargin || 24;
 
-        const contentW = dimensions.width - (padding * 2);
-        const contentH = dimensions.height - (padding * 2) - safeAreaTopOffsetPx;
+        const contentW = dimensions.width - (padding * 2) - safeInsets.left - safeInsets.right;
+        const contentH = dimensions.height - (padding * 2) - safeInsets.top - safeInsets.bottom;
 
         const columnWidth = isVertical ? contentH : contentW;
 
@@ -282,7 +292,7 @@ export const PagedReader: React.FC<PagedReaderProps> = ({
             contentH,
             columnWidth,
         };
-    }, [dimensions, settings.lnPageMargin, isVertical, safeAreaTopOffsetPx]);
+    }, [dimensions, settings.lnPageMargin, isVertical, safeInsets.bottom, safeInsets.left, safeInsets.right, safeInsets.top]);
 
     const currentHtml = useMemo(
         () => chapters[currentSection] || '',
@@ -1175,10 +1185,10 @@ useEffect(() => {
                     inset: 0,
                     overflow: 'hidden',
                     clipPath: 'inset(0px)',
-                    paddingTop: `calc(${layout.padding}px + ${safeAreaTopInset ?? '0px'})`,
-                    paddingRight: `${layout.padding}px`,
-                    paddingBottom: `${layout.padding}px`,
-                    paddingLeft: `${layout.padding}px`,
+                    paddingTop: `${layout.padding + safeInsets.top}px`,
+                    paddingRight: `${layout.padding + safeInsets.right}px`,
+                    paddingBottom: `${layout.padding + safeInsets.bottom}px`,
+                    paddingLeft: `${layout.padding + safeInsets.left}px`,
                 }}
                 onClick={handleContentClick}
                 onPointerDown={handlePointerDown}
