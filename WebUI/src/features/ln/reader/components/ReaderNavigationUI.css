@@ -113,7 +113,7 @@
     user-select: none;
     display: flex;
     align-items: center;
-    padding: 0 max(20px, env(safe-area-inset-right)) env(safe-area-inset-bottom) max(20px, env(safe-area-inset-left));
+    padding: 0 max(24px, calc(env(safe-area-inset-right) + 8px)) env(safe-area-inset-bottom) max(24px, calc(env(safe-area-inset-left) + 8px));
     border-top: 1px solid;
     transition: height 0.2s ease;
 }
@@ -312,7 +312,7 @@
 
     .reader-progress-bar {
         height: 36px;
-        padding: 0 max(16px, env(safe-area-inset-right)) env(safe-area-inset-bottom) max(16px, env(safe-area-inset-left));
+        padding: 0 max(20px, calc(env(safe-area-inset-right) + 12px)) env(safe-area-inset-bottom) max(20px, calc(env(safe-area-inset-left) + 12px));
     }
 
     .reader-progress-bar.with-slider {
@@ -363,6 +363,9 @@
     .progress-slider-inline {
         min-width: 60px;
         max-width: 120px;
+    }
+    .reader-progress-bar {
+        padding: 0 max(24px, calc(env(safe-area-inset-right) + 16px)) env(safe-area-inset-bottom) max(24px, calc(env(safe-area-inset-left) + 16px));
     }
 }
 
