@@ -38,6 +38,7 @@ import { styled } from '@mui/material/styles';
 import { AppStorage, LNMetadata, LnCategory, LnCategoryMetadata } from '@/lib/storage/AppStorage';
 import { AppRoutes } from '@/base/AppRoute.constants';
 import { importDiscoveredEpubs } from '@/features/ln/services/discoveredEpubImport.ts';
+import { isNovelProgressComplete } from '@/features/ln/utils/progressStatus.ts';
 import { parseEpub, ParseProgress } from '../services/epubParser';
 import { clearBookCache } from '../reader/hooks/useBookContent';
 import { LNCategoriesService, LnSortMode, LnSortModeType } from '../services/LNCategories';
@@ -63,6 +64,7 @@ interface LibraryItem extends LNMetadata {
     importMessage?: string;
     lastRead?: number;
     totalProgress?: number;
+    isCompleted?: boolean;
 }
 
 // --- Styled Components ---
@@ -240,6 +242,21 @@ const LNLibraryCard = ({ item, onOpen, onDelete, onEdit, isSelectionMode, isSele
                                                         },
                                                     }}
                                                 />
+                                            ) : item.isCompleted ? (
+                                                <Box
+                                                    sx={{
+                                                        bgcolor: 'success.main',
+                                                        color: 'success.contrastText',
+                                                        px: 1,
+                                                        py: 0.5,
+                                                        borderRadius: 1,
+                                                        fontSize: '0.75rem',
+                                                        fontWeight: 'bold',
+                                                        boxShadow: 2,
+                                                    }}
+                                                >
+                                                    COMPLETED
+                                                </Box>
                                             ) : item.hasProgress ? (
                                                 <Box
                                                     sx={{
@@ -510,9 +527,11 @@ export const LNLibrary: React.FC = () => {
                 const metadata = await AppStorage.lnMetadata.getItem<LNMetadata>(key);
                 if (metadata) {
                     const progress = await AppStorage.lnProgress.getItem(key);
+                    const isCompleted = isNovelProgressComplete(progress?.totalProgress);
                     items.push({
                         ...metadata,
-                        hasProgress: !!progress,
+                        hasProgress: !!progress && !isCompleted,
+                        isCompleted,
                         lastRead: progress?.lastRead,
                         totalProgress: progress?.totalProgress,
                     } as LibraryItem & { lastRead?: number; totalProgress?: number });
