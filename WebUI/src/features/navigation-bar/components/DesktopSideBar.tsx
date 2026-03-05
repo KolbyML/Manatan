@@ -28,8 +28,8 @@ import { useGetOptionForDirection } from '@/features/theme/services/ThemeCreator
 import { useNavBarContext } from '@/features/navigation-bar/NavbarContext.tsx';
 import { useResizeObserver } from '@/base/hooks/useResizeObserver.tsx';
 import { NavbarItem } from '@/features/navigation-bar/NavigationBar.types.ts';
-import { AppRoutes } from '@/base/AppRoute.constants.ts';
 import { TypographyMaxLines } from '@/base/components/texts/TypographyMaxLines.tsx';
+import { getDesktopManatanAnchorTargetPath } from '@/features/navigation-bar/DesktopSideBar.util.ts';
 
 const DrawerHeader = styled('div')(({ theme }) => ({
     display: 'flex',
@@ -122,6 +122,8 @@ const MAX_WIDTH_EXTENDED = 400;
 export const DesktopSideBar = ({ navBarItems }: { navBarItems: NavbarItem[] }) => {
     const { isCollapsed, setIsCollapsed, navBarWidth, setNavBarWidth } = useNavBarContext();
     const getOptionForDirection = useGetOptionForDirection();
+    const anchorTargetPath = getDesktopManatanAnchorTargetPath(navBarItems);
+    const renderManatanAnchor = () => <div id="manatan-nav-anchor-desktop" style={{ display: 'contents' }} />;
 
     const ref = useRef<HTMLDivElement | null>(null);
     useResizeObserver(
@@ -159,15 +161,11 @@ export const DesktopSideBar = ({ navBarItems }: { navBarItems: NavbarItem[] }) =
                 <List sx={{ p: 1 }} dense={isCollapsed}>
                     {navBarItems.map((navBarItem) => (
                         <Fragment key={navBarItem.path}>
-                            {navBarItem.path === AppRoutes.more.path && (
-                                <div id="manatan-nav-anchor-desktop" style={{ display: 'contents' }} />
-                            )}
+                            {anchorTargetPath === navBarItem.path && renderManatanAnchor()}
                             <NavigationBarItem {...navBarItem} />
                         </Fragment>
                     ))}
-                    {!navBarItems.some((item) => item.path === AppRoutes.more.path) && (
-                        <div id="manatan-nav-anchor-desktop" style={{ display: 'contents' }} />
-                    )}
+                    {!anchorTargetPath && renderManatanAnchor()}
                 </List>
             </Box>
         </Drawer>
