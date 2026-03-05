@@ -80,7 +80,11 @@ import {
     getHarmonicMeanFrequencyFromFrequencies,
     getLowestFrequencyFromFrequencies,
 } from '@/Manatan/utils/frequency.ts';
-import { renderAnkiPitchAccents } from '@/Manatan/utils/pitchAccentExport.ts';
+import {
+    renderAnkiPitchAccents,
+    renderAnkiPitchAccentCategories,
+    renderAnkiPitchAccentPositions,
+} from '@/Manatan/utils/pitchAccentExport.ts';
 import { DictionaryResult, WordAudioSource, WordAudioSourceSelection } from '@/Manatan/types.ts';
 import { StructuredContent, DictionaryView } from '@/Manatan/components/DictionaryView.tsx';
 import { PronunciationSection, extractPronunciationData } from '@/Manatan/components/Pronunciation.tsx';
@@ -425,6 +429,16 @@ const getHarmonicMeanFrequency = (entry: DictionaryResult): string => {
 const generateAnkiPitchAccent = (entry: DictionaryResult): string => {
     const { pitchAccents } = extractPronunciationData(entry);
     return renderAnkiPitchAccents(pitchAccents, entry.reading || entry.headword);
+};
+
+const generateAnkiPitchAccentPositions = (entry: DictionaryResult): string => {
+    const { pitchAccents } = extractPronunciationData(entry);
+    return renderAnkiPitchAccentPositions(pitchAccents, entry.reading || entry.headword);
+};
+
+const generateAnkiPitchAccentCategories = (entry: DictionaryResult): string => {
+    const { pitchAccents } = extractPronunciationData(entry);
+    return renderAnkiPitchAccentCategories(pitchAccents, entry.reading || entry.headword, entry.termTags);
 };
 
 const getTermTagLabel = (tag: unknown): string => {
@@ -2710,7 +2724,13 @@ export const AnimeVideoPlayer = ({
                 else if (mapType === 'Word (Again)') fields[ankiField] = entry.headword;
                 else if (mapType === 'Reading') fields[ankiField] = entry.reading;
                 else if (mapType === 'Furigana') fields[ankiField] = generateAnkiFurigana(entry);
-                else if (mapType === 'Pitch Accent') fields[ankiField] = generateAnkiPitchAccent(entry);
+                else if (mapType === 'Pitch Accent' || mapType === 'Pitch Accents') fields[ankiField] = generateAnkiPitchAccent(entry);
+                else if (mapType === 'Pitch Accent Positions' || mapType === 'Pitch Positions') {
+                    fields[ankiField] = generateAnkiPitchAccentPositions(entry);
+                }
+                else if (mapType === 'Pitch Accent Categories' || mapType === 'Pitch Categories') {
+                    fields[ankiField] = generateAnkiPitchAccentCategories(entry);
+                }
                 else if (mapType === 'Definition' || mapType === 'Glossary') {
                     fields[ankiField] = buildDefinitionHtml(entry);
                 }
