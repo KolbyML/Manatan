@@ -1,3 +1,15 @@
+## Release v3.2.12
+
+- fix(ln): respect iOS safe-area insets in reader layouts (25cbf65)
+- feat(anime): add combinable subtitle regex filters (9e2d645)
+- Sync browse language filters when yomitan language changes (7298d05)
+- Fix extension subtitle loading via server proxy (8ebecb2)
+- fix(lookup): normalize spaced-language word boundaries (347b3c2)
+- Best effort import yomitan dicts even if they have invalid version ids (bae5a47)
+- Cut jvm ram usage in half (100423f)
+- chore(ffmpeg): bump download release to Webvtt (238a556)
+- fix(sync): add keys() support for LN content and files storage (878a14c)
+
 ## Release v3.2.11
 
 - Mark finished novels as completed in library status (23953e8)
