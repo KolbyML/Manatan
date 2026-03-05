@@ -80,6 +80,7 @@ import {
     getHarmonicMeanFrequencyFromFrequencies,
     getLowestFrequencyFromFrequencies,
 } from '@/Manatan/utils/frequency.ts';
+import { renderAnkiPitchAccents } from '@/Manatan/utils/pitchAccentExport.ts';
 import { DictionaryResult, WordAudioSource, WordAudioSourceSelection } from '@/Manatan/types.ts';
 import { StructuredContent, DictionaryView } from '@/Manatan/components/DictionaryView.tsx';
 import { PronunciationSection, extractPronunciationData } from '@/Manatan/components/Pronunciation.tsx';
@@ -423,51 +424,7 @@ const getHarmonicMeanFrequency = (entry: DictionaryResult): string => {
 
 const generateAnkiPitchAccent = (entry: DictionaryResult): string => {
     const { pitchAccents } = extractPronunciationData(entry);
-    if (!pitchAccents || pitchAccents.length === 0) return '';
-
-    const seenPitches = new Set<string>();
-
-    return pitchAccents.map(pa => {
-        const morae = pa.reading ? pa.reading.split('').filter(c => c !== ' ') : (entry.reading || entry.headword).split('').filter(c => c !== ' ');
-        const reading = morae.join('');
-
-        const pitchHtml = pa.pitches.map(p => {
-            const pos = typeof p.position === 'number' ? p.position : 0;
-            const pattern = p.pattern || '';
-            const nasal = p.nasal || [];
-            const devoice = p.devoice || [];
-
-            const pitchKey = `${reading}:${pos}:${pattern}:${nasal.join(',')}:${devoice.join(',')}`;
-            if (seenPitches.has(pitchKey)) {
-                return '';
-            }
-            seenPitches.add(pitchKey);
-
-            let textHtml = '';
-            morae.forEach((mora, i) => {
-                const isHigh = pattern ? pattern[i] === 'H' : (pos === 0 ? i > 0 : (pos === 1 ? i < 1 : (i > 0 && i < pos)));
-                const hasNasal = nasal.includes(i + 1);
-                const hasDevoice = devoice.includes(i + 1);
-
-                const style = `display:inline-flex;flex-direction:column;align-items:center;padding:0 1px;${isHigh ? 'padding-top:0' : 'padding-top:8px'};`;
-                const lineStyle = `position:absolute;left:0;right:0;height:0.125em;background-color:currentColor;${isHigh ? 'top:0' : 'top:0.375em'};`;
-                const nasalStyle = 'position:absolute;top:-0.3em;left:50%;transform:translateX(-50%);width:0.3em;height:0.3em;border-radius:50%;background:#3498db;opacity:0.6;';
-
-                let extra = '';
-                if (hasNasal) extra += `<span style="${nasalStyle}"></span>`;
-                if (hasDevoice) extra += `<span style="position:absolute;top:-0.25em;right:0;font-size:0.5em;">°</span>`;
-
-                textHtml += `<span style="position:relative;${style}">${mora}<span style="${lineStyle}"></span>${extra}</span>`;
-            });
-
-            return textHtml;
-        }).filter(Boolean).join('');
-
-        if (!pitchHtml) return '';
-
-        const dictLabel = pa.dictionaryName ? `<span style="font-size:0.7em;color:#888;background:rgba(139,92,246,0.2);padding:2px 6px;border-radius:3px;margin-right:4px;">${pa.dictionaryName}</span>` : '';
-        return `<div style="margin-bottom:4px;">${dictLabel}<span style="display:inline-flex;align-items:flex-end;">${pitchHtml}</span></div>`;
-    }).filter(Boolean).join('');
+    return renderAnkiPitchAccents(pitchAccents, entry.reading || entry.headword);
 };
 
 const getTermTagLabel = (tag: unknown): string => {
