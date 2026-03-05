@@ -262,6 +262,9 @@ export class AppStorage {
                 return [];
             }
         },
+        async keys(): Promise<string[]> {
+            return await AppStorage.getNovelIdsForSyncStores();
+        },
         async removeItem(key: string): Promise<void> {}
     };
 
@@ -309,6 +312,9 @@ export class AppStorage {
                 data: { ...content, imageBlobs },
             });
         },
+        async keys(): Promise<string[]> {
+            return await AppStorage.getNovelIdsForSyncStores();
+        },
         async removeItem(key: string): Promise<void> {}
     };
 
@@ -338,6 +344,11 @@ export class AppStorage {
         } catch {
             return null;
         }
+    }
+
+    private static async getNovelIdsForSyncStores(): Promise<string[]> {
+        const metadata = await this.getAllLnMetadata();
+        return metadata.map(({ id }) => id);
     }
 
     // ========================================================================
