@@ -43,6 +43,8 @@ export const StructuredContent: React.FC<{
     onWordClick?: (text: string, position: number) => void;
     colors?: StructuredContentColors;
 }> = ({ contentString, dictionaryName, onLinkClick, onWordClick, colors }) => {
+    const textRootRef = useRef<HTMLSpanElement | null>(null);
+    const contentRootRef = useRef<HTMLDivElement | null>(null);
     const parsedData = useMemo(() => {
         if (!contentString) return null;
         try {
@@ -53,6 +55,7 @@ export const StructuredContent: React.FC<{
             return contentString;
         }
     }, [contentString]);
+    const lookupText = useMemo(() => getNodeText(parsedData), [parsedData]);
 
     if (parsedData === null || parsedData === undefined) return null;
     
@@ -61,17 +64,11 @@ export const StructuredContent: React.FC<{
         if (!text.trim()) return null;
         if (onWordClick) {
             return (
-                <span 
+                <span
+                    ref={textRootRef}
                     onClick={(e) => {
                         e.stopPropagation();
-                        let charOffset = 0;
-                        if (document.caretRangeFromPoint) {
-                            const range = document.caretRangeFromPoint(e.clientX, e.clientY);
-                            if (range && range.startContainer.nodeType === Node.TEXT_NODE) {
-                                charOffset = range.startOffset;
-                            }
-                        }
-                        onWordClick(text, charOffset);
+                        onWordClick(lookupText, getClickTextOffset(textRootRef.current, e.clientX, e.clientY));
                     }}
                     style={{ whiteSpace: 'pre-wrap' }}
                 >
@@ -82,7 +79,19 @@ export const StructuredContent: React.FC<{
         return <span style={{ whiteSpace: 'pre-wrap' }}>{text}</span>;
     }
     
-    return <ContentNode node={parsedData} dictionaryName={dictionaryName} onLinkClick={onLinkClick} onWordClick={onWordClick} colors={colors} />;
+    return (
+        <div ref={contentRootRef} style={{ display: 'contents' }}>
+            <ContentNode
+                node={parsedData}
+                dictionaryName={dictionaryName}
+                onLinkClick={onLinkClick}
+                onWordClick={onWordClick}
+                colors={colors}
+                lookupText={lookupText}
+                rootRef={contentRootRef}
+            />
+        </div>
+    );
 };
 
 const getNodeText = (node: any): string => {
@@ -90,8 +99,60 @@ const getNodeText = (node: any): string => {
     if (typeof node === 'string' || typeof node === 'number') return String(node);
     if (Array.isArray(node)) return node.map(getNodeText).join('');
     if (node.type === 'structured-content') return getNodeText(node.content);
+    if (node?.data?.content === 'attribution') return '';
     if (node && typeof node === 'object') return getNodeText(node.content);
     return '';
+};
+
+const getClickTextOffset = (rootElement: Node | null, clientX: number, clientY: number): number => {
+    const rangeFromPoint = document.caretRangeFromPoint?.(clientX, clientY);
+    const caretPosition = document.caretPositionFromPoint?.(clientX, clientY);
+
+    let targetNode: Node | null = null;
+    let targetOffset = 0;
+
+    if (rangeFromPoint) {
+        targetNode = rangeFromPoint.startContainer;
+        targetOffset = rangeFromPoint.startOffset;
+    } else if (caretPosition) {
+        targetNode = caretPosition.offsetNode;
+        targetOffset = caretPosition.offset;
+    }
+
+    if (!rootElement || !targetNode || !rootElement.contains(targetNode)) {
+        return 0;
+    }
+
+    if (targetNode.nodeType === Node.TEXT_NODE && targetOffset > 0) {
+        const checkRange = document.createRange();
+        checkRange.setStart(targetNode, targetOffset - 1);
+        checkRange.setEnd(targetNode, targetOffset);
+        const rect = checkRange.getBoundingClientRect();
+        if (
+            clientX >= rect.left &&
+            clientX <= rect.right &&
+            clientY >= rect.top &&
+            clientY <= rect.bottom
+        ) {
+            targetOffset -= 1;
+        }
+    }
+
+    const range = document.createRange();
+    range.setStart(rootElement, 0);
+    range.setEnd(targetNode, targetOffset);
+    return range.toString().length;
+};
+
+const normalizeTableContent = (content: any): any => {
+    const items = Array.isArray(content) ? content : [content];
+    if (!items.some((item) => item?.tag === 'tr')) {
+        return content;
+    }
+    if (items.some((item) => item?.tag === 'tbody' || item?.tag === 'thead' || item?.tag === 'tfoot')) {
+        return content;
+    }
+    return [{ tag: 'tbody', content: items }];
 };
 
 const ELEMENT_CONFIG: Record<string, {
@@ -191,53 +252,25 @@ const ContentNode: React.FC<{
     onLinkClick?: (href: string, text: string) => void;
     onWordClick?: (text: string, position: number) => void;
     colors?: StructuredContentColors;
-}> = ({ node, dictionaryName, onLinkClick, onWordClick, colors }) => {
+    lookupText?: string;
+    rootRef?: React.RefObject<HTMLElement | null>;
+}> = ({ node, dictionaryName, onLinkClick, onWordClick, colors, lookupText, rootRef }) => {
     if (node === null || node === undefined) return null;
     if (typeof node === 'string' || typeof node === 'number') {
         const text = String(node);
         if (onWordClick && text.trim()) {
             const handleClick = (e: React.MouseEvent) => {
                 e.stopPropagation();
-                let charOffset = 0;
-                if (document.caretRangeFromPoint) {
-                    const range = document.caretRangeFromPoint(e.clientX, e.clientY);
-                    if (range && range.startContainer.nodeType === Node.TEXT_NODE) {
-                        charOffset = range.startOffset;
-                        if (charOffset > 0) {
-                            const checkRange = document.createRange();
-                            checkRange.setStart(range.startContainer, charOffset - 1);
-                            checkRange.setEnd(range.startContainer, charOffset);
-                            const rect = checkRange.getBoundingClientRect();
-                            if (e.clientX >= rect.left && e.clientX <= rect.right &&
-                                e.clientY >= rect.top && e.clientY <= rect.bottom) {
-                                charOffset -= 1;
-                            }
-                        }
-                    }
-                } else if ((document as any).caretPositionFromPoint) {
-                    const pos = (document as any).caretPositionFromPoint(e.clientX, e.clientY);
-                    if (pos && pos.offsetNode.nodeType === Node.TEXT_NODE) {
-                        charOffset = pos.offset;
-                        if (charOffset > 0) {
-                            const checkRange = document.createRange();
-                            checkRange.setStart(pos.offsetNode, charOffset - 1);
-                            checkRange.setEnd(pos.offsetNode, charOffset);
-                            const rect = checkRange.getBoundingClientRect();
-                            if (e.clientX >= rect.left && e.clientX <= rect.right &&
-                                e.clientY >= rect.top && e.clientY <= rect.bottom) {
-                                charOffset -= 1;
-                            }
-                        }
-                    }
-                }
-                onWordClick(text, charOffset);
+                const targetText = lookupText || text;
+                const charOffset = getClickTextOffset(rootRef?.current ?? e.currentTarget, e.clientX, e.clientY);
+                onWordClick(targetText, charOffset);
             };
             return <span onClick={handleClick}>{node}</span>;
         }
         return <>{node}</>;
     }
-    if (Array.isArray(node)) return <>{node.map((item, i) => <ContentNode key={i} node={item} dictionaryName={dictionaryName} onLinkClick={onLinkClick} onWordClick={onWordClick} colors={colors} />)}</>;
-    if (node.type === 'structured-content') return <ContentNode node={node.content} dictionaryName={dictionaryName} onLinkClick={onLinkClick} onWordClick={onWordClick} colors={colors} />;
+    if (Array.isArray(node)) return <>{node.map((item, i) => <ContentNode key={i} node={item} dictionaryName={dictionaryName} onLinkClick={onLinkClick} onWordClick={onWordClick} colors={colors} lookupText={lookupText} rootRef={rootRef} />)}</>;
+    if (node.type === 'structured-content') return <ContentNode node={node.content} dictionaryName={dictionaryName} onLinkClick={onLinkClick} onWordClick={onWordClick} colors={colors} lookupText={lookupText} rootRef={rootRef} />;
 
     if (node?.data?.content === 'attribution') return null;
 
@@ -262,7 +295,8 @@ const ContentNode: React.FC<{
     
     const finalStyle = { ...config.baseStyle, ...dictStyle };
     
-    const childProps = { dictionaryName, onLinkClick, onWordClick, colors };
+    const childProps = { dictionaryName, onLinkClick, onWordClick, colors, lookupText, rootRef };
+    const normalizedContent = tag === 'table' ? normalizeTableContent(content) : content;
     
     if (config.void || VOID_TAGS.includes(tag)) {
         if (tag === 'img') {
@@ -304,7 +338,7 @@ const ContentNode: React.FC<{
                 className={className}
                 title={titleAttr}
             >
-                <ContentNode node={content} {...childProps} />
+                <ContentNode node={normalizedContent} {...childProps} />
             </a>
         );
     }
@@ -313,7 +347,7 @@ const ContentNode: React.FC<{
     if (!Component) return null;
     const element = (
         <Component style={finalStyle} {...dataAttrs} className={className} title={titleAttr}>
-            <ContentNode node={content} {...childProps} />
+            <ContentNode node={normalizedContent} {...childProps} />
         </Component>
     );
     
@@ -1187,17 +1221,8 @@ export const DictionaryView: React.FC<DictionaryViewProps> = ({
     const wordAudioOptions = React.useMemo(() => getWordAudioSourceOptions(settings.yomitanLanguage), [settings.yomitanLanguage]);
     const processedEntries = useMemo(() => {
         if (!settings.showHarmonicMeanFreq) return results;
-        const firstFrequencies = results
-            .filter(entry => entry.frequencies && entry.frequencies.length > 0)
-            .map(entry => entry.frequencies![0]);
-        if (firstFrequencies.length === 0) return results;
-        const harmonicMean = calculateHarmonicMean(firstFrequencies);
-        if (harmonicMean === null) return results;
-        return results.map(entry => ({
-            ...entry,
-            frequencies: [{ dictionaryName: 'Harmonic Mean', value: harmonicMean.toString() }]
-        }));
-    }, [results, settings.showHarmonicMeanFreq, calculateHarmonicMean]);
+        return applyPerEntryHarmonicMean(results);
+    }, [results, settings.showHarmonicMeanFreq]);
     const handlePlayWordAudio = useCallback(async (entry: DictionaryResult, selection?: WordAudioSourceSelection, playFailSound = true) => {
         const entryKey = `${entry.headword}::${entry.reading}`;
         const resolvedSelection = selection || (wordAudioSelectionKey === entryKey ? wordAudioSelection : 'auto');
@@ -1294,7 +1319,7 @@ export const DictionaryView: React.FC<DictionaryViewProps> = ({
             )}
             {isLoading && <div style={{ textAlign: 'center', padding: '20px', color: colors.textMuted }}>Scanning...</div>}
             {!isLoading && processedEntries.map((entry, i) => (
-                <div key={i} class="entry" style={{ marginBottom: layout === 'horizontal' ? '8px' : '16px', paddingBottom: layout === 'horizontal' ? '8px' : '16px', borderBottom: i < processedEntries.length - 1 ? `1px solid ${colors.border}` : 'none' }}>
+                <div key={i} className="entry" style={{ marginBottom: layout === 'horizontal' ? '8px' : '16px', paddingBottom: layout === 'horizontal' ? '8px' : '16px', borderBottom: i < processedEntries.length - 1 ? `1px solid ${colors.border}` : 'none' }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '8px' }}>
                         <div style={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: layout === 'horizontal' ? '6px' : '0' }}>
                             {i === 0 && layout === 'horizontal' && renderHistoryNav && renderHistoryNav()}
@@ -1340,13 +1365,13 @@ export const DictionaryView: React.FC<DictionaryViewProps> = ({
                                 )}
                             </div>
                             {entry.termTags && entry.termTags.length > 0 && (
-                                <div style={{ display: 'flex', gap: '4px' }} class="headword-list-tag-list tag-list">
+                                <div style={{ display: 'flex', gap: '4px' }} className="headword-list-tag-list tag-list">
                                     {entry.termTags.flatMap((tag: any) => {
                                         const label = (typeof tag === 'object' && tag !== null && tag.name) ? tag.name : tag;
                                         if (typeof label !== 'string') return [];
                                         return splitTagString(label);
                                     }).map((label, idx) => (
-                                        <span key={idx} class="tag" style={getTagStyle(layout, colors.tagBg, colors.tagText)}><span class="tag-label">{label}</span></span>
+                                        <span key={idx} className="tag" style={getTagStyle(layout, colors.tagBg, colors.tagText)}><span className="tag-label">{label}</span></span>
                                     ))}
                                 </div>
                             )}
@@ -1384,9 +1409,9 @@ export const DictionaryView: React.FC<DictionaryViewProps> = ({
                         </div>
                     </div>
                     {entry.frequencies && entry.frequencies.length > 0 && (
-                        <div class="entry-body frequency-group-list" style={{ marginBottom: '10px', display: 'flex', flexWrap: 'wrap', gap: '5px' }}>
+                        <div className="entry-body frequency-group-list" style={{ marginBottom: '10px', display: 'flex', flexWrap: 'wrap', gap: '5px' }}>
                             {entry.frequencies.map((freq, fIdx) => (
-                                <div key={fIdx} class="frequency-item" style={{ display: 'inline-flex', fontSize: '0.75em', borderRadius: '4px', overflow: 'hidden', border: `1px solid ${colors.border}` }}>
+                                <div key={fIdx} className="frequency-item" style={{ display: 'inline-flex', fontSize: '0.75em', borderRadius: '4px', overflow: 'hidden', border: `1px solid ${colors.border}` }}>
                                     <div style={{ backgroundColor: colors.freqNameBg, color: colors.freqNameText, fontWeight: 'bold', padding: '2px 6px' }}>{freq.dictionaryName}</div>
                                     <div style={{ backgroundColor: colors.freqValueBg, color: colors.freqValueText, padding: '2px 6px', fontWeight: 'bold' }}>{freq.value}</div>
                                 </div>
@@ -1409,18 +1434,18 @@ export const DictionaryView: React.FC<DictionaryViewProps> = ({
                         );
                     })()}
                     {entry.glossary && (
-                        <div class="entry-body gloss-list definition-list">
+                        <div className="entry-body gloss-list definition-list">
                             {entry.glossary.map((def, defIdx) => (
-                                <div key={defIdx} class="gloss-item definition-item" data-dictionary={def.dictionaryName} style={{ display: 'flex', marginBottom: '12px' }}>
-                                    <div style={{ flexShrink: 0, width: '24px', color: colors.textMuted, fontWeight: 'bold' }}><span class="gloss-separator">{defIdx + 1}.</span></div>
-                                    <div style={{ flexGrow: 1 }} class="definition-item-inner definition-item-content">
-                                        <div style={{ marginBottom: '4px' }} class="definition-tag-list tag-list">
+                                <div key={defIdx} className="gloss-item definition-item" data-dictionary={def.dictionaryName} style={{ display: 'flex', marginBottom: '12px' }}>
+                                    <div style={{ flexShrink: 0, width: '24px', color: colors.textMuted, fontWeight: 'bold' }}><span className="gloss-separator">{defIdx + 1}.</span></div>
+                                    <div style={{ flexGrow: 1 }} className="definition-item-inner definition-item-content">
+                                        <div style={{ marginBottom: '4px' }} className="definition-tag-list tag-list">
                                             {normalizeTagList(def.tags || []).map((t, ti) => (
-                                                <span key={ti} class="tag" style={getTagStyle(layout, colors.tagBg, colors.tagText)}><span class="tag-label">{t}</span></span>
+                                                <span key={ti} className="tag" style={getTagStyle(layout, colors.tagBg, colors.tagText)}><span className="tag-label">{t}</span></span>
                                             ))}
-                                            <span class="tag tag-label" style={getTagStyle(layout, colors.dictTagBg, colors.dictTagText)}>{def.dictionaryName}</span>
+                                            <span className="tag tag-label" style={getTagStyle(layout, colors.dictTagBg, colors.dictTagText)}>{def.dictionaryName}</span>
                                         </div>
-                                        <div style={{ color: colors.text, whiteSpace: 'pre-wrap' }} class="gloss-content">
+                                        <div style={{ color: colors.text, whiteSpace: 'pre-wrap' }} className="gloss-content">
                                             {def.content.filter((c: string) => c && c.trim()).map((jsonString, idx) => (
                                                 <div key={idx} style={{ marginBottom: '2px' }}>
                                                     <StructuredContent contentString={jsonString} dictionaryName={def.dictionaryName} onLinkClick={onLinkClick} onWordClick={onWordClick} colors={colors} />

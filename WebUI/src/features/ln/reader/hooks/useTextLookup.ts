@@ -3,16 +3,61 @@
  */
 
 import { useCallback } from 'react';
+import type { YomitanLanguage } from '@/Manatan/types';
 import { useOCR } from '@/Manatan/context/OCRContext';
 import { lookupYomitan } from '@/Manatan/utils/api';
+import { isNoSpaceLanguage } from '@/Manatan/utils/language';
 
 const BLOCK_TAGS = new Set(['P', 'DIV', 'SECTION', 'ARTICLE', 'LI', 'TD', 'TH', 'BLOCKQUOTE', 'H1', 'H2', 'H3', 'H4', 'H5', 'H6']);
 const SENTENCE_END_SET = new Set(['。', '！', '？', '；', '.', '!', '?', ';']);
 const MAX_SENTENCE_LENGTH = 50;
 const INTERACTIVE_SELECTORS = 'a, button, input, ruby rt, img, .nav-btn, .reader-progress, .reader-slider-wrap';
 const WHITESPACE_REGEX = /\s/;
+const UNICODE_WORD_CHAR_REGEX = /[\p{L}\p{N}]/u;
+const WORD_CONNECTORS = new Set(["'", '’', '-', '‐', '‑', '–', '—']);
 
 const textEncoder = new TextEncoder();
+
+const clampOffset = (offset: number, textLength: number): number => Math.min(Math.max(offset, 0), textLength);
+const isWordChar = (value: string): boolean => UNICODE_WORD_CHAR_REGEX.test(value);
+
+const isWordContinuationAt = (text: string, index: number): boolean => {
+    if (index < 0 || index >= text.length) {
+        return false;
+    }
+
+    const char = text[index];
+    if (isWordChar(char)) {
+        return true;
+    }
+
+    if (!WORD_CONNECTORS.has(char)) {
+        return false;
+    }
+
+    if (index <= 0 || index + 1 >= text.length) {
+        return false;
+    }
+
+    return isWordChar(text[index - 1]) && isWordChar(text[index + 1]);
+};
+
+const getLookupStartOffset = (text: string, offset: number, language?: YomitanLanguage): number => {
+    const safeOffset = clampOffset(offset, text.length);
+    if (safeOffset <= 0 || isNoSpaceLanguage(language)) {
+        return safeOffset;
+    }
+
+    let wordStart = safeOffset;
+    while (
+        wordStart > 0
+        && !WHITESPACE_REGEX.test(text[wordStart - 1])
+        && isWordContinuationAt(text, wordStart - 1)
+    ) {
+        wordStart -= 1;
+    }
+    return wordStart;
+};
 
 const getCaretRange = (x: number, y: number) => {
     const pos = (document as any).caretPositionFromPoint?.(x, y);
