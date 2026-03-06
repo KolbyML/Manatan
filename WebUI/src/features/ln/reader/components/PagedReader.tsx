@@ -321,7 +321,11 @@ export const PagedReader: React.FC<PagedReaderProps> = ({
         () => chapters[currentSection] || '',
         [chapters, currentSection]
     );
-
+  const isImageOnly = useMemo(() => {
+        if (!currentHtml) return false;
+        const text = currentHtml.replace(/<[^>]*>/g, '').trim();
+        return text.length < 5 && /<img|<svg/i.test(currentHtml);
+    }, [currentHtml]);
     const typographyStyles = useMemo(
         () => buildTypographyStyles(settings, isVertical),
         [settings, isVertical]
@@ -1189,20 +1193,20 @@ useEffect(() => {
                 }
             `}</style>
 
-            {/* Outer margin container - STATIC, does not transform */}
+            {/* Outer margin container - STATIC */}
             <div
     className="paged-margin-container"
     style={{
         position: 'absolute',
         inset: 0,
         overflow: 'hidden',
-        paddingTop: `${(layout?.margins.top ?? 0) + safeInsets.top}px`,
-        paddingRight: `${(layout?.margins.right ?? 0) + safeInsets.right}px`,
-        paddingBottom: `${(layout?.margins.bottom ?? 0) + safeInsets.bottom}px`,
-        paddingLeft: `${(layout?.margins.left ?? 0) + safeInsets.left}px`,
+        paddingTop: `${(isImageOnly ? 0 : layout?.margins.top ?? 0) + safeInsets.top}px`,
+                    paddingRight: `${(isImageOnly ? 0 : layout?.margins.right ?? 0) + safeInsets.right}px`,
+                    paddingBottom: `${(isImageOnly ? 0 : layout?.margins.bottom ?? 0) + safeInsets.bottom}px`,
+                    paddingLeft: `${(isImageOnly ? 0 : layout?.margins.left ?? 0) + safeInsets.left}px`,
     }}
 >
-                {/* Viewport - no padding, just clips */}
+                {/* Viewport  */}
                 <div
                     ref={viewportRef}
                     className="paged-viewport"
@@ -1212,13 +1216,13 @@ useEffect(() => {
                     onTouchStart={handleTouchStart}
                     onTouchEnd={handleTouchEnd}
                 >
-                    {/* Content - transforms happen here */}
+                    {/* Content */}
                     <div
                         ref={contentRef}
-                        className={`paged-content ${!settings.lnEnableFurigana ? 'furigana-hidden' : ''}`}
-                        style={contentStyle}
+ className={`paged-content ${!settings.lnEnableFurigana ? 'furigana-hidden' : ''} ${isImageOnly ? 'image-only-chapter' : ''}`}
+                         style={contentStyle}
                     >
-                        {css && <style>{css}</style>}
+                         {css && <style>{`@scope { \n${css}\n }`}</style>}
                         <div dangerouslySetInnerHTML={{ __html: currentHtml }} />
                     </div>
                 </div>
