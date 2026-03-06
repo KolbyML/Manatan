@@ -352,7 +352,7 @@ const MainApp = () => {
                             <Route path={AppRoutes.migrate.childRoutes.search.match} element={<SearchAll />} />
                         </Route>
                         {/* LN Library Route */}
-                        <Route path={AppRoutes.novel.match} element={<LNLibrary />} />
+                        <Route path={AppRoutes.ln.match} element={<LNLibrary />} />
                         <Route path={AppRoutes.tracker.match} element={<TrackerOAuthLogin />} />
                     </Route>
                 </Routes>
@@ -409,7 +409,7 @@ export const App: React.FC = () => (
                     <Routes>
                         {/* Fullscreen Reader Routes */}
                         <Route
-                            path={`${AppRoutes.novel.match}/${AppRoutes.novel.childRoutes.reader.match}/*`}
+                            path={`${AppRoutes.ln.match}/${AppRoutes.ln.childRoutes.reader.match}/*`}
                             element={<LNReaderApp />}
                         />
                         <Route path={AppRoutes.reader.match} element={<ReaderLayout />} />
