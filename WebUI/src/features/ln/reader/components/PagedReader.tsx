@@ -503,11 +503,26 @@ export const PagedReader: React.FC<PagedReaderProps> = ({
             setMeasuredPageSize(actualPageSize);
 
             // Calculate total pages
-            const scrollSize = isVertical
-                ? currentContent.scrollHeight
-                : currentContent.scrollWidth;
+            if (isImageOnly) {
+    setMeasuredPageSize(layout.columnWidth);
+    setTotalPages(1);
+    setCurrentPage(0);
 
-            let calculatedPages = 1;
+    requestAnimationFrame(() => {
+        if (cancelled) return;
+        setIsTransitioning(false);
+        setContentReady(true);
+    });
+
+    return;
+}
+
+// Calculate total pages normally
+const scrollSize = isVertical
+    ? currentContent.scrollHeight
+    : currentContent.scrollWidth;
+
+let calculatedPages = 1;
             if (scrollSize > actualColumnWidth) {
                 calculatedPages = Math.max(1, Math.ceil((scrollSize - 1) / actualPageSize));
             }
