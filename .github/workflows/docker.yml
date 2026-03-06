@@ -1,18 +1,13 @@
 name: Docker Publish
 
 on:
-  workflow_run:
-    workflows: ["CI Publish"]
+  release:
     types:
-      - completed
+      - published
   workflow_dispatch:
     inputs:
-      run_id:
-        description: 'Run ID of the "CI Publish" workflow to download artifacts from'
-        required: true
-        type: string
       tag_name:
-        description: 'Docker Tag to apply (e.g., v1.0.5)'
+        description: "Release tag to build from (e.g., v1.0.5)"
         required: true
         type: string
 
@@ -23,8 +18,7 @@ env:
 jobs:
   push_to_registry:
     name: Build & Push Docker Image
-    # Only run if the upstream workflow succeeded
-    if: ${{ github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success' }}
+    if: ${{ github.event_name == 'workflow_dispatch' || github.event.action == 'published' }}
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -34,48 +28,74 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Determine Version
-        id: get_version
+      - name: Resolve Release
+        id: release
+        env:
+          GH_TOKEN: ${{ github.token }}
         run: |
-          # 1. Try manual input first
           TAG_NAME="${{ inputs.tag_name }}"
-          
-          # 2. If empty, try getting it from the workflow_run event
+
           if [[ -z "$TAG_NAME" ]]; then
-            TAG_NAME="${{ github.event.workflow_run.head_branch }}"
+            TAG_NAME="${{ github.event.release.tag_name }}"
           fi
-          
-          # 3. Fallback validation
+
           if [[ -z "$TAG_NAME" || "$TAG_NAME" == "null" ]]; then
-             TAG_NAME="latest"
+            echo "Could not determine release tag" >&2
+            exit 1
           fi
-          
-          echo "Building for version: $TAG_NAME"
+
+          PRERELEASE="${{ github.event.release.prerelease }}"
+          if [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
+            PRERELEASE=$(gh api "repos/${{ github.repository }}/releases/tags/$TAG_NAME" --jq '.prerelease')
+          fi
+
+          PUSH_LATEST=true
+          if [[ "$PRERELEASE" == "true" ]]; then
+            PUSH_LATEST=false
+          fi
+
+          echo "Building Docker image for $TAG_NAME"
           echo "tag=$TAG_NAME" >> $GITHUB_OUTPUT
+          echo "push_latest=$PUSH_LATEST" >> $GITHUB_OUTPUT
 
-      - name: Download Linux AMD64 Artifacts
-        uses: actions/download-artifact@v4
-        with:
-          name: manatan-linux-amd64
-          path: download_amd64
-          run-id: ${{ inputs.run_id || github.event.workflow_run.id }}
-          github-token: ${{ secrets.GITHUB_TOKEN }}
+      - name: Download Linux Release Assets
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          TAG_NAME="${{ steps.release.outputs.tag }}"
+          mkdir -p download_amd64 download_arm64
 
-      - name: Download Linux ARM64 Artifacts
-        uses: actions/download-artifact@v4
-        with:
-          name: manatan-linux-arm64
-          path: download_arm64
-          run-id: ${{ inputs.run_id || github.event.workflow_run.id }}
-          github-token: ${{ secrets.GITHUB_TOKEN }}
+          download_asset() {
+            local pattern="$1"
+            local directory="$2"
+
+            for attempt in {1..10}; do
+              if gh release download "$TAG_NAME" \
+                --repo "${{ github.repository }}" \
+                --pattern "$pattern" \
+                --dir "$directory"; then
+                return 0
+              fi
+
+              echo "Asset $pattern is not available yet (attempt $attempt/10)"
+              sleep 30
+            done
+
+            echo "Failed to download release asset: $pattern" >&2
+            return 1
+          }
+
+          download_asset "Manatan-${TAG_NAME}-Linux-amd64.tar.gz" download_amd64
+          download_asset "Manatan-${TAG_NAME}-Linux-arm64.tar.gz" download_arm64
+
+          ls -lh download_amd64
+          ls -lh download_arm64
 
       - name: Prepare Context
         run: |
-          # Rename files to exactly what the Dockerfile expects
-          # Note: We look in download_amd64 now, not download_x64
-          find download_amd64 -name "*.tar.gz" -exec cp {} manatan-linux-amd64.tar.gz \;
-          find download_arm64 -name "*.tar.gz" -exec cp {} manatan-linux-arm64.tar.gz \;
-          
+          cp download_amd64/*.tar.gz manatan-linux-amd64.tar.gz
+          cp download_arm64/*.tar.gz manatan-linux-arm64.tar.gz
+
           ls -lh *.tar.gz
 
       - name: Set up QEMU
@@ -99,8 +119,8 @@ jobs:
         with:
           images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
           tags: |
-            type=raw,value=${{ steps.get_version.outputs.tag }}
-            type=raw,value=latest
+            type=raw,value=${{ steps.release.outputs.tag }}
+            type=raw,value=latest,enable=${{ steps.release.outputs.push_latest == 'true' }}
 
       - name: Build and Push
         uses: docker/build-push-action@v6
