@@ -59,6 +59,10 @@ export interface LNReaderSettings {
     lnAutoBookmark: boolean;
     lnBookmarkDelay: number;
     lnLockProgressBar: boolean;
+    lnMarginTop: number;
+    lnMarginBottom: number;
+    lnMarginLeft: number;
+    lnMarginRight: number;
     lnHideNavButtons: boolean;
     lnEnableSwipe: boolean;
     lnDragThreshold: number;
@@ -112,6 +116,7 @@ export interface LNParsedBook {
     chapters: string[];
     imageBlobs: Record<string, Blob | string>;
     chapterFilenames: string[];
+    css?: string;
 }
 
 export interface LnCategory {

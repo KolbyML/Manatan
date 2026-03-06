@@ -6,11 +6,16 @@
     position: fixed;
     inset: 0;
     overflow: hidden;
+}
 
-    padding-top: 0;
-    padding-bottom: 0;
-    padding-left: 0;
-    padding-right: 0;
+/* =====================================================
+   MARGIN CONTAINER
+   ===================================================== */
+
+.paged-margin-container {
+    position: absolute;
+    inset: 0;
+    overflow: hidden;
 }
 
 /* =====================================================
@@ -18,10 +23,10 @@
    ===================================================== */
 
 .paged-viewport {
-    position: absolute;
-    inset: 0;
+    position: relative;
+    width: 100%;
+    height: 100%;
     overflow: hidden;
-    /* Viewport clips the content - no scrolling */
 }
 
 /* =====================================================
@@ -420,12 +425,18 @@
     width: 100%;
     padding: 0;
     margin: 0;
-}
 
+}
+.paged-content .image-only-chapter p {
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
 .paged-content .image-only-chapter img,
 .paged-content .image-only-chapter svg,
 .paged-content .image-only-chapter figure {
-    max-width: 100vw !important;
+max-width: 100%;
     max-height: calc(100vh - 120px);
     width: auto;
     height: auto;
@@ -605,152 +616,5 @@
     color: inherit;
 }
 
-/* Invert inline glyph images in dark mode */
-[data-dark-mode="true"] .paged-content img.gaiji,
-[data-dark-mode="true"] .paged-content img.gaiji-line,
-[data-dark-mode="true"] .paged-content img.gaiji1,
-[data-dark-mode="true"] .paged-content img.inline-img,
-[data-dark-mode="true"] .paged-content img[width="1"],
-[data-dark-mode="true"] .paged-content img[width="2"],
-[data-dark-mode="true"] .paged-content img[height="1"],
-[data-dark-mode="true"] .paged-content img[height="2"],
-[data-dark-mode="true"] .paged-content img[style*="display: inline"],
-[data-dark-mode="true"] .paged-content img[style*="display:inline"],
-[data-dark-mode="true"] .chapter-block img.gaiji,
-[data-dark-mode="true"] .chapter-block img.gaiji-line,
-[data-dark-mode="true"] .chapter-block img.gaiji1,
-[data-dark-mode="true"] .chapter-block img.inline-img,
-[data-dark-mode="true"] .chapter-block img[width="1"],
-[data-dark-mode="true"] .chapter-block img[width="2"],
-[data-dark-mode="true"] .chapter-block img[height="1"],
-[data-dark-mode="true"] .chapter-block img[height="2"],
-[data-dark-mode="true"] .chapter-block img[style*="display: inline"],
-[data-dark-mode="true"] .chapter-block img[style*="display:inline"] {
-    filter: invert(1);
-}
 
-/* =====================================================
-   UNIVERSAL EPUB CSS HANDLER
-   ===================================================== */
 
-/* Gothic/Sans-serif fonts */
-.paged-content .gfont,
-.paged-content .gothic,
-.paged-content div.gfont,
-.paged-content span.gfont,
-.paged-content p.gfont {
-    font-family: "Hiragino Kaku Gothic ProN", "Yu Gothic", "MS Gothic", "Noto Sans JP", sans-serif !important;
-}
-
-/* Mincho/Serif fonts */
-.paged-content .mfont,
-.paged-content .mincho {
-    font-family: "Hiragino Mincho ProN", "Yu Mincho", "MS Mincho", "Noto Serif JP", serif !important;
-}
-
-/* Base elements inherit font-weight from parent */
-.paged-content {
-    font-weight: inherit;
-}
-
-.paged-content h1,
-.paged-content h2,
-.paged-content h3,
-.paged-content h4,
-.paged-content h5,
-.paged-content h6,
-.paged-content th,
-.paged-content strong {
-    font-weight: inherit;
-}
-
-.paged-content .bold,
-.paged-content .b,
-.paged-content .strong,
-.paged-content .font-weight-bold {
-    font-weight: bold !important;
-}
-
-/* Normal weight */
-.paged-content .font-weight-normal {
-    font-weight: normal !important;
-}
-
-/* Light weight */
-.paged-content .font-weight-light {
-    font-weight: 300 !important;
-}
-
-/* Thin weight */
-.paged-content .font-weight-thin {
-    font-weight: 100 !important;
-}
-
-/* Italic */
-.paged-content .italic,
-.paged-content .i,
-.paged-content .em {
-    font-style: italic !important;
-}
-
-/* Normal style */
-.paged-content .font-style-normal {
-    font-style: normal !important;
-}
-
-/* Gothic + Bold combined */
-.paged-content .gfont.bold,
-.paged-content div.gfont.bold,
-.paged-content div.gfont.bold p,
-.paged-content p.gfont.bold,
-.paged-content span.gfont.bold {
-    font-family: "Hiragino Kaku Gothic ProN", "Yu Gothic", "MS Gothic", "Noto Sans JP", sans-serif !important;
-    font-weight: bold !important;
-}
-
-/* Children of gfont.bold div */
-.paged-content div.gfont.bold *,
-.paged-content div[class*="gfont"][class*="bold"] *,
-.paged-content div[class*="gfont"][class*="bold"] p {
-    font-family: "Hiragino Kaku Gothic ProN", "Yu Gothic", "MS Gothic", "Noto Sans JP", sans-serif !important;
-    font-weight: bold !important;
-}
-
-/* Text Colors */
-.paged-content .color-black       { color: #000000 !important; }
-.paged-content .color-dimgray     { color: #696969 !important; }
-.paged-content .color-gray        { color: #808080 !important; }
-.paged-content .color-darkgray    { color: #a9a9a9 !important; }
-.paged-content .color-silver      { color: #c0c0c0 !important; }
-.paged-content .color-gainsboro   { color: #dcdcdc !important; }
-.paged-content .color-white       { color: #ffffff !important; }
-.paged-content .color-transparent { color: transparent !important; }
-.paged-content .color-red         { color: #ff0000 !important; }
-.paged-content .color-blue        { color: #0000ff !important; }
-.paged-content .color-cyan        { color: #00ffff !important; }
-.paged-content .color-magenta     { color: #ff00ff !important; }
-.paged-content .color-orangered   { color: #ff4500 !important; }
-
-/* Font Sizes */
-.paged-content .font-1em30 { font-size: 1.3em !important; }
-.paged-content .font-1em50 { font-size: 1.5em !important; }
-.paged-content .font-2em   { font-size: 2em !important; }
-.paged-content .font-small { font-size: 0.8em !important; }
-.paged-content .font-large { font-size: 1.2em !important; }
-
-/* =====================================================
-   KOREAN-SPECIFIC FIXES FOR PAGINATION STABILITY
-   ===================================================== */
-
-.paged-content[lang="ko"] {
-    word-break: keep-all !important;
-    line-break: strict !important;
-    -webkit-line-break: strict !important;
-    orphans: 1 !important;
-    widows: 1 !important;
-}
-
-.paged-content[lang="ko"] p,
-.paged-content[lang="ko"] blockquote {
-    break-inside: avoid-column;
-}

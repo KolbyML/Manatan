@@ -41,6 +41,12 @@ export interface LNReaderSettings {
     lnDisableAnimations: boolean;
     lnShowCharProgress: boolean;
     
+    // Custom Margins
+    lnMarginTop: number;
+    lnMarginBottom: number;
+    lnMarginLeft: number;
+    lnMarginRight: number;
+    
     // Yomitan integration
     enableYomitan: boolean;
     interactionMode: 'hover' | 'click';
@@ -86,6 +92,12 @@ const DEFAULT_LN_SETTINGS: LNReaderSettings = {
     // Animations & extras
     lnDisableAnimations: false,
     lnShowCharProgress: false,
+    
+    // Custom Margins
+    lnMarginTop: 20,
+    lnMarginBottom: 20,
+    lnMarginLeft: 40,
+    lnMarginRight: 40,
     
     // Yomitan integration
     enableYomitan: true,
@@ -182,6 +194,12 @@ export function getLnSettingsAsFullSettings(lnSettings: LNReaderSettings): Parti
         lnAutoBookmark: lnSettings.lnAutoBookmark,
         lnBookmarkDelay: lnSettings.lnBookmarkDelay,
         lnLockProgressBar: lnSettings.lnLockProgressBar,
+        
+        // Margins
+        lnMarginTop: lnSettings.lnMarginTop,
+        lnMarginBottom: lnSettings.lnMarginBottom,
+        lnMarginLeft: lnSettings.lnMarginLeft,
+        lnMarginRight: lnSettings.lnMarginRight,
         
         // Navigation
         lnHideNavButtons: lnSettings.lnHideNavButtons,

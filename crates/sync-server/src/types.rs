@@ -145,6 +145,12 @@ pub struct LNReaderSettings {
     pub ln_bookmark_delay: f64,
     pub ln_lock_progress_bar: bool,
 
+    // Margin settings
+    pub ln_margin_top: f64,
+    pub ln_margin_bottom: f64,
+    pub ln_margin_left: f64,
+    pub ln_margin_right: f64,
+
     // Navigation settings
     pub ln_hide_nav_buttons: bool,
     pub ln_enable_swipe: bool,
@@ -187,6 +193,10 @@ impl LNReaderSettings {
             ln_auto_bookmark: true,
             ln_bookmark_delay: 5.0,
             ln_lock_progress_bar: false,
+            ln_margin_top: 20.0,
+            ln_margin_bottom: 20.0,
+            ln_margin_left: 40.0,
+            ln_margin_right: 40.0,
             ln_hide_nav_buttons: false,
             ln_enable_swipe: true,
             ln_drag_threshold: 10.0,
@@ -341,6 +351,9 @@ pub struct LNParsedBook {
     /// Original filenames of chapters
     #[serde(alias = "chapterFilenames")]
     pub chapter_filenames: Vec<String>,
+
+    /// Combined CSS from all CSS files in the EPUB
+    pub css: Option<String>,
 }
 
 /// Reference to a synced file (for file manifest)

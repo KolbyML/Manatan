@@ -102,6 +102,25 @@ const LNLibraryCard = ({ item, onOpen, onDelete, onEdit, isSelectionMode, isSele
     const preventMobileContextMenu = MediaQuery.usePreventMobileContextMenu();
     const optionButtonRef = useRef<HTMLButtonElement>(null);
 
+    const [isTouchActive, setIsTouchActive] = useState(false);
+    const touchTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+      const handleTouchStart = () => {
+        if (touchTimeoutRef.current) clearTimeout(touchTimeoutRef.current);
+        setIsTouchActive(true);
+    };
+
+    const handleTouchEnd = () => {
+        touchTimeoutRef.current = setTimeout(() => {
+            setIsTouchActive(false);
+        }, 2000); // 2 seconds before the button hides again
+    };
+
+    useEffect(() => {
+        return () => {
+            if (touchTimeoutRef.current) clearTimeout(touchTimeoutRef.current);
+        };
+    },[]);
+
     const longPressBind = useLongPress(
         useCallback((e: any, { context }: any) => {
             if (isSelectionMode) return;
@@ -132,6 +151,9 @@ const LNLibraryCard = ({ item, onOpen, onDelete, onEdit, isSelectionMode, isSele
             {(popupState) => (
                 <>
                     <Box
+                     onTouchStart={handleTouchStart}
+                        onTouchEnd={handleTouchEnd}
+                        onTouchCancel={handleTouchEnd}
                         sx={{
                             display: 'flex',
                             flexDirection: 'column',
@@ -139,7 +161,7 @@ const LNLibraryCard = ({ item, onOpen, onDelete, onEdit, isSelectionMode, isSele
                             '@media (hover: hover) and (pointer: fine)': {
                                 '&:hover .novel-option-button': {
                                     visibility: 'visible',
-                                    pointerEvents: 'all',
+                                    pointerEvents: 'auto',
                                 },
                             },
                         }}
@@ -297,16 +319,9 @@ const LNLibraryCard = ({ item, onOpen, onDelete, onEdit, isSelectionMode, isSele
                                                             backgroundColor: 'primary.main',
                                                             color: 'common.white',
                                                             '&:hover': { backgroundColor: 'primary.main' },
-                                                            visibility: popupState.isOpen ? 'visible' : 'hidden',
-                                                            pointerEvents: 'none',
-                                                            '@media not (pointer: fine)': {
-                                                                visibility: 'hidden',
-                                                                width: 0,
-                                                                height: 0,
-                                                                p: 0,
-                                                                m: 0,
-                                                            },
-                                                        }}
+                                                            visibility: popupState.isOpen || isTouchActive ? 'visible' : 'hidden',
+                                                            pointerEvents: popupState.isOpen || isTouchActive ? 'auto' : 'none',
+                                                              }}
                                                     >
                                                         <MoreVertIcon />
                                                     </IconButton>
@@ -544,16 +559,19 @@ export const LNLibrary: React.FC = () => {
         }
     }, []);
 
-    const importDiscoveredBooks = useCallback(async () => {
+   const importDiscoveredBooks = useCallback(async () => {
         setIsImporting(true);
         try {
             await importDiscoveredEpubs();
+            
+            await loadLibrary();
+            
         } catch (e) {
             console.error('Failed to auto-import discovered EPUB files:', e);
         } finally {
             setIsImporting(false);
         }
-    }, []);
+    }, [loadLibrary]); 
 
     // Initial load on mount
     useEffect(() => {
