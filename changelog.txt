@@ -1,3 +1,9 @@
+## Release v3.2.14
+
+- Fix manga source library state pagination (6a0eacf)
+- Add Kavita enhanced tracker support (c484a07)
+- Add epub css support and Rework the Paged reader And add margin settings and fixes (#244) (41e667b)
+
 ## Release v3.2.13
 
 - Fix browse sources update loop and add regression safeguards (274b30a)
