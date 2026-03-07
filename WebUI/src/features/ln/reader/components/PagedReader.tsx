@@ -11,7 +11,6 @@ import { Settings } from '@/Manatan/types';
 import { BookStats, AppStorage } from '@/lib/storage/AppStorage';
 import { ReaderNavigationUI } from './ReaderNavigationUI';
 import { ClickZones, getClickZone } from './ClickZones';
-import { ReaderContextMenu } from './ReaderContextMenu';
 import { SelectionHandles } from './SelectionHandles';
 import { buildTypographyStyles } from '../utils/styles';
 import { handleKeyNavigation, NavigationCallbacks } from '../utils/navigation';
@@ -214,7 +213,13 @@ export const PagedReader: React.FC<PagedReaderProps> = ({
     const [measuredPageSize, setMeasuredPageSize] = useState<number>(0);
     const [currentProgress, setCurrentProgress] = useState(initialProgress?.totalProgress || 0);
     const [currentPosition, setCurrentPosition] = useState<SaveablePosition | null>(null);
+    const [renderPhase, setRenderPhase] = useState<'measuring' | 'ready'>('measuring');
+    const [chunkPages, setChunkPages] = useState<{ startPage: number, endPage: number, startOffset: number, html: string }[]>([]);
+    const [disableChunkTransition, setDisableChunkTransition] = useState(false);
+    
+    const currentHtml = useMemo(() => chapters[currentSection] || '', [chapters, currentSection]);
 
+    
     // ========================================================================
     // Simple Derived Values
     // ========================================================================
@@ -268,7 +273,9 @@ export const PagedReader: React.FC<PagedReaderProps> = ({
         settings.lnPageMargin, settings.lnMarginTop, settings.lnMarginBottom,
         settings.lnMarginLeft, settings.lnMarginRight,
     ]);
-
+ useEffect(() => {
+        setRenderPhase('measuring');
+    }, [currentSection, layoutKey]);
     // ========================================================================
     // Layout Calculation
     // ========================================================================
@@ -317,10 +324,7 @@ export const PagedReader: React.FC<PagedReaderProps> = ({
     safeInsets.left,
 ]);
 
-    const currentHtml = useMemo(
-        () => chapters[currentSection] || '',
-        [chapters, currentSection]
-    );
+    
   const isImageOnly = useMemo(() => {
         if (!currentHtml) return false;
         const text = currentHtml.replace(/<[^>]*>/g, '').trim();
@@ -331,65 +335,6 @@ export const PagedReader: React.FC<PagedReaderProps> = ({
         [settings, isVertical]
     );
 
-    // Memoized transform - only recalculate when page actually changes
-    const transform = useMemo(() => {
-        const effectivePageSize = measuredPageSize > 0
-            ? measuredPageSize
-            : (layout?.columnWidth || 0) + (layout?.gap || 80);
-        const pageOffset = Math.round(currentPage * effectivePageSize);
-        return isVertical
-            ? `translateY(-${pageOffset}px)`
-            : `translateX(-${pageOffset}px)`;
-    }, [currentPage, measuredPageSize, layout?.columnWidth, layout?.gap, isVertical]);
-
-    // Memoized content style to prevent re-renders on UI toggle
-    const contentStyle = useMemo(() => {
-        if (!layout) return {};
-        
-        // Calculate text color with brightness
-        const brightness = settings.lnTextBrightness ?? 100;
-        const textColor = brightness === 100 
-            ? theme.fg 
-            : adjustBrightness(theme.fg, brightness);
-        
-        return {
-            ...typographyStyles,
-            color: textColor,
-            columnWidth: `${layout.columnWidth}px`,
-            columnGap: `${layout.gap}px`,
-            columnFill: 'auto',
-            boxSizing: 'border-box',
-            overflowWrap: 'break-word',
-            wordBreak: 'break-word',
-            transform: transform,
-            transition: settings.lnDisableAnimations
-                ? 'none'
-                : 'transform 0.3s ease-out',
-            willChange: 'transform',
-            ...(isVertical
-                ? {
-                    writingMode: 'vertical-rl',
-                    textOrientation: 'mixed',
-                    width: `${layout.contentW}px`,
-                    height: 'auto',
-                    minHeight: `${layout.contentH}px`,
-                }
-                : {
-                    height: `${layout.contentH}px`,
-                    width: 'auto',
-                    minWidth: `${layout.contentW}px`,
-                }
-            ),
-        };
-    }, [
-        typographyStyles,
-        layout,
-        transform,
-        settings.lnDisableAnimations,
-        settings.lnTextBrightness,
-        theme.fg,
-        isVertical
-    ]);
 
     // ========================================================================
     // Register Save Function with Parent
@@ -441,117 +386,328 @@ export const PagedReader: React.FC<PagedReaderProps> = ({
     }, [isVertical]);
 
     // ========================================================================
-    // Page Calculation (After Render)
+    // Page Calculation and Restoration
     // ========================================================================
 
     useLayoutEffect(() => {
-        if (!contentRef.current || !layout) return;
+    if (!contentRef.current || !layout) return;
+    if (renderPhase === 'ready') return;
 
-        let cancelled = false;
+    let cancelled = false;
 
-        const calculatePages = async () => {
-            setContentReady(false);
+    const calculatePages = async () => {
+        setContentReady(false);
 
-            const content = contentRef.current;
-            if (!content || cancelled) return;
+        const content = contentRef.current;
+        if (!content || cancelled) return;
 
-            // Wait for fonts
-            if (document.fonts) {
-                try {
-                    await document.fonts.ready;
-                } catch (error) {
-                    console.warn('[PagedReader] Font loading check failed:', error);
-                }
-            }
-
-            if (cancelled) return;
-
-            // Wait for images
-            const images = content.querySelectorAll('img');
-            const imagePromises = Array.from(images).map(img => {
-                if (img.complete) return Promise.resolve();
-                return new Promise<void>(resolve => {
-                    img.onload = () => resolve();
-                    img.onerror = () => resolve();
-                    setTimeout(resolve, 100);
-                });
-            });
-
-            await Promise.all(imagePromises);
-
-            if (cancelled) return;
-
-            // Wait for layout to settle
-            await new Promise(resolve => requestAnimationFrame(resolve));
-            await new Promise(resolve => requestAnimationFrame(resolve));
-
-            if (cancelled) return;
-
-            const currentContent = contentRef.current;
-            if (!currentContent) return;
-
-            // Force reflow
-            void currentContent.offsetHeight;
-            void currentContent.scrollWidth;
-
-            // Get actual values from browser
-            const computedStyle = window.getComputedStyle(currentContent);
-            const actualColumnWidth = parseFloat(computedStyle.columnWidth) || layout.columnWidth;
-            const actualGap = parseFloat(computedStyle.columnGap) || layout.gap;
-            const actualPageSize = actualColumnWidth + actualGap;
-
-            setMeasuredPageSize(actualPageSize);
-
-            // Calculate total pages
-            if (isImageOnly) {
-    setMeasuredPageSize(layout.columnWidth);
-    setTotalPages(1);
-    setCurrentPage(0);
-
-    requestAnimationFrame(() => {
+        // Wait for fonts
+        if (document.fonts) {
+            try { await document.fonts.ready; } catch (error) {}
+        }
         if (cancelled) return;
-        setIsTransitioning(false);
-        setContentReady(true);
-    });
 
-    return;
+        // Wait for images
+        const images = content.querySelectorAll('img');
+        const imagePromises = Array.from(images).map(img => {
+            if (img.complete) return Promise.resolve();
+            return new Promise<void>(resolve => {
+                img.onload = () => resolve();
+                img.onerror = () => resolve();
+                setTimeout(resolve, 100);
+            });
+        });
+        await Promise.all(imagePromises);
+        if (cancelled) return;
+
+        // Wait for layout to settle
+        await new Promise(resolve => requestAnimationFrame(resolve));
+        await new Promise(resolve => requestAnimationFrame(resolve));
+        if (cancelled) return;
+
+        const currentContent = contentRef.current;
+        if (!currentContent) return;
+
+        void currentContent.offsetHeight;
+        void currentContent.scrollWidth;
+
+        const computedStyle = window.getComputedStyle(currentContent);
+        const actualColumnWidth = parseFloat(computedStyle.columnWidth) || layout.columnWidth;
+        const actualGap = parseFloat(computedStyle.columnGap) || layout.gap;
+        const actualPageSize = actualColumnWidth + actualGap;
+
+        setMeasuredPageSize(actualPageSize);
+
+        const containerRect = currentContent.getBoundingClientRect();
+
+        // Calculate total pages
+        const scrollSize = isVertical ? currentContent.scrollHeight : currentContent.scrollWidth;
+        let calculatedPages = 1;
+        if (scrollSize > actualColumnWidth && !isImageOnly) {
+            let pages = Math.ceil(scrollSize / actualPageSize);
+            
+            if (scrollSize % actualPageSize < 5 && pages > 1) {
+                pages -= 1;
+            }
+            
+            calculatedPages = Math.max(1, pages);
+        }
+
+        // ====================================================================
+        // NEW: Build page map by measuring where the browser placed each block
+        // ====================================================================
+        
+        const innerContainer = currentContent.querySelector('.paged-content-inner');
+        const newPageMap: { startPage: number; endPage: number; startOffset: number; html: string }[] = [];
+
+        if (innerContainer && !isImageOnly) {
+            const allBlocks = Array.from(innerContainer.querySelectorAll('[data-block-id]'));
+            
+            if (allBlocks.length > 0) {
+                // Step 1: Map each block to its actual page (as determined by the browser)
+                const blockPageMap = new Map<Element, number>();
+
+                allBlocks.forEach(block => {
+                    const rect = block.getBoundingClientRect();
+                    const offset = isVertical 
+                        ? rect.top - containerRect.top 
+                        : rect.left - containerRect.left;
+                    
+                    const pageIndex = Math.floor(Math.abs(offset) / actualPageSize);
+                    blockPageMap.set(block, Math.min(pageIndex, calculatedPages - 1));
+                });
+
+                // Step 2: Group blocks by page and extract HTML
+                for (let page = 0; page < calculatedPages; page++) {
+    const blocksOnPage = allBlocks.filter(b => blockPageMap.get(b) === page);
+    
+    // Only create a page entry if there are blocks on it
+    if (blocksOnPage.length > 0) {
+        const pageHtml = blocksOnPage.map(b => b.outerHTML).join('');
+        
+        newPageMap.push({
+            startPage: page,
+            endPage: page,
+            startOffset: page * actualPageSize,
+            html: pageHtml
+        });
+    }
 }
 
-// Calculate total pages normally
-const scrollSize = isVertical
-    ? currentContent.scrollHeight
-    : currentContent.scrollWidth;
-
-let calculatedPages = 1;
-            if (scrollSize > actualColumnWidth) {
-                calculatedPages = Math.max(1, Math.ceil((scrollSize - 1) / actualPageSize));
+// Update calculatedPages to match actual pages with content
+if (newPageMap.length > 0) {
+    calculatedPages = newPageMap.length;
+    
+    // Renumber pages sequentially (in case we skipped empty ones)
+    newPageMap.forEach((entry, index) => {
+        entry.startPage = index;
+        entry.endPage = index;
+        entry.startOffset = index * actualPageSize;
+    });
+}
+            } else {
+                // No blocks found - treat entire content as one page
+                newPageMap.push({
+                    startPage: 0,
+                    endPage: calculatedPages - 1,
+                    startOffset: 0,
+                    html: currentHtml
+                });
             }
+        } else {
+            // Image-only or no inner container - single entry for all pages
+            newPageMap.push({
+                startPage: 0,
+                endPage: calculatedPages - 1,
+                startOffset: 0,
+                html: currentHtml
+            });
+        }
 
-            setTotalPages(calculatedPages);
+        setChunkPages(newPageMap);
+        setTotalPages(calculatedPages);
 
-            // Handle navigation intent
-            const intent = navigationIntentRef.current;
+        // ====================================================================
+        // RESTORATION LOGIC 
+        // ====================================================================
+        
+        const restoreKey = `${currentSection}|${layoutKey}|${actualPageSize}|${calculatedPages}`;
+        const anchor = restoreAnchorRef.current;
+        const intent = navigationIntentRef.current;
+        
+        if (intent) {
             navigationIntentRef.current = null;
-
-            if (intent?.goToLastPage) {
+            
+            if (intent.goToLastPage) {
                 setCurrentPage(calculatedPages - 1);
             } else {
-                setCurrentPage(p => Math.min(p, calculatedPages - 1));
+                setCurrentPage(0);
+            }
+            
+            lastRestoreKeyRef.current = restoreKey;
+            saveLockUntilRef.current = Date.now() + SAVE_LOCK_DURATION_MS;
+            restorePendingRef.current = false;
+        }
+        else if (restoreKey !== lastRestoreKeyRef.current) {
+            restorePendingRef.current = true;
+            const anchorBlockId = anchor?.blockId;
+            let restored = false;
+
+            if (anchorBlockId && anchor?.chapterIndex === currentSection) {
+                let blockEl = currentContent.querySelector(`[data-block-id="${anchorBlockId}"]`) as HTMLElement | null;
+
+                if (!blockEl && stats?.blockMaps && anchor?.chapterCharOffset) {
+                    const chapterLookup = createChapterBlockLookup(stats.blockMaps, currentSection);
+                    const pos = getPositionFromCharOffset(chapterLookup, anchor.chapterCharOffset);
+                    if (pos) {
+                        blockEl = currentContent.querySelector(`[data-block-id="${pos.blockId}"]`) as HTMLElement | null;
+                    }
+                }
+
+                if (blockEl) {
+                    const blockRect = blockEl.getBoundingClientRect();
+                    const contentRect = currentContent.getBoundingClientRect();
+                    const offset = isVertical ? (blockRect.top - contentRect.top) : (blockRect.left - contentRect.left);
+                    const targetPage = Math.floor(Math.abs(offset) / actualPageSize);
+                    
+                    setCurrentPage(Math.max(0, Math.min(targetPage, calculatedPages - 1)));
+                    saveLockUntilRef.current = Date.now() + SAVE_LOCK_DURATION_MS;
+                    restored = true;
+                }
+            }
+            
+            if (!restored) {
+                setCurrentPage(0);
             }
 
-            requestAnimationFrame(() => {
-                if (cancelled) return;
-                setIsTransitioning(false);
-                setContentReady(true);
-            });
-        };
+            lastRestoreKeyRef.current = restoreKey;
+            requestAnimationFrame(() => { restorePendingRef.current = false; });
+        } 
+        else {
+            setCurrentPage(p => Math.min(p, calculatedPages - 1));
+        }
 
-        calculatePages();
+        // Switch to ready phase
+        requestAnimationFrame(() => {
+            if (cancelled) return;
+            setIsTransitioning(false);
+            setRenderPhase('ready');
+            setContentReady(true);
+        });
+    };
 
-        return () => {
-            cancelled = true;
+    calculatePages();
+    return () => { cancelled = true; };
+}, [currentHtml, layout, isVertical, typographyStyles, renderPhase, isImageOnly, currentSection, layoutKey, stats]);
+    // ========================================================================
+    // --- ADD THE VIRTUALIZATION LOGIC RIGHT HERE ---
+    // ========================================================================
+   const activeChunk = useMemo(() => {
+    if (renderPhase !== 'ready' || chunkPages.length === 0 || isImageOnly) return null;
+    
+    // For image-only or single-entry fallback, return the single entry
+    if (chunkPages.length === 1 && chunkPages[0].endPage > chunkPages[0].startPage) {
+        return chunkPages[0];
+    }
+
+    // Create a 3-page window: current page ± 1 buffer
+    const bufferSize = 1;
+    const startPage = Math.max(0, currentPage - bufferSize);
+    const endPage = Math.min(totalPages - 1, currentPage + bufferSize);
+
+    // Get pages in the window range
+    const pagesInWindow = chunkPages.filter(
+        p => p.startPage >= startPage && p.startPage <= endPage
+    );
+
+    if (pagesInWindow.length === 0) {
+        // Fallback: find closest page
+        const closest = chunkPages.reduce((prev, curr) => {
+            const prevDist = Math.abs(prev.startPage - currentPage);
+            const currDist = Math.abs(curr.startPage - currentPage);
+            return currDist < prevDist ? curr : prev;
+        });
+        return closest;
+    }
+
+    // Combine the HTML of all pages in the window
+    const combinedHtml = pagesInWindow.map(p => p.html).join('');
+    
+    return {
+        startPage,
+        endPage,
+        startOffset: startPage * (measuredPageSize > 0 ? measuredPageSize : (layout?.columnWidth || 0) + (layout?.gap || 40)),
+        html: combinedHtml
+    };
+}, [renderPhase, chunkPages, currentPage, totalPages, isImageOnly, measuredPageSize, layout?.columnWidth, layout?.gap]);
+
+    const prevChunkRef = useRef(activeChunk);
+    useEffect(() => {
+        if (activeChunk !== prevChunkRef.current) {
+            setDisableChunkTransition(true);
+            const timer = setTimeout(() => setDisableChunkTransition(false), 50);
+            prevChunkRef.current = activeChunk;
+            return () => clearTimeout(timer);
+        }
+    }, [activeChunk]);
+
+    const displayHtml = activeChunk ? activeChunk.html : currentHtml;
+    const displayLocalPage = activeChunk ? Math.max(0, currentPage - activeChunk.startPage) : currentPage;
+const transform = useMemo(() => {
+        const effectivePageSize = measuredPageSize > 0 ? measuredPageSize : (layout?.columnWidth || 0) + (layout?.gap || 80);
+        
+        let pageOffset = 0;
+        
+        if (activeChunk) {
+         
+            const globalPos = currentPage * effectivePageSize;
+            pageOffset = globalPos - activeChunk.startOffset;
+        } else {
+            pageOffset = currentPage * effectivePageSize;
+        }
+
+        // Round to prevent sub-pixel blurring
+        pageOffset = Math.round(pageOffset);
+
+        return isVertical ? `translateY(-${pageOffset}px)` : `translateX(-${pageOffset}px)`;
+    }, [currentPage, activeChunk, measuredPageSize, layout?.columnWidth, layout?.gap, isVertical]);
+    
+    const contentStyle = useMemo(() => {
+        const brightness = settings.lnTextBrightness ?? 100;
+        const textColor = brightness === 100 ? theme.fg : adjustBrightness(theme.fg, brightness);
+        
+        return {
+            ...typographyStyles,
+            color: textColor,
+            columnWidth: `${layout?.columnWidth}px`,
+            columnGap: `${layout?.gap}px`,
+            columnFill: 'auto' as any,
+            boxSizing: 'border-box' as any,
+            overflowWrap: 'break-word' as any,
+            wordBreak: 'break-word' as any,
+            transform: renderPhase === 'measuring' ? 'none' : transform,
+            scrollbarWidth: 'none' as any,
+        msOverflowStyle: 'none' as any,
+            transition: (settings.lnDisableAnimations || disableChunkTransition || renderPhase === 'measuring')
+                ? 'none'
+                : 'transform 0.3s ease-out',
+            willChange: 'transform',
+            ...(isVertical
+                ? {
+                    writingMode: 'vertical-rl' as any,
+                    textOrientation: 'mixed' as any,
+                    width: `${layout?.contentW}px`,
+                    height: 'auto',
+                    minHeight: `${layout?.contentH}px`,
+                }
+                : {
+                    height: `${layout?.contentH}px`,
+                    width: 'auto',
+                    minWidth: `${layout?.contentW}px`,
+                }
+            ),
         };
-    }, [currentHtml, layout, isVertical, typographyStyles]);
+    },[typographyStyles, layout, transform, settings.lnDisableAnimations, disableChunkTransition, renderPhase, settings.lnTextBrightness, theme.fg, isVertical]);
 
     // ========================================================================
     // Position Detection
@@ -569,25 +725,30 @@ let calculatedPages = 1;
 
         if (!contentReady || !viewportRef.current || !stats) return;
 
-        const pageSize = measuredPageSize > 0
+       const pageSize = measuredPageSize > 0
             ? measuredPageSize
             : (layout?.columnWidth || 0) + (layout?.gap || 80);
 
         if (pageSize <= 0) return;
 
+       
+        let localPageIndex = 0;
+        if (activeChunk) {
+             const globalPos = currentPage * pageSize;
+             const localPos = globalPos - activeChunk.startOffset;
+             localPageIndex = localPos / pageSize;
+        } else {
+             localPageIndex = currentPage;
+        }
+
         const detected = detectVisibleBlockPaged(
             viewportRef.current,
-            currentPage,
+            localPageIndex,
             pageSize,
             isVertical,
             currentSection,
             stats?.blockMaps
         );
-
-        if (!detected) {
-            console.warn('[PagedReader] No block detected on page', currentPage);
-            return;
-        }
 
         // Update the anchor for future restores
         restoreAnchorRef.current = {
@@ -641,7 +802,7 @@ let calculatedPages = 1;
             blockId: detected.blockId,
         });
 
-    }, [contentReady, stats, measuredPageSize, layout, currentPage, currentSection, isVertical]);
+    }, [contentReady, stats, measuredPageSize, layout, currentPage, currentSection, isVertical, activeChunk]);
 
     // Detect position after page/chapter changes
     useEffect(() => {
@@ -664,119 +825,8 @@ let calculatedPages = 1;
         }
     }, [contentReady, isTransitioning, currentPage, currentSection, detectAndReportPosition]);
 
-    // ========================================================================
-    // Position Restoration (Clean "Once per Layout" Logic)
-    // ========================================================================
-
-    useEffect(() => {
-        if (!contentReady) return;
-        if (!contentRef.current) return;
-        if (measuredPageSize <= 0) return;
-
-        // Create a unique key for this layout state
-        // Restores happen exactly once when this key changes
-        const restoreKey = `${currentSection}|${layoutKey}|${measuredPageSize}|${totalPages}`;
-
-        if (restoreKey === lastRestoreKeyRef.current) return;
-
-        const anchor = restoreAnchorRef.current;
-        const anchorBlockId = anchor?.blockId;
-        const anchorChapter = anchor?.chapterIndex ?? 0;
-
-        // Fast restoration: no polling, just verify and restore
-        const tryRestore = async () => {
-            // Wait for next frame to ensure DOM is ready
-            await new Promise(resolve => requestAnimationFrame(resolve));
-
-            // Verify blocks exist for the anchor chapter
-            const blocks = contentRef.current.querySelectorAll(`[data-block-id^="ch${anchorChapter}-b"]`);
-            
-            if (blocks.length === 0) {
-                console.log('[PagedReader] No blocks found for chapter', anchorChapter, '- skipping restoration');
-                lastRestoreKeyRef.current = restoreKey;
-                return;
-            }
-
-            // Block detection until we finish
-            restorePendingRef.current = true;
-
-            // If no anchor or wrong chapter, just mark done and allow detection
-            if (!anchorBlockId || anchorChapter !== currentSection) {
-                lastRestoreKeyRef.current = restoreKey;
-                restorePendingRef.current = false;
-                return;
-            }
-
-            let blockEl = contentRef.current.querySelector(
-                `[data-block-id="${anchorBlockId}"]`
-            ) as HTMLElement | null;
-
-            if (!blockEl && stats?.blockMaps && anchor?.chapterCharOffset) {
-                const chapterLookup = createChapterBlockLookup(stats.blockMaps, anchorChapter);
-                const pos = getPositionFromCharOffset(chapterLookup, anchor.chapterCharOffset);
-                
-                if (pos) {
-                    blockEl = contentRef.current.querySelector(
-                        `[data-block-id="${pos.blockId}"]`
-                    ) as HTMLElement | null;
-                    
-                    if (blockEl) {
-                        console.log('[PagedReader] Restored using blockMaps:', {
-                            originalBlockId: anchorBlockId,
-                            foundBlockId: pos.blockId,
-                            charOffset: anchor.chapterCharOffset,
-                        });
-                    }
-                }
-            }
-
-            if (!blockEl) {
-                console.log('[PagedReader] Block element not found - skipping restoration');
-                lastRestoreKeyRef.current = restoreKey;
-                restorePendingRef.current = false;
-                return;
-            }
-
-            const blockRect = blockEl.getBoundingClientRect();
-            const contentRect = contentRef.current.getBoundingClientRect();
-
-            // Match your existing logic (vertical uses translateY, horizontal uses translateX)
-            const offset = isVertical
-                ? (blockRect.top - contentRect.top)
-                : (blockRect.left - contentRect.left);
-
-            const targetPage = Math.floor(Math.abs(offset) / measuredPageSize);
-            const clamped = Math.max(0, Math.min(targetPage, totalPages - 1));
-
-            // Mark as restored for this layout
-            lastRestoreKeyRef.current = restoreKey;
-
-            setCurrentPage(prev => {
-                if (prev === clamped) {
-                    // If page didn't change, release the guard immediately
-                    restorePendingRef.current = false;
-                    // Set save lock for 3 seconds
-                    saveLockUntilRef.current = Date.now() + SAVE_LOCK_DURATION_MS;
-                    return prev;
-                }
-                return clamped;
-            });
-
-            // Release guard and set save lock after state updates
-            requestAnimationFrame(() => {
-                restorePendingRef.current = false;
-                // Set save lock for 3 seconds to prevent overwriting restored position
-                saveLockUntilRef.current = Date.now() + SAVE_LOCK_DURATION_MS;
-            });
-        };
-
-        tryRestore();
-    }, [contentReady, measuredPageSize, totalPages, currentSection, isVertical, layoutKey, stats?.blockMaps]);
-
-    // ========================================================================
-    // Touch/Click Handlers
-    // ========================================================================
-
+    
+  
     // ========================================================================
     // Navigation
     // ========================================================================
@@ -1216,32 +1266,32 @@ useEffect(() => {
         inset: 0,
         overflow: 'hidden',
         paddingTop: `${(isImageOnly ? 0 : layout?.margins.top ?? 0) + safeInsets.top}px`,
-                    paddingRight: `${(isImageOnly ? 0 : layout?.margins.right ?? 0) + safeInsets.right}px`,
-                    paddingBottom: `${(isImageOnly ? 0 : layout?.margins.bottom ?? 0) + safeInsets.bottom}px`,
-                    paddingLeft: `${(isImageOnly ? 0 : layout?.margins.left ?? 0) + safeInsets.left}px`,
+        paddingRight: `${(isImageOnly ? 0 : layout?.margins.right ?? 0) + safeInsets.right}px`,
+        paddingBottom: `${(isImageOnly ? 0 : layout?.margins.bottom ?? 0) + safeInsets.bottom}px`,
+        paddingLeft: `${(isImageOnly ? 0 : layout?.margins.left ?? 0) + safeInsets.left}px`,
     }}
+    onClick={handleContentClick}
+    onPointerDown={handlePointerDown}
+    onPointerMove={handlePointerMove}
+    onTouchStart={handleTouchStart}
+    onTouchEnd={handleTouchEnd}
 >
-                {/* Viewport  */}
-                <div
-                    ref={viewportRef}
-                    className="paged-viewport"
-                    onClick={handleContentClick}
-                    onPointerDown={handlePointerDown}
-                    onPointerMove={handlePointerMove}
-                    onTouchStart={handleTouchStart}
-                    onTouchEnd={handleTouchEnd}
-                >
-                    {/* Content */}
-                    <div
-                        ref={contentRef}
- className={`paged-content ${!settings.lnEnableFurigana ? 'furigana-hidden' : ''} ${isImageOnly ? 'image-only-chapter' : ''}`}
-                         style={contentStyle}
-                    >
-                         {css && <style>{`@scope { \n${css}\n }`}</style>}
-                        <div dangerouslySetInnerHTML={{ __html: currentHtml }} />
-                    </div>
-                </div>
-            </div>
+    {/* Viewport - no handlers needed here now */}
+    <div
+        ref={viewportRef}
+        className="paged-viewport"
+    >
+        {/* Content */}
+        <div
+            ref={contentRef}
+            className={`paged-content ${!settings.lnEnableFurigana ? 'furigana-hidden' : ''} ${isImageOnly ? 'image-only-chapter' : ''}`}
+            style={{ ...contentStyle, opacity: renderPhase === 'measuring' ? 0 : 1 }}
+        >
+            {css && <style>{`@scope { \n${css}\n }`}</style>}
+            <div className="paged-content-inner" dangerouslySetInnerHTML={{ __html: displayHtml }} />
+        </div>
+    </div>
+</div>
 
             {/* Loading Overlay */}
             {(!contentReady || isTransitioning) && (

@@ -46,6 +46,24 @@
     widows: 2;
 }
 
+/* Ensure the inner wrapper doesn't block column flow */
+.paged-content-inner {
+    display: contents;
+    /* Best option: makes the div effectively "invisible" to the layout engine */
+}
+
+/* Fallback for browsers that might behave oddly with display: contents on block children */
+@supports not (display: contents) {
+    .paged-content-inner {
+        display: block;
+    }
+}
+
+.paged-content-inner>*:last-child {
+    margin-bottom: 0 !important;
+    padding-bottom: 0 !important;
+}
+
 /* Break avoidance */
 .paged-content p,
 .paged-content blockquote,
@@ -427,16 +445,18 @@
     margin: 0;
 
 }
+
 .paged-content .image-only-chapter p {
     height: 100%;
     display: flex;
     align-items: center;
     justify-content: center;
 }
+
 .paged-content .image-only-chapter img,
 .paged-content .image-only-chapter svg,
 .paged-content .image-only-chapter figure {
-max-width: 100%;
+    max-width: 100%;
     max-height: calc(100vh - 120px);
     width: auto;
     height: auto;
@@ -615,6 +635,3 @@ max-width: 100%;
     background-color: rgba(0, 255, 255, 0.5);
     color: inherit;
 }
-
-
-
