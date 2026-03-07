@@ -1,9 +1,9 @@
 
 export const READER_THEMES = {
-    light: { bg: '#FFFFFF', fg: '#1a1a1a' },
-    sepia: { bg: '#F4ECD8', fg: '#5C4B37' },
-    dark: { bg: '#2B2B2B', fg: '#E0E0E0' },
-    black: { bg: '#000000', fg: '#CCCCCC' },
+    light: { bg: '#FFFFFF', fg: '#1a1a1a', highlight: 'rgba(0, 119, 255, 0.4)' },
+    sepia: { bg: '#F4ECD8', fg: '#5C4B37', highlight: 'rgba(0, 119, 255, 0.4)' },
+    dark: { bg: '#2B2B2B', fg: '#E0E0E0', highlight: 'rgba(0, 200, 200, 0.5)' },
+    black: { bg: '#000000', fg: '#CCCCCC', highlight: 'rgba(0, 255, 255, 0.5)' },
 } as const;
 
 export type ThemeKey = keyof typeof READER_THEMES;

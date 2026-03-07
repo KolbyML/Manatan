@@ -880,6 +880,7 @@ export const ContinuousReader: React.FC<ContinuousReaderProps> = ({
             backgroundColor: theme.bg,
             color: textColor,
             direction: isRTL ? 'rtl' : 'ltr',
+            '--ln-highlight-bg': (theme as any).highlight || 'rgba(255, 235, 59, 0.45)', // Pass theme highlight
         };
     }, [theme.bg, theme.fg, isRTL, settings.lnTextBrightness]);
 
