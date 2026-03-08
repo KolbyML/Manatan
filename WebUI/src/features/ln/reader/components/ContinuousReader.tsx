@@ -475,102 +475,6 @@ export const ContinuousReader: React.FC<ContinuousReaderProps> = ({
     }, [contentLoaded, initialProgress, isVertical, isRTL, stats?.blockMaps, layoutKey]);
 
     // ========================================================================
-    // Handle initialProgress Changes (Search/Highlight Navigation)
-    // ========================================================================
-
-    const lastInitialProgressRef = useRef(initialProgress);
-    
-    useEffect(() => {
-        const lastProgress = lastInitialProgressRef.current;
-        const progressChanged = 
-            (lastProgress?.blockId !== initialProgress?.blockId) ||
-            (lastProgress?.chapterIndex !== initialProgress?.chapterIndex);
-        
-        // Skip if this update matches our current internal state (internal scroll)
-        const isInternalUpdate = initialProgress?.blockId === currentBlockIdRef.current;
-
-        if (progressChanged && initialProgress?.blockId && !isInternalUpdate) {
-            console.log('[ContinuousReader] External position change, navigating:', initialProgress.blockId);
-            
-            // Update currentChapter to ensure the correct window of chapters is rendered
-            if (initialProgress.chapterIndex !== undefined && initialProgress.chapterIndex !== currentChapter) {
-                setCurrentChapter(initialProgress.chapterIndex);
-                loadChaptersAround(initialProgress.chapterIndex);
-            }
-
-            // Use scrollToBlock for navigation
-            scrollToBlock(initialProgress.blockId, initialProgress.blockLocalOffset);
-        }
-        
-        lastInitialProgressRef.current = initialProgress;
-    }, [initialProgress, currentChapter, scrollToBlock, loadChaptersAround]);
-
-    // ========================================================================
-    // Block Tracker Setup
-    // ========================================================================
-
-    useEffect(() => {
-        const container = containerRef.current;
-        if (!container || !contentLoaded || !stats) return;
-        
-        // CRITICAL: Only start tracking when restoration is complete
-        if (!restorationComplete) {
-            console.log('[BlockTracker] Waiting for restoration...');
-            return;
-        }
-
-        console.log('[BlockTracker] Starting tracking');
-
-        // Clean up previous tracker
-        blockTrackerRef.current?.stop();
-
-        // Create new tracker
-        blockTrackerRef.current = new BlockTracker(container, {
-            isVertical,
-            isPaged: false,
-            onActiveBlockChange: handleActiveBlockChange,
-        });
-
-        blockTrackerRef.current.start();
-
-        return () => {
-            blockTrackerRef.current?.stop();
-            blockTrackerRef.current = null;
-        };
-    }, [contentLoaded, stats, isVertical, handleActiveBlockChange, restorationComplete]);
-
-    // ========================================================================
-    // Scroll Handler
-    // ========================================================================
-
-    useEffect(() => {
-        const container = containerRef.current;
-        if (!container) return;
-
-        const handleScroll = () => {
-            const progress = calculateScrollProgress(container, navOptions);
-            setScrollProgress(progress);
-
-            if (scrollDebounceRef.current) {
-                clearTimeout(scrollDebounceRef.current);
-            }
-
-            scrollDebounceRef.current = window.setTimeout(() => {
-                blockTrackerRef.current?.refresh();
-            }, SCROLL_DEBOUNCE_MS);
-        };
-
-        container.addEventListener('scroll', handleScroll, { passive: true });
-
-        return () => {
-            container.removeEventListener('scroll', handleScroll);
-            if (scrollDebounceRef.current) {
-                clearTimeout(scrollDebounceRef.current);
-            }
-        };
-    }, [navOptions]);
-
-    // ========================================================================
     // Direct Navigation Functions (TOC/Search)
     // ========================================================================
 
@@ -580,7 +484,7 @@ export const ContinuousReader: React.FC<ContinuousReaderProps> = ({
 
         // Extract chapter index from blockId
         const chapterMatch = blockId.match(/ch(\d+)-/);
-        const chapterIndex = chapterMatch ? parseInt(chapterMatch[1], 10) : 0;
+        const chapterIndex = chapterMatch ? parseInt(chapterMatch[1], 10) : currentChapter;
 
         console.log('[Navigate] scrollToBlock:', blockId, 'offset:', blockLocalOffset, 'chapter:', chapterIndex);
 
@@ -658,7 +562,7 @@ export const ContinuousReader: React.FC<ContinuousReaderProps> = ({
             restorationStateRef.current = 'ACTIVE';
             setRestorationComplete(true);
         }, 5000);
-    }, [isVertical, isRTL, loadChapter, loadChaptersAround]);
+    }, [isVertical, isRTL, loadChapter, loadChaptersAround, currentChapter, calculatePositionFromBlock]);
 
     const scrollToChapter = useCallback((chapterIndex: number) => {
         const container = containerRef.current;
@@ -744,7 +648,7 @@ export const ContinuousReader: React.FC<ContinuousReaderProps> = ({
             restorationStateRef.current = 'ACTIVE';
             setRestorationComplete(true);
         }, 5000);
-    }, [loadChapter, loadChaptersAround]);
+    }, [loadChapter, loadChaptersAround, currentChapter, calculatePositionFromBlock, isVertical, isRTL]);
 
     // Expose navigation functions via ref
     useEffect(() => {
@@ -755,6 +659,102 @@ export const ContinuousReader: React.FC<ContinuousReaderProps> = ({
             };
         }
     }, [scrollToBlock, scrollToChapter, navigationRef]);
+
+    // ========================================================================
+    // Handle initialProgress Changes (Search/Highlight Navigation)
+    // ========================================================================
+
+    const lastInitialProgressRef = useRef(initialProgress);
+
+    useEffect(() => {
+        const lastProgress = lastInitialProgressRef.current;
+        const progressChanged =
+            (lastProgress?.blockId !== initialProgress?.blockId) ||
+            (lastProgress?.chapterIndex !== initialProgress?.chapterIndex);
+
+        // Skip if this update matches our current internal state (internal scroll)
+        const isInternalUpdate = initialProgress?.blockId === currentBlockIdRef.current;
+
+        if (progressChanged && initialProgress?.blockId && !isInternalUpdate) {
+            console.log('[ContinuousReader] External position change, navigating:', initialProgress.blockId);
+
+            // Update currentChapter to ensure the correct window of chapters is rendered
+            if (initialProgress.chapterIndex !== undefined && initialProgress.chapterIndex !== currentChapter) {
+                setCurrentChapter(initialProgress.chapterIndex);
+                loadChaptersAround(initialProgress.chapterIndex);
+            }
+
+            // Use scrollToBlock for navigation
+            scrollToBlock(initialProgress.blockId, initialProgress.blockLocalOffset);
+        }
+
+        lastInitialProgressRef.current = initialProgress;
+    }, [initialProgress, currentChapter, scrollToBlock, loadChaptersAround]);
+
+    // ========================================================================
+    // Block Tracker Setup
+    // ========================================================================
+
+    useEffect(() => {
+        const container = containerRef.current;
+        if (!container || !contentLoaded || !stats) return;
+
+        // CRITICAL: Only start tracking when restoration is complete
+        if (!restorationComplete) {
+            console.log('[BlockTracker] Waiting for restoration...');
+            return;
+        }
+
+        console.log('[BlockTracker] Starting tracking');
+
+        // Clean up previous tracker
+        blockTrackerRef.current?.stop();
+
+        // Create new tracker
+        blockTrackerRef.current = new BlockTracker(container, {
+            isVertical,
+            isPaged: false,
+            onActiveBlockChange: handleActiveBlockChange,
+        });
+
+        blockTrackerRef.current.start();
+
+        return () => {
+            blockTrackerRef.current?.stop();
+            blockTrackerRef.current = null;
+        };
+    }, [contentLoaded, stats, isVertical, handleActiveBlockChange, restorationComplete]);
+
+    // ========================================================================
+    // Scroll Handler
+    // ========================================================================
+
+    useEffect(() => {
+        const container = containerRef.current;
+        if (!container) return;
+
+        const handleScroll = () => {
+            const progress = calculateScrollProgress(container, navOptions);
+            setScrollProgress(progress);
+
+            if (scrollDebounceRef.current) {
+                clearTimeout(scrollDebounceRef.current);
+            }
+
+            scrollDebounceRef.current = window.setTimeout(() => {
+                blockTrackerRef.current?.refresh();
+            }, SCROLL_DEBOUNCE_MS);
+        };
+
+        container.addEventListener('scroll', handleScroll, { passive: true });
+
+        return () => {
+            container.removeEventListener('scroll', handleScroll);
+            if (scrollDebounceRef.current) {
+                clearTimeout(scrollDebounceRef.current);
+            }
+        };
+    }, [navOptions]);
 
     // ========================================================================
     // Touch/Click Handlers

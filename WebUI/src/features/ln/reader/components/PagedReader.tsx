@@ -262,27 +262,6 @@ export const PagedReader: React.FC<PagedReaderProps> = ({
         }
     }, []);
 
-    // Reset restoration when initialProgress changes (for search/highlight navigation)
-    const lastInitialProgressRef = useRef(initialProgress);
-    useEffect(() => {
-        const lastProgress = lastInitialProgressRef.current;
-        const progressChanged = 
-            (lastProgress?.blockId !== initialProgress?.blockId) ||
-            (lastProgress?.chapterIndex !== initialProgress?.chapterIndex);
-        
-        if (progressChanged && initialProgress?.blockId) {
-            console.log('[PagedReader] InitialProgress changed, resetting restoration');
-            restoreAnchorRef.current = {
-                blockId: initialProgress.blockId,
-                chapterIndex: initialProgress.chapterIndex ?? initialChapter,
-                chapterCharOffset: initialProgress.chapterCharOffset,
-            };
-            lastRestoreKeyRef.current = '';
-            restorePendingRef.current = false;
-        }
-        
-        lastInitialProgressRef.current = initialProgress;
-    }, [initialProgress?.blockId, initialProgress?.chapterIndex, initialProgress?.chapterCharOffset, initialChapter]);
 
     // ========================================================================
     // Update Callback Refs
@@ -834,14 +813,8 @@ const transform = useMemo(() => {
     // ========================================================================
 
     const detectAndReportPosition = useCallback(() => {
-        // GUARD: Don't save position if a restore is pending
+        // GUARD: Don't report position if a restore is pending
         if (restorePendingRef.current) return;
-
-        // GUARD: Don't save if save is locked (after restoration)
-        if (Date.now() < saveLockUntilRef.current) {
-            console.log('[PagedReader] Save locked, skipping detection');
-            return;
-        }
 
         if (!contentReady || !viewportRef.current || !stats) return;
 
@@ -909,10 +882,7 @@ const transform = useMemo(() => {
         setCurrentProgress(progressCalc.totalProgress);
         setCurrentPosition(position);
 
-        // Schedule save
-        saveSchedulerRef.current.scheduleSave(position);
-
-        // Notify parent (via ref to prevent loops)
+        // Notify parent (for TOC updates, etc.) - ALWAYS report
         onPositionUpdateRef.current?.({
             chapterIndex: currentSection,
             pageIndex: currentPage,
@@ -921,6 +891,13 @@ const transform = useMemo(() => {
             totalProgress: progressCalc.totalProgress,
             blockId: detected.blockId,
         });
+
+        // Schedule save (Only if not locked)
+        if (Date.now() >= saveLockUntilRef.current) {
+            saveSchedulerRef.current.scheduleSave(position);
+        } else {
+            console.log('[PagedReader] Save locked, reporting position but skipping save');
+        }
 
     }, [contentReady, stats, measuredPageSize, layout, currentPage, currentSection, isVertical, activeChunk]);
 
@@ -1022,6 +999,9 @@ const transform = useMemo(() => {
 
                 goToPage(Math.max(0, Math.min(targetPage, totalPages - 1)));
                 saveLockUntilRef.current = Date.now() + SAVE_LOCK_DURATION_MS;
+
+                // Sync TOC
+                detectAndReportPosition();
             }
         }
     }, [currentSection, goToSection, goToPage, isVertical, measuredPageSize, totalPages]);
@@ -1037,8 +1017,10 @@ const transform = useMemo(() => {
             goToSection(chapterIndex, false);
         } else {
             goToPage(0);
+            saveLockUntilRef.current = Date.now() + SAVE_LOCK_DURATION_MS;
+            detectAndReportPosition();
         }
-    }, [currentSection, goToSection, goToPage]);
+    }, [currentSection, goToSection, goToPage, detectAndReportPosition]);
 
     // Expose navigation functions via ref
     useEffect(() => {
@@ -1049,6 +1031,25 @@ const transform = useMemo(() => {
             };
         }
     }, [scrollToBlock, scrollToChapter, navigationRef]);
+
+    // ========================================================================
+    // Handle initialProgress Changes (Search/Highlight Navigation)
+    // ========================================================================
+
+    const lastInitialProgressRef = useRef(initialProgress);
+    useEffect(() => {
+        const lastProgress = lastInitialProgressRef.current;
+        const progressChanged =
+            (lastProgress?.blockId !== initialProgress?.blockId) ||
+            (lastProgress?.chapterIndex !== initialProgress?.chapterIndex);
+
+        if (progressChanged && initialProgress?.blockId) {
+            console.log('[PagedReader] InitialProgress changed, navigating');
+            scrollToBlock(initialProgress.blockId, initialProgress.blockLocalOffset);
+        }
+
+        lastInitialProgressRef.current = initialProgress;
+    }, [initialProgress, scrollToBlock]);
 
     // ========================================================================
     // Touch/Click Handlers
