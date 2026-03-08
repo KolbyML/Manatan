@@ -363,6 +363,17 @@ public class WebviewActivity extends Activity {
     @Override
     public boolean onKeyDown(int keyCode, KeyEvent event) {
         if (keyCode == KeyEvent.KEYCODE_BACK) {
+            // Always try JS first - if it handles back (returns true), don't do anything else
+            try {
+                Boolean handled = (Boolean) myWebView.evaluateJavascript(
+                    "(window.__handleNativeBack && window.__handleNativeBack()) || false", null);
+                if (Boolean.TRUE.equals(handled)) {
+                    return true;
+                }
+            } catch (Exception e) {
+                // Ignore - function doesn't exist
+            }
+
             if (myWebView.canGoBack()) {
                 myWebView.goBack();
                 return true;

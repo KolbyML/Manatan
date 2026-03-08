@@ -1406,7 +1406,7 @@ useEffect(() => {
             className={`paged-content ${!settings.lnEnableFurigana ? 'furigana-hidden' : ''} ${isImageOnly ? 'image-only-chapter' : ''}`}
             style={{ ...contentStyle, opacity: renderPhase === 'measuring' ? 0 : 1 }}
         >
-            {css && <style>{`@scope { \n${css}\n }`}</style>}
+            {css && <style>{`@scope (.paged-content) { \n${css}\n }`}</style>}
             <div className="paged-content-inner" dangerouslySetInnerHTML={{ __html: displayHtml }} />
         </div>
     </div>

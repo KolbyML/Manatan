@@ -5,11 +5,12 @@
     right: 0;
     bottom: 0;
     overflow: hidden;
+}
 
-    padding-top: 0;
-    padding-bottom: 0;
-    padding-left: 0;
-    padding-right: 0;
+.continuous-margin-container {
+    position: absolute;
+    inset: 0;
+    overflow: hidden;
 }
 
 .continuous-reader-container {
