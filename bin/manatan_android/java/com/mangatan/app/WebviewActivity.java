@@ -363,15 +363,25 @@ public class WebviewActivity extends Activity {
     @Override
     public boolean onKeyDown(int keyCode, KeyEvent event) {
         if (keyCode == KeyEvent.KEYCODE_BACK) {
-            // Always try JS first - if it handles back (returns true), don't do anything else
+            // Always try JS first. evaluateJavascript is async, so handle the fallback in the callback.
             try {
-                Boolean handled = (Boolean) myWebView.evaluateJavascript(
-                    "(window.__handleNativeBack && window.__handleNativeBack()) || false", null);
-                if (Boolean.TRUE.equals(handled)) {
-                    return true;
-                }
+                myWebView.evaluateJavascript(
+                    "(window.__handleNativeBack && window.__handleNativeBack()) || false",
+                    value -> {
+                        final boolean handled = "true".equals(value);
+                        if (handled) {
+                            return;
+                        }
+
+                        if (myWebView.canGoBack()) {
+                            myWebView.goBack();
+                        } else {
+                            handleSmartClose();
+                        }
+                    });
+                return true;
             } catch (Exception e) {
-                // Ignore - function doesn't exist
+                // Fall through to native back behavior.
             }
 
             if (myWebView.canGoBack()) {
