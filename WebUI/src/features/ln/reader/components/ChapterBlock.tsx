@@ -37,8 +37,8 @@ export const ChapterBlock: React.FC<ChapterBlockProps> = React.memo(
                     }`}
                 data-chapter={index}
                 style={{
-                    padding: `${settings.lnPageMargin || 20}px`,
-                    maxWidth: !isVertical ? `${settings.lnPageWidth || 800}px` : undefined,
+                    padding: '0px',
+                    maxWidth: !isVertical ? `${settings.lnPageWidth || 1000}px` : undefined,
                     textAlign: (settings.lnTextAlign as any) || 'justify',
                     fontFamily,
                     fontWeight: settings.lnFontWeight || 400,

@@ -68,7 +68,7 @@ export const LNReaderScreen: React.FC = () => {
     const [searchOpen, setSearchOpen] = useState(false);
     const [highlightsOpen, setHighlightsOpen] = useState(false);
     const [searchQuery, setSearchQuery] = useState('');
-    const [searchResults, setSearchResults] = useState<{chapterIndex: number; text: string; position: number}[]>([]);
+    const [searchResults, setSearchResults] = useState<{ chapterIndex: number; text: string; position: number }[]>([]);
     const [progressLoaded, setProgressLoaded] = useState(false);
     const [currentChapter, setCurrentChapter] = useState(0);
     const [showMigrationDialog, setShowMigrationDialog] = useState(false);
@@ -182,10 +182,10 @@ export const LNReaderScreen: React.FC = () => {
     const isArtChapter = (chapterHtml: string): boolean => {
         if (!chapterHtml) return false;
         const text = chapterHtml.replace(/<[^>]*>/g, '').trim();
-        const hasImages = chapterHtml.includes('<img') || 
-                        chapterHtml.includes('<figure') || 
-                        chapterHtml.includes('data-src') ||
-                        chapterHtml.includes('image-only');
+        const hasImages = chapterHtml.includes('<img') ||
+            chapterHtml.includes('<figure') ||
+            chapterHtml.includes('data-src') ||
+            chapterHtml.includes('image-only');
         return text.length < 50 && hasImages;
     };
 
@@ -205,10 +205,10 @@ export const LNReaderScreen: React.FC = () => {
     // Helper: Get chapters in range for a TOC item
     const getChaptersInRange = (tocIndex: number, tocItems: any[], totalChapters: number): number[] => {
         const startIdx = tocItems[tocIndex].chapterIndex;
-        const endIdx = tocIndex + 1 < tocItems.length 
-            ? tocItems[tocIndex + 1].chapterIndex 
+        const endIdx = tocIndex + 1 < tocItems.length
+            ? tocItems[tocIndex + 1].chapterIndex
             : totalChapters;
-        
+
         const chapters: number[] = [];
         for (let i = startIdx; i < endIdx && i < totalChapters; i++) {
             chapters.push(i);
@@ -219,7 +219,7 @@ export const LNReaderScreen: React.FC = () => {
     // Helper: Group consecutive art chapters for display
     const getChapterDisplayLabel = (chapterIdx: number, chapters: string[], artGroups: Map<number, number>, firstTocChapterIndex: number): string => {
         const isArt = isArtChapter(chapters[chapterIdx]);
-        
+
         if (isArt) {
             const artCount = artGroups.get(chapterIdx);
             if (artCount && artCount > 1) {
@@ -227,13 +227,13 @@ export const LNReaderScreen: React.FC = () => {
             }
             return 'Art';
         }
-        
+
         // Count art chapters before this one within the TOC range
         let artCountBefore = 0;
         for (let i = firstTocChapterIndex; i < chapterIdx; i++) {
             if (isArtChapter(chapters[i])) artCountBefore++;
         }
-        
+
         const chapterNum = chapterIdx - firstTocChapterIndex - artCountBefore + 1;
         return `Chapter ${Math.max(1, chapterNum)}`;
     };
@@ -242,7 +242,7 @@ export const LNReaderScreen: React.FC = () => {
     const calculateArtGroups = (chapters: string[]): Map<number, number> => {
         const artGroups = new Map<number, number>();
         let consecutiveArt: number[] = [];
-        
+
         chapters.forEach((html, idx) => {
             if (isArtChapter(html)) {
                 consecutiveArt.push(idx);
@@ -253,11 +253,11 @@ export const LNReaderScreen: React.FC = () => {
                 }
             }
         });
-        
+
         if (consecutiveArt.length > 0) {
             artGroups.set(consecutiveArt[0], consecutiveArt.length);
         }
-        
+
         return artGroups;
     };
 
@@ -316,22 +316,22 @@ export const LNReaderScreen: React.FC = () => {
         // Get first block ID for this chapter from blockMaps
         const blockMaps = content?.stats?.blockMaps;
         let firstBlockId: string | undefined;
-        
+
         if (blockMaps) {
             const chapterBlocks = blockMaps
                 .filter(b => b.blockId.startsWith(`ch${index}-`))
                 .sort((a, b) => a.startOffset - b.startOffset);
-            
+
             if (chapterBlocks.length > 0) {
                 firstBlockId = chapterBlocks[0].blockId;
             }
         }
-        
+
         // Fallback if no blockMaps
         if (!firstBlockId) {
             firstBlockId = `ch${index}-b0`;
         }
-        
+
         setSavedProgress((prev: any) => ({
             ...prev,
             chapterIndex: index,
@@ -374,22 +374,22 @@ export const LNReaderScreen: React.FC = () => {
         // Get first block ID for this chapter from blockMaps
         const blockMaps = content?.stats?.blockMaps;
         let firstBlockId: string | undefined;
-        
+
         if (blockMaps) {
             const chapterBlocks = blockMaps
                 .filter(b => b.blockId.startsWith(`ch${chapterIndex}-`))
                 .sort((a, b) => a.startOffset - b.startOffset);
-            
+
             if (chapterBlocks.length > 0) {
                 firstBlockId = chapterBlocks[0].blockId;
             }
         }
-        
+
         // Fallback if no blockMaps
         if (!firstBlockId) {
             firstBlockId = `ch${chapterIndex}-b0`;
         }
-        
+
         setSavedProgress((prev: any) => ({
             ...prev,
             chapterIndex: chapterIndex,
@@ -410,29 +410,29 @@ export const LNReaderScreen: React.FC = () => {
             return;
         }
 
-        const results: {chapterIndex: number; text: string; position: number}[] = [];
+        const results: { chapterIndex: number; text: string; position: number }[] = [];
         const searchLower = query.toLowerCase();
 
         content.chapters.forEach((chapterHtml, chapterIdx) => {
             const text = chapterHtml.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim();
             const textLower = text.toLowerCase();
             let position = textLower.indexOf(searchLower);
-            
+
             while (position !== -1) {
                 // Get context around the match
                 const start = Math.max(0, position - 30);
                 const end = Math.min(text.length, position + query.length + 30);
                 const context = text.substring(start, end);
-                
+
                 results.push({
                     chapterIndex: chapterIdx,
                     text: context,
                     position: position
                 });
-                
+
                 // Find next occurrence
                 position = textLower.indexOf(searchLower, position + 1);
-                
+
                 // Limit results per chapter
                 if (results.filter(r => r.chapterIndex === chapterIdx).length >= 5) break;
             }
@@ -441,11 +441,11 @@ export const LNReaderScreen: React.FC = () => {
         setSearchResults(results);
     };
 
-    const handleSearchResultClick = (result: {chapterIndex: number; text: string; position: number}) => {
+    const handleSearchResultClick = (result: { chapterIndex: number; text: string; position: number }) => {
         // Use existing blockMaps from metadata to find the block
         let blockId: string | undefined;
         let blockLocalOffset: number = 0;
-        
+
         const blockMaps = content?.stats?.blockMaps;
         if (blockMaps) {
             // Find block for this specific chapter
@@ -454,9 +454,9 @@ export const LNReaderScreen: React.FC = () => {
                 const match = b.blockId.match(/ch(\d+)-b\d+/);
                 if (!match) return false;
                 const blockChapterIndex = parseInt(match[1], 10);
-                return blockChapterIndex === result.chapterIndex && 
-                       result.position >= b.startOffset && 
-                       result.position < b.endOffset;
+                return blockChapterIndex === result.chapterIndex &&
+                    result.position >= b.startOffset &&
+                    result.position < b.endOffset;
             });
             if (chapterBlock) {
                 blockId = chapterBlock.blockId;
@@ -485,6 +485,15 @@ export const LNReaderScreen: React.FC = () => {
         setCurrentChapter(result.chapterIndex);
         setSearchOpen(false);
     };
+
+    // Manage body overflow to prevent scrollbars on PC
+    useEffect(() => {
+        const originalOverflow = document.body.style.overflow;
+        document.body.style.overflow = 'hidden';
+        return () => {
+            document.body.style.overflow = originalOverflow;
+        };
+    }, []);
 
     if (isLoading || !progressLoaded) {
         return (
@@ -538,7 +547,17 @@ export const LNReaderScreen: React.FC = () => {
     }
 
     return (
-        <Box sx={{ height: '100vh', width: '100vw', overflow: 'hidden' }}>
+        <Box
+            sx={{
+                height: '100vh',
+                width: '100%', // Use 100% to avoid vw issues on PC
+                overflow: 'hidden',
+                position: 'relative',
+                '&::-webkit-scrollbar': { display: 'none' },
+                scrollbarWidth: 'none',
+                msOverflowStyle: 'none'
+            }}
+        >
             <VirtualReader
                 key={`${id}-${savedProgress?.chapterIndex}`}
                 bookId={id!}
@@ -665,12 +684,12 @@ export const LNReaderScreen: React.FC = () => {
                             const coveringIndex = findCoveringTocIndex(content.metadata.toc, currentChapter);
                             const artGroups = calculateArtGroups(content.chapters);
                             const firstTocChapterIndex = content.metadata.toc[0]?.chapterIndex ?? 0;
-                            
+
                             return content.metadata.toc.map((tocItem: any, tocIdx: number) => {
                                 const chaptersInRange = getChaptersInRange(tocIdx, content.metadata.toc, content.chapters.length);
                                 const isExpanded = expandedToc.has(tocIdx);
                                 const isCovering = tocIdx === coveringIndex;
-                                
+
                                 return (
                                     <Box key={tocIdx}>
                                         <Box
@@ -726,14 +745,14 @@ export const LNReaderScreen: React.FC = () => {
                                                 )}
                                             </Box>
                                         </Box>
-                                        
+
                                         {isExpanded && chaptersInRange.length > 0 && (
                                             <Box sx={{ pl: 1, pr: 1 }}>
                                                 {chaptersInRange.map((chapterIdx: number) => {
                                                     const isCurrentChapter = chapterIdx === currentChapter;
                                                     const isArt = isArtChapter(content.chapters[chapterIdx]);
                                                     const label = getChapterDisplayLabel(chapterIdx, content.chapters, artGroups, firstTocChapterIndex);
-                                                    
+
                                                     return (
                                                         <ListItemButton
                                                             key={chapterIdx}
@@ -781,12 +800,12 @@ export const LNReaderScreen: React.FC = () => {
                         (() => {
                             const artGroups = calculateArtGroups(content.chapters);
                             const firstTocChapterIndex = 0;
-                            
+
                             return content.chapters.map((_: any, idx: number) => {
                                 const isCurrentChapter = idx === currentChapter;
                                 const isArt = isArtChapter(content.chapters[idx]);
                                 const label = getChapterDisplayLabel(idx, content.chapters, artGroups, firstTocChapterIndex);
-                                
+
                                 return (
                                     <ListItemButton
                                         key={idx}

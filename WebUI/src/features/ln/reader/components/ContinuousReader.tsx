@@ -1,39 +1,44 @@
 import React, { useRef, useEffect, useState, useCallback, useMemo } from 'react';
-import { Settings } from '@/Manatan/types';
-import { ReaderNavigationUI } from './ReaderNavigationUI';
-import { ChapterBlock } from './ChapterBlock';
-import { ReaderContextMenu } from './ReaderContextMenu';
-import { SelectionHandles } from './SelectionHandles';
-import { useChapterLoader } from '../hooks/useChapterLoader';
-import { useTextLookup } from '../hooks/useTextLookup';
-import { buildContainerStyles } from '../utils/styles';
-import { getReaderTheme } from '../utils/themes';
-import { calculateProgress as calculateScrollProgress } from '../utils/navigation';
-import { BlockTracker } from '../utils/blockTracker';
+import { ReaderNavigationUI } from '@/features/ln/reader/components/ReaderNavigationUI';
+import { ChapterBlock } from '@/features/ln/reader/components/ChapterBlock';
+import { SelectionHandles } from '@/features/ln/reader/components/SelectionHandles';
+import { useChapterLoader } from '@/features/ln/reader/hooks/useChapterLoader';
+import { useTextLookup } from '@/features/ln/reader/hooks/useTextLookup';
+import { buildContainerStyles } from '@/features/ln/reader/utils/styles';
+import { getReaderTheme } from '@/features/ln/reader/utils/themes';
+import { calculateProgress as calculateScrollProgress } from '@/features/ln/reader/utils/navigation';
+import { BlockTracker } from '@/features/ln/reader/utils/blockTracker';
 import {
     extractContextSnippet,
     calculateBlockLocalOffset,
     calculatePreciseBlockOffset,
     getCleanTextContent,
     getCleanCharCount,
-} from '../utils/blockPosition';
-import { createChapterBlockLookup, calculateCharOffsetFromBlock } from '../utils/blockMap';
-import {
-    SaveablePosition,
-    calculateProgress,
-    createSaveScheduler
-} from '../utils/readerSave';
-import { restoreReadingPosition, applyLocalOffset } from '../utils/restoration';
-import { ContinuousReaderProps } from '../types/reader';
-import './ContinuousReader.css';
+} from '@/features/ln/reader/utils/blockPosition';
+import { createChapterBlockLookup, calculateCharOffsetFromBlock } from '@/features/ln/reader/utils/blockMap';
+import { SaveablePosition, calculateProgress, createSaveScheduler } from '@/features/ln/reader/utils/readerSave';
+import { restoreReadingPosition, applyLocalOffset, RestorationPosition } from '@/features/ln/reader/utils/restoration';
+import { ContinuousReaderProps } from '@/features/ln/reader/types/reader';
+import '@/features/ln/reader/components/ContinuousReader.css';
 
 // ============================================================================
 // Constants
 // ============================================================================
 
-const DRAG_THRESHOLD = 10;
 const SAVE_DEBOUNCE_MS = 3000;
 const SCROLL_DEBOUNCE_MS = 150;
+const SAVE_LOCK_DURATION_MS = 3000;
+
+// ============================================================================
+// Restoration State Machine
+// ============================================================================
+
+type RestorationState =
+    | 'LOADING_TARGET' // Loading the target chapter
+    | 'WAITING_FOR_DOM' // Waiting for target chapter to appear in DOM
+    | 'RESTORING' // Performing scroll restoration
+    | 'ACTIVE' // Normal operation, tracking enabled
+    | 'NAVIGATING'; // User jumped via TOC/search
 
 // ============================================================================
 // Component
@@ -60,7 +65,67 @@ export const ContinuousReader: React.FC<ContinuousReaderProps> = ({
     onAddHighlight,
     onRemoveHighlight,
     navigationRef,
+    css,
 }) => {
+    // ========================================================================
+    // Hooks & Memos (Top Level)
+    // ========================================================================
+
+    const targetChapter = useMemo(() => {
+        if (initialProgress?.chapterIndex !== undefined) {
+            return initialProgress.chapterIndex;
+        }
+        return initialChapter;
+    }, [initialProgress?.chapterIndex, initialChapter]);
+
+    const { loadChaptersAround, getChapterHtml, loadingState, loadChapter } = useChapterLoader({
+        chapters,
+        preloadCount: 3,
+    });
+
+    const { tryLookup } = useTextLookup();
+
+    const theme = useMemo(() => getReaderTheme(settings.lnTheme), [settings.lnTheme]);
+
+    const navOptions = useMemo(() => ({ isVertical, isRTL, isPaged: false }), [isVertical, isRTL]);
+
+    const containerStyles = useMemo(
+        () => buildContainerStyles(settings, isVertical, isRTL),
+        [settings, isVertical, isRTL],
+    );
+
+    const layoutKey = useMemo(
+        () =>
+            JSON.stringify({
+                isVertical,
+                isRTL,
+                fontSize: settings.lnFontSize,
+                lineHeight: settings.lnLineHeight,
+                letterSpacing: settings.lnLetterSpacing,
+                fontFamily: settings.lnFontFamily,
+                textAlign: settings.lnTextAlign,
+                furigana: settings.lnEnableFurigana,
+                marginTop: settings.lnMarginTop,
+                marginBottom: settings.lnMarginBottom,
+                marginLeft: settings.lnMarginLeft,
+                marginRight: settings.lnMarginRight,
+            }),
+        [
+            isVertical,
+            isRTL,
+            settings.lnFontSize,
+            settings.lnLineHeight,
+            settings.lnLetterSpacing,
+            settings.lnFontFamily,
+            settings.lnTextAlign,
+            settings.lnEnableFurigana,
+            settings.lnMarginTop,
+            settings.lnMarginBottom,
+            settings.lnMarginLeft,
+            settings.lnMarginRight,
+        ],
+    );
+
     // ========================================================================
     // Refs
     // ========================================================================
@@ -68,28 +133,21 @@ export const ContinuousReader: React.FC<ContinuousReaderProps> = ({
     const containerRef = useRef<HTMLDivElement>(null);
     const contentRef = useRef<HTMLDivElement>(null);
     const blockTrackerRef = useRef<BlockTracker | null>(null);
-    const lastReportedChapterRef = useRef(initialChapter);
-    const hasRestoredRef = useRef(false);
     const scrollDebounceRef = useRef<number | null>(null);
-    
-    // Save lock to prevent saving immediately after restoration (3 seconds)
-    const saveLockUntilRef = useRef<number>(0);
-    const SAVE_LOCK_DURATION_MS = 3000;
 
-    // Drag detection
+    const restorationStateRef = useRef<RestorationState>(initialProgress?.blockId ? 'LOADING_TARGET' : 'ACTIVE');
+    const saveLockUntilRef = useRef<number>(0);
+    const currentBlockIdRef = useRef<string | null>(null);
+    const currentBlockElementRef = useRef<Element | null>(null);
+    const restoreAnchorRef = useRef<RestorationPosition | null>(null);
+
     const isDraggingRef = useRef(false);
     const startPosRef = useRef({ x: 0, y: 0 });
 
-    // Callback refs
     const onPositionUpdateRef = useRef(onPositionUpdate);
     const onRegisterSaveRef = useRef(onRegisterSave);
     const onToggleUIRef = useRef(onToggleUI);
 
-    // Current block refs
-    const currentBlockIdRef = useRef<string | null>(null);
-    const currentBlockElementRef = useRef<Element | null>(null);
-
-    // Save scheduler
     const [isSaved, setIsSaved] = useState(true);
     const saveSchedulerRef = useRef(
         createSaveScheduler({
@@ -98,11 +156,450 @@ export const ContinuousReader: React.FC<ContinuousReaderProps> = ({
             autoSaveEnabled: settings.lnAutoBookmark ?? true,
             saveDelay: settings.lnBookmarkDelay ?? 0,
             onSaveStatusChange: setIsSaved,
-        })
+        }),
     );
 
     // ========================================================================
-    // Update Callback Refs
+    // State
+    // ========================================================================
+
+    const [currentChapter, setCurrentChapter] = useState(targetChapter);
+    const [scrollProgress, setScrollProgress] = useState(0);
+    const [contentLoaded, setContentLoaded] = useState(false);
+    const [currentProgress, setCurrentProgress] = useState(initialProgress?.totalProgress || 0);
+    const [currentPosition, setCurrentPosition] = useState<SaveablePosition | null>(null);
+    const [restorationComplete, setRestorationComplete] = useState(!initialProgress?.blockId);
+
+    // ========================================================================
+    // Logic Callbacks (Defined early to avoid initialization issues)
+    // ========================================================================
+
+    const calculatePositionFromBlock = useCallback(
+        (blockId: string, blockElement: Element): SaveablePosition | null => {
+            if (!containerRef.current || !stats) return null;
+
+            const container = containerRef.current;
+
+            // Try precise caret-based offset first
+            let blockLocalOffset = calculatePreciseBlockOffset(blockElement, container, isVertical);
+
+            // Fallback to ratio-based if precise fails
+            const textContent = getCleanTextContent(blockElement);
+            if (blockLocalOffset === 0 && textContent.length > 0) {
+                blockLocalOffset = calculateBlockLocalOffset(blockElement, container, isVertical);
+            }
+
+            // Extract context
+            const contextSnippet = extractContextSnippet(blockElement, blockLocalOffset, 20);
+
+            // Get chapter index from block ID
+            const chapterMatch = blockId.match(/ch(\d+)-/);
+            const chapterIndex = chapterMatch ? parseInt(chapterMatch[1], 10) : currentChapter;
+
+            // Calculate chapter character offset
+            let chapterCharOffset: number;
+
+            if (stats.blockMaps && stats.blockMaps.length > 0) {
+                const chapterLookup = createChapterBlockLookup(stats.blockMaps, chapterIndex);
+                chapterCharOffset = calculateCharOffsetFromBlock(chapterLookup, blockId, blockLocalOffset);
+            } else {
+                chapterCharOffset = blockLocalOffset;
+                const blockOrder = parseInt(blockId.split('-b')[1] || '0', 10);
+
+                for (let i = 0; i < blockOrder; i++) {
+                    const prevBlock = container.querySelector(`[data-block-id="ch${chapterIndex}-b${i}"]`);
+                    if (prevBlock) {
+                        const text = getCleanTextContent(prevBlock);
+                        chapterCharOffset += getCleanCharCount(text);
+                    }
+                }
+            }
+
+            // Calculate progress
+            const progressCalc = calculateProgress(chapterIndex, chapterCharOffset, stats);
+
+            return {
+                blockId,
+                blockLocalOffset,
+                contextSnippet,
+                chapterIndex,
+                chapterCharOffset,
+                totalCharsRead: progressCalc.totalCharsRead,
+                chapterProgress: progressCalc.chapterProgress,
+                totalProgress: progressCalc.totalProgress,
+                sentenceText: contextSnippet,
+            };
+        },
+        [stats, isVertical, currentChapter],
+    );
+
+    const handleActiveBlockChange = useCallback(
+        (blockId: string, element: Element) => {
+            // Update anchor ref for layout changes
+            const chapterMatch = blockId.match(/ch(\d+)-/);
+            const chapterIndex = chapterMatch ? parseInt(chapterMatch[1], 10) : currentChapter;
+
+            restoreAnchorRef.current = {
+                blockId,
+                chapterIndex,
+                blockLocalOffset: calculatePreciseBlockOffset(element, containerRef.current!, isVertical),
+            };
+
+            // GUARD: Don't track if restoration state is not ACTIVE
+            if (restorationStateRef.current !== 'ACTIVE') {
+                return;
+            }
+
+            // GUARD: Ignore if same block (no movement)
+            if (currentBlockIdRef.current === blockId) {
+                return;
+            }
+
+            currentBlockIdRef.current = blockId;
+            currentBlockElementRef.current = element;
+
+            const position = calculatePositionFromBlock(blockId, element);
+            if (!position) return;
+
+            // UI Updates (Current progress, position, chapter)
+            setCurrentProgress(position.totalProgress);
+            setCurrentPosition(position);
+
+            // Update chapter if changed
+            const chapterMatchLocal = blockId.match(/ch(\d+)-/);
+            if (chapterMatchLocal) {
+                const chapterIndexLocal = parseInt(chapterMatchLocal[1], 10);
+                if (chapterIndexLocal !== currentChapter) {
+                    console.log('[ContinuousReader] Active chapter changed:', chapterIndexLocal);
+                    setCurrentChapter(chapterIndexLocal);
+                    loadChaptersAround(chapterIndexLocal);
+                }
+            }
+
+            // Notify parent (for TOC updates, etc.) - HIGHEST PRIORITY
+            onPositionUpdateRef.current?.({
+                chapterIndex: position.chapterIndex,
+                chapterCharOffset: position.chapterCharOffset,
+                sentenceText: position.sentenceText || '',
+                totalProgress: position.totalProgress,
+                blockId: position.blockId,
+            });
+
+            // Save Scheduling (Only if not locked)
+            if (Date.now() >= saveLockUntilRef.current) {
+                saveSchedulerRef.current.scheduleSave(position);
+            } else {
+                console.log('[BlockTracker] Save locked, reporting position but skipping save');
+            }
+        },
+        [calculatePositionFromBlock, currentChapter, loadChaptersAround, isVertical],
+    );
+
+    // ========================================================================
+    // Direct Navigation Functions (TOC/Search)
+    // ========================================================================
+
+    const scrollToBlock = useCallback(
+        (blockId: string, blockLocalOffset?: number) => {
+            const container = containerRef.current;
+            if (!container) return;
+
+            // Extract chapter index from blockId
+            const chapterMatch = blockId.match(/ch(\d+)-/);
+            const chapterIndex = chapterMatch ? parseInt(chapterMatch[1], 10) : currentChapter;
+
+            console.log('[Navigate] scrollToBlock:', blockId, 'offset:', blockLocalOffset, 'chapter:', chapterIndex);
+
+            // Set state to navigating (prevents saves)
+            restorationStateRef.current = 'NAVIGATING';
+            saveLockUntilRef.current = Date.now() + SAVE_LOCK_DURATION_MS;
+
+            // Update chapter state (Sync with TOC)
+            if (chapterIndex !== currentChapter) {
+                setCurrentChapter(chapterIndex);
+            }
+
+            // Load chapter with priority
+            loadChapter(chapterIndex, true);
+
+            const performScroll = (element: Element) => {
+                element.scrollIntoView({ behavior: 'auto', block: 'start' });
+
+                if (blockLocalOffset && blockLocalOffset > 0) {
+                    // Use multiple frames to ensure layout is updated after scrollIntoView
+                    requestAnimationFrame(() => {
+                        requestAnimationFrame(() => {
+                            applyLocalOffset(element, container, blockLocalOffset, isVertical, isRTL);
+                        });
+                    });
+                }
+
+                currentBlockIdRef.current = blockId;
+                loadChaptersAround(chapterIndex);
+
+                // Notify parent of navigation success (Sync with TOC)
+                const position = calculatePositionFromBlock(blockId, element);
+                if (position) {
+                    onPositionUpdateRef.current?.({
+                        chapterIndex: position.chapterIndex,
+                        chapterCharOffset: position.chapterCharOffset,
+                        sentenceText: position.sentenceText || '',
+                        totalProgress: position.totalProgress,
+                        blockId: position.blockId,
+                    });
+                }
+
+                requestAnimationFrame(() => {
+                    requestAnimationFrame(() => {
+                        restorationStateRef.current = 'ACTIVE';
+                        setRestorationComplete(true);
+                    });
+                });
+            };
+
+            // Check if block already exists
+            const existingBlock = container.querySelector(`[data-block-id="${blockId}"]`);
+            if (existingBlock) {
+                performScroll(existingBlock);
+                return;
+            }
+
+            // Use MutationObserver to wait for block to appear
+            const observer = new MutationObserver(() => {
+                const block = container.querySelector(`[data-block-id="${blockId}"]`);
+                if (block) {
+                    observer.disconnect();
+                    clearTimeout(safetyTimeout);
+                    performScroll(block);
+                }
+            });
+
+            // Start observing
+            observer.observe(container, { childList: true, subtree: true });
+
+            // Safety timeout to disconnect observer
+            const safetyTimeout = setTimeout(() => {
+                observer.disconnect();
+                console.log('[Navigate] Observer timeout - block may not exist');
+                restorationStateRef.current = 'ACTIVE';
+                setRestorationComplete(true);
+            }, 5000);
+        },
+        [isVertical, isRTL, loadChapter, loadChaptersAround, currentChapter, calculatePositionFromBlock],
+    );
+
+    // ========================================================================
+    // Reset restoration when layout changes
+    // ========================================================================
+
+    useEffect(() => {
+        if (restorationStateRef.current === 'ACTIVE') {
+            console.log('[ContinuousReader] Layout changed, resetting restoration state');
+            restorationStateRef.current = 'LOADING_TARGET';
+            setRestorationComplete(false);
+        }
+    }, [layoutKey]);
+
+    // ========================================================================
+    // Restoration Effect (No Timeouts!)
+    // ========================================================================
+
+    useEffect(() => {
+        let isCancelled = false;
+
+        const performRestoration = async () => {
+            // Skip if already restored, navigating, or no position to restore
+            if (restorationStateRef.current === 'ACTIVE' || restorationStateRef.current === 'NAVIGATING') return;
+
+            const anchor =
+                restoreAnchorRef.current ||
+                (initialProgress?.blockId
+                    ? {
+                          blockId: initialProgress.blockId,
+                          chapterIndex: initialProgress.chapterIndex ?? 0,
+                          blockLocalOffset: initialProgress.blockLocalOffset,
+                          contextSnippet: initialProgress.contextSnippet,
+                          chapterCharOffset: initialProgress.chapterCharOffset,
+                          sentenceText: initialProgress.sentenceText,
+                      }
+                    : null);
+
+            if (!anchor) {
+                restorationStateRef.current = 'ACTIVE';
+                setRestorationComplete(true);
+                return;
+            }
+
+            const container = containerRef.current;
+            if (!container || !contentLoaded || isCancelled) return;
+
+            const targetChapterIndex = anchor.chapterIndex ?? 0;
+
+            // Wait for fonts and layout to settle before restoring
+            if (document.fonts) {
+                try {
+                    await document.fonts.ready;
+                } catch {}
+            }
+            if (isCancelled) return;
+
+            // Wait for layout to settle
+            await new Promise((r) => requestAnimationFrame(r));
+            await new Promise((r) => requestAnimationFrame(r));
+            if (isCancelled) return;
+
+            // Check if target chapter blocks are present
+            const blocks = container.querySelectorAll(`[data-block-id^="ch${targetChapterIndex}-b"]`);
+            if (blocks.length === 0) {
+                console.log('[Restore] Waiting for chapter', targetChapterIndex, 'to appear in DOM');
+                restorationStateRef.current = 'WAITING_FOR_DOM';
+                return;
+            }
+
+            // Target chapter is ready - perform restoration
+            console.log('[Restore] Chapter', targetChapterIndex, 'ready with', blocks.length, 'blocks');
+            restorationStateRef.current = 'RESTORING';
+
+            const result = restoreReadingPosition(
+                container,
+                {
+                    chapterIndex: targetChapterIndex,
+                    blockId: anchor.blockId,
+                    blockLocalOffset: anchor.blockLocalOffset,
+                    contextSnippet: anchor.contextSnippet,
+                    chapterCharOffset: anchor.chapterCharOffset,
+                    sentenceText: anchor.sentenceText,
+                },
+                {
+                    isVertical,
+                    isRTL,
+                    blockMaps: stats?.blockMaps,
+                },
+            );
+
+            if (isCancelled) return;
+
+            // Update refs
+            currentBlockIdRef.current = result.blockId || anchor.blockId || null;
+            saveLockUntilRef.current = Date.now() + SAVE_LOCK_DURATION_MS;
+
+            console.log('[Restore] Position restored:', result);
+
+            // Wait for scroll to settle
+            requestAnimationFrame(() => {
+                if (isCancelled) return;
+                requestAnimationFrame(() => {
+                    if (isCancelled) return;
+                    restorationStateRef.current = 'ACTIVE';
+                    setRestorationComplete(true);
+                    console.log('[Restore] Restoration complete, tracking enabled');
+                });
+            });
+        };
+
+        performRestoration();
+        return () => {
+            isCancelled = true;
+        };
+    }, [contentLoaded, initialProgress, isVertical, isRTL, stats?.blockMaps, layoutKey]);
+
+    const scrollToChapter = useCallback(
+        (chapterIndex: number) => {
+            const container = containerRef.current;
+            if (!container) return;
+
+            console.log('[Navigate] scrollToChapter:', chapterIndex);
+
+            // Set state to navigating
+            restorationStateRef.current = 'NAVIGATING';
+            saveLockUntilRef.current = Date.now() + SAVE_LOCK_DURATION_MS;
+
+            // Update state
+            if (chapterIndex !== currentChapter) {
+                setCurrentChapter(chapterIndex);
+            }
+
+            // Load chapter
+            loadChapter(chapterIndex, true);
+
+            const performScroll = (blocks: NodeListOf<Element>) => {
+                if (blocks.length === 0) return;
+
+                (blocks[0] as HTMLElement).scrollIntoView({
+                    behavior: 'auto',
+                    block: 'start',
+                });
+
+                const blockId = blocks[0].getAttribute('data-block-id');
+                currentBlockIdRef.current = blockId;
+                loadChaptersAround(chapterIndex);
+
+                // Notify parent of navigation success (Sync with TOC)
+                if (blockId) {
+                    const position = calculatePositionFromBlock(blockId, blocks[0]);
+                    if (position) {
+                        onPositionUpdateRef.current?.({
+                            chapterIndex: position.chapterIndex,
+                            chapterCharOffset: position.chapterCharOffset,
+                            sentenceText: position.sentenceText || '',
+                            totalProgress: position.totalProgress,
+                            blockId: position.blockId,
+                        });
+                    }
+                }
+
+                requestAnimationFrame(() => {
+                    requestAnimationFrame(() => {
+                        restorationStateRef.current = 'ACTIVE';
+                        setRestorationComplete(true);
+                    });
+                });
+            };
+
+            // Check if already exists
+            const existingBlocks = container.querySelectorAll(`[data-block-id^="ch${chapterIndex}-b"]`);
+
+            if (existingBlocks.length > 0) {
+                performScroll(existingBlocks);
+                return;
+            }
+
+            // Use MutationObserver
+            const observer = new MutationObserver(() => {
+                const blocks = container.querySelectorAll(`[data-block-id^="ch${chapterIndex}-b"]`);
+
+                if (blocks.length > 0) {
+                    observer.disconnect();
+                    clearTimeout(safetyTimeout);
+                    performScroll(blocks);
+                }
+            });
+
+            observer.observe(container, { childList: true, subtree: true });
+
+            // Safety timeout
+            const safetyTimeout = setTimeout(() => {
+                observer.disconnect();
+                console.log('[Navigate] scrollToChapter timeout');
+                restorationStateRef.current = 'ACTIVE';
+                setRestorationComplete(true);
+            }, 5000);
+        },
+        [loadChapter, loadChaptersAround, currentChapter, calculatePositionFromBlock, isVertical, isRTL],
+    );
+
+    // Expose navigation functions via ref
+    useEffect(() => {
+        if (navigationRef) {
+            navigationRef.current = {
+                scrollToBlock,
+                scrollToChapter,
+            };
+        }
+    }, [scrollToBlock, scrollToChapter, navigationRef]);
+
+    // ========================================================================
+    // Effects (Using defined callbacks)
     // ========================================================================
 
     useEffect(() => {
@@ -121,7 +618,7 @@ export const ContinuousReader: React.FC<ContinuousReaderProps> = ({
         if (initialProgress?.blockId) {
             saveSchedulerRef.current.setInitialSavedPosition(initialProgress.blockId);
         }
-    }, []);
+    }, [initialProgress?.blockId]);
 
     useEffect(() => {
         saveSchedulerRef.current.updateOptions({
@@ -131,216 +628,59 @@ export const ContinuousReader: React.FC<ContinuousReaderProps> = ({
         });
     }, [bookId, settings.lnAutoBookmark, settings.lnBookmarkDelay]);
 
-    // Reset restoration when initialProgress changes (for search/highlight navigation)
-    const lastInitialProgressRef = useRef(initialProgress);
     useEffect(() => {
-        const lastProgress = lastInitialProgressRef.current;
-        const progressChanged = 
-            (lastProgress?.blockId !== initialProgress?.blockId) ||
-            (lastProgress?.chapterIndex !== initialProgress?.chapterIndex);
-        
-        if (progressChanged && initialProgress?.blockId && hasRestoredRef.current) {
-            console.log('[ContinuousReader] InitialProgress changed, resetting restoration');
-            hasRestoredRef.current = false;
-            setRestorationComplete(false);
-        }
-        
-        lastInitialProgressRef.current = initialProgress;
-    }, [initialProgress?.blockId, initialProgress?.chapterIndex, initialProgress?.chapterCharOffset]);
-
-    // ========================================================================
-    // State
-    // ========================================================================
-
-    const [currentChapter, setCurrentChapter] = useState(initialChapter);
-    const [scrollProgress, setScrollProgress] = useState(0);
-    const [contentLoaded, setContentLoaded] = useState(false);
-    const [currentProgress, setCurrentProgress] = useState(initialProgress?.totalProgress || 0);
-    const [currentPosition, setCurrentPosition] = useState<SaveablePosition | null>(null);
-    const [restorationComplete, setRestorationComplete] = useState(!initialProgress?.blockId);
-
-    // ========================================================================
-    // Simple Derived Values
-    // ========================================================================
-
-    const theme = useMemo(
-        () => getReaderTheme(settings.lnTheme),
-        [settings.lnTheme]
-    );
-
-    const navOptions = useMemo(
-        () => ({ isVertical, isRTL, isPaged: false }),
-        [isVertical, isRTL]
-    );
-
-    const { tryLookup } = useTextLookup();
-
-    const containerStyles = useMemo(
-        () => buildContainerStyles(settings, isVertical, isRTL),
-        [settings, isVertical, isRTL]
-    );
-
-    // ========================================================================
-    // Chapter Loader
-    // ========================================================================
-
-    const { loadChaptersAround, getChapterHtml, loadingState, loadChapter } = useChapterLoader({
-        chapters,
-        preloadCount: 3,
-    });
-
-    useEffect(() => {
-        loadChaptersAround(initialChapter);
-    }, [initialChapter, loadChaptersAround]);
+        console.log('[ContinuousReader] Initial load - target chapter:', targetChapter);
+        loadChapter(targetChapter, true);
+        loadChaptersAround(targetChapter);
+    }, [targetChapter, loadChapter, loadChaptersAround]);
 
     useEffect(() => {
         const checkLoaded = () => {
-            const loaded = chapters.some((_, i) => getChapterHtml(i) !== null);
-            if (loaded && !contentLoaded) {
+            const targetHtml = getChapterHtml(targetChapter);
+            if (targetHtml && !contentLoaded) {
+                console.log('[ContinuousReader] Target chapter loaded:', targetChapter);
                 setContentLoaded(true);
             }
         };
-
         checkLoaded();
-        const timer = setInterval(checkLoaded, 100);
+        const timer = setInterval(checkLoaded, 50);
         return () => clearInterval(timer);
-    }, [chapters, getChapterHtml, contentLoaded]);
-
-    // ========================================================================
-    // Register Save Function
-    // ========================================================================
+    }, [targetChapter, getChapterHtml, contentLoaded]);
 
     useEffect(() => {
         onRegisterSaveRef.current?.(saveSchedulerRef.current.saveNow);
     }, []);
 
     // ========================================================================
-    // Position Calculation from Block
+    // Handle initialProgress Changes (Search/Highlight Navigation)
     // ========================================================================
 
-    const calculatePositionFromBlock = useCallback((
-        blockId: string,
-        blockElement: Element
-    ): SaveablePosition | null => {
-        if (!containerRef.current || !stats) return null;
+    const lastInitialProgressRef = useRef(initialProgress);
 
-        const container = containerRef.current;
+    useEffect(() => {
+        const lastProgress = lastInitialProgressRef.current;
+        const progressChanged =
+            lastProgress?.blockId !== initialProgress?.blockId ||
+            lastProgress?.chapterIndex !== initialProgress?.chapterIndex;
 
-        // Try precise caret-based offset first (more accurate)
-        let blockLocalOffset = calculatePreciseBlockOffset(
-            blockElement,
-            container,
-            isVertical
-        );
+        // Skip if this update matches our current internal state (internal scroll)
+        const isInternalUpdate = initialProgress?.blockId === currentBlockIdRef.current;
 
-        // If precise fails (returns 0 when there should be content), fall back to ratio-based
-        const textContent = getCleanTextContent(blockElement);
-        if (blockLocalOffset === 0 && textContent.length > 0) {
-            blockLocalOffset = calculateBlockLocalOffset(
-                blockElement,
-                container,
-                isVertical
-            );
-        }
+        if (progressChanged && initialProgress?.blockId && !isInternalUpdate) {
+            console.log('[ContinuousReader] External position change, navigating:', initialProgress.blockId);
 
-        // Extract context
-        const contextSnippet = extractContextSnippet(blockElement, blockLocalOffset, 20);
-
-        // Get chapter index from block ID
-        const chapterMatch = blockId.match(/ch(\d+)-/);
-        const chapterIndex = chapterMatch ? parseInt(chapterMatch[1], 10) : currentChapter;
-
-        // Calculate chapter character offset using blockMaps (precise!)
-        let chapterCharOffset: number;
-        
-        if (stats.blockMaps && stats.blockMaps.length > 0) {
-            const chapterLookup = createChapterBlockLookup(stats.blockMaps, chapterIndex);
-            chapterCharOffset = calculateCharOffsetFromBlock(chapterLookup, blockId, blockLocalOffset);
-        } else {
-            // Fallback: count from DOM if no blockMaps
-            chapterCharOffset = blockLocalOffset;
-            const blockOrder = parseInt(blockId.split('-b')[1] || '0', 10);
-
-            for (let i = 0; i < blockOrder; i++) {
-                const prevBlock = container.querySelector(
-                    `[data-block-id="ch${chapterIndex}-b${i}"]`
-                );
-                if (prevBlock) {
-                    const text = getCleanTextContent(prevBlock);
-                    chapterCharOffset += getCleanCharCount(text);
-                }
+            // Update currentChapter to ensure the correct window of chapters is rendered
+            if (initialProgress.chapterIndex !== undefined && initialProgress.chapterIndex !== currentChapter) {
+                setCurrentChapter(initialProgress.chapterIndex);
+                loadChaptersAround(initialProgress.chapterIndex);
             }
+
+            // Use scrollToBlock for navigation
+            scrollToBlock(initialProgress.blockId, initialProgress.blockLocalOffset);
         }
 
-        // Calculate progress
-        const progressCalc = calculateProgress(chapterIndex, chapterCharOffset, stats);
-
-        console.log('[ContinuousReader] Saving position:', {
-            blockId,
-            blockLocalOffset,
-            chapterCharOffset,
-            chapterIndex,
-            hasBlockMaps: !!(stats.blockMaps && stats.blockMaps.length > 0),
-        });
-
-        return {
-            blockId,
-            blockLocalOffset,
-            contextSnippet,
-            chapterIndex,
-            chapterCharOffset,
-            totalCharsRead: progressCalc.totalCharsRead,
-            chapterProgress: progressCalc.chapterProgress,
-            totalProgress: progressCalc.totalProgress,
-            sentenceText: contextSnippet,
-        };
-    }, [stats, isVertical, currentChapter]);
-
-    // ========================================================================
-    // Block Tracker Callback
-    // ========================================================================
-
-    const handleActiveBlockChange = useCallback((blockId: string, element: Element) => {
-        // Skip if save is locked (after restoration)
-        if (Date.now() < saveLockUntilRef.current) {
-            console.log('[ContinuousReader] Save locked, skipping block change');
-            return;
-        }
-        
-        // Skip if this is the same block as the restored position (no actual user movement)
-        if (currentBlockIdRef.current === blockId) {
-            return;
-        }
-        
-        currentBlockIdRef.current = blockId;
-        currentBlockElementRef.current = element;
-
-        const position = calculatePositionFromBlock(blockId, element);
-        if (!position) return;
-
-        setCurrentProgress(position.totalProgress);
-        setCurrentPosition(position);
-        saveSchedulerRef.current.scheduleSave(position);
-
-        // Update chapter if changed
-        const chapterMatch = blockId.match(/ch(\d+)-/);
-        if (chapterMatch) {
-            const chapterIndex = parseInt(chapterMatch[1], 10);
-            if (chapterIndex !== currentChapter) {
-                setCurrentChapter(chapterIndex);
-                loadChaptersAround(chapterIndex);
-            }
-        }
-
-        // Notify parent
-        onPositionUpdateRef.current?.({
-            chapterIndex: position.chapterIndex,
-            chapterCharOffset: position.chapterCharOffset,
-            sentenceText: position.sentenceText || '',
-            totalProgress: position.totalProgress,
-            blockId: position.blockId,
-        });
-    }, [calculatePositionFromBlock, currentChapter, loadChaptersAround]);
+        lastInitialProgressRef.current = initialProgress;
+    }, [initialProgress, currentChapter, scrollToBlock, loadChaptersAround]);
 
     // ========================================================================
     // Block Tracker Setup
@@ -349,15 +689,14 @@ export const ContinuousReader: React.FC<ContinuousReaderProps> = ({
     useEffect(() => {
         const container = containerRef.current;
         if (!container || !contentLoaded || !stats) return;
-        
-        // Don't start tracking until restoration is complete
-        // This prevents saving wrong position during initialization
+
+        // CRITICAL: Only start tracking when restoration is complete
         if (!restorationComplete) {
-            console.log('[BlockTracker] Waiting for restoration before starting...');
+            console.log('[BlockTracker] Waiting for restoration...');
             return;
         }
 
-        console.log('[BlockTracker] Starting tracking after restoration complete');
+        console.log('[BlockTracker] Starting tracking');
 
         // Clean up previous tracker
         blockTrackerRef.current?.stop();
@@ -386,17 +725,14 @@ export const ContinuousReader: React.FC<ContinuousReaderProps> = ({
         if (!container) return;
 
         const handleScroll = () => {
-            // Calculate scroll progress
             const progress = calculateScrollProgress(container, navOptions);
             setScrollProgress(progress);
 
-            // Debounce heavy operations
             if (scrollDebounceRef.current) {
                 clearTimeout(scrollDebounceRef.current);
             }
 
             scrollDebounceRef.current = window.setTimeout(() => {
-                // BlockTracker handles position updates
                 blockTrackerRef.current?.refresh();
             }, SCROLL_DEBOUNCE_MS);
         };
@@ -412,245 +748,6 @@ export const ContinuousReader: React.FC<ContinuousReaderProps> = ({
     }, [navOptions]);
 
     // ========================================================================
-    // Position Restoration
-    // ========================================================================
-
-    useEffect(() => {
-        if (!contentLoaded || hasRestoredRef.current || !initialProgress) return;
-        if (!containerRef.current) return;
-
-        const container = containerRef.current;
-        const targetChapter = initialProgress.chapterIndex ?? 0;
-
-        // Fast restoration: load target chapter immediately, then restore
-        const tryRestore = async () => {
-            // Step 1: Ensure target chapter is loaded immediately
-            if (!getChapterHtml(targetChapter)) {
-                console.log('[ContinuousReader] Loading target chapter immediately:', targetChapter);
-                loadChapter(targetChapter, true);
-                
-                // Wait for React to render the chapter into DOM
-                await new Promise(resolve => setTimeout(resolve, 50));
-            }
-
-            // Step 2: Verify blocks exist in DOM
-            const blocks = container.querySelectorAll(`[data-block-id^="ch${targetChapter}-b"]`);
-            if (blocks.length === 0) {
-                console.log('[ContinuousReader] No blocks found, waiting...');
-                // Wait a bit more for DOM to update
-                await new Promise(resolve => setTimeout(resolve, 100));
-            }
-
-            // Step 3: Check again and restore if ready
-            const finalBlocks = container.querySelectorAll(`[data-block-id^="ch${targetChapter}-b"]`);
-            if (finalBlocks.length === 0) {
-                console.log('[ContinuousReader] No blocks after wait, skipping restoration');
-                hasRestoredRef.current = true;
-                setRestorationComplete(true);
-                return;
-            }
-
-            console.log('[ContinuousReader] Chapter ready, restoring position');
-
-            const result = restoreReadingPosition(
-                container,
-                {
-                    chapterIndex: initialProgress.chapterIndex ?? 0,
-                    blockId: initialProgress.blockId,
-                    blockLocalOffset: initialProgress.blockLocalOffset,
-                    contextSnippet: initialProgress.contextSnippet,
-                    chapterCharOffset: initialProgress.chapterCharOffset,
-                    sentenceText: initialProgress.sentenceText,
-                },
-                {
-                    isVertical,
-                    isRTL,
-                    blockMaps: stats?.blockMaps,
-                }
-            );
-
-            hasRestoredRef.current = true;
-            
-            // Initialize current block to restored position
-            // This prevents BlockTracker from immediately saving a different block
-            if (result.blockId) {
-                currentBlockIdRef.current = result.blockId;
-            }
-            
-            console.log('[ContinuousReader] Position restored:', result);
-            
-            // Wait for scroll to settle before starting BlockTracker
-            // This prevents BlockTracker from detecting the wrong block immediately
-            setTimeout(() => {
-                console.log('[ContinuousReader] Scroll settled, enabling BlockTracker');
-                // Set save lock for 3 seconds to prevent overwriting restored position
-                saveLockUntilRef.current = Date.now() + SAVE_LOCK_DURATION_MS;
-                setRestorationComplete(true);
-            }, 500);
-        };
-
-        tryRestore();
-    }, [contentLoaded, initialProgress, isVertical, isRTL, stats?.blockMaps, getChapterHtml, loadChapter]);
-
-    // ========================================================================
-    // Direct Navigation (for TOC/search - bypasses restoration)
-    // ========================================================================
-
-    const scrollToBlock = useCallback((blockId: string, blockLocalOffset?: number) => {
-        const container = containerRef.current;
-        if (!container) return;
-
-        // Extract chapter index from blockId
-        const chapterMatch = blockId.match(/ch(\d+)-/);
-        const chapterIndex = chapterMatch ? parseInt(chapterMatch[1], 10) : 0;
-
-        console.log('[ContinuousReader] scrollToBlock:', blockId, 'chapter:', chapterIndex);
-
-        // Function to actually scroll to the block
-        const doScroll = () => {
-            const block = container.querySelector(`[data-block-id="${blockId}"]`);
-            if (!block) {
-                console.log('[ContinuousReader] scrollToBlock: block not found:', blockId);
-                return false;
-            }
-
-            // Disable restoration temporarily so we don't trigger it
-            hasRestoredRef.current = true;
-
-            // Scroll to block
-            block.scrollIntoView({ behavior: 'auto', block: 'start' });
-
-            // Apply local offset if provided
-            if (blockLocalOffset && blockLocalOffset > 0) {
-                setTimeout(() => {
-                    applyLocalOffset(block as Element, container, blockLocalOffset, isVertical, isRTL);
-                }, 50);
-            }
-
-            // Update current block tracking
-            currentBlockIdRef.current = blockId;
-
-            // Update chapter if changed
-            if (chapterIndex !== currentChapter) {
-                setCurrentChapter(chapterIndex);
-            }
-
-            // Mark restoration complete
-            setRestorationComplete(true);
-
-            // Set save lock to prevent overwriting
-            saveLockUntilRef.current = Date.now() + SAVE_LOCK_DURATION_MS;
-
-            return true;
-        };
-
-        // Check if chapter is already loaded (has blocks in DOM)
-        const existingBlocks = container.querySelectorAll(`[data-block-id^="ch${chapterIndex}-b"]`);
-        
-        if (existingBlocks.length > 0) {
-            // Chapter already loaded, try to scroll immediately
-            doScroll();
-        } else {
-            // Chapter not loaded yet, load it first
-            console.log('[ContinuousReader] scrollToBlock: loading chapter:', chapterIndex);
-            loadChaptersAround(chapterIndex);
-            
-            // Wait for chapter to load and render
-            const maxAttempts = 10;
-            let attempts = 0;
-            
-            const tryScroll = () => {
-                attempts++;
-                const blocks = container.querySelectorAll(`[data-block-id^="ch${chapterIndex}-b"]`);
-                
-                if (blocks.length > 0) {
-                    console.log('[ContinuousReader] scrollToBlock: chapter loaded after', attempts * 100, 'ms');
-                    doScroll();
-                } else if (attempts < maxAttempts) {
-                    console.log('[ContinuousReader] scrollToBlock: retrying, attempt:', attempts);
-                    setTimeout(tryScroll, 100);
-                } else {
-                    console.log('[ContinuousReader] scrollToBlock: failed to load chapter after', maxAttempts * 100, 'ms');
-                }
-            };
-            
-            setTimeout(tryScroll, 100);
-        }
-    }, [isVertical, isRTL, currentChapter, loadChaptersAround]);
-
-    const scrollToChapter = useCallback((chapterIndex: number) => {
-        const container = containerRef.current;
-        if (!container) return;
-
-        console.log('[ContinuousReader] scrollToChapter:', chapterIndex);
-
-        // Function to do the actual scrolling
-        const doScroll = (): boolean => {
-            const blocks = container.querySelectorAll(`[data-block-id^="ch${chapterIndex}-b"]`);
-            if (blocks.length === 0) {
-                return false;
-            }
-
-            // Disable restoration temporarily
-            hasRestoredRef.current = true;
-
-            // Scroll to first block
-            (blocks[0] as HTMLElement).scrollIntoView({ behavior: 'auto', block: 'start' });
-
-            // Update state
-            setCurrentChapter(chapterIndex);
-            currentBlockIdRef.current = blocks[0].getAttribute('data-block-id');
-
-            // Mark restoration complete
-            setRestorationComplete(true);
-
-            // Set save lock
-            saveLockUntilRef.current = Date.now() + SAVE_LOCK_DURATION_MS;
-
-            return true;
-        };
-
-        // Check if chapter is already loaded
-        const existingBlocks = container.querySelectorAll(`[data-block-id^="ch${chapterIndex}-b"]`);
-        
-        if (existingBlocks.length > 0) {
-            doScroll();
-        } else {
-            // Chapter not loaded, load it first
-            console.log('[ContinuousReader] scrollToChapter: loading chapter:', chapterIndex);
-            loadChaptersAround(chapterIndex);
-            
-            // Wait for chapter to load with retry logic
-            const maxAttempts = 10;
-            let attempts = 0;
-            
-            const tryScroll = () => {
-                attempts++;
-                if (doScroll()) {
-                    console.log('[ContinuousReader] scrollToChapter: chapter loaded after', attempts * 100, 'ms');
-                } else if (attempts < maxAttempts) {
-                    console.log('[ContinuousReader] scrollToChapter: retrying, attempt:', attempts);
-                    setTimeout(tryScroll, 100);
-                } else {
-                    console.log('[ContinuousReader] scrollToChapter: failed to load chapter after', maxAttempts * 100, 'ms');
-                }
-            };
-            
-            setTimeout(tryScroll, 100);
-        }
-    }, [loadChaptersAround]);
-
-    // Expose navigation functions via ref
-    useEffect(() => {
-        if (navigationRef?.current) {
-            navigationRef.current = {
-                scrollToBlock,
-                scrollToChapter,
-            };
-        }
-    }, [scrollToBlock, scrollToChapter, navigationRef]);
-
-    // ========================================================================
     // Touch/Click Handlers
     // ========================================================================
 
@@ -659,78 +756,87 @@ export const ContinuousReader: React.FC<ContinuousReaderProps> = ({
         startPosRef.current = { x: e.clientX, y: e.clientY };
     }, []);
 
-    const handlePointerMove = useCallback((e: React.PointerEvent) => {
-        const threshold = settings.lnDragThreshold ?? 10;
-        if (!isDraggingRef.current) {
-            const dx = Math.abs(e.clientX - startPosRef.current.x);
-            const dy = Math.abs(e.clientY - startPosRef.current.y);
-            if (dx > threshold || dy > threshold) {
-                isDraggingRef.current = true;
-            }
-        }
-    }, [settings.lnDragThreshold]);
-
-    const handleContentClick = useCallback(async (e: React.MouseEvent) => {
-        if (isDraggingRef.current) return;
-
-        const target = e.target as HTMLElement;
-
-        // Handle links
-        const link = target.closest('a');
-        if (link) {
-            const href = link.getAttribute('href');
-
-            if (href?.startsWith('#')) {
-                e.preventDefault();
-                const targetId = href.substring(1);
-                const targetElement = document.getElementById(targetId);
-                if (targetElement) {
-                    targetElement.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    const handlePointerMove = useCallback(
+        (e: React.PointerEvent) => {
+            const threshold = settings.lnDragThreshold ?? 10;
+            if (!isDraggingRef.current) {
+                const dx = Math.abs(e.clientX - startPosRef.current.x);
+                const dy = Math.abs(e.clientY - startPosRef.current.y);
+                if (dx > threshold || dy > threshold) {
+                    isDraggingRef.current = true;
                 }
-            } else if (href?.startsWith('http')) {
-                e.preventDefault();
-                window.open(href, '_blank', 'noopener,noreferrer');
-            } else if (href?.includes('.html') || href?.includes('.xhtml')) {
-                e.preventDefault();
-                const linkEvent = new CustomEvent('epub-link-clicked', {
-                    detail: { href },
-                    bubbles: true
-                });
-                e.currentTarget.dispatchEvent(linkEvent);
             }
-            return;
-        }
+        },
+        [settings.lnDragThreshold],
+    );
 
-        // Ignore UI elements
-        if (target.closest('button, img, ruby rt, .nav-btn, .reader-progress-bar, .dict-popup')) {
-            return;
-        }
+    const handleContentClick = useCallback(
+        async (e: React.MouseEvent) => {
+            if (isDraggingRef.current) return;
 
-        // Try text lookup
-        const lookupSuccess = await tryLookup(e);
-        if (!lookupSuccess) {
-            onToggleUIRef.current?.();
-        }
-    }, [tryLookup]);
+            const target = e.target as HTMLElement;
+
+            // Handle links
+            const link = target.closest('a');
+            if (link) {
+                const href = link.getAttribute('href');
+
+                if (href?.startsWith('#')) {
+                    e.preventDefault();
+                    const targetId = href.substring(1);
+                    const targetElement = document.getElementById(targetId);
+                    if (targetElement) {
+                        targetElement.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                    }
+                } else if (href?.startsWith('http')) {
+                    e.preventDefault();
+                    window.open(href, '_blank', 'noopener,noreferrer');
+                } else if (href?.includes('.html') || href?.includes('.xhtml')) {
+                    e.preventDefault();
+                    const linkEvent = new CustomEvent('epub-link-clicked', {
+                        detail: { href },
+                        bubbles: true,
+                    });
+                    e.currentTarget.dispatchEvent(linkEvent);
+                }
+                return;
+            }
+
+            // Ignore UI elements
+            if (target.closest('button, img, ruby rt, .nav-btn, .reader-progress-bar, .dict-popup')) {
+                return;
+            }
+
+            // Try text lookup
+            const lookupSuccess = await tryLookup(e);
+            if (!lookupSuccess) {
+                onToggleUIRef.current?.();
+            }
+        },
+        [tryLookup],
+    );
 
     // ========================================================================
-    // Navigation
+    // Scroll Navigation
     // ========================================================================
 
-    const scrollSmall = useCallback((forward: boolean) => {
-        const container = containerRef.current;
-        if (!container) return;
+    const scrollSmall = useCallback(
+        (forward: boolean) => {
+            const container = containerRef.current;
+            if (!container) return;
 
-        const amount = 200;
-        const behavior = settings.lnDisableAnimations ? 'auto' : 'smooth';
+            const amount = 200;
+            const behavior = settings.lnDisableAnimations ? 'auto' : 'smooth';
 
-        if (isVertical) {
-            const delta = forward ? (isRTL ? -amount : amount) : (isRTL ? amount : -amount);
-            container.scrollBy({ left: delta, behavior });
-        } else {
-            container.scrollBy({ top: forward ? amount : -amount, behavior });
-        }
-    }, [isVertical, isRTL, settings.lnDisableAnimations]);
+            if (isVertical) {
+                const delta = forward ? (isRTL ? -amount : amount) : isRTL ? amount : -amount;
+                container.scrollBy({ left: delta, behavior });
+            } else {
+                container.scrollBy({ top: forward ? amount : -amount, behavior });
+            }
+        },
+        [isVertical, isRTL, settings.lnDisableAnimations],
+    );
 
     // ========================================================================
     // EPUB Link Handler
@@ -742,46 +848,31 @@ export const ContinuousReader: React.FC<ContinuousReaderProps> = ({
 
         const handleEpubLink = (event: Event) => {
             const customEvent = event as CustomEvent<{ href: string }>;
-            const href = customEvent.detail.href;
+            const { href } = customEvent.detail;
             const [filename, anchor] = href.split('#');
 
             let chapterIndex = chapterFilenames.indexOf(filename);
 
             if (chapterIndex === -1) {
-                chapterIndex = chapterFilenames.findIndex(fn =>
-                    fn.endsWith(filename) || fn.endsWith('/' + filename)
-                );
+                chapterIndex = chapterFilenames.findIndex((fn) => fn.endsWith(filename) || fn.endsWith(`/${filename}`));
             }
 
             if (chapterIndex === -1) {
                 const targetBasename = filename.split('/').pop() || filename;
-                chapterIndex = chapterFilenames.findIndex(fn => {
+                chapterIndex = chapterFilenames.findIndex((fn) => {
                     const storedBasename = fn.split('/').pop() || fn;
                     return storedBasename === targetBasename;
                 });
             }
 
             if (chapterIndex !== -1) {
-                const chapterElement = container.querySelector(`[data-chapter="${chapterIndex}"]`);
-
-                if (chapterElement) {
-                    if (anchor) {
-                        const anchorElement = chapterElement.querySelector(`#${CSS.escape(anchor)}`);
-                        if (anchorElement) {
-                            anchorElement.scrollIntoView({ behavior: 'smooth', block: 'start' });
-                        } else {
-                            chapterElement.scrollIntoView({ behavior: 'smooth', block: 'start' });
-                        }
-                    } else {
-                        chapterElement.scrollIntoView({ behavior: 'smooth', block: 'start' });
-                    }
-                }
+                scrollToChapter(chapterIndex);
             }
         };
 
         container.addEventListener('epub-link-clicked', handleEpubLink);
         return () => container.removeEventListener('epub-link-clicked', handleEpubLink);
-    }, [chapterFilenames]);
+    }, [chapterFilenames, scrollToChapter]);
 
     // ========================================================================
     // Wheel Handler (Vertical Mode)
@@ -812,9 +903,7 @@ export const ContinuousReader: React.FC<ContinuousReaderProps> = ({
         return () => container.removeEventListener('wheel', handleWheel);
     }, [isVertical, isRTL, settings.lnFontSize, settings.lnLineHeight]);
 
-    const handleSaveNow = useCallback(async (): Promise<boolean> => {
-        return await saveSchedulerRef.current.saveNow();
-    }, []);
+    const handleSaveNow = useCallback(async (): Promise<boolean> => saveSchedulerRef.current.saveNow(), []);
 
     // ========================================================================
     // Visibility Change Handler
@@ -831,26 +920,25 @@ export const ContinuousReader: React.FC<ContinuousReaderProps> = ({
         return () => document.removeEventListener('visibilitychange', handleVisibilityChange);
     }, []);
 
-
     // ========================================================================
     // Cleanup
     // ========================================================================
 
-    useEffect(() => {
-        return () => {
+    useEffect(
+        () => () => {
             if (scrollDebounceRef.current) {
                 clearTimeout(scrollDebounceRef.current);
             }
             blockTrackerRef.current?.stop();
             saveSchedulerRef.current.saveNow();
-        };
-    }, []);
+        },
+        [],
+    );
 
     // ========================================================================
-    // Render
+    // Render Helpers
     // ========================================================================
 
-    // Helper to adjust brightness
     const adjustBrightness = (hexColor: string, brightness: number): string => {
         if (hexColor.startsWith('rgba')) {
             const match = hexColor.match(/rgba?\((\d+),\s*(\d+),\s*(\d+)/);
@@ -869,74 +957,132 @@ export const ContinuousReader: React.FC<ContinuousReaderProps> = ({
         return `rgb(${Math.round(r * factor)}, ${Math.round(g * factor)}, ${Math.round(b * factor)})`;
     };
 
-    // Memoized wrapper style to prevent re-renders on UI toggle
+    // ========================================================================
+    // Visible Chapter Window
+    // ========================================================================
+
+    const visibleChapterIndices = useMemo(() => {
+        const windowSize = 2;
+        const start = Math.max(0, currentChapter - windowSize);
+        const end = Math.min(chapters.length - 1, currentChapter + windowSize);
+        const indices = [];
+        for (let i = start; i <= end; i++) {
+            indices.push(i);
+        }
+        return indices;
+    }, [currentChapter, chapters.length]);
+
+    // ========================================================================
+    // Memoized Styles
+    // ========================================================================
+
     const wrapperStyle = useMemo(() => {
         const brightness = settings.lnTextBrightness ?? 100;
-        const textColor = brightness === 100 
-            ? theme.fg 
-            : adjustBrightness(theme.fg, brightness);
-        
+        const textColor = brightness === 100 ? theme.fg : adjustBrightness(theme.fg, brightness);
+
         return {
             backgroundColor: theme.bg,
             color: textColor,
             direction: isRTL ? 'rtl' : 'ltr',
+            '--ln-highlight-bg': (theme as any).highlight || 'rgba(255, 235, 59, 0.45)',
         };
     }, [theme.bg, theme.fg, isRTL, settings.lnTextBrightness]);
 
-    // Memoized content style to prevent re-renders on UI toggle
+    const safeInsets = useMemo(
+        () => ({
+            top: safeAreaInsetsPx?.top ?? (safeAreaTopInset ? parseInt(safeAreaTopInset, 10) : 0),
+            right: safeAreaInsetsPx?.right ?? 0,
+            bottom: safeAreaInsetsPx?.bottom ?? 0,
+            left: safeAreaInsetsPx?.left ?? 0,
+        }),
+        [safeAreaInsetsPx, safeAreaTopInset],
+    );
+
     const contentStyle = useMemo(() => {
         let fontFamily = settings.lnFontFamily || "'Noto Serif JP', serif";
         if (settings.lnSecondaryFontFamily) {
             fontFamily = `${fontFamily}, ${settings.lnSecondaryFontFamily}`;
         }
-        
+
+        const marginTop = (settings.lnMarginTop ?? 0) + safeInsets.top;
+
+        // Calculate bottom margin/padding.
+        // We only add extra padding to clear the navigation bar if it's LOCKED (always visible).
+        // If it's just toggled, we don't reflow the layout to avoid glitches.
+        const baseBottom = (settings.lnMarginBottom ?? 0) + safeInsets.bottom;
+        const navHeight = 40;
+        const extraBottom = settings.lnLockProgressBar ? Math.max(0, navHeight - baseBottom) : 0;
+        const marginBottom = baseBottom + extraBottom;
+
+        const marginLeft = (settings.lnMarginLeft ?? 0) + safeInsets.left;
+        const marginRight = (settings.lnMarginRight ?? 0) + safeInsets.right;
+
         return {
             writingMode: isVertical ? 'vertical-rl' : 'horizontal-tb',
             textOrientation: isVertical ? 'mixed' : undefined,
             direction: 'ltr',
             fontFamily,
             fontWeight: settings.lnFontWeight || 400,
+            opacity: contentLoaded ? 1 : 0,
+            transition: 'opacity 0.2s ease-in-out',
+            paddingTop: `${marginTop}px`,
+            paddingBottom: `${marginBottom}px`,
+            paddingLeft: `${marginLeft}px`,
+            paddingRight: `${marginRight}px`,
         };
-    }, [isVertical, settings.lnFontFamily, settings.lnSecondaryFontFamily, settings.lnFontWeight]);
+    }, [isVertical, settings, contentLoaded, safeInsets]);
 
     const handleUpdateSettings = onUpdateSettings ?? (() => {});
 
+    // ========================================================================
+    // Render
+    // ========================================================================
+
     return (
         <div
-    className={`continuous-reader-wrapper ${isRTL ? 'rtl-mode' : 'ltr-mode'}`}
-    style={wrapperStyle}
-    data-dark-mode={settings.lnTheme === 'dark' || settings.lnTheme === 'black'}
->
+            className={`continuous-reader-wrapper ${isRTL ? 'rtl-mode' : 'ltr-mode'}`}
+            style={wrapperStyle as React.CSSProperties}
+            data-dark-mode={settings.lnTheme === 'dark' || settings.lnTheme === 'black'}
+        >
             <div
-                ref={containerRef}
-                className={`continuous-reader-container ${isVertical ? 'vertical' : 'horizontal'}`}
+                className="continuous-margin-container"
                 style={{
-                    ...containerStyles,
-                    paddingTop: safeAreaTopInset ?? `${safeAreaInsetsPx?.top ?? 0}px`,
-                    paddingRight: `${safeAreaInsetsPx?.right ?? 0}px`,
-                    paddingBottom: `${safeAreaInsetsPx?.bottom ?? 0}px`,
-                    paddingLeft: `${safeAreaInsetsPx?.left ?? 0}px`,
-                    boxSizing: 'border-box',
+                    position: 'absolute',
+                    inset: 0,
+                    overflow: 'hidden',
                 }}
-                onClick={handleContentClick}
-                onPointerDown={handlePointerDown}
-                onPointerMove={handlePointerMove}
             >
                 <div
-                    ref={contentRef}
-                    className={`continuous-content ${isVertical ? 'vertical' : 'horizontal'} ${!settings.lnEnableFurigana ? 'furigana-hidden' : ''}`}
-                    style={contentStyle}
+                    ref={containerRef}
+                    className={`continuous-reader-container ${isVertical ? 'vertical' : 'horizontal'}`}
+                    style={{
+                        ...containerStyles,
+                        width: '100%',
+                        height: '100%',
+                    }}
+                    onClick={handleContentClick}
+                    onPointerDown={handlePointerDown}
+                    onPointerMove={handlePointerMove}
                 >
-                    {chapters.map((_, index) => (
-                        <ChapterBlock
-                            key={index}
-                            html={getChapterHtml(index)}
-                            index={index}
-                            isLoading={loadingState.get(index) || false}
-                            isVertical={isVertical}
-                            settings={settings}
-                        />
-                    ))}
+                    <div
+                        ref={contentRef}
+                        className={`continuous-content ${isVertical ? 'vertical' : 'horizontal'} ${!settings.lnEnableFurigana ? 'furigana-hidden' : ''}`}
+                        style={contentStyle as React.CSSProperties}
+                    >
+                        {/* Sanitized EPUB CSS (fonts stripped) */}
+                        {css && <style>{`@scope (.continuous-content) { ${css} }`}</style>}
+
+                        {visibleChapterIndices.map((index) => (
+                            <ChapterBlock
+                                key={index}
+                                html={getChapterHtml(index)}
+                                index={index}
+                                isLoading={loadingState.get(index) || false}
+                                isVertical={isVertical}
+                                settings={settings}
+                            />
+                        ))}
+                    </div>
                 </div>
             </div>
 
@@ -958,17 +1104,17 @@ export const ContinuousReader: React.FC<ContinuousReaderProps> = ({
                 currentPosition={currentPosition ?? undefined}
                 bookStats={stats ?? undefined}
                 settings={settings}
-                onUpdateSettings={onUpdateSettings}
+                onUpdateSettings={handleUpdateSettings}
                 isSaved={isSaved}
                 onSaveNow={handleSaveNow}
             />
 
-            <SelectionHandles 
+            <SelectionHandles
                 containerRef={contentRef}
-                enabled={contentLoaded}
+                enabled={contentLoaded && restorationComplete}
                 theme={(settings.lnTheme as 'light' | 'sepia' | 'dark' | 'black') || 'dark'}
                 onSelectionComplete={(text, startOffset, endOffset, blockId) => {
-                    if (onAddHighlight && currentChapter && blockId) {
+                    if (onAddHighlight && currentChapter !== undefined && blockId) {
                         onAddHighlight(currentChapter, blockId, text, startOffset, endOffset);
                     }
                 }}

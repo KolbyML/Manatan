@@ -616,157 +616,184 @@ export const LNLibrary: React.FC = () => {
     }, []);
 
     const handleImport = useCallback(async (e: React.ChangeEvent<HTMLInputElement> | { target: { files: File[]; value: string } }) => {
-        if (!e.target.files?.length) return;
+    if (!e.target.files?.length) return;
 
-        const files = Array.from(e.target.files);
-        setIsImporting(true);
+    const files = Array.from(e.target.files);
+    setIsImporting(true);
 
-        const skippedFiles: string[] = [];
-        const importedFiles: string[] = [];
+    const skippedFiles: string[] = [];
+    const importedFiles: string[] = [];
 
-        let currentLibrary = [...library];
+    // Use allBooks as source of truth, not the filtered library
+    let currentLibrary = [...allBooks];
 
-        for (let fileIndex = 0; fileIndex < files.length; fileIndex++) {
-            const file = files[fileIndex];
-            const fileTitle = file.name.replace(/\.epub$/i, '');
+    for (let fileIndex = 0; fileIndex < files.length; fileIndex++) {
+        const file = files[fileIndex];
+        const fileTitle = file.name.replace(/\.epub$/i, '');
 
-            const existingBook = findDuplicateInLibrary(fileTitle, currentLibrary);
+        const existingBook = findDuplicateInLibrary(fileTitle, currentLibrary);
 
-            if (existingBook) {
-                const shouldReplace = await confirm(
-                    'Duplicate File',
-                    `"${existingBook.title}" already exists in your library.\n\nDo you want to replace it?`,
-                    'Replace',
-                    'Skip'
-                );
+        if (existingBook) {
+            const shouldReplace = await confirm(
+                'Duplicate File',
+                `"${existingBook.title}" already exists in your library.\n\nDo you want to replace it?`,
+                'Replace',
+                'Skip'
+            );
 
-                if (!shouldReplace) {
-                    skippedFiles.push(file.name);
-                    continue;
-                }
-
-                clearBookCache(existingBook.id);
-                await AppStorage.deleteLnData(existingBook.id);
-                currentLibrary = currentLibrary.filter(item => item.id !== existingBook.id);
-                setLibrary(prev => prev.filter(item => item.id !== existingBook.id));
+            if (!shouldReplace) {
+                skippedFiles.push(file.name);
+                continue;
             }
 
-            const bookId = `novel_${Date.now()}_${fileIndex}`;
+            clearBookCache(existingBook.id);
+            await AppStorage.deleteLnData(existingBook.id);
+            currentLibrary = currentLibrary.filter(item => item.id !== existingBook.id);
+            
+            // Update both state arrays immediately
+            setAllBooks([...currentLibrary]);
+            setLibrary(filterAndSortBooks(currentLibrary, selectedCategoryId, currentSort));
+        }
 
-            const placeholder: LibraryItem = {
-                id: bookId,
-                title: fileTitle,
-                author: '',
-                addedAt: Date.now(),
-                isProcessing: true,
-                importProgress: 0,
-                importMessage: 'Starting...',
-                stats: { chapterLengths: [], totalLength: 0 },
-                chapterCount: 0,
-                toc: [],
-            };
+        const bookId = `novel_${Date.now()}_${fileIndex}`;
 
-            currentLibrary = [placeholder, ...currentLibrary];
-            setLibrary((prev) => [placeholder, ...prev]);
+        const placeholder: LibraryItem = {
+            id: bookId,
+            title: fileTitle,
+            author: '',
+            addedAt: Date.now(),
+            isProcessing: true,
+            importProgress: 0,
+            importMessage: 'Starting...',
+            stats: { chapterLengths: [], totalLength: 0 },
+            chapterCount: 0,
+            toc: [],
+        };
 
-            try {
-                const result = await parseEpub(file, bookId, (progress: ParseProgress) => {
-                    setLibrary((prev) =>
-                        prev.map((item) =>
-                            item.id === bookId
-                                ? {
-                                    ...item,
-                                    importProgress: progress.percent,
-                                    importMessage: progress.message,
-                                }
-                                : item
-                        )
+        // Add placeholder to local array
+        currentLibrary = [placeholder, ...currentLibrary];
+        
+        // Update both state arrays
+        setAllBooks([...currentLibrary]);
+        setLibrary(filterAndSortBooks(currentLibrary, selectedCategoryId, currentSort));
+
+        try {
+            const result = await parseEpub(file, bookId, (progress: ParseProgress) => {
+                // Update progress in both arrays
+                const updateProgress = (items: LibraryItem[]) =>
+                    items.map((item) =>
+                        item.id === bookId
+                            ? {
+                                ...item,
+                                importProgress: progress.percent,
+                                importMessage: progress.message,
+                            }
+                            : item
                     );
-                });
+                
+                currentLibrary = updateProgress(currentLibrary);
+                setAllBooks([...currentLibrary]);
+                setLibrary(filterAndSortBooks(currentLibrary, selectedCategoryId, currentSort));
+            });
 
-                if (result.success && result.metadata && result.content) {
-                    const metadataTitle = result.metadata.title;
-                    const duplicateByMetadata = findDuplicateInLibrary(metadataTitle, currentLibrary.filter(i => i.id !== bookId));
+            if (result.success && result.metadata && result.content) {
+                const metadataTitle = result.metadata.title;
+                const duplicateByMetadata = findDuplicateInLibrary(
+                    metadataTitle, 
+                    currentLibrary.filter(i => i.id !== bookId)
+                );
 
-                    if (duplicateByMetadata) {
-                        const shouldReplace = await confirm(
-                            'Duplicate Metadata',
-                            `The book "${metadataTitle}" already exists in your library (detected from EPUB metadata).\n\nDo you want to replace it?`,
-                            'Replace',
-                            'Skip'
-                        );
+                if (duplicateByMetadata) {
+                    const shouldReplace = await confirm(
+                        'Duplicate Metadata',
+                        `The book "${metadataTitle}" already exists in your library (detected from EPUB metadata).\n\nDo you want to replace it?`,
+                        'Replace',
+                        'Skip'
+                    );
 
-                        if (!shouldReplace) {
-                            currentLibrary = currentLibrary.filter(item => item.id !== bookId);
-                            setLibrary(prev => prev.filter(item => item.id !== bookId));
-                            skippedFiles.push(file.name);
-                            continue;
-                        }
-
-                        clearBookCache(duplicateByMetadata.id);
-                        await AppStorage.deleteLnData(duplicateByMetadata.id);
-                        currentLibrary = currentLibrary.filter(item => item.id !== duplicateByMetadata.id);
-                        setLibrary(prev => prev.filter(item => item.id !== duplicateByMetadata.id));
+                    if (!shouldReplace) {
+                        // Remove the placeholder
+                        currentLibrary = currentLibrary.filter(item => item.id !== bookId);
+                        setAllBooks([...currentLibrary]);
+                        setLibrary(filterAndSortBooks(currentLibrary, selectedCategoryId, currentSort));
+                        skippedFiles.push(file.name);
+                        continue;
                     }
 
-                    await Promise.all([
-                        AppStorage.files.setItem(bookId, file),
-                        AppStorage.lnMetadata.setItem(bookId, result.metadata),
-                        AppStorage.lnContent.setItem(bookId, result.content),
-                    ]);
-
-                    const finalItem: LibraryItem = {
-                        ...result.metadata,
-                        isProcessing: false,
-                        hasProgress: false,
-                    };
-
-                    currentLibrary = currentLibrary.map(item =>
-                        item.id === bookId ? finalItem : item
-                    );
-
-                    setLibrary((prev) =>
-                        prev.map((item) =>
-                            item.id === bookId ? finalItem : item
-                        )
-                    );
-
-                    importedFiles.push(result.metadata.title);
-                    console.log(`[Import] Complete: ${result.metadata.title}`);
-                } else {
-                    setLibrary((prev) =>
-                        prev.map((item) =>
-                            item.id === bookId
-                                ? {
-                                    ...item,
-                                    isProcessing: false,
-                                    isError: true,
-                                    errorMsg: result.error || 'Import failed',
-                                }
-                                : item
-                        )
-                    );
+                    // Remove the duplicate
+                    clearBookCache(duplicateByMetadata.id);
+                    await AppStorage.deleteLnData(duplicateByMetadata.id);
+                    currentLibrary = currentLibrary.filter(item => item.id !== duplicateByMetadata.id);
+                    setAllBooks([...currentLibrary]);
+                    setLibrary(filterAndSortBooks(currentLibrary, selectedCategoryId, currentSort));
                 }
-            } catch (err: any) {
-                console.error(`[Import] Error for ${file.name}:`, err);
-                setLibrary((prev) =>
-                    prev.map((item) =>
+
+                await Promise.all([
+                    AppStorage.files.setItem(bookId, file),
+                    AppStorage.lnMetadata.setItem(bookId, result.metadata),
+                    AppStorage.lnContent.setItem(bookId, result.content),
+                ]);
+
+                const finalItem: LibraryItem = {
+                    ...result.metadata,
+                    isProcessing: false,
+                    hasProgress: false,
+                };
+
+                // Replace placeholder with final item
+                currentLibrary = currentLibrary.map(item =>
+                    item.id === bookId ? finalItem : item
+                );
+
+                // Update both state arrays
+                setAllBooks([...currentLibrary]);
+                setLibrary(filterAndSortBooks(currentLibrary, selectedCategoryId, currentSort));
+
+                importedFiles.push(result.metadata.title);
+                console.log(`[Import] Complete: ${result.metadata.title}`);
+            } else {
+                // Mark as error
+                const updateError = (items: LibraryItem[]) =>
+                    items.map((item) =>
                         item.id === bookId
                             ? {
                                 ...item,
                                 isProcessing: false,
                                 isError: true,
-                                errorMsg: err.message || 'Unknown error',
+                                errorMsg: result.error || 'Import failed',
                             }
                             : item
-                    )
-                );
+                    );
+                
+                currentLibrary = updateError(currentLibrary);
+                setAllBooks([...currentLibrary]);
+                setLibrary(filterAndSortBooks(currentLibrary, selectedCategoryId, currentSort));
             }
+        } catch (err: any) {
+            console.error(`[Import] Error for ${file.name}:`, err);
+            
+            // Mark as error
+            const updateError = (items: LibraryItem[]) =>
+                items.map((item) =>
+                    item.id === bookId
+                        ? {
+                            ...item,
+                            isProcessing: false,
+                            isError: true,
+                            errorMsg: err.message || 'Unknown error',
+                        }
+                        : item
+                );
+            
+            currentLibrary = updateError(currentLibrary);
+            setAllBooks([...currentLibrary]);
+            setLibrary(filterAndSortBooks(currentLibrary, selectedCategoryId, currentSort));
         }
+    }
 
-        setIsImporting(false);
-        e.target.value = '';
-    }, [library, findDuplicateInLibrary, confirm]);
+    setIsImporting(false);
+    e.target.value = '';
+}, [allBooks, findDuplicateInLibrary, confirm, filterAndSortBooks, selectedCategoryId, currentSort]);
 
     const handleDelete = useCallback(async (id: string, e: React.MouseEvent) => {
         e.stopPropagation();
