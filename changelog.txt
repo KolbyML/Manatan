@@ -1,3 +1,13 @@
+## Release v3.2.15
+
+- Fix async WebView back handler (8dca629)
+- Novel Reader improvements and bug fixes  (#249) (93ec7fc)
+- Refactor Dockerfile to reduce image size by 80% (#246) (49c2416)
+- Trigger Docker publish from releases (9a08b74)
+- Added docker support back (3d365c7)
+- Fix stale local chapter refresh mapping (58f983f)
+- Handle local anime unsupported audio codecs (cdd6201)
+
 ## Release v3.2.14
 
 - Fix manga source library state pagination (6a0eacf)
