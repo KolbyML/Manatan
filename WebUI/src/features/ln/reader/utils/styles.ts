@@ -32,6 +32,6 @@ export function buildContainerStyles(
     return {
         ...buildTypographyStyles(settings, isVertical),
         direction: isVertical ? (isRTL ? 'rtl' : 'ltr') : 'ltr',
-        scrollBehavior: isVertical ? 'auto' : 'smooth',
+        scrollBehavior: 'auto', // Disable smooth scroll by default for logic consistency
     };
 }
