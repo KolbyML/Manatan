@@ -1,3 +1,9 @@
+## Release v3.3.0
+
+- Update navigation and card actions (98e8799)
+- Persist setup and navigation settings in metadata (060fd3c)
+- Build Mihon-style paged reader (668ccb1)
+
 ## Release v3.2.15
 
 - Fix async WebView back handler (8dca629)
