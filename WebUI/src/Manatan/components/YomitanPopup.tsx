@@ -67,6 +67,27 @@ export const YomitanPopup = () => {
     const [history, setHistory] = useState<LookupHistoryEntry[]>([]);
     const [historyIndex, setHistoryIndex] = useState(-1);
 
+    // Handle native Android back button
+    React.useEffect(() => {
+        const handleNativeBack = () => {
+            if (dictPopup.visible) {
+                window.getSelection()?.removeAllRanges();
+                notifyPopupClosed();
+                setDictPopup(prev => ({ ...prev, visible: false }));
+                return true;
+            }
+            return false;
+        };
+
+        // @ts-ignore - global function for Android native bridge
+        window.__handleNativeBack = handleNativeBack;
+
+        return () => {
+            // @ts-ignore
+            window.__handleNativeBack = undefined;
+        };
+    }, [dictPopup.visible, setDictPopup, notifyPopupClosed]);
+
     const maxHistory = settings.yomitanLookupMaxHistory || 10;
     const navMode = settings.yomitanLookupNavigationMode || 'stacked';
 

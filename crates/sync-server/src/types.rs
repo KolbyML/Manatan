@@ -122,53 +122,87 @@ impl LNProgress {
 #[serde(rename_all = "camelCase")]
 pub struct LNReaderSettings {
     // Basic display
+    #[serde(default)]
     pub ln_font_size: f64,
+    #[serde(default)]
     pub ln_line_height: f64,
+    #[serde(default)]
     pub ln_font_family: String,
+    #[serde(default)]
     pub ln_theme: String,
+    #[serde(default)]
     pub ln_reading_direction: String,
+    #[serde(default)]
     pub ln_pagination_mode: String,
+    #[serde(default)]
     pub ln_page_width: f64,
+    #[serde(default)]
     pub ln_page_margin: f64,
+    #[serde(default)]
     pub ln_enable_furigana: bool,
+    #[serde(default)]
     pub ln_text_align: String,
+    #[serde(default)]
     pub ln_letter_spacing: f64,
+    #[serde(default)]
     pub ln_paragraph_spacing: f64,
 
     // Additional display settings
+    #[serde(default)]
     pub ln_text_brightness: f64,
+    #[serde(default)]
     pub ln_font_weight: f64,
+    #[serde(default)]
     pub ln_secondary_font_family: String,
 
     // Bookmark settings
+    #[serde(default)]
     pub ln_auto_bookmark: bool,
+    #[serde(default)]
     pub ln_bookmark_delay: f64,
+    #[serde(default)]
     pub ln_lock_progress_bar: bool,
 
     // Margin settings
+    #[serde(default)]
     pub ln_margin_top: f64,
+    #[serde(default)]
     pub ln_margin_bottom: f64,
+    #[serde(default)]
     pub ln_margin_left: f64,
+    #[serde(default)]
     pub ln_margin_right: f64,
 
     // Navigation settings
+    #[serde(default)]
     pub ln_hide_nav_buttons: bool,
+    #[serde(default)]
     pub ln_enable_swipe: bool,
+    #[serde(default)]
     pub ln_drag_threshold: f64,
 
     // Click zones (paged mode)
+    #[serde(default)]
     pub ln_enable_click_zones: bool,
+    #[serde(default)]
     pub ln_click_zone_size: f64,
+    #[serde(default)]
     pub ln_click_zone_placement: String,
+    #[serde(default)]
     pub ln_click_zone_position: String,
+    #[serde(default)]
     pub ln_click_zone_coverage: f64,
 
     // Animations & extras
+    #[serde(default)]
     pub ln_disable_animations: bool,
+    #[serde(default)]
     pub ln_show_char_progress: bool,
 
     // Yomitan integration
+    #[serde(default)]
     pub enable_yomitan: bool,
+    #[serde(default)]
     pub interaction_mode: String,
 }
 
@@ -233,18 +267,23 @@ pub struct BlockIndexMap {
 #[derive(Debug, Clone, Serialize, Deserialize, Default)]
 #[serde(rename_all = "camelCase")]
 pub struct BookStats {
+    #[serde(default)]
     pub chapter_lengths: Vec<i32>,
+    #[serde(default)]
     pub total_length: i32,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub block_maps: Option<Vec<BlockIndexMap>>,
 }
 
 /// Table of contents item
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, Default)]
 #[serde(rename_all = "camelCase")]
 pub struct TocItem {
+    #[serde(default)]
     pub label: String,
+    #[serde(default)]
     pub href: String,
+    #[serde(default)]
     #[serde(alias = "chapterIndex")]
     pub chapter_index: i32,
 }

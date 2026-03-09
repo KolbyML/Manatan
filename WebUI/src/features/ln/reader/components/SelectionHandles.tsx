@@ -36,21 +36,175 @@ export const SelectionHandles: React.FC<SelectionHandlesProps> = ({
     const wasDraggingRef = useRef(false);
     const activeRangeRef = useRef<Range | null>(null);
     const containerRef2 = useRef(containerRef.current);
+const isRealChar = (ch: string) => !!ch && !/[\s\u00A0\u200B]/.test(ch);
+const getClosestBlockRoot = (node: Node, fallback: HTMLElement): Node => {
+    let el: Element | null =
+        node.nodeType === Node.ELEMENT_NODE
+            ? (node as Element)
+            : node.parentElement;
+
+    while (el && !el.hasAttribute('data-block-id')) {
+        el = el.parentElement;
+    }
+
+    return el || fallback;
+};
+
+const getTextNodes = (root: Node): Text[] => {
+    const walker = document.createTreeWalker(
+        root,
+        NodeFilter.SHOW_TEXT,
+        {
+            acceptNode(node) {
+                return node.textContent && node.textContent.length > 0
+                    ? NodeFilter.FILTER_ACCEPT
+                    : NodeFilter.FILTER_REJECT;
+            },
+        }
+    );
+
+    const nodes: Text[] = [];
+    let current: Node | null;
+    while ((current = walker.nextNode())) {
+        nodes.push(current as Text);
+    }
+    return nodes;
+};
+
+const makeTextPosition = (node: Text, offset: number): TextPosition | null => {
+    const text = node.textContent || '';
+    if (!text.length) return null;
+
+    const safeOffset = Math.max(0, Math.min(offset, text.length));
+    const range = document.createRange();
+
+    // Use a 1-char range to get a usable rect
+    if (safeOffset < text.length) {
+        range.setStart(node, safeOffset);
+        range.setEnd(node, safeOffset + 1);
+    } else {
+        range.setStart(node, text.length - 1);
+        range.setEnd(node, text.length);
+    }
+
+    const rect = range.getBoundingClientRect();
+    return { node, offset: safeOffset, rect };
+};
+
+const snapToNearestRealText = (
+    rawNode: Node,
+    rawOffset: number,
+    container: HTMLElement
+): TextPosition | null => {
+    const root = getClosestBlockRoot(rawNode, container);
+    const textNodes = getTextNodes(root);
+    if (!textNodes.length) return null;
+
+    let currentNode: Text | null = null;
+    let currentOffset = 0;
+
+    if (rawNode.nodeType === Node.TEXT_NODE) {
+        currentNode = rawNode as Text;
+        currentOffset = rawOffset;
+    } else {
+        // If caret landed on an element node, find the nearest text node in DOM order
+        const element = rawNode as Element;
+        const children = Array.from(element.childNodes);
+
+        if (rawOffset < children.length) {
+            const startChild = children[rawOffset];
+            const startText = getTextNodes(startChild)[0];
+            if (startText) {
+                currentNode = startText;
+                currentOffset = 0;
+            }
+        }
+
+        if (!currentNode && rawOffset > 0) {
+            const prevChild = children[rawOffset - 1];
+            const prevTexts = getTextNodes(prevChild);
+            const lastText = prevTexts[prevTexts.length - 1];
+            if (lastText) {
+                currentNode = lastText;
+                currentOffset = (lastText.textContent || '').length;
+            }
+        }
+
+        if (!currentNode) {
+            currentNode = textNodes[0];
+            currentOffset = 0;
+        }
+    }
+
+    const currentIndex = textNodes.indexOf(currentNode);
+    if (currentIndex === -1) return null;
+
+    const searchNode = (node: Text, offset: number): number | null => {
+        const text = node.textContent || '';
+        if (!text.length) return null;
+
+        const clamped = Math.max(0, Math.min(offset, text.length));
+
+        // exact
+        if (clamped < text.length && isRealChar(text[clamped])) return clamped;
+        if (clamped > 0 && isRealChar(text[clamped - 1])) return clamped - 1;
+
+        // nearest in same node
+        for (let d = 1; d <= text.length; d++) {
+            const right = clamped + d;
+            const left = clamped - d;
+
+            if (right < text.length && isRealChar(text[right])) return right;
+            if (left >= 0 && isRealChar(text[left])) return left;
+        }
+
+        return null;
+    };
+
+    // 1) try current node
+    const sameNodeOffset = searchNode(currentNode, currentOffset);
+    if (sameNodeOffset !== null) {
+        return makeTextPosition(currentNode, sameNodeOffset);
+    }
+
+    // 2) walk outward to neighboring text nodes
+    for (let d = 1; d < textNodes.length; d++) {
+        const next = textNodes[currentIndex + d];
+        if (next) {
+            const nextOffset = searchNode(next, 0);
+            if (nextOffset !== null) {
+                return makeTextPosition(next, nextOffset);
+            }
+        }
+
+        const prev = textNodes[currentIndex - d];
+        if (prev) {
+            const prevText = prev.textContent || '';
+            const prevOffset = searchNode(prev, prevText.length);
+            if (prevOffset !== null) {
+                return makeTextPosition(prev, prevOffset);
+            }
+        }
+    }
+
+    return null;
+};
 
     useEffect(() => {
         containerRef2.current = containerRef.current;
     }, [containerRef]);
 
     const getTextPositionAtPoint = useCallback((x: number, y: number): TextPosition | null => {
-        const container = containerRef2.current;
-        if (!container) return null;
+    const container = containerRef2.current;
+    if (!container) return null;
 
+    const tryPoint = (px: number, py: number): TextPosition | null => {
         let range: Range | null = null;
 
         if (document.caretRangeFromPoint) {
-            range = document.caretRangeFromPoint(x, y);
+            range = document.caretRangeFromPoint(px, py);
         } else if ((document as any).caretPositionFromPoint) {
-            const pos = (document as any).caretPositionFromPoint(x, y);
+            const pos = (document as any).caretPositionFromPoint(px, py);
             if (pos) {
                 range = document.createRange();
                 range.setStart(pos.offsetNode, pos.offset);
@@ -61,14 +215,30 @@ export const SelectionHandles: React.FC<SelectionHandlesProps> = ({
         if (!range) return null;
         if (!container.contains(range.startContainer)) return null;
 
-        const rect = range.getBoundingClientRect();
-        
-        return {
-            node: range.startContainer,
-            offset: range.startOffset,
-            rect: rect,
-        };
-    }, []);
+        return snapToNearestRealText(
+            range.startContainer,
+            range.startOffset,
+            container
+        );
+    };
+
+    // exact point first, then nearby points
+    const probes = [
+        [0, 0],
+        [8, 0], [-8, 0],
+        [0, 8], [0, -8],
+        [12, 0], [-12, 0],
+        [0, 12], [0, -12],
+        [8, 8], [-8, 8], [8, -8], [-8, -8],
+    ];
+
+    for (const [dx, dy] of probes) {
+        const pos = tryPoint(x + dx, y + dy);
+        if (pos) return pos;
+    }
+
+    return null;
+}, []);
 
     const calculateHighlightRects = useCallback((start: TextPosition, end: TextPosition): DOMRect[] => {
         try {

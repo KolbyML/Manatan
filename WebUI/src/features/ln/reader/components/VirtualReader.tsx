@@ -6,6 +6,7 @@ import { PagedReader } from './PagedReader';
 import { ContinuousReader } from './ContinuousReader';
 import { useUIVisibility } from '../hooks/useUIVisibility';
 import { injectHighlightsIntoHtml } from '../utils/injectHighlights';
+import { sanitizeEpubCss } from '../utils/cssUtils';
 import { BookStats, AppStorage, LNHighlight } from '@/lib/storage/AppStorage';
 
 interface VirtualReaderProps {
@@ -157,6 +158,9 @@ export const VirtualReader: React.FC<VirtualReaderProps> = ({
         });
     }, [items, highlights, getHighlightsForChapter]);
 
+    // Sanitize EPUB CSS - strip fonts so reader settings take precedence
+    const cleanedCss = useMemo(() => sanitizeEpubCss(css ?? ''), [css]);
+
 
     const handlePositionUpdate = useCallback(
         (position: {
@@ -200,6 +204,11 @@ export const VirtualReader: React.FC<VirtualReaderProps> = ({
     const handleRegisterSave = useCallback((saveFn: () => Promise<void>) => {
         forceSaveRef.current = saveFn;
     }, []);
+
+    const handleAddHighlight = useCallback(async (...args: Parameters<typeof onAddHighlight>) => {
+        await onAddHighlight?.(...args);
+        setReaderKey((k) => k + 1);
+    }, [onAddHighlight]);
 
 
     useEffect(() => {
@@ -296,7 +305,7 @@ export const VirtualReader: React.FC<VirtualReaderProps> = ({
         chapters: chaptersWithHighlights,
         stats,
         settings,
-        css,
+        css: cleanedCss,
         isVertical: !!isVertical,
         isRTL: !!isRTL,
         onToggleUI: toggleUI,
@@ -309,7 +318,7 @@ export const VirtualReader: React.FC<VirtualReaderProps> = ({
         onUpdateSettings,
         chapterFilenames,
         highlights,
-        onAddHighlight,
+        onAddHighlight: handleAddHighlight,
         safeAreaTopInset,
         safeAreaTopOffsetPx,
         navigationRef,
