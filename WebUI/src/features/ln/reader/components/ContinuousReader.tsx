@@ -988,8 +988,6 @@ export const ContinuousReader: React.FC<ContinuousReaderProps> = ({
         };
     }, [theme.bg, theme.fg, isRTL, settings.lnTextBrightness]);
 
-    const navVisible = showNavigation || settings.lnLockProgressBar;
-
     const safeInsets = useMemo(
         () => ({
             top: safeAreaInsetsPx?.top ?? (safeAreaTopInset ? parseInt(safeAreaTopInset, 10) : 0),
@@ -1007,7 +1005,15 @@ export const ContinuousReader: React.FC<ContinuousReaderProps> = ({
         }
 
         const marginTop = (settings.lnMarginTop ?? 0) + safeInsets.top;
-        const marginBottom = (settings.lnMarginBottom ?? 0) + safeInsets.bottom + (navVisible ? 40 : 0);
+
+        // Calculate bottom margin/padding.
+        // We only add extra padding to clear the navigation bar if it's LOCKED (always visible).
+        // If it's just toggled, we don't reflow the layout to avoid glitches.
+        const baseBottom = (settings.lnMarginBottom ?? 0) + safeInsets.bottom;
+        const navHeight = 40;
+        const extraBottom = settings.lnLockProgressBar ? Math.max(0, navHeight - baseBottom) : 0;
+        const marginBottom = baseBottom + extraBottom;
+
         const marginLeft = (settings.lnMarginLeft ?? 0) + safeInsets.left;
         const marginRight = (settings.lnMarginRight ?? 0) + safeInsets.right;
 
@@ -1024,7 +1030,7 @@ export const ContinuousReader: React.FC<ContinuousReaderProps> = ({
             paddingLeft: `${marginLeft}px`,
             paddingRight: `${marginRight}px`,
         };
-    }, [isVertical, settings, contentLoaded, safeInsets, navVisible]);
+    }, [isVertical, settings, contentLoaded, safeInsets]);
 
     const handleUpdateSettings = onUpdateSettings ?? (() => {});
 

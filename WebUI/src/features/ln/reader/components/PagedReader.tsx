@@ -367,9 +367,16 @@ export const PagedReader: React.FC<PagedReaderProps> = ({
         const gap = 40;
 
         const marginTop = settings.lnMarginTop ?? 0;
-        const marginBottom = settings.lnMarginBottom ?? 0;
         const marginLeft = settings.lnMarginLeft ?? 0;
         const marginRight = settings.lnMarginRight ?? 0;
+
+        // Calculate bottom margin/padding.
+        // We only add extra padding to clear the navigation bar if it's LOCKED (always visible).
+        const baseBottom = settings.lnMarginBottom ?? 0;
+        const navHeight = 40;
+        const totalBottomWithoutExtra = baseBottom + safeInsets.bottom;
+        const extraBottom = settings.lnLockProgressBar ? Math.max(0, navHeight - totalBottomWithoutExtra) : 0;
+        const marginBottom = baseBottom + extraBottom;
 
         // Calculate available space AFTER margins
         const totalHorizontalMargin = marginLeft + marginRight + safeInsets.left + safeInsets.right;
@@ -398,6 +405,7 @@ export const PagedReader: React.FC<PagedReaderProps> = ({
         settings.lnMarginBottom,
         settings.lnMarginLeft,
         settings.lnMarginRight,
+        settings.lnLockProgressBar,
         isVertical,
         safeInsets.top,
         safeInsets.right,
