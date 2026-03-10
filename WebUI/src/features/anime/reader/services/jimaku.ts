@@ -113,9 +113,6 @@ const parseEpisodeTags = (name: string) => {
 };
 
 const filterEpisodeMatches = (files: JimakuFileEntry[], episodeNumber: number) => {
-    let hasJapanese = false;
-    let hasSeason = false;
-    let hasGeneral = false;
     const japaneseMatches: JimakuFileEntry[] = [];
     const seasonMatches: JimakuFileEntry[] = [];
     const generalMatches: JimakuFileEntry[] = [];
@@ -123,32 +120,26 @@ const filterEpisodeMatches = (files: JimakuFileEntry[], episodeNumber: number) =
     files.forEach((file) => {
         const tags = parseEpisodeTags(file.name);
         if (tags.japanese !== null) {
-            hasJapanese = true;
             if (tags.japanese === episodeNumber) {
                 japaneseMatches.push(file);
             }
         }
         if (tags.seasonEpisode !== null) {
-            hasSeason = true;
             if (tags.seasonEpisode === episodeNumber) {
                 seasonMatches.push(file);
             }
         }
         if (tags.general !== null) {
-            hasGeneral = true;
             if (tags.general === episodeNumber) {
                 generalMatches.push(file);
             }
         }
     });
-
-    if (hasJapanese) {
-        return { matches: japaneseMatches, hasEpisodeTags: true };
+    if (japaneseMatches.length || seasonMatches.length) {
+        const goodMatches = [...japaneseMatches, ...seasonMatches]
+        return { matches: goodMatches, hasEpisodeTags: true };
     }
-    if (hasSeason) {
-        return { matches: seasonMatches, hasEpisodeTags: true };
-    }
-    if (hasGeneral) {
+    if (generalMatches.length) {
         return { matches: generalMatches, hasEpisodeTags: true };
     }
     return { matches: [], hasEpisodeTags: false };
