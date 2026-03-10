@@ -239,7 +239,7 @@ export const ReaderControls: React.FC<Props> = ({
         if (!confirm(`Delete font "${font.name.replace(/\.(ttf|otf|woff|woff2)$/i, '')}"?`)) return;
         
         try {
-            await deleteCustomFont(font.family);
+            await deleteCustomFont(font);
             const updatedFonts = customFonts.filter(f => f.family !== font.family);
             setCustomFonts(updatedFonts);
             

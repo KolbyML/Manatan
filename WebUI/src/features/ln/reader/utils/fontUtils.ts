@@ -1,9 +1,113 @@
 import { AppStorage } from '@/lib/storage/AppStorage';
+import { HttpMethod } from '@/lib/requests/client/RestClient';
+import { requestManager } from '@/lib/requests/RequestManager';
 
 export interface CustomFont {
     name: string;
     family: string;
     dataUrl: string;
+}
+
+type StoredFontEntry = {
+    name: string;
+    family?: string | null;
+    dataUrl: string;
+};
+
+const FONT_STORAGE_ENDPOINT = '/api/novel/fonts';
+
+async function loadFontIntoDocument(font: CustomFont): Promise<void> {
+    const existing = Array.from(document.fonts).find(
+        f => f.family === font.family
+    );
+
+    if (existing) {
+        return;
+    }
+
+    const fontFace = new FontFace(font.family, `url(${font.dataUrl})`);
+    await fontFace.load();
+    document.fonts.add(fontFace);
+}
+
+async function createFileFromDataUrl(filename: string, dataUrl: string): Promise<File> {
+    const response = await fetch(dataUrl);
+    const blob = await response.blob();
+    return new File([blob], filename, { type: blob.type });
+}
+
+async function fetchStoredFonts(): Promise<StoredFontEntry[]> {
+    const response = await requestManager.getClient().fetcher(FONT_STORAGE_ENDPOINT);
+    const payload = await response.json();
+    return Array.isArray(payload) ? payload as StoredFontEntry[] : [];
+}
+
+async function parseStoredFonts(storedFonts: StoredFontEntry[]): Promise<CustomFont[]> {
+    const fonts: CustomFont[] = [];
+    for (const storedFont of storedFonts) {
+        try {
+            const family = storedFont.family?.trim()
+                ? storedFont.family
+                : await getFontName(await createFileFromDataUrl(storedFont.name, storedFont.dataUrl));
+            fonts.push({
+                name: storedFont.name,
+                family,
+                dataUrl: storedFont.dataUrl,
+            });
+        } catch (e) {
+            console.warn('[FontUtils] Failed to load stored font:', storedFont.name, e);
+        }
+    }
+
+    return fonts;
+}
+
+async function getLegacyCustomFonts(): Promise<CustomFont[]> {
+    const fonts: CustomFont[] = [];
+    await AppStorage.customFonts.iterate<CustomFont, void>((font) => {
+        fonts.push(font);
+    });
+    return fonts;
+}
+
+async function saveStoredFont(font: CustomFont): Promise<void> {
+    await requestManager.getClient().fetcher(FONT_STORAGE_ENDPOINT, {
+        httpMethod: HttpMethod.POST,
+        data: {
+            name: font.name,
+            family: font.family,
+            dataUrl: font.dataUrl,
+        },
+    });
+}
+
+async function migrateLegacyFonts(serverFonts: CustomFont[]): Promise<CustomFont[]> {
+    const legacyFonts = await getLegacyCustomFonts();
+    if (legacyFonts.length === 0) {
+        return serverFonts;
+    }
+
+    const knownFamilies = new Set(serverFonts.map(font => font.family));
+    for (const legacyFont of legacyFonts) {
+        if (!knownFamilies.has(legacyFont.family)) {
+            try {
+                await saveStoredFont(legacyFont);
+                serverFonts.push(legacyFont);
+                knownFamilies.add(legacyFont.family);
+            } catch (e) {
+                console.warn('[FontUtils] Failed to migrate legacy font:', legacyFont.name, e);
+                continue;
+            }
+        }
+
+        try {
+            await AppStorage.customFonts.removeItem(legacyFont.family);
+        } catch (e) {
+            console.warn('[FontUtils] Failed to clear migrated legacy font:', legacyFont.name, e);
+        }
+    }
+
+    return serverFonts;
 }
 
 /**
@@ -178,36 +282,19 @@ function blobToDataUrl(blob: Blob): Promise<string> {
  * Load all custom fonts from storage
  */
 export async function loadCustomFonts(): Promise<CustomFont[]> {
-    const fonts: CustomFont[] = [];
-    const loadPromises: Promise<void>[] = [];
-    
-    await AppStorage.customFonts.iterate<CustomFont, void>((font) => {
-        fonts.push(font);
-        
-        const loadPromise = (async () => {
-            try {
-                // Check if font already loaded
-                const existing = Array.from(document.fonts).find(
-                    f => f.family === font.family
-                );
-                
-                if (!existing) {
-                    const fontFace = new FontFace(font.family, `url(${font.dataUrl})`);
-                    await fontFace.load();
-                    document.fonts.add(fontFace);
-                }
-            } catch (e) {
-                // Silent fail
-            }
-        })();
-        
-        loadPromises.push(loadPromise);
+    const fonts = await getAllCustomFonts();
+    const loadPromises = fonts.map(async (font) => {
+        try {
+            await loadFontIntoDocument(font);
+        } catch (e) {
+            // Silent fail
+        }
     });
-    
+
     if (loadPromises.length > 0) {
         await Promise.all(loadPromises);
     }
-    
+
     return fonts;
 }
 
@@ -215,17 +302,25 @@ export async function loadCustomFonts(): Promise<CustomFont[]> {
  * Save a custom font to storage
  */
 export async function saveCustomFont(font: CustomFont): Promise<void> {
-    await AppStorage.customFonts.setItem(font.family, font);
+    await saveStoredFont(font);
 }
 
 /**
  * Delete a custom font from storage
  */
-export async function deleteCustomFont(family: string): Promise<void> {
-    await AppStorage.customFonts.removeItem(family);
-    
+export async function deleteCustomFont(font: Pick<CustomFont, 'family' | 'name'>): Promise<void> {
+    await requestManager.getClient().fetcher(
+        `${FONT_STORAGE_ENDPOINT}/${encodeURIComponent(font.name)}`,
+        { httpMethod: HttpMethod.DELETE }
+    );
+    try {
+        await AppStorage.customFonts.removeItem(font.family);
+    } catch {
+        // Ignore legacy cleanup failures.
+    }
+
     // Remove from document fonts
-    const fontFace = Array.from(document.fonts).find(f => f.family === family);
+    const fontFace = Array.from(document.fonts).find(f => f.family === font.family);
     if (fontFace) {
         document.fonts.delete(fontFace);
     }
@@ -235,9 +330,12 @@ export async function deleteCustomFont(family: string): Promise<void> {
  * Get all custom fonts
  */
 export async function getAllCustomFonts(): Promise<CustomFont[]> {
-    const fonts: CustomFont[] = [];
-    await AppStorage.customFonts.iterate<CustomFont, void>((font) => {
-        fonts.push(font);
-    });
-    return fonts;
+    try {
+        const storedFonts = await fetchStoredFonts();
+        const fonts = await parseStoredFonts(storedFonts);
+        return await migrateLegacyFonts(fonts);
+    } catch (e) {
+        console.warn('[FontUtils] Failed to load server-backed fonts:', e);
+        return await getLegacyCustomFonts();
+    }
 }

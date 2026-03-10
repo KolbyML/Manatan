@@ -34,6 +34,7 @@ import { AppStorage, LNHighlight } from '@/lib/storage/AppStorage';
 import { useBookContent } from '../hooks/useBookContent';
 import { useHighlights } from '../hooks/useHighlights';
 import { useLnSettings } from '../hooks/useLnSettings';
+import { loadCustomFonts } from '../utils/fontUtils';
 import { getDefaultLnSettings } from '../utils/lnSettings';
 import { VirtualReader } from '../components/VirtualReader';
 import { ReaderControls } from '../components/ReaderControls';
@@ -136,6 +137,12 @@ export const LNReaderScreen: React.FC = () => {
             window.visualViewport?.removeEventListener('resize', readSafeInsets);
         };
     }, [isIOS]);
+
+    useEffect(() => {
+        loadCustomFonts().catch((error) => {
+            console.error('[LNReaderScreen] Failed to load custom fonts:', error);
+        });
+    }, []);
 
     useEffect(() => {
         if (highlightsOpen) {

@@ -1,3 +1,5 @@
+mod fonts;
+
 use crate::error::NovelError;
 use crate::state::NovelState;
 use crate::types::*;
@@ -27,6 +29,9 @@ pub fn router() -> Router<NovelState> {
         .route("/categories/metadata", get(get_all_category_metadata))
         .route("/categories/metadata/{id}", get(get_category_metadata))
         .route("/categories/metadata/{id}", post(update_category_metadata))
+        .route("/fonts", get(fonts::list_fonts))
+        .route("/fonts", post(fonts::save_font))
+        .route("/fonts/{filename}", delete(fonts::delete_font))
         .route("/upload/{id}", post(upload_epub))
         .route("/file/{id}", get(get_epub))
 }
