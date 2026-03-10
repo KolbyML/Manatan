@@ -1,3 +1,14 @@
+## Release v3.3.1
+
+- Bump embedded ffmpeg release to Flac (7c52c40)
+- Fix Anki sentence furigana export matching (7a92918)
+- Jimaku Subtitle File Filtering Fixes (#255) (490162b)
+- Match glossary Anki export to Yomitan HTML (6a2364d)
+- Fix Mihon pager mouse wheel panning (6ae4474)
+- Align tracker sync with Mihon behavior (8e17650)
+- Add flac detection to frontend (9a8282b)
+- Persist LN fonts via server storage (27efd44)
+
 ## Release v3.3.0
 
 - Update navigation and card actions (98e8799)
