@@ -683,132 +683,146 @@ export const ReaderControls: React.FC<Props> = ({
 
                     {/* Custom Margins */}
                     <Box sx={{ mb: 2 }}>
-                        <Typography variant="caption" sx={{ opacity: 0.8, mb: 1, display: 'block' }}>
+                        <Typography variant="caption" sx={{ opacity: 0.8, mb: 1.5, display: 'block' }}>
                             Margins
                         </Typography>
                         
-                        {/* Top Margin */}
-                        <Box sx={{ mb: 1.5 }}>
-                            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 0.5 }}>
-                                <Typography variant="caption" sx={{ opacity: 0.7 }}>Top</Typography>
+                        <Box sx={{ 
+                            display: 'grid', 
+                            gridTemplateColumns: '1fr 1fr', 
+                            gap: 2 
+                        }}>
+                            {/* Top Margin */}
+                            <Box>
+                                <Typography variant="caption" sx={{ opacity: 0.7, mb: 0.5, display: 'block' }}>
+                                    Top
+                                </Typography>
                                 <TextField
                                     size="small"
+                                    fullWidth
                                     value={settings.lnMarginTop ?? 0}
                                     onChange={(e) => {
                                         const val = parseInt(e.target.value, 10);
-                                        if (!isNaN(val) && val >= 0 && val <= 200) {
+                                        if (!isNaN(val) && val >= 0) {
                                             onUpdateSettings('lnMarginTop', val);
                                         }
                                     }}
+                                    onBlur={(e) => {
+                                        const val = parseInt(e.target.value, 10);
+                                        if (isNaN(val) || val < 0) {
+                                            onUpdateSettings('lnMarginTop', 0);
+                                        }
+                                    }}
                                     type="number"
-                                    inputProps={{ min: 0, max: 200, step: 4 }}
-                                    sx={getInputStyles(theme)}
+                                    inputProps={{ min: 0, step: 4 }}
+                                    sx={{
+                                        ...getInputStyles(theme),
+                                        width: '100%',
+                                    }}
                                     InputProps={{
                                         endAdornment: <InputAdornment position="end" sx={{ color: theme.fg }}>px</InputAdornment>
                                     }}
                                 />
                             </Box>
-                            <Slider
-                                value={settings.lnMarginTop ?? 0}
-                                min={0}
-                                max={200}
-                                step={4}
-                                onChange={(_, v) => onUpdateSettings('lnMarginTop', v as number)}
-                                sx={{ color: theme.fg }}
-                            />
-                        </Box>
 
-                        {/* Bottom Margin */}
-                        <Box sx={{ mb: 1.5 }}>
-                            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 0.5 }}>
-                                <Typography variant="caption" sx={{ opacity: 0.7 }}>Bottom</Typography>
+                            {/* Bottom Margin */}
+                            <Box>
+                                <Typography variant="caption" sx={{ opacity: 0.7, mb: 0.5, display: 'block' }}>
+                                    Bottom
+                                </Typography>
                                 <TextField
                                     size="small"
+                                    fullWidth
                                     value={settings.lnMarginBottom ?? 0}
                                     onChange={(e) => {
                                         const val = parseInt(e.target.value, 10);
-                                        if (!isNaN(val) && val >= 0 && val <= 200) {
+                                        if (!isNaN(val) && val >= 0) {
                                             onUpdateSettings('lnMarginBottom', val);
                                         }
                                     }}
+                                    onBlur={(e) => {
+                                        const val = parseInt(e.target.value, 10);
+                                        if (isNaN(val) || val < 0) {
+                                            onUpdateSettings('lnMarginBottom', 0);
+                                        }
+                                    }}
                                     type="number"
-                                    inputProps={{ min: 0, max: 200, step: 4 }}
-                                    sx={getInputStyles(theme)}
+                                    inputProps={{ min: 0, step: 4 }}
+                                    sx={{
+                                        ...getInputStyles(theme),
+                                        width: '100%',
+                                    }}
                                     InputProps={{
                                         endAdornment: <InputAdornment position="end" sx={{ color: theme.fg }}>px</InputAdornment>
                                     }}
                                 />
                             </Box>
-                            <Slider
-                                value={settings.lnMarginBottom ?? 0}
-                                min={0}
-                                max={200}
-                                step={4}
-                                onChange={(_, v) => onUpdateSettings('lnMarginBottom', v as number)}
-                                sx={{ color: theme.fg }}
-                            />
-                        </Box>
 
-                        {/* Left Margin */}
-                        <Box sx={{ mb: 1.5 }}>
-                            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 0.5 }}>
-                                <Typography variant="caption" sx={{ opacity: 0.7 }}>Left</Typography>
+                            {/* Left Margin */}
+                            <Box>
+                                <Typography variant="caption" sx={{ opacity: 0.7, mb: 0.5, display: 'block' }}>
+                                    Left
+                                </Typography>
                                 <TextField
                                     size="small"
+                                    fullWidth
                                     value={settings.lnMarginLeft ?? 0}
                                     onChange={(e) => {
                                         const val = parseInt(e.target.value, 10);
-                                        if (!isNaN(val) && val >= 0 && val <= 200) {
+                                        if (!isNaN(val) && val >= 0) {
                                             onUpdateSettings('lnMarginLeft', val);
                                         }
                                     }}
-                                    type="number"
-                                    inputProps={{ min: 0, max: 200, step: 4 }}
-                                    sx={getInputStyles(theme)}
-                                    InputProps={{
-                                        endAdornment: <InputAdornment position="end" sx={{ color: theme.fg }}>px</InputAdornment>
-                                    }}
-                                />
-                            </Box>
-                            <Slider
-                                value={settings.lnMarginLeft ?? 0}
-                                min={0}
-                                max={200}
-                                step={4}
-                                onChange={(_, v) => onUpdateSettings('lnMarginLeft', v as number)}
-                                sx={{ color: theme.fg }}
-                            />
-                        </Box>
-
-                        {/* Right Margin */}
-                        <Box sx={{ mb: 1.5 }}>
-                            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 0.5 }}>
-                                <Typography variant="caption" sx={{ opacity: 0.7 }}>Right</Typography>
-                                <TextField
-                                    size="small"
-                                    value={settings.lnMarginRight ?? 0}
-                                    onChange={(e) => {
+                                    onBlur={(e) => {
                                         const val = parseInt(e.target.value, 10);
-                                        if (!isNaN(val) && val >= 0 && val <= 200) {
-                                            onUpdateSettings('lnMarginRight', val);
+                                        if (isNaN(val) || val < 0) {
+                                            onUpdateSettings('lnMarginLeft', 0);
                                         }
                                     }}
                                     type="number"
-                                    inputProps={{ min: 0, max: 200, step: 4 }}
-                                    sx={getInputStyles(theme)}
+                                    inputProps={{ min: 0, step: 4 }}
+                                    sx={{
+                                        ...getInputStyles(theme),
+                                        width: '100%',
+                                    }}
                                     InputProps={{
                                         endAdornment: <InputAdornment position="end" sx={{ color: theme.fg }}>px</InputAdornment>
                                     }}
                                 />
                             </Box>
-                            <Slider
-                                value={settings.lnMarginRight ?? 0}
-                                min={0}
-                                max={200}
-                                step={4}
-                                onChange={(_, v) => onUpdateSettings('lnMarginRight', v as number)}
-                                sx={{ color: theme.fg }}
-                            />
+
+                            {/* Right Margin */}
+                            <Box>
+                                <Typography variant="caption" sx={{ opacity: 0.7, mb: 0.5, display: 'block' }}>
+                                    Right
+                                </Typography>
+                                <TextField
+                                    size="small"
+                                    fullWidth
+                                    value={settings.lnMarginRight ?? 0}
+                                    onChange={(e) => {
+                                        const val = parseInt(e.target.value, 10);
+                                        if (!isNaN(val) && val >= 0) {
+                                            onUpdateSettings('lnMarginRight', val);
+                                        }
+                                    }}
+                                    onBlur={(e) => {
+                                        const val = parseInt(e.target.value, 10);
+                                        if (isNaN(val) || val < 0) {
+                                            onUpdateSettings('lnMarginRight', 0);
+                                        }
+                                    }}
+                                    type="number"
+                                    inputProps={{ min: 0, step: 4 }}
+                                    sx={{
+                                        ...getInputStyles(theme),
+                                        width: '100%',
+                                    }}
+                                    InputProps={{
+                                        endAdornment: <InputAdornment position="end" sx={{ color: theme.fg }}>px</InputAdornment>
+                                    }}
+                                />
+                            </Box>
                         </Box>
                     </Box>
                 </Box>
