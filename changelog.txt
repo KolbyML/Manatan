@@ -1,3 +1,11 @@
+## Release v3.3.2
+
+- Remove double-tap zoom setting (482fd08)
+- Novel Reader: make margin settings unlimited (#256) (696fa78)
+- Improve desktop Mihon pager wheel zoom (1590420)
+- Fix Yomitan glossary CSS parity (26aca6a)
+- Fix Android ffmpeg MKV duration probing (15ebcf3)
+
 ## Release v3.3.1
 
 - Bump embedded ffmpeg release to Flac (7c52c40)
