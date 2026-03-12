@@ -1,3 +1,12 @@
+## Release v3.3.3
+
+- Fix reader tap zones changing with RTL reading order (58a0b77)
+- Fix Android local media Anki add timeout (353d22b)
+- Align desktop manga scale default with mobile (9ca9553)
+- Add tab resume shortcuts (19ecd36)
+- Update ffmpeg release pin to ea3 (5b1386f)
+- Apply current mobile reader fixes (b27fcdf)
+
 ## Release v3.3.2
 
 - Remove double-tap zoom setting (482fd08)
