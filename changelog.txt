@@ -1,3 +1,13 @@
+## Release v3.3.4
+
+- Add custom Anki field templates (6d06d1b)
+- Fix Android local video ffmpeg launch permissions (29ca1b7)
+- Add Glossary First Anki field mapping (dc26d84)
+- Remove advanced Android build variant (1503ed0)
+- Fix settings dialog dictionary section clipping (660ac71)
+- Fix dictionary import on WebUI dev server (8f7e96f)
+- Fix Yomitan glossary export plaintext formatting (47f256f)
+
 ## Release v3.3.3
 
 - Fix reader tap zones changing with RTL reading order (58a0b77)
