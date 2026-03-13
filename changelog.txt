@@ -1,3 +1,22 @@
+## Release v3.3.5
+
+- Fix Android web server app move (29fa5d0)
+- Update bundled ffmpeg release to Hw (579df11)
+- Add configurable Anki card tag templates (10ba88a)
+- Match Yomitan frequency template fields (6b41023)
+- Match Yomitan glossary list structure (4a83b3d)
+- Fix Android web server app context (414740d)
+- Reduce Yomitan import memory and fix Android build (82f9336)
+- Refine Anki duplicate check settings UI (fdce0c0)
+- Add custom subtitle regex filters (64ce550)
+- Fix manga source refresh fetching stale chapters (b006673)
+- Make mobile mode client-specific (1b6c247)
+- Match Yomitan popup SVG scaling (86f7105)
+- Align Anki duplicate checks with first-field semantics (d2b8df5)
+- Stream compatibility transcodes in real time (632aeb2)
+- Fix Android ffmpeg playback execution path (050ac8a)
+- Add anime tracker support (015438a)
+
 ## Release v3.3.4
 
 - Add custom Anki field templates (6d06d1b)
