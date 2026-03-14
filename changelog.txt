@@ -1,3 +1,11 @@
+## Release v3.3.6
+
+- Fix Android package imports (beb8d11)
+- Fix Android local video compatibility playback (c6709dc)
+- Reduce Yomitan import memory on Android (f4f5dcf)
+- Fix Anki custom template field import (c6d1d31)
+- Reduce Android startup blocking on runtime health (b1a8be4)
+
 ## Release v3.3.5
 
 - Fix Android web server app move (29fa5d0)
