@@ -1,3 +1,13 @@
+## Release v3.3.7
+
+- Prevent reader touches during screenshot crop (0ad24a3)
+- Fix MyAnimeList OAuth and anime tracking (1d41515)
+- Cache manga thumbnails across app launches (392534e)
+- Fix update timestamp handling (0164c75)
+- Fix sentence furigana field mappings (1cdc161)
+- Fix mobile textbox activation without popup dictionary (8d93de1)
+- Fix Aidoku chapter URL bridging (cb4f407)
+
 ## Release v3.3.6
 
 - Fix Android package imports (beb8d11)
