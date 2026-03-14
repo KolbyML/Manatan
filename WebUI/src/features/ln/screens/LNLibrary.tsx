@@ -95,49 +95,51 @@ type LNLibraryCardProps = {
     isSelectionMode: boolean;
     isSelected: boolean;
     onToggleSelect: (id: string) => void;
-    onLongPress: (id: string) => void;
 };
 
-const LNLibraryCard = ({ item, onOpen, onDelete, onEdit, isSelectionMode, isSelected, onToggleSelect, onLongPress }: LNLibraryCardProps) => {
+const LNLibraryCard = ({ item, onOpen, onDelete, onEdit, isSelectionMode, isSelected, onToggleSelect }: LNLibraryCardProps) => {
     const preventMobileContextMenu = MediaQuery.usePreventMobileContextMenu();
     const optionButtonRef = useRef<HTMLButtonElement>(null);
-
-    const [isTouchActive, setIsTouchActive] = useState(false);
-    const touchTimeoutRef = useRef<NodeJS.Timeout | null>(null);
-      const handleTouchStart = () => {
-        if (touchTimeoutRef.current) clearTimeout(touchTimeoutRef.current);
-        setIsTouchActive(true);
-    };
-
-    const handleTouchEnd = () => {
-        touchTimeoutRef.current = setTimeout(() => {
-            setIsTouchActive(false);
-        }, 2000); // 2 seconds before the button hides again
-    };
-
-    useEffect(() => {
-        return () => {
-            if (touchTimeoutRef.current) clearTimeout(touchTimeoutRef.current);
-        };
-    },[]);
-
-    const longPressBind = useLongPress(
-        useCallback((e: any, { context }: any) => {
-            if (isSelectionMode) return;
-            (context as () => void)?.();
-        }, [isSelectionMode]),
-        {
-            onCancel: (e, { context }) => {
-                // Prevent click after long press
-            },
-            threshold: 500,
-            cancelOnMovement: true,
-        }
-    );
+    const longPressTriggeredRef = useRef(false);
+    const longPressResetTimeoutRef = useRef<number | null>(null);
 
     const isProcessing = item.isProcessing || false;
 
+    useEffect(() => () => {
+        if (longPressResetTimeoutRef.current !== null) {
+            window.clearTimeout(longPressResetTimeoutRef.current);
+        }
+    }, []);
+
+    const longPressBind = useLongPress(
+        useCallback(() => {
+            if (isSelectionMode || isProcessing) return;
+            if (longPressResetTimeoutRef.current !== null) {
+                window.clearTimeout(longPressResetTimeoutRef.current);
+            }
+            longPressTriggeredRef.current = true;
+            longPressResetTimeoutRef.current = window.setTimeout(() => {
+                longPressTriggeredRef.current = false;
+                longPressResetTimeoutRef.current = null;
+            }, 750);
+            optionButtonRef.current?.click();
+        }, [isProcessing, isSelectionMode]),
+        {
+            threshold: 500,
+            cancelOnMovement: true,
+        },
+    );
+
     const handleCardClick = () => {
+        if (longPressTriggeredRef.current) {
+            longPressTriggeredRef.current = false;
+            if (longPressResetTimeoutRef.current !== null) {
+                window.clearTimeout(longPressResetTimeoutRef.current);
+                longPressResetTimeoutRef.current = null;
+            }
+            return;
+        }
+
         if (isProcessing) return;
         if (isSelectionMode) {
             onToggleSelect(item.id);
@@ -151,9 +153,6 @@ const LNLibraryCard = ({ item, onOpen, onDelete, onEdit, isSelectionMode, isSele
             {(popupState) => (
                 <>
                     <Box
-                     onTouchStart={handleTouchStart}
-                        onTouchEnd={handleTouchEnd}
-                        onTouchCancel={handleTouchEnd}
                         sx={{
                             display: 'flex',
                             flexDirection: 'column',
@@ -168,11 +167,7 @@ const LNLibraryCard = ({ item, onOpen, onDelete, onEdit, isSelectionMode, isSele
                     >
                         <Card sx={{ aspectRatio: MANGA_COVER_ASPECT_RATIO, display: 'flex' }}>
                             <CardActionArea
-                                {...longPressBind(() => {
-                                    if (!isSelectionMode) {
-                                        onLongPress(item.id);
-                                    }
-                                })}
+                                {...longPressBind()}
                                 onClick={handleCardClick}
                                 onContextMenu={(e) => {
                                     if (isSelectionMode) {
@@ -319,9 +314,9 @@ const LNLibraryCard = ({ item, onOpen, onDelete, onEdit, isSelectionMode, isSele
                                                             backgroundColor: 'primary.main',
                                                             color: 'common.white',
                                                             '&:hover': { backgroundColor: 'primary.main' },
-                                                            visibility: popupState.isOpen || isTouchActive ? 'visible' : 'hidden',
-                                                            pointerEvents: popupState.isOpen || isTouchActive ? 'auto' : 'none',
-                                                              }}
+                                                            visibility: popupState.isOpen ? 'visible' : 'hidden',
+                                                            pointerEvents: popupState.isOpen ? 'auto' : 'none',
+                                                        }}
                                                     >
                                                         <MoreVertIcon />
                                                     </IconButton>
@@ -884,11 +879,6 @@ export const LNLibrary: React.FC = () => {
         setIsSelectionMode(false);
     }, []);
 
-    const handleLongPress = useCallback((id: string) => {
-        setIsSelectionMode(true);
-        setSelectedIds(new Set([id]));
-    }, []);
-
     const handleOpen = useCallback((id: string) => {
         navigate(AppRoutes.ln.childRoutes.reader.path(id));
     }, [navigate]);
@@ -1222,7 +1212,6 @@ export const LNLibrary: React.FC = () => {
                             isSelectionMode={isSelectionMode}
                             isSelected={selectedIds.has(item.id)}
                             onToggleSelect={handleToggleSelect}
-                            onLongPress={handleLongPress}
                         />
                     </Box>
                 ))}

@@ -40,7 +40,6 @@ import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
 import java.io.File;
 
 public class WebviewActivity extends Activity {
@@ -52,7 +51,11 @@ public class WebviewActivity extends Activity {
     private String lastSyncedCookie = ""; 
     private ValueCallback<Uri[]> uploadMessage;
     public final static int FILECHOOSER_RESULTCODE = 100;
+    public final static int SAVEFILE_RESULTCODE = 101;
     private static final int ANKI_PERMISSION_REQUEST = 999;
+    private String pendingExportFilename;
+    private String pendingExportMimeType;
+    private String pendingExportContent;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -330,16 +333,54 @@ public class WebviewActivity extends Activity {
         public void saveFile(final String filename, final String mimeType, final String content) {
             runOnUiThread(() -> {
                 try {
-                    File downloadsDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS);
-                    File file = new File(downloadsDir, filename);
-                    Files.write(file.toPath(), content.getBytes(StandardCharsets.UTF_8));
-                    Toast.makeText(WebviewActivity.this, "Saved to Downloads/" + filename, Toast.LENGTH_SHORT).show();
+                    pendingExportFilename = filename;
+                    pendingExportMimeType = mimeType;
+                    pendingExportContent = content;
+
+                    Intent intent = new Intent(Intent.ACTION_CREATE_DOCUMENT);
+                    intent.addCategory(Intent.CATEGORY_OPENABLE);
+                    intent.setType(normalizeExportMimeType(mimeType));
+                    intent.putExtra(Intent.EXTRA_TITLE, filename);
+                    startActivityForResult(intent, SAVEFILE_RESULTCODE);
                 } catch (Exception e) {
-                    Log.e("Manatan", "Failed to save file", e);
-                    Toast.makeText(WebviewActivity.this, "Failed to save file", Toast.LENGTH_SHORT).show();
+                    Log.e("Manatan", "Failed to launch save dialog", e);
+                    fallbackSaveToDownloads(filename, content);
                 }
             });
         }
+    }
+
+    private String normalizeExportMimeType(String mimeType) {
+        if (mimeType == null || mimeType.isEmpty()) {
+            return "application/octet-stream";
+        }
+
+        int charsetSeparator = mimeType.indexOf(';');
+        if (charsetSeparator >= 0) {
+            return mimeType.substring(0, charsetSeparator).trim();
+        }
+
+        return mimeType;
+    }
+
+    private void fallbackSaveToDownloads(String filename, String content) {
+        try {
+            File downloadsDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS);
+            File file = new File(downloadsDir, filename);
+            java.nio.file.Files.write(file.toPath(), content.getBytes(StandardCharsets.UTF_8));
+            Toast.makeText(WebviewActivity.this, "Saved to Downloads/" + filename, Toast.LENGTH_SHORT).show();
+        } catch (Exception saveError) {
+            Log.e("Manatan", "Failed to save file", saveError);
+            Toast.makeText(WebviewActivity.this, "Failed to save file", Toast.LENGTH_SHORT).show();
+        } finally {
+            clearPendingExport();
+        }
+    }
+
+    private void clearPendingExport() {
+        pendingExportFilename = null;
+        pendingExportMimeType = null;
+        pendingExportContent = null;
     }
 
     private void launchReader(String url) {
@@ -491,6 +532,30 @@ public class WebviewActivity extends Activity {
             if (uploadMessage == null) return;
             uploadMessage.onReceiveValue(WebChromeClient.FileChooserParams.parseResult(resultCode, data));
             uploadMessage = null;
+        } else if (requestCode == SAVEFILE_RESULTCODE) {
+            if (resultCode != RESULT_OK || data == null || data.getData() == null) {
+                clearPendingExport();
+                return;
+            }
+
+            Uri uri = data.getData();
+            try (OutputStream outputStream = getContentResolver().openOutputStream(uri, "w")) {
+                if (outputStream == null) {
+                    throw new IllegalStateException("No output stream returned for export URI");
+                }
+
+                byte[] bytes = (pendingExportContent == null ? "" : pendingExportContent).getBytes(StandardCharsets.UTF_8);
+                outputStream.write(bytes);
+                outputStream.flush();
+
+                String savedName = pendingExportFilename != null ? pendingExportFilename : "file";
+                Toast.makeText(this, "Saved " + savedName, Toast.LENGTH_SHORT).show();
+            } catch (Exception e) {
+                Log.e("Manatan", "Failed to write exported file", e);
+                Toast.makeText(this, "Failed to save file", Toast.LENGTH_SHORT).show();
+            } finally {
+                clearPendingExport();
+            }
         } else {
             super.onActivityResult(requestCode, resultCode, data);
         }
