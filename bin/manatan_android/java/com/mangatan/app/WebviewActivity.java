@@ -36,11 +36,12 @@ import android.util.Base64;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
+import java.io.File;
+import java.io.FileOutputStream;
 import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
-import java.io.File;
 
 public class WebviewActivity extends Activity {
     private WebView myWebView;
@@ -367,7 +368,9 @@ public class WebviewActivity extends Activity {
         try {
             File downloadsDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS);
             File file = new File(downloadsDir, filename);
-            java.nio.file.Files.write(file.toPath(), content.getBytes(StandardCharsets.UTF_8));
+            try (FileOutputStream fos = new FileOutputStream(file)) {
+                fos.write(content.getBytes(StandardCharsets.UTF_8));
+            }
             Toast.makeText(WebviewActivity.this, "Saved to Downloads/" + filename, Toast.LENGTH_SHORT).show();
         } catch (Exception saveError) {
             Log.e("Manatan", "Failed to save file", saveError);
@@ -539,7 +542,7 @@ public class WebviewActivity extends Activity {
             }
 
             Uri uri = data.getData();
-            try (OutputStream outputStream = getContentResolver().openOutputStream(uri, "w")) {
+            try (OutputStream outputStream = getContentResolver().openOutputStream(uri)) {
                 if (outputStream == null) {
                     throw new IllegalStateException("No output stream returned for export URI");
                 }
