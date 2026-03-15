@@ -18,7 +18,6 @@ import { DictionaryResult } from '@/Manatan/types';
 import { DictionaryView } from '@/Manatan/components/DictionaryView';
 import { useOCR } from '@/Manatan/context/OCRContext';
 import { cleanPunctuation, lookupYomitan } from '@/Manatan/utils/api';
-import { buildScopedCustomCss } from '@/Manatan/utils/customCss';
 import { useAppTitle } from '@/features/navigation-bar/hooks/useAppTitle';
 
 const getLookupTextFromHref = (href: string, fallback: string) => {
@@ -575,7 +574,7 @@ export const Dictionary = () => {
                 {/* Results */}
                 <Fade in={!displayIsLoading && hasSearched} timeout={300}>
                     <Box sx={{ display: !displayIsLoading && hasSearched ? 'block' : 'none' }}>
-                        {displayResults.length > 0 ? (
+                        {(displayResults.length > 0 || displayKanjiResults.length > 0) ? (
                             <Box>
                                 {renderHistoryNav()}
                                 <Paper
