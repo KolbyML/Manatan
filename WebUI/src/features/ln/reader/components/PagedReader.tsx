@@ -139,7 +139,6 @@ function applyHighlightToBlock(block: Element, startOffset: number, endOffset: n
 const DRAG_THRESHOLD = 10;
 const SAVE_DEBOUNCE_MS = 3000;
 const POSITION_DETECT_DELAY_MS = 150;
-const SWIPE_MIN_DISTANCE = 50;
 const SWIPE_MAX_TIME = 500;
 
 // ============================================================================
@@ -1119,12 +1118,13 @@ export const PagedReader: React.FC<PagedReaderProps> = ({
             const deltaX = e.changedTouches[0].clientX - touch.x;
             const deltaY = e.changedTouches[0].clientY - touch.y;
             const deltaTime = Date.now() - touch.time;
+            const threshold = settings.lnDragThreshold ?? DRAG_THRESHOLD;
 
             if (deltaTime > SWIPE_MAX_TIME) return;
 
             // VERTICAL SWIPE: Works in BOTH modes
             // Swipe UP = next, Swipe DOWN = prev
-            if (Math.abs(deltaY) > Math.abs(deltaX) && Math.abs(deltaY) > SWIPE_MIN_DISTANCE) {
+            if (Math.abs(deltaY) > Math.abs(deltaX) && Math.abs(deltaY) > threshold) {
                 if (deltaY > 0) {
                     goPrev(); // Swipe down = back
                 } else {
@@ -1134,7 +1134,7 @@ export const PagedReader: React.FC<PagedReaderProps> = ({
             }
 
             // HORIZONTAL SWIPE: Works in BOTH modes with inverted logic
-            if (Math.abs(deltaX) > Math.abs(deltaY) && Math.abs(deltaX) > SWIPE_MIN_DISTANCE) {
+            if (Math.abs(deltaX) > Math.abs(deltaY) && Math.abs(deltaX) > threshold) {
                 if (isVertical) {
                     // Vertical text mode: swipe right = next, swipe left = prev
                     if (deltaX > 0) {
@@ -1152,7 +1152,7 @@ export const PagedReader: React.FC<PagedReaderProps> = ({
                 }
             }
         },
-        [contentReady, isTransitioning, isVertical, isRTL, goNext, goPrev, settings.lnEnableSwipe],
+        [contentReady, isTransitioning, isVertical, isRTL, goNext, goPrev, settings.lnEnableSwipe, settings.lnDragThreshold],
     );
 
     const handleContentClick = useCallback(

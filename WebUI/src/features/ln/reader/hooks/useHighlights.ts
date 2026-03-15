@@ -133,7 +133,8 @@ export function useHighlights(bookId: string) {
             manatanNative.saveFile(filename, mimeType, content);
             return;
         }
-        const blob = new Blob([content], { type: mimeType });
+        const blobMimeType = /^(text\/|application\/json$)/.test(mimeType) ? `${mimeType};charset=utf-8` : mimeType;
+        const blob = new Blob([content], { type: blobMimeType });
         const url = URL.createObjectURL(blob);
         const a = document.createElement('a');
         a.href = url;
