@@ -1,3 +1,17 @@
+## Release v3.3.9
+
+- Fix Anki preset install and mobile seek feedback (a27a8e0)
+- Match desktop video overlay behavior (5f5b0e2)
+- Improve empty library guidance (b8b2930)
+- Add anime bulk selection menu (7f2f989)
+- Cache Kiku preset in background (6686dc2)
+- Fix mobile cropper touch interactions (1b8b7e1)
+- Fix Kavita direct bind behavior (5ee4e57)
+- Probe Android codec support for local video (3c29391)
+- Add Android startup timing metrics (0ee4066)
+- Sync SOCKS proxy settings to runtime (b7f5fa9)
+- Sync Cloudflare settings to runtime and bump Suwayomi jar (7ba0a50)
+
 ## Release v3.3.8
 
 - Avoid repeated Android hardware transcode failures (2df8eff)
