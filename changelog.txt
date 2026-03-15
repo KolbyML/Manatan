@@ -1,3 +1,12 @@
+## Release v3.3.8
+
+- Avoid repeated Android hardware transcode failures (2df8eff)
+- Prefer Android hardware transcode for local video (b3ca217)
+- Fix local video subtitle restore and transcode fallback (b0bc920)
+- Fix local video subtitle and resume persistence (792d9b5)
+- ln reader fixes (#262) (1454632)
+- Add Anki preset defaults and installer support (c61238c)
+
 ## Release v3.3.7
 
 - Prevent reader touches during screenshot crop (0ad24a3)
