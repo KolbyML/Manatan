@@ -1,3 +1,7 @@
+## Release v3.3.10
+
+- Refine desktop video controls overlay (d712e92)
+
 ## Release v3.3.9
 
 - Fix Anki preset install and mobile seek feedback (a27a8e0)
