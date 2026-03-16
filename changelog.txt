@@ -1,3 +1,11 @@
+## Release v3.3.11
+
+- Improve Windows anime hardware playback (1b4909d)
+- Add fast popup dictionary backend (927b61a)
+- Rename Android release asset with compatibility fallback (784830c)
+- Gate desktop player clicks and quiet integration errors (295433e)
+- Optimize novel startup and embedded web routes (26f749c)
+
 ## Release v3.3.10
 
 - Refine desktop video controls overlay (d712e92)
