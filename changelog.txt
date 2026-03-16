@@ -1,3 +1,12 @@
+## Release v3.3.12
+
+- Harden Windows anime playback fallback (92b0be1)
+- Mount sync routes on iOS backend (ad2a2f0)
+- Speed up Android novel startup and add metrics (4f6c8b4)
+- Fix fast dictionary import null string fields (73f8cf6)
+- Fix Android MAL login user agent handling (0050c09)
+- Add Aniyomi tracker parity and verification (ad01897)
+
 ## Release v3.3.11
 
 - Improve Windows anime hardware playback (1b4909d)
