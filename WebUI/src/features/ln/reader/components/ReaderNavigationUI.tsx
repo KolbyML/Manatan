@@ -1,10 +1,11 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useCallback } from 'react';
 import './ReaderNavigationUI.css';
 import { BookStats } from '@/lib/storage/AppStorage';
 import { SaveablePosition } from '../utils/readerSave';
 
 interface ReaderNavigationUIProps {
     visible: boolean;
+    useGlobalVisibility?: boolean;
     onNext: () => void;
     onPrev: () => void;
     canGoNext: boolean;
@@ -31,6 +32,7 @@ interface ReaderNavigationUIProps {
 
 export const ReaderNavigationUI: React.FC<ReaderNavigationUIProps> = ({
     visible,
+    useGlobalVisibility = false,
     onNext,
     onPrev,
     canGoNext,
@@ -53,16 +55,11 @@ export const ReaderNavigationUI: React.FC<ReaderNavigationUIProps> = ({
     isSaved,
     onSaveNow,
 }) => {
-    const [isLocked, setIsLocked] = useState(settings?.lnLockProgressBar ?? false);
     const [isSaving, setIsSaving] = useState(false);
-
-    useEffect(() => {
-        setIsLocked(settings?.lnLockProgressBar ?? false);
-    }, [settings?.lnLockProgressBar]);
+    const isLocked = settings?.lnLockProgressBar ?? false;
 
     const toggleLock = () => {
         const newLocked = !isLocked;
-        setIsLocked(newLocked);
         onUpdateSettings('lnLockProgressBar', newLocked);
     };
 
@@ -90,10 +87,10 @@ export const ReaderNavigationUI: React.FC<ReaderNavigationUIProps> = ({
 
     const showPageSlider = showSlider && mode === 'paged' && totalPages && totalPages > 1 && onPageChange && currentPage !== undefined;
     const showCharProgress = settings?.lnShowCharProgress ?? false;
-    const showNavButtons = visible && !(settings?.lnHideNavButtons ?? false);
+    const showNavButtons = (useGlobalVisibility || visible) && !(settings?.lnHideNavButtons ?? false);
 
     return (
-        <div className={`reader-navigation-ui ${isVisible ? 'visible' : 'hidden'}`}>
+        <div className={`reader-navigation-ui ${isVisible ? 'visible' : 'hidden'} ${useGlobalVisibility ? 'global-visibility' : ''}`}>
             {showNavButtons && (
                 <>
                     <button

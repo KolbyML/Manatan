@@ -17,6 +17,12 @@
     visibility: hidden;
 }
 
+html.ln-reader-ui-visible .reader-navigation-ui.global-visibility.hidden {
+    opacity: 1;
+    visibility: visible;
+    pointer-events: none;
+}
+
 .reader-navigation-ui>* {
     pointer-events: auto;
 }

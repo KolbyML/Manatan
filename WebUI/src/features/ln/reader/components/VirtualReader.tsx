@@ -96,6 +96,21 @@ export const VirtualReader: React.FC<VirtualReaderProps> = ({
         initialVisible: false,
     });
 
+    useEffect(() => {
+        if (typeof document === 'undefined') return;
+
+        const root = document.documentElement;
+        if (showUI) {
+            root.classList.add('ln-reader-ui-visible');
+        } else {
+            root.classList.remove('ln-reader-ui-visible');
+        }
+
+        return () => {
+            root.classList.remove('ln-reader-ui-visible');
+        };
+    }, [showUI]);
+
     // Navigation ref for direct navigation (bypassing restoration)
     const internalNavRef = useRef<{ scrollToBlock?: (blockId: string, offset?: number) => void; scrollToChapter?: (chapterIndex: number) => void }>({});
     const navigationRef = externalNavRef || internalNavRef;
@@ -205,9 +220,8 @@ export const VirtualReader: React.FC<VirtualReaderProps> = ({
         forceSaveRef.current = saveFn;
     }, []);
 
-    const handleAddHighlight = useCallback(async (...args: Parameters<typeof onAddHighlight>) => {
+    const handleAddHighlight = useCallback(async (...args: Parameters<NonNullable<typeof onAddHighlight>>) => {
         await onAddHighlight?.(...args);
-        setReaderKey((k) => k + 1);
     }, [onAddHighlight]);
 
 
@@ -300,41 +314,67 @@ export const VirtualReader: React.FC<VirtualReaderProps> = ({
         );
     }
 
-    const commonProps = {
+    const readerContent = useMemo(() => {
+        const commonProps = {
+            bookId,
+            chapters: chaptersWithHighlights,
+            stats,
+            settings,
+            css: cleanedCss,
+            isVertical: !!isVertical,
+            isRTL: !!isRTL,
+            onToggleUI: toggleUI,
+            showNavigation: false,
+            initialChapter: currentIndex,
+            initialProgress: activeProgress,
+            onPositionUpdate: handlePositionUpdate,
+            onRegisterSave: handleRegisterSave,
+            onOpenToc: onOpenToc,
+            onUpdateSettings,
+            chapterFilenames,
+            highlights,
+            onAddHighlight: handleAddHighlight,
+            safeAreaTopInset,
+            safeAreaTopOffsetPx,
+            safeAreaInsetsPx,
+            navigationRef,
+        };
+
+        if (isPaged) {
+            return <PagedReader key={`paged-${readerKey}`} {...commonProps} initialPage={currentPage} />;
+        }
+
+        return <ContinuousReader key={`continuous-${readerKey}`} {...commonProps} />;
+    }, [
+        activeProgress,
         bookId,
-        chapters: chaptersWithHighlights,
-        stats,
-        settings,
-        css: cleanedCss,
-        isVertical: !!isVertical,
-        isRTL: !!isRTL,
-        onToggleUI: toggleUI,
-        showNavigation: showUI,
-        initialChapter: currentIndex,
-        initialProgress: activeProgress,
-        onPositionUpdate: handlePositionUpdate,
-        onRegisterSave: handleRegisterSave,
-        onOpenToc: onOpenToc,
-        onUpdateSettings,
         chapterFilenames,
+        chaptersWithHighlights,
+        cleanedCss,
+        currentIndex,
+        currentPage,
+        handleAddHighlight,
+        handlePositionUpdate,
+        handleRegisterSave,
         highlights,
-        onAddHighlight: handleAddHighlight,
+        isPaged,
+        isRTL,
+        isVertical,
+        navigationRef,
+        onOpenToc,
+        onUpdateSettings,
+        readerKey,
+        safeAreaInsetsPx,
         safeAreaTopInset,
         safeAreaTopOffsetPx,
-        navigationRef,
-    };
+        settings,
+        stats,
+        toggleUI,
+    ]);
 
     return (
         <>
-            {isPaged ? (
-                <PagedReader
-                    key={`paged-${readerKey}`}
-                    {...commonProps}
-                    initialPage={currentPage}
-                />
-            ) : (
-                <ContinuousReader key={`continuous-${readerKey}`} {...commonProps} />
-            )}
+            {readerContent}
             {renderHeader?.(showUI, toggleUI)}
         </>
     );
