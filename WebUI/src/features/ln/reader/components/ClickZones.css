@@ -8,6 +8,17 @@
     pointer-events: none !important;
     user-select: none;
     -webkit-user-select: none;
+    transition: opacity 0.2s ease-in-out, visibility 0.2s ease-in-out;
+}
+
+.click-zone-visual.hidden {
+    opacity: 0;
+    visibility: hidden;
+}
+
+html.ln-reader-ui-visible .click-zone-visual.global-visibility.hidden {
+    opacity: 1;
+    visibility: visible;
 }
 
 .click-zone-visual.disabled {

@@ -104,6 +104,7 @@ const LNLibraryCard = ({ item, onOpen, onDelete, onEdit, isSelectionMode, isSele
     const longPressResetTimeoutRef = useRef<number | null>(null);
 
     const isProcessing = item.isProcessing || false;
+    const cardProgress = Math.min(100, Math.max(0, item.totalProgress ?? 0));
 
     useEffect(() => () => {
         if (longPressResetTimeoutRef.current !== null) {
@@ -328,15 +329,13 @@ const LNLibraryCard = ({ item, onOpen, onDelete, onEdit, isSelectionMode, isSele
                                         <BottomGradientDoubledDown />
 
                                         <Stack
-                                            direction="row"
                                             sx={{
-                                                justifyContent: 'space-between',
-                                                alignItems: 'end',
+                                                alignItems: 'stretch',
                                                 position: 'absolute',
                                                 bottom: 0,
                                                 width: '100%',
                                                 p: 1,
-                                                gap: 1,
+                                                gap: 0.75,
                                             }}
                                         >
                                             <CustomTooltip title={item.title} placement="top">
@@ -350,6 +349,23 @@ const LNLibraryCard = ({ item, onOpen, onDelete, onEdit, isSelectionMode, isSele
                                                     {item.title}
                                                 </TypographyMaxLines>
                                             </CustomTooltip>
+
+                                            {item.hasProgress && !item.isCompleted && (
+                                                <Box sx={{ width: '100%' }}>
+                                                    <LinearProgress
+                                                        variant="determinate"
+                                                        value={cardProgress}
+                                                        sx={{
+                                                            height: 4,
+                                                            borderRadius: 999,
+                                                            bgcolor: 'rgba(255,255,255,0.28)',
+                                                            '& .MuiLinearProgress-bar': {
+                                                                borderRadius: 999,
+                                                            },
+                                                        }}
+                                                    />
+                                                </Box>
+                                            )}
                                         </Stack>
                                     </>
                                 )}
@@ -723,11 +739,14 @@ export const LNLibrary: React.FC = () => {
                     setLibrary(filterAndSortBooks(currentLibrary, selectedCategoryId, currentSort));
                 }
 
-                await Promise.all([
-                    AppStorage.files.setItem(bookId, file),
-                    AppStorage.lnMetadata.setItem(bookId, result.metadata),
-                    AppStorage.lnContent.setItem(bookId, result.content),
-                ]);
+                try {
+                    await AppStorage.files.setItem(bookId, file);
+                    await AppStorage.lnContent.setItem(bookId, result.content);
+                    await AppStorage.lnMetadata.setItem(bookId, result.metadata);
+                } catch (persistErr) {
+                    await AppStorage.deleteLnData(bookId);
+                    throw persistErr;
+                }
 
                 const finalItem: LibraryItem = {
                     ...result.metadata,

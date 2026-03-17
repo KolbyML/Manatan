@@ -39,7 +39,8 @@ import { getDefaultLnSettings } from '../utils/lnSettings';
 import { VirtualReader } from '../components/VirtualReader';
 import { ReaderControls } from '../components/ReaderControls';
 import { YomitanPopup } from '@/Manatan/components/YomitanPopup';
-import { useSyncOnChapterOpen, useSyncOnChapterRead } from '@/features/sync/services/useSyncTriggers';
+import { useSyncOnChapterOpen } from '@/features/sync/services/useSyncTriggers';
+import { Settings } from '@/Manatan/types';
 
 const THEMES = {
     light: { bg: '#FFFFFF', fg: '#1a1a1a' },
@@ -60,7 +61,7 @@ export const LNReaderScreen: React.FC = () => {
     // Get language from content and use LN-specific settings
     const { content, isLoading, error } = useBookContent(id);
     const bookLanguage = content?.metadata?.language;
-    const { settings: lnSettings, setSettings: setLnSettings, fullSettings } = useLnSettings(bookLanguage);
+    const { setSettings: setLnSettings, fullSettings } = useLnSettings(bookLanguage);
 
     // Use LN settings only (not OCR settings)
     const settings = fullSettings;
@@ -89,7 +90,6 @@ export const LNReaderScreen: React.FC = () => {
 
     const bookId = id || '';
     const chapterId = bookId ? `${bookId}-${currentChapter}` : null;
-    const { triggerSync } = useSyncOnChapterRead();
     useSyncOnChapterOpen(chapterId);
 
     const { highlights, loading: highlightsLoading, addHighlight, removeHighlight, exportToTxt, exportToJson, downloadFile, refresh } = useHighlights(bookId);
@@ -168,17 +168,20 @@ export const LNReaderScreen: React.FC = () => {
             return;
         }
 
+        const chapterBlockMap = content?.stats?.blockMaps?.find((mapItem) => mapItem.blockId === hl.blockId);
+
         // Fallback to savedProgress (for paged reader or if nav ref not ready)
         setSavedProgress((prev: any) => ({
             ...prev,
             chapterIndex: hl.chapterIndex,
             pageNumber: 0,
+            chapterCharOffset: chapterBlockMap?.startOffset ?? hl.startOffset,
             blockId: hl.blockId,
             blockLocalOffset: hl.startOffset,
         }));
         setCurrentChapter(hl.chapterIndex);
         setHighlightsOpen(false);
-    }, []);
+    }, [content?.stats?.blockMaps]);
 
     const handleDeleteHighlight = useCallback((e: React.MouseEvent, hl: LNHighlight) => {
         e.stopPropagation();
@@ -318,40 +321,6 @@ export const LNReaderScreen: React.FC = () => {
             }, 500);
         }
     }, [content, isLoading, location.hash]);
-
-    const handleChapterClick = (index: number) => {
-        // Get first block ID for this chapter from blockMaps
-        const blockMaps = content?.stats?.blockMaps;
-        let firstBlockId: string | undefined;
-
-        if (blockMaps) {
-            const chapterBlocks = blockMaps
-                .filter(b => b.blockId.startsWith(`ch${index}-`))
-                .sort((a, b) => a.startOffset - b.startOffset);
-
-            if (chapterBlocks.length > 0) {
-                firstBlockId = chapterBlocks[0].blockId;
-            }
-        }
-
-        // Fallback if no blockMaps
-        if (!firstBlockId) {
-            firstBlockId = `ch${index}-b0`;
-        }
-
-        setSavedProgress((prev: any) => ({
-            ...prev,
-            chapterIndex: index,
-            pageNumber: 0,
-            chapterCharOffset: 1, // Use 1 to trigger blockMaps lookup in restoration
-            sentenceText: '',
-            blockId: firstBlockId,
-            blockLocalOffset: 0,
-            contextSnippet: '',
-        }));
-        setCurrentChapter(index);
-        setTocOpen(false);
-    };
 
     const handleChapterChange = (chapterIndex: number) => {
         setCurrentChapter(chapterIndex);
@@ -566,13 +535,12 @@ export const LNReaderScreen: React.FC = () => {
             }}
         >
             <VirtualReader
-                key={`${id}-${savedProgress?.chapterIndex}`}
                 bookId={id!}
                 items={content.chapters}
                 stats={content.stats}
                 chapterFilenames={content.chapterFilenames || []}
                 css={content.css}
-                settings={settings}
+                settings={settings as Settings}
                 initialIndex={savedProgress?.chapterIndex ?? 0}
                 initialPage={savedProgress?.pageNumber ?? 0}
                 initialProgress={
@@ -591,7 +559,7 @@ export const LNReaderScreen: React.FC = () => {
                 }
                 highlights={highlights}
                 onAddHighlight={addHighlight}
-                onUpdateSettings={(key, value) => setSettings(prev => ({ ...prev, [key]: value }))}
+                onUpdateSettings={(key, value) => setLnSettings({ [key]: value })}
                 onChapterChange={handleChapterChange}
                 navigationRef={navigationRef}
                 safeAreaTopInset={readerSafeTopInset}
@@ -725,11 +693,11 @@ export const LNReaderScreen: React.FC = () => {
                                                     <ExpandMoreIcon sx={{ fontSize: 20, mr: 1, color: theme.fg, opacity: 0.7 }} />
                                                 )}
                                                 <Typography
+                                                    noWrap
                                                     sx={{
                                                         fontSize: '0.9rem',
                                                         fontWeight: isCovering ? 600 : 400,
                                                         color: theme.fg,
-                                                        noWrap: true,
                                                     }}
                                                 >
                                                     {tocItem.label}
@@ -778,10 +746,12 @@ export const LNReaderScreen: React.FC = () => {
                                                             <ListItemText
                                                                 primary={label}
                                                                 primaryTypographyProps={{
-                                                                    fontSize: '0.8rem',
-                                                                    color: theme.fg,
-                                                                    opacity: isCurrentChapter ? 1 : 0.8,
-                                                                    fontWeight: isCurrentChapter ? 500 : 400,
+                                                                    sx: {
+                                                                        fontSize: '0.8rem',
+                                                                        color: theme.fg,
+                                                                        opacity: isCurrentChapter ? 1 : 0.8,
+                                                                        fontWeight: isCurrentChapter ? 500 : 400,
+                                                                    },
                                                                 }}
                                                             />
                                                             {isCurrentChapter && (
