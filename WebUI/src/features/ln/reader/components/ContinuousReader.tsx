@@ -28,6 +28,7 @@ import '@/features/ln/reader/components/ContinuousReader.css';
 const SAVE_DEBOUNCE_MS = 3000;
 const SCROLL_DEBOUNCE_MS = 150;
 const SAVE_LOCK_DURATION_MS = 3000;
+const IMAGE_RETRY_LIMIT = 3;
 
 // ============================================================================
 // Restoration State Machine
@@ -648,7 +649,9 @@ export const ContinuousReader: React.FC<ContinuousReaderProps> = ({
     }, [targetChapter, getChapterHtml, contentLoaded]);
 
     useEffect(() => {
-        onRegisterSaveRef.current?.(saveSchedulerRef.current.saveNow);
+        onRegisterSaveRef.current?.(async () => {
+            await saveSchedulerRef.current.saveNow();
+        });
     }, []);
 
     // ========================================================================
@@ -816,6 +819,55 @@ export const ContinuousReader: React.FC<ContinuousReaderProps> = ({
         [tryLookup],
     );
 
+    const handleContentErrorCapture = useCallback(
+        (e: React.SyntheticEvent) => {
+            const target = e.target as Element | null;
+            if (!target) return;
+
+            if (!(target instanceof HTMLImageElement) && target.tagName.toLowerCase() !== 'image') {
+                return;
+            }
+
+            const retryCount = Number(target.getAttribute('data-ln-retry-count') || '0');
+            if (retryCount >= IMAGE_RETRY_LIMIT) return;
+
+            const epubPath = target.getAttribute('data-epub-src');
+            if (!epubPath) return;
+
+            const normalizedPath = epubPath.startsWith('/') ? epubPath.slice(1) : epubPath;
+            const encodedPath = normalizedPath
+                .split('/')
+                .map((part) => encodeURIComponent(part))
+                .join('/');
+
+            const staticBase = `/api/novel/static/${encodeURIComponent(bookId)}/extracted/images`;
+            const fallbackAttr = target.getAttribute('data-ln-fallback-src');
+            const candidates = [
+                `${staticBase}/${encodedPath}`,
+                fallbackAttr || `${staticBase}/${normalizedPath}`,
+                `${staticBase}/${encodedPath}?retry=${retryCount + 1}&t=${Date.now()}`,
+            ].filter((value, index, arr) => !!value && arr.indexOf(value) === index);
+
+            const currentSrc =
+                target instanceof HTMLImageElement
+                    ? target.currentSrc || target.src
+                    : target.getAttribute('href') || target.getAttribute('xlink:href') || '';
+
+            const nextSrc = candidates.find((candidate) => candidate !== currentSrc);
+            if (!nextSrc) return;
+
+            target.setAttribute('data-ln-retry-count', String(retryCount + 1));
+
+            if (target instanceof HTMLImageElement) {
+                target.src = nextSrc;
+            } else {
+                target.setAttribute('href', nextSrc);
+                target.setAttribute('xlink:href', nextSrc);
+            }
+        },
+        [bookId],
+    );
+
     // ========================================================================
     // Scroll Navigation
     // ========================================================================
@@ -849,7 +901,7 @@ export const ContinuousReader: React.FC<ContinuousReaderProps> = ({
         const handleEpubLink = (event: Event) => {
             const customEvent = event as CustomEvent<{ href: string }>;
             const { href } = customEvent.detail;
-            const [filename, anchor] = href.split('#');
+            const [filename] = href.split('#');
 
             let chapterIndex = chapterFilenames.indexOf(filename);
 
@@ -1061,6 +1113,7 @@ export const ContinuousReader: React.FC<ContinuousReaderProps> = ({
                         height: '100%',
                     }}
                     onClick={handleContentClick}
+                    onErrorCapture={handleContentErrorCapture}
                     onPointerDown={handlePointerDown}
                     onPointerMove={handlePointerMove}
                 >
@@ -1088,6 +1141,7 @@ export const ContinuousReader: React.FC<ContinuousReaderProps> = ({
 
             <ReaderNavigationUI
                 visible={showNavigation}
+                useGlobalVisibility
                 onNext={() => scrollSmall(true)}
                 onPrev={() => scrollSmall(false)}
                 canGoNext={scrollProgress < 100}

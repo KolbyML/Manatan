@@ -18,6 +18,8 @@ interface ClickZonesProps {
     zonePlacement?: ZonePlacement;
     /** Show zones faintly when UI is visible */
     visible?: boolean;
+    /** Use global html class visibility toggling */
+    useGlobalVisibility?: boolean;
     /** Show zones clearly in debug mode */
     debugMode?: boolean;
 }
@@ -34,10 +36,13 @@ export const ClickZones: React.FC<ClickZonesProps> = ({
     zoneCoverage = 60,
     zonePlacement = 'vertical',
     visible = false,
+    useGlobalVisibility = false,
     debugMode = false,
 }) => {
-    // Render when visible OR debug mode is on
-    if (!visible && !debugMode) return null;
+    const isVisible = visible || debugMode;
+
+    // Render when visible/debug, or when global visibility mode is enabled.
+    if (!isVisible && !useGlobalVisibility) return null;
 
     // Determine actual zone orientation based on placement setting
     const zonesAreVertical = zonePlacement === 'horizontal' ? false : true;
@@ -96,12 +101,14 @@ export const ClickZones: React.FC<ClickZonesProps> = ({
     const nextPositionStyle = getPositionStyle(false);
 
     const visualClass = debugMode ? 'debug' : 'faint';
+    const hiddenClass = isVisible ? '' : 'hidden';
+    const globalClass = useGlobalVisibility ? 'global-visibility' : '';
 
     return (
         <>
             {/* Previous zone - visual only */}
             <div
-                className={`click-zone-visual ${zonesAreVertical ? 'vertical' : 'horizontal'} prev ${visualClass} ${!canGoPrev ? 'disabled' : ''}`}
+                className={`click-zone-visual ${zonesAreVertical ? 'vertical' : 'horizontal'} prev ${visualClass} ${hiddenClass} ${globalClass} ${!canGoPrev ? 'disabled' : ''}`}
                 style={{
                     [zonesAreVertical ? 'width' : 'height']: thickness,
                     ...prevPositionStyle,
@@ -111,7 +118,7 @@ export const ClickZones: React.FC<ClickZonesProps> = ({
             
             {/* Next zone - visual only */}
             <div
-                className={`click-zone-visual ${zonesAreVertical ? 'vertical' : 'horizontal'} next ${visualClass} ${!canGoNext ? 'disabled' : ''}`}
+                className={`click-zone-visual ${zonesAreVertical ? 'vertical' : 'horizontal'} next ${visualClass} ${hiddenClass} ${globalClass} ${!canGoNext ? 'disabled' : ''}`}
                 style={{
                     [zonesAreVertical ? 'width' : 'height']: thickness,
                     ...nextPositionStyle,

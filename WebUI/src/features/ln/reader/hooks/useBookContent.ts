@@ -1,6 +1,6 @@
 
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect } from 'react';
 import { AppStorage, LNMetadata, BookStats } from '@/lib/storage/AppStorage';
 import { requestManager } from '@/lib/requests/RequestManager';
 
@@ -25,8 +25,6 @@ export function useBookContent(bookId: string | undefined): UseBookContentReturn
     const [content, setContent] = useState<BookContent | null>(null);
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
-
-    const objectUrlsRef = useRef<string[]>([]);
 
     useEffect(() => {
         if (!bookId) {
@@ -69,10 +67,15 @@ export function useBookContent(bookId: string | undefined): UseBookContentReturn
 
                 const processedChapters = parsedBook.chapters.map((html, i) => {
                     // Re-route images to static server
-                    return html.replace(/data-epub-src="([^"]+)"/g, (match, path) => {
+                    return html.replace(/data-epub-src="([^"]+)"/g, (match, path: string) => {
                         const normalizedPath = path.startsWith('/') ? path.substring(1) : path;
-                        const staticUrl = `${staticBase}/extracted/images/${normalizedPath}`;
-                        return `src="${staticUrl}" href="${staticUrl}" xlink:href="${staticUrl}" data-epub-src="${path}"`;
+                        const encodedPath = normalizedPath
+                            .split('/')
+                            .map((part) => encodeURIComponent(part))
+                            .join('/');
+                        const staticUrl = `${staticBase}/extracted/images/${encodedPath}`;
+                        const fallbackUrl = `${staticBase}/extracted/images/${normalizedPath}`;
+                        return `src="${staticUrl}" href="${staticUrl}" xlink:href="${staticUrl}" data-epub-src="${path}" data-ln-fallback-src="${fallbackUrl}"`;
                     });
                 });
 

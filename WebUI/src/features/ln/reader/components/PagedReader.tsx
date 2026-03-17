@@ -140,6 +140,7 @@ const DRAG_THRESHOLD = 10;
 const SAVE_DEBOUNCE_MS = 3000;
 const POSITION_DETECT_DELAY_MS = 150;
 const SWIPE_MAX_TIME = 500;
+const IMAGE_RETRY_LIMIT = 3;
 
 // ============================================================================
 // Component
@@ -179,6 +180,8 @@ export const PagedReader: React.FC<PagedReaderProps> = ({
     const wheelTimeoutRef = useRef<number | null>(null);
     const navigationIntentRef = useRef<{ goToLastPage: boolean } | null>(null);
     const positionDetectTimerRef = useRef<number | null>(null);
+    const blockPageMapRef = useRef<Map<string, number>>(new Map());
+    const blockPageMapChapterRef = useRef<number>(initialChapter);
 
     // Restore state refs
     const restoreAnchorRef = useRef<{ blockId?: string; chapterIndex: number; chapterCharOffset?: number } | null>(
@@ -289,6 +292,55 @@ export const PagedReader: React.FC<PagedReaderProps> = ({
 
     const { tryLookup } = useTextLookup();
 
+    const handleContentErrorCapture = useCallback(
+        (e: React.SyntheticEvent) => {
+            const target = e.target as Element | null;
+            if (!target) return;
+
+            if (!(target instanceof HTMLImageElement) && target.tagName.toLowerCase() !== 'image') {
+                return;
+            }
+
+            const retryCount = Number(target.getAttribute('data-ln-retry-count') || '0');
+            if (retryCount >= IMAGE_RETRY_LIMIT) return;
+
+            const epubPath = target.getAttribute('data-epub-src');
+            if (!epubPath) return;
+
+            const normalizedPath = epubPath.startsWith('/') ? epubPath.slice(1) : epubPath;
+            const encodedPath = normalizedPath
+                .split('/')
+                .map((part) => encodeURIComponent(part))
+                .join('/');
+
+            const staticBase = `/api/novel/static/${encodeURIComponent(bookId)}/extracted/images`;
+            const fallbackAttr = target.getAttribute('data-ln-fallback-src');
+            const candidates = [
+                `${staticBase}/${encodedPath}`,
+                fallbackAttr || `${staticBase}/${normalizedPath}`,
+                `${staticBase}/${encodedPath}?retry=${retryCount + 1}&t=${Date.now()}`,
+            ].filter((value, index, arr) => !!value && arr.indexOf(value) === index);
+
+            const currentSrc =
+                target instanceof HTMLImageElement
+                    ? target.currentSrc || target.src
+                    : target.getAttribute('href') || target.getAttribute('xlink:href') || '';
+
+            const nextSrc = candidates.find((candidate) => candidate !== currentSrc);
+            if (!nextSrc) return;
+
+            target.setAttribute('data-ln-retry-count', String(retryCount + 1));
+
+            if (target instanceof HTMLImageElement) {
+                target.src = nextSrc;
+            } else {
+                target.setAttribute('href', nextSrc);
+                target.setAttribute('xlink:href', nextSrc);
+            }
+        },
+        [bookId],
+    );
+
     // ========================================================================
     // Layout Key (Detects when layout changes require restore)
     // ========================================================================
@@ -355,6 +407,10 @@ export const PagedReader: React.FC<PagedReaderProps> = ({
     useEffect(() => {
         setRenderPhase('measuring');
     }, [currentSection, layoutKey]);
+
+    useEffect(() => {
+        setRenderPhase('measuring');
+    }, [highlightedHtml]);
 
     // ========================================================================
     // Layout Calculation
@@ -425,7 +481,9 @@ export const PagedReader: React.FC<PagedReaderProps> = ({
 
     useEffect(() => {
         const { saveNow } = saveSchedulerRef.current;
-        onRegisterSaveRef.current?.(saveNow);
+        onRegisterSaveRef.current?.(async () => {
+            await saveNow();
+        });
     }, []);
 
     // ========================================================================
@@ -547,6 +605,7 @@ export const PagedReader: React.FC<PagedReaderProps> = ({
 
             if (innerContainer && !isImageOnly) {
                 const allBlocks = Array.from(innerContainer.querySelectorAll('[data-block-id]'));
+                const nextBlockPageMap = new Map<string, number>();
 
                 if (allBlocks.length > 0) {
                     // Step 1: Map each block to its actual page (as determined by the browser)
@@ -566,6 +625,15 @@ export const PagedReader: React.FC<PagedReaderProps> = ({
 
                         // Only create a page entry if there are blocks on it
                         if (blocksOnPage.length > 0) {
+                            const mappedPageIndex = newPageMap.length;
+
+                            blocksOnPage.forEach((block) => {
+                                const blockId = block.getAttribute('data-block-id');
+                                if (blockId) {
+                                    nextBlockPageMap.set(blockId, mappedPageIndex);
+                                }
+                            });
+
                             const pageHtml = blocksOnPage.map((b) => b.outerHTML).join('');
 
                             newPageMap.push({
@@ -580,6 +648,8 @@ export const PagedReader: React.FC<PagedReaderProps> = ({
                     // Update calculatedPages to match actual pages with content
                     if (newPageMap.length > 0) {
                         calculatedPages = newPageMap.length;
+                        blockPageMapRef.current = nextBlockPageMap;
+                        blockPageMapChapterRef.current = currentSection;
 
                         // Renumber pages sequentially (in case we skipped empty ones)
                         newPageMap.forEach((entry, index) => {
@@ -590,6 +660,8 @@ export const PagedReader: React.FC<PagedReaderProps> = ({
                     }
                 } else {
                     // No blocks found - treat entire content as one page
+                    blockPageMapRef.current = new Map();
+                    blockPageMapChapterRef.current = currentSection;
                     newPageMap.push({
                         startPage: 0,
                         endPage: calculatedPages - 1,
@@ -599,6 +671,8 @@ export const PagedReader: React.FC<PagedReaderProps> = ({
                 }
             } else {
                 // Image-only or no inner container - single entry for all pages
+                blockPageMapRef.current = new Map();
+                blockPageMapChapterRef.current = currentSection;
                 newPageMap.push({
                     startPage: 0,
                     endPage: calculatedPages - 1,
@@ -636,6 +710,17 @@ export const PagedReader: React.FC<PagedReaderProps> = ({
                 let restored = false;
 
                 if (anchorBlockId && anchor?.chapterIndex === currentSection) {
+                    const mappedPage =
+                        blockPageMapChapterRef.current === currentSection
+                            ? blockPageMapRef.current.get(anchorBlockId)
+                            : undefined;
+
+                    if (mappedPage !== undefined) {
+                        setCurrentPage(Math.max(0, Math.min(mappedPage, calculatedPages - 1)));
+                        saveLockUntilRef.current = Date.now() + SAVE_LOCK_DURATION_MS;
+                        restored = true;
+                    }
+
                     let blockEl = currentContent.querySelector(
                         `[data-block-id="${anchorBlockId}"]`,
                     ) as HTMLElement | null;
@@ -650,7 +735,7 @@ export const PagedReader: React.FC<PagedReaderProps> = ({
                         }
                     }
 
-                    if (blockEl) {
+                    if (!restored && blockEl) {
                         const blockRect = blockEl.getBoundingClientRect();
                         const contentRect = currentContent.getBoundingClientRect();
                         const offset = isVertical ? blockRect.top - contentRect.top : blockRect.left - contentRect.left;
@@ -663,7 +748,7 @@ export const PagedReader: React.FC<PagedReaderProps> = ({
                 }
 
                 if (!restored) {
-                    setCurrentPage(0);
+                    setCurrentPage((prev) => Math.max(0, Math.min(prev, calculatedPages - 1)));
                 }
 
                 lastRestoreKeyRef.current = restoreKey;
@@ -760,7 +845,6 @@ export const PagedReader: React.FC<PagedReaderProps> = ({
     }, [activeChunk]);
 
     const displayHtml = activeChunk ? activeChunk.html : highlightedHtml;
-    const displayLocalPage = activeChunk ? Math.max(0, currentPage - activeChunk.startPage) : currentPage;
     const transform = useMemo(() => {
         const effectivePageSize =
             measuredPageSize > 0 ? measuredPageSize : (layout?.columnWidth || 0) + (layout?.gap || 80);
@@ -860,6 +944,8 @@ export const PagedReader: React.FC<PagedReaderProps> = ({
             stats?.blockMaps,
         );
 
+        if (!detected) return;
+
         // Update the anchor for future restores
         restoreAnchorRef.current = {
             blockId: detected.blockId,
@@ -945,9 +1031,17 @@ export const PagedReader: React.FC<PagedReaderProps> = ({
     );
 
     const goToSection = useCallback(
-        (section: number, goToLastPage = false) => {
+        (section: number, goToLastPage = false, skipDefaultIntent = false) => {
             const clamped = Math.max(0, Math.min(section, chapters.length - 1));
             if (clamped === currentSection) return;
+
+            if (positionDetectTimerRef.current) {
+                clearTimeout(positionDetectTimerRef.current);
+                positionDetectTimerRef.current = null;
+            }
+
+            // Block position reporting until restoration/navigation for the new section completes.
+            restorePendingRef.current = true;
 
             // Save current position before switching
             saveSchedulerRef.current.saveNow();
@@ -956,7 +1050,7 @@ export const PagedReader: React.FC<PagedReaderProps> = ({
             setContentReady(false);
             // Clear restore key so we restore again in new chapter if needed
             lastRestoreKeyRef.current = '';
-            navigationIntentRef.current = { goToLastPage };
+            navigationIntentRef.current = skipDefaultIntent ? null : { goToLastPage };
             setCurrentSection(clamped);
             setCurrentPage(0);
         },
@@ -999,16 +1093,35 @@ export const PagedReader: React.FC<PagedReaderProps> = ({
 
             console.log('[PagedReader] scrollToBlock:', blockId, 'offset:', blockLocalOffset, 'chapter:', chapterIndex);
 
+            if (positionDetectTimerRef.current) {
+                clearTimeout(positionDetectTimerRef.current);
+                positionDetectTimerRef.current = null;
+            }
+
             if (chapterIndex !== currentSection) {
+                const chapterBlockMap = stats?.blockMaps;
+                const anchorBlockMap = chapterBlockMap?.find((mapItem) => mapItem.blockId === blockId);
+
                 // Set anchor for the new chapter
                 restoreAnchorRef.current = {
                     blockId,
                     chapterIndex,
-                    chapterCharOffset: undefined,
+                    chapterCharOffset: anchorBlockMap?.startOffset,
                 };
-                goToSection(chapterIndex, false);
+                goToSection(chapterIndex, false, true);
             } else {
-                // Already in correct chapter, try to find block
+                // Already in correct chapter, use measured block->page mapping first.
+                if (blockPageMapChapterRef.current === currentSection) {
+                    const mappedPage = blockPageMapRef.current.get(blockId);
+                    if (mappedPage !== undefined) {
+                        goToPage(Math.max(0, Math.min(mappedPage, totalPages - 1)));
+                        saveLockUntilRef.current = Date.now() + SAVE_LOCK_DURATION_MS;
+                        detectAndReportPosition();
+                        return;
+                    }
+                }
+
+                // Fallback to DOM query if map is unavailable.
                 const content = contentRef.current;
                 if (!content || !measuredPageSize) return;
 
@@ -1027,8 +1140,66 @@ export const PagedReader: React.FC<PagedReaderProps> = ({
                 }
             }
         },
-        [currentSection, goToSection, goToPage, isVertical, measuredPageSize, totalPages, detectAndReportPosition],
+        [
+            currentSection,
+            goToSection,
+            goToPage,
+            isVertical,
+            measuredPageSize,
+            totalPages,
+            detectAndReportPosition,
+            stats?.blockMaps,
+        ],
     );
+
+    const lastInitialProgressRef = useRef(initialProgress);
+
+    useEffect(() => {
+        const previous = lastInitialProgressRef.current;
+        const current = initialProgress;
+
+        const progressChanged =
+            previous?.blockId !== current?.blockId ||
+            previous?.chapterIndex !== current?.chapterIndex ||
+            previous?.pageIndex !== current?.pageIndex;
+
+        if (!progressChanged || !current) {
+            lastInitialProgressRef.current = current;
+            return;
+        }
+
+        // Block-targeted navigation (highlights/search) should always take precedence.
+        if (current.blockId) {
+            const targetChapter = current.chapterIndex ?? currentSection;
+
+            if (targetChapter !== currentSection) {
+                const chapterBlockMap = stats?.blockMaps;
+                const anchorBlockMap = chapterBlockMap?.find((mapItem) => mapItem.blockId === current.blockId);
+
+                restoreAnchorRef.current = {
+                    blockId: current.blockId,
+                    chapterIndex: targetChapter,
+                    chapterCharOffset: current.chapterCharOffset ?? anchorBlockMap?.startOffset,
+                };
+
+                goToSection(targetChapter, false, true);
+            } else {
+                scrollToBlock(current.blockId, current.blockLocalOffset);
+            }
+
+            lastInitialProgressRef.current = current;
+            return;
+        }
+
+        // Chapter/page fallback navigation.
+        if (current.chapterIndex !== undefined && current.chapterIndex !== currentSection) {
+            goToSection(current.chapterIndex, false, true);
+        } else if (typeof current.pageIndex === 'number') {
+            goToPage(current.pageIndex);
+        }
+
+        lastInitialProgressRef.current = current;
+    }, [initialProgress, currentSection, goToPage, goToSection, scrollToBlock, stats?.blockMaps]);
 
     const scrollToChapter = useCallback(
         (chapterIndex: number) => {
@@ -1426,9 +1597,6 @@ export const PagedReader: React.FC<PagedReaderProps> = ({
     // ========================================================================
 
     // Calculate derived values for rendering
-    const effectivePageSize =
-        measuredPageSize > 0 ? measuredPageSize : (layout?.columnWidth || 0) + (layout?.gap || 80);
-
     const pageProgressPercent = totalPages > 0 ? ((currentPage + 1) / totalPages) * 100 : 0;
 
     const handleUpdateSettings = onUpdateSettings ?? (() => {});
@@ -1470,6 +1638,7 @@ export const PagedReader: React.FC<PagedReaderProps> = ({
                     paddingLeft: `${(isImageOnly ? 0 : (layout?.margins.left ?? 0)) + safeInsets.left}px`,
                 }}
                 onClick={handleContentClick}
+                onErrorCapture={handleContentErrorCapture}
                 onPointerDown={handlePointerDown}
                 onPointerMove={handlePointerMove}
                 onTouchStart={handleTouchStart}
@@ -1501,7 +1670,7 @@ export const PagedReader: React.FC<PagedReaderProps> = ({
                 enabled={contentReady && !isTransitioning}
                 theme={(settings.lnTheme as 'light' | 'sepia' | 'dark' | 'black') || 'dark'}
                 onSelectionComplete={(text, startOffset, endOffset, blockId) => {
-                    if (onAddHighlight && currentSection && blockId) {
+                    if (onAddHighlight && blockId) {
                         onAddHighlight(currentSection, blockId, text, startOffset, endOffset);
                     }
                 }}
@@ -1518,6 +1687,7 @@ export const PagedReader: React.FC<PagedReaderProps> = ({
                     zoneCoverage={settings.lnClickZoneCoverage ?? 60}
                     zonePlacement={settings.lnClickZonePlacement ?? 'vertical'}
                     visible={showNavigation}
+                    useGlobalVisibility
                     debugMode={settings.debugMode}
                 />
             )}
@@ -1525,6 +1695,7 @@ export const PagedReader: React.FC<PagedReaderProps> = ({
             {contentReady && (
                 <ReaderNavigationUI
                     visible={showNavigation}
+                    useGlobalVisibility
                     onNext={goNext}
                     onPrev={goPrev}
                     canGoNext={currentPage < totalPages - 1 || currentSection < chapters.length - 1}
@@ -1543,7 +1714,7 @@ export const PagedReader: React.FC<PagedReaderProps> = ({
                     currentPosition={currentPosition ?? undefined}
                     bookStats={stats ?? undefined}
                     settings={settings}
-                    onUpdateSettings={onUpdateSettings}
+                    onUpdateSettings={handleUpdateSettings}
                     isSaved={isSaved}
                     onSaveNow={handleSaveNow}
                 />

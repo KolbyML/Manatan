@@ -60,10 +60,8 @@ export async function importDiscoveredEpubsWithDeps(
                 continue;
             }
 
-            await Promise.all([
-                deps.saveMetadata(item.id, parseResult.metadata),
-                deps.saveContent(item.id, parseResult.content),
-            ]);
+            await deps.saveContent(item.id, parseResult.content);
+            await deps.saveMetadata(item.id, parseResult.metadata);
             importedIds.push(item.id);
         } catch (error) {
             deps.logger?.error?.(`[LN] Failed to auto-import discovered EPUB "${item.id}"`, error);
