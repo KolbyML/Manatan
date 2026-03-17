@@ -13,10 +13,14 @@ const SENTENCE_END_SET = new Set(['。', '！', '？', '；', '.', '!', '?', ';'
 const MAX_SENTENCE_LENGTH = 50;
 const INTERACTIVE_SELECTORS = 'a, button, input, ruby rt, img, .nav-btn, .reader-progress, .reader-slider-wrap';
 const WHITESPACE_REGEX = /\s/;
+const LOOKUP_ROOT_SELECTOR = '[data-block-id], p, li, td, th, blockquote, h1, h2, h3, h4, h5, h6, section, article';
 const UNICODE_WORD_CHAR_REGEX = /[\p{L}\p{N}]/u;
 const WORD_CONNECTORS = new Set(["'", '’', '-', '‐', '‑', '–', '—']);
 
 const textEncoder = new TextEncoder();
+
+const isNodeInDocument = (node: Node | null | undefined): boolean =>
+    !!node && node.isConnected && node.ownerDocument === document;
 
 const clampOffset = (offset: number, textLength: number): number => Math.min(Math.max(offset, 0), textLength);
 const isWordChar = (value: string): boolean => UNICODE_WORD_CHAR_REGEX.test(value);
@@ -67,6 +71,88 @@ const getCaretRange = (x: number, y: number) => {
         return range;
     }
     return document.caretRangeFromPoint?.(x, y) ?? null;
+};
+
+const getRectsFromRange = (range: Range) =>
+    Array.from(range.getClientRects())
+        .filter((rect) => rect.width > 0 && rect.height > 0)
+        .map((rect) => ({
+            x: rect.left,
+            y: rect.top,
+            width: rect.width,
+            height: rect.height,
+        }));
+
+const getLookupRootNode = (startNode: Node): Node => {
+    const preferredRoot = startNode.parentElement?.closest(LOOKUP_ROOT_SELECTOR);
+    if (preferredRoot) {
+        return preferredRoot;
+    }
+
+    let contextElement: Element | null = startNode.parentElement;
+    while (contextElement?.parentElement && !BLOCK_TAGS.has(contextElement.tagName)) {
+        contextElement = contextElement.parentElement;
+    }
+
+    return contextElement || document.body;
+};
+
+const createVisibleTextWalker = (root: Node) =>
+    document.createTreeWalker(
+        root,
+        NodeFilter.SHOW_TEXT,
+        (node) => node.parentElement?.closest('rt, rp')
+            ? NodeFilter.FILTER_REJECT
+            : NodeFilter.FILTER_ACCEPT
+    );
+
+const getRootCharIndex = (root: Node, targetNode: Node, targetOffset: number): number | null => {
+    const walker = createVisibleTextWalker(root);
+    let total = 0;
+    let current: Node | null;
+
+    while ((current = walker.nextNode())) {
+        if (current === targetNode) {
+            const length = current.textContent?.length || 0;
+            return total + clampOffset(targetOffset, length);
+        }
+        total += current.textContent?.length || 0;
+    }
+
+    return null;
+};
+
+const getNodeOffsetAtRootCharIndex = (root: Node, charIndex: number): { node: Node; offset: number } | null => {
+    const walker = createVisibleTextWalker(root);
+    let remaining = Math.max(0, charIndex);
+    let current: Node | null;
+    let lastNode: Node | null = null;
+
+    while ((current = walker.nextNode())) {
+        lastNode = current;
+        const length = current.textContent?.length || 0;
+        if (remaining <= length) {
+            return { node: current, offset: remaining };
+        }
+        remaining -= length;
+    }
+
+    if (lastNode) {
+        const length = lastNode.textContent?.length || 0;
+        return { node: lastNode, offset: length };
+    }
+
+    return null;
+};
+
+const getBlockById = (blockId: string): Element | null => {
+    const blocks = document.querySelectorAll('[data-block-id]');
+    for (const block of Array.from(blocks)) {
+        if (block.getAttribute('data-block-id') === blockId) {
+            return block;
+        }
+    }
+    return null;
 };
 
 export function useTextLookup() {
@@ -156,13 +242,16 @@ export function useTextLookup() {
 
         const textParts: string[] = [];
         let clickPosition = -1;
+        let currentLength = 0;
         let currentNode: Node | null;
 
         while ((currentNode = walker.nextNode())) {
             if (currentNode === targetNode) {
-                clickPosition = textParts.join('').length + targetOffset;
+                clickPosition = currentLength + targetOffset;
             }
-            textParts.push(currentNode.textContent || '');
+            const nodeText = currentNode.textContent || '';
+            textParts.push(nodeText);
+            currentLength += nodeText.length;
         }
 
         const fullText = textParts.join('');
@@ -230,6 +319,12 @@ export function useTextLookup() {
             charInfo.offset,
             settings.yomitanLanguage
         );
+        const initialLookupRoot = getLookupRootNode(charInfo.node);
+        const initialRootCharIndex = getRootCharIndex(initialLookupRoot, charInfo.node, lookupOffset);
+        const initialBlockId = initialLookupRoot.nodeType === Node.ELEMENT_NODE
+            ? (initialLookupRoot as Element).getAttribute('data-block-id')
+            : null;
+
         const sentenceContext = getSentenceContext(charInfo.node, lookupOffset);
         if (!sentenceContext?.sentence.trim()) return false;
 
@@ -244,12 +339,18 @@ export function useTextLookup() {
             x: popupX,
             y: popupY,
             results: [],
+            kanjiResults: [],
             isLoading: true,
             systemLoading: false,
             highlight: {
-                startChar: charInfo.offset,
+                startChar: lookupOffset,
                 length: 1,
-                rects: [],
+                rects: [{
+                    x: charInfo.rect.left,
+                    y: charInfo.rect.top,
+                    width: charInfo.rect.width,
+                    height: charInfo.rect.height,
+                }],
                 source: { kind: 'ln' }
             },
             context: { sentence }
@@ -269,30 +370,76 @@ export function useTextLookup() {
             return true;
         }
 
-        const matchLen = loadedResults?.[0]?.matchLen || 1;
+        const matchLen = (loadedResults && loadedResults[0]?.matchLen) || 1;
+        let highlightRects: Array<{ x: number; y: number; width: number; height: number }> = [];
+        let highlightStartOffset = lookupOffset;
 
-        // TextBox approach: use selection for visual highlight (faster than rects)
         try {
             const selection = window.getSelection();
             if (selection) {
+                let startNode = charInfo.node;
+                let traversalRoot = getLookupRootNode(startNode);
+
+                if (!isNodeInDocument(startNode)) {
+                    let liveRoot: Node | null = null;
+
+                    if (initialBlockId) {
+                        liveRoot = getBlockById(initialBlockId);
+                    }
+                    if (!liveRoot && isNodeInDocument(initialLookupRoot)) {
+                        liveRoot = initialLookupRoot;
+                    }
+                    if (!liveRoot) {
+                        const fallbackRoot = (e.target as HTMLElement | null)?.closest(LOOKUP_ROOT_SELECTOR);
+                        if (fallbackRoot && isNodeInDocument(fallbackRoot)) {
+                            liveRoot = fallbackRoot;
+                        }
+                    }
+
+                    if (liveRoot && initialRootCharIndex !== null) {
+                        const remapped = getNodeOffsetAtRootCharIndex(liveRoot, initialRootCharIndex);
+                        if (remapped && isNodeInDocument(remapped.node)) {
+                            startNode = remapped.node;
+                            highlightStartOffset = remapped.offset;
+                            traversalRoot = liveRoot;
+                        }
+                    }
+
+                    if (!isNodeInDocument(startNode)) {
+                        const startCharInfo = getCharacterAtPoint(e.clientX, e.clientY);
+                        if (startCharInfo && isNodeInDocument(startCharInfo.node)) {
+                            startNode = startCharInfo.node;
+                            highlightStartOffset = getLookupStartOffset(
+                                startCharInfo.node.textContent || '',
+                                startCharInfo.offset,
+                                settings.yomitanLanguage
+                            );
+                            traversalRoot = getLookupRootNode(startNode);
+                        }
+                    }
+                }
+
+                if (!isNodeInDocument(startNode)) {
+                } else {
+
                 const range = document.createRange();
-                range.setStart(charInfo.node, charInfo.offset);
+                range.setStart(startNode, highlightStartOffset);
 
                 // Find end node/offset for matchLen characters
                 let remaining = matchLen;
-                let currentNode: Node | null = charInfo.node;
-                let endNode = charInfo.node;
-                let endOffset = charInfo.offset;
+                let endNode = startNode;
+                let endOffset = highlightStartOffset;
 
-                const walker = document.createTreeWalker(
-                    charInfo.node.parentElement || document.body,
-                    NodeFilter.SHOW_TEXT
-                );
-                while (walker.currentNode !== charInfo.node && walker.nextNode());
+                const walker = createVisibleTextWalker(traversalRoot);
+                
+                walker.currentNode = startNode;
+                let currentNode: Node | null = walker.currentNode;
+                let traversalSteps = 0;
 
                 while (currentNode && remaining > 0) {
+                    traversalSteps += 1;
                     const nodeText = currentNode.textContent || '';
-                    const nodeStart = currentNode === charInfo.node ? charInfo.offset : 0;
+                    const nodeStart = currentNode === startNode ? highlightStartOffset : 0;
                     const available = nodeText.length - nodeStart;
 
                     if (remaining <= available) {
@@ -300,23 +447,27 @@ export function useTextLookup() {
                         endOffset = nodeStart + remaining;
                         break;
                     }
+                    
                     remaining -= available;
-                    currentNode = walker.nextNode();
-                    if (currentNode) {
+                    const nextNode = walker.nextNode();
+                    if (!nextNode) {
                         endNode = currentNode;
-                        endOffset = 0;
+                        endOffset = nodeText.length;
+                        break;
                     }
+                    currentNode = nextNode;
                 }
 
                 range.setEnd(endNode, endOffset);
-                selection.removeAllRanges();
-                selection.addRange(range);
+                highlightRects = getRectsFromRange(range);
+                // Intentionally do not call selection.addRange(range) to avoid native blue selection flash.
+                }
             }
         } catch (e) {
             // Ignore selection errors
         }
 
-        const loadedKanji = results === 'loading' ? [] : ((results as any).kanji || []);
+        const loadedKanji = (results as any).kanji || [];
 
         setDictPopup(prev => ({
             ...prev,
@@ -324,7 +475,14 @@ export function useTextLookup() {
             kanjiResults: loadedKanji,
             isLoading: false,
             systemLoading: false,
-            highlight: prev.highlight ? { ...prev.highlight, length: matchLen } : undefined
+            highlight: prev.highlight
+                ? {
+                    ...prev.highlight,
+                    startChar: highlightStartOffset,
+                    length: matchLen,
+                    rects: highlightRects.length ? highlightRects : prev.highlight.rects,
+                }
+                : undefined
         }));
 
         return true;

@@ -49,9 +49,9 @@ const HighlightOverlay = () => {
                         top: rect.y,
                         width: rect.width,
                         height: rect.height,
-                        backgroundColor: 'rgba(255, 255, 0, 0.3)',
+                        backgroundColor: 'rgba(120, 120, 120, 0.28)',
                         borderRadius: '2px',
-                        borderBottom: '2px solid rgba(255, 215, 0, 0.8)',
+                        borderBottom: '2px solid rgba(95, 95, 95, 0.85)',
                     }}
                 />
             ))}
