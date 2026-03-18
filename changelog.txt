@@ -1,3 +1,7 @@
+## Release v3.3.14
+
+- Fix Android packaged FFmpeg library lookup (b6b2dca)
+
 ## Release v3.3.13
 
 - Fix ScreenAI desktop CI target handling (6f80a84)
