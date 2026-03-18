@@ -1,3 +1,10 @@
+## Release v3.3.15
+
+- Fix Windows build regression (d14e055)
+- Optimize desktop ScreenAI startup sync (03b4705)
+- Fix workspace Rust lint issues (355b5fb)
+- Persist desktop ScreenAI assets in data dir (3c755d4)
+
 ## Release v3.3.14
 
 - Fix Android packaged FFmpeg library lookup (b6b2dca)
