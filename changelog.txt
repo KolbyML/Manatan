@@ -1,3 +1,18 @@
+## Release v3.3.13
+
+- Fix ScreenAI desktop CI target handling (6f80a84)
+- Set OpenH264 fallback profile to high (1c0fc5e)
+- Update backer perks and FFmpeg release metadata (7785e92)
+- Switch software H.264 fallback to OpenH264 (9522fb9)
+- Limit media tab resume shortcuts to library pages (8787065)
+- Novel Reader enhancements and bug fixes (#265) (acfec0e)
+- Rename anime tab label to Video (5d16536)
+- Add setup wizard learning-mode split (bc6b8b8)
+- Fix Android Anki duplicate query parsing (2279e2d)
+- Skip Anki permission requests when AnkiDroid is missing (de5bef3)
+- Allow custom release titles in publish workflow (29ae70d)
+- Add local OCR support for desktop (a659d44)
+
 ## Release v3.3.12
 
 - Harden Windows anime playback fallback (92b0be1)
