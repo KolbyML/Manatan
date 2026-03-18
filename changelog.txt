@@ -1,3 +1,8 @@
+## Release v3.3.16
+
+- Fix LN reader hook-order crash on Android (77e3fa9)
+- Add Android React error artifact build mode (592c26d)
+
 ## Release v3.3.15
 
 - Fix Windows build regression (d14e055)
