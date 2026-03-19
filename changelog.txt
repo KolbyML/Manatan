@@ -1,3 +1,15 @@
+## Release v3.4.0
+
+- Fix Android and Windows release builds (b59d4f4)
+- Fix Android tracker OAuth callbacks and in-app login refresh (36bf3a7)
+- Fix iOS Google Drive sync authentication flow (9d28d00)
+- Fix WebUI dev React runtime mode (0030ed1)
+- Default chapters and episodes to ascending order (4b47026)
+- Fix Android HEVC compatibility playback fallback (249afe3)
+- Remove Android background server mode and harden WebView lifecycle (1075d68)
+- Migrate Android extensions and vendor ART bridge runtime (ef4a651)
+- Replace bundled Android JVM with native ART runtime (eb55fff)
+
 ## Release v3.3.16
 
 - Fix LN reader hook-order crash on Android (77e3fa9)
