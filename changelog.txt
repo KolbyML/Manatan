@@ -1,3 +1,9 @@
+## Release v3.4.1
+
+- Relax Android extension migration matching and persist dialog dismissal (b7a12ba)
+- Add Android runtime startup instrumentation (cb1b128)
+- Use native cargo-apk2 multidex packaging (030b0ad)
+
 ## Release v3.4.0
 
 - Fix Android and Windows release builds (b59d4f4)
