@@ -1,3 +1,16 @@
+## Release v3.4.4
+
+- Add iOS photo library save permissions (d406b1d)
+- Allow Anki duplicate adds when checks are disabled (9107da4)
+- Fix Anki card tag template handling (ab92bb1)
+- Add quick local video playback for anime (cebd2b5)
+- Recover Android localhost after suspend (dd8402f)
+- Keep Android hardware transcode when audio is reencoded (f0d0c15)
+- Keep all matching Jimaku subtitle providers (42f5334)
+- Split iOS internal and App Store versions (a276d28)
+- Announce latest public release on Discord (a25d47a)
+- Add retroactive public release publish mode (6c85623)
+
 ## Release v3.4.3
 
 - Restore JVM runtime compatibility for OCR image fetch (993765b)
