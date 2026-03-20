@@ -1,3 +1,13 @@
+## Release v3.4.3
+
+- Restore JVM runtime compatibility for OCR image fetch (993765b)
+- Fix Android transcode paths and vendor FFmpeg build (290f13a)
+- Use app-owned temp files for fast dictionary installs (580c760)
+- Handle Android bridge image fetch failures safely (e58ca2c)
+- Parse ComicInfo status for local manga (4050ca0)
+- Protect Android DB recovery and fix media transcode flags (b73316a)
+
+
 ## Release v3.4.2
 
 - Truncate mobile reader overlay titles (d57b3e4)
