@@ -1,3 +1,16 @@
+## Release v3.4.2
+
+- Truncate mobile reader overlay titles (d57b3e4)
+- Match Android image fetch to Mihon bridge behavior (1ed20e7)
+- Stabilize Android bridge search and packaging (1a4b701)
+- Fallback to streamed Android dictionary import (c2f8402)
+- Queue Android bridge invokes and improve HEVC fallback (b929649)
+- Fix Android JNI app context usage (b1a1bf3)
+- Infer anime filler metadata in Android bridge (cb06585)
+- Fix Android source configuration bridge positions (c9b54a4)
+- Fix Android anime extension video labels in bridge (21bba44)
+- Add dedicated Android crash logging (746243d)
+
 ## Release v3.4.1
 
 - Relax Android extension migration matching and persist dialog dismissal (b7a12ba)
