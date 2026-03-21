@@ -1,3 +1,13 @@
+## Release v3.4.5
+
+- Use right font for selected language (213e757)
+- Recover malformed local CBZ archives (3536f92)
+- Keep Android WebView alive during import (747b8eb)
+- Fix popup lookup parity and runtime regressions (5fad31a)
+- Fix popup dictionary navigation and fast backend parity (50ffb21)
+- Fix fast popup dictionary regressions (1cc243d)
+- Harden Android localhost recovery after suspend (6d7e0e2)
+
 ## Release v3.4.4
 
 - Add iOS photo library save permissions (d406b1d)
