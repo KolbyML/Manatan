@@ -1,3 +1,10 @@
+## Release v3.4.6
+
+- Fix iOS runtime readiness gating (277dc54)
+- Use manifest bootstrap for bundled Suwayomi runtime (186efb8)
+- Fix Android localhost reload loop (ded1ccd)
+- Fix library display badge data (3999ee3)
+
 ## Release v3.4.5
 
 - Use right font for selected language (213e757)
