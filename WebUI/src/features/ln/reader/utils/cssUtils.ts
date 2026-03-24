@@ -27,14 +27,31 @@ export function stripFontFamilyDeclarations(css: string): string {
 }
 
 /**
+ * Strips writing-mode declarations so reader's direction toggle works.
+ */
+export function stripWritingModeDeclarations(css: string): string {
+    return css.replace(/(?:-webkit-|-epub-)?writing-mode\s*:[^;]+;/gi, '');
+}
+
+/**
+ * Strips text-align declarations so reader's alignment setting works.
+ */
+export function stripTextAlignDeclarations(css: string): string {
+    return css.replace(/text-align\s*:[^;]+;/gi, '');
+}
+
+/**
  * Full CSS sanitization for reader use.
- * Strips fonts and font-family declarations so reader settings take precedence.
+ * Strips fonts, font-family, writing-mode, and text-align declarations
+ * so reader settings take precedence.
  */
 export function sanitizeEpubCss(css: string | null | undefined): string {
     if (!css) return '';
     
     let result = stripFontFaces(css);
     result = stripFontFamilyDeclarations(result);
+    result = stripWritingModeDeclarations(result);
+    result = stripTextAlignDeclarations(result);
     
     return result;
 }

@@ -122,6 +122,20 @@
     font-size: 0.5em;
 }
 
+/* Vertical text combination for numbers/latin in vertical writing */
+.paged-content.vertical ruby,
+.paged-content.vertical span,
+.paged-content.vertical em {
+    text-combine-upright: all;
+    -webkit-text-combine: horizontal;
+}
+
+/* Ensure vertical writing mode is respected */
+.paged-content.vertical {
+    writing-mode: vertical-rl;
+    text-orientation: mixed;
+}
+
 .paged-content blockquote {
     margin: 1em 0;
     padding-left: 1em;
@@ -143,7 +157,8 @@
     display: block;
     margin: 0.5em auto;
     object-fit: contain;
-    break-inside: avoid;
+    break-inside: avoid !important;
+    -webkit-column-break-inside: avoid !important;
 
     /* Prevent image transforms from looking blurry */
     image-rendering: -webkit-optimize-contrast;

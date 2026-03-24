@@ -297,23 +297,6 @@ export const VirtualReader: React.FC<VirtualReaderProps> = ({
         }
     }, [settings.lnReadingDirection, settings.lnPaginationMode, bookId]);
 
-
-
-    if (pendingRemount) {
-        return (
-            <div style={{
-                backgroundColor: '#2B2B2B',
-                width: '100%',
-                height: '100%',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-            }}>
-
-            </div>
-        );
-    }
-
     const readerContent = useMemo(() => {
         const commonProps = {
             bookId,
@@ -371,6 +354,21 @@ export const VirtualReader: React.FC<VirtualReaderProps> = ({
         stats,
         toggleUI,
     ]);
+
+    if (pendingRemount) {
+        return (
+            <div style={{
+                backgroundColor: '#2B2B2B',
+                width: '100%',
+                height: '100%',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+            }}>
+
+            </div>
+        );
+    }
 
     return (
         <>

@@ -176,6 +176,8 @@
     height: auto;
     display: block;
     margin: 1.5em auto;
+    break-inside: avoid !important;
+    -webkit-column-break-inside: avoid !important;
 }
 
 .chapter-block.vertical img,
@@ -188,6 +190,8 @@
     object-fit: contain;
     display: block;
     margin: 0 auto;
+    break-inside: avoid !important;
+    -webkit-column-break-inside: avoid !important;
 }
 
 /* Ensure SVG images inside SVGs scale correctly */
@@ -225,6 +229,20 @@
 
 .chapter-block rt {
     font-size: 0.5em;
+}
+
+/* Vertical text combination for numbers/latin in vertical writing */
+.chapter-block.vertical ruby,
+.chapter-block.vertical span,
+.chapter-block.vertical em {
+    text-combine-upright: all;
+    -webkit-text-combine: horizontal;
+}
+
+/* Ensure vertical writing mode is respected */
+.chapter-block.vertical {
+    writing-mode: vertical-rl;
+    text-orientation: mixed;
 }
 
 .chapter-block a {
