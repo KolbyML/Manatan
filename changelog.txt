@@ -1,3 +1,14 @@
+## Release v3.4.7
+
+- Fix iOS Google Drive OAuth build config (8dc6d9b)
+- Fix Android sync auth return handoff (858d8fe)
+- Fix popup mined state remount regression (8a11965)
+- Fix CBZ chapter downloads and startup regressions (f081ffb)
+- Cache resolved chapter image URLs (df5982d)
+- Fix Android page image resolution (1def7b3)
+- Fix Android external storage fallback (c5fc9ea)
+- Improve startup time on iOS and Desktop (3f2d371)
+
 ## Release v3.4.6
 
 - Fix iOS runtime readiness gating (277dc54)
