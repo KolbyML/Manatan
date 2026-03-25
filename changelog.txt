@@ -1,3 +1,17 @@
+## Release v3.4.9
+
+- Preserve continuous reader page on rotation (f642cd1)
+- Fix Android Google Drive auth handoff (30e44d1)
+- Use Android foreground service for background work (f7fa55e)
+- Add Android background activity prompts (12341ef)
+- Fix recursive glossary lookup targeting (8621793)
+- Fix iOS EPUB import parsing (83c03ab)
+- Add mobile EPUB open-in-place support (4cc2cf5)
+- Fix first-page OCR referer regression (6ecbb97)
+- Optimize fastdicts lookup ordering (51ddc4f)
+- Novel Reader: improve books compatibility (#274) (fb7aeac)
+- Improve Anki preset import and duplicate checks (ff70feb)
+
 ## Release v3.4.8
 
 - Fix Android dictionary import temp storage (e418cc3)
