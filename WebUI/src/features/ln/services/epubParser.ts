@@ -524,6 +524,13 @@ export async function parseEpub(
                 img.removeAttribute('height');
             });
 
+            // Remove page marker spans (empty spans with id="page_X" that split text)
+            doc.querySelectorAll('span[id^="page_"]').forEach((span) => {
+                if (span.childNodes.length === 0) {
+                    span.remove();
+                }
+            });
+
             // Extract body content
             let bodyHTML = doc.body?.innerHTML || '';
             if (!bodyHTML.trim()) {
@@ -537,17 +544,24 @@ export async function parseEpub(
                 ADD_ATTR: ['src', 'xlink:href', 'href', 'viewBox', 'xmlns', 'xmlns:xlink', 'data-epub-src'],
             });
 
-            // Check if chapter has meaningful content
-            const textContent = cleanHTML.replace(/<[^>]*>/g, '').trim();
+            // Split single-paragraph content by <br> patterns
+            // (Some EPUBs put entire chapters in one <p> with <br> for breaks)
+            const processedHTML = cleanHTML.replace(
+                /(<br[^>]*\/?>\s*){2,}/gi,
+                '</p><p>'
+            );
 
-            if (textContent.length > 10 || cleanHTML.includes('<img') || cleanHTML.includes('<image')) {
+            // Check if chapter has meaningful content
+            const textContent = processedHTML.replace(/<[^>]*>/g, '').trim();
+
+            if (textContent.length > 10 || processedHTML.includes('<img') || processedHTML.includes('<image')) {
                 // Check if this is an image-only chapter
                 const isImageOnly =
                     textContent.length < 20 &&
-                    (cleanHTML.includes('<img') || cleanHTML.includes('<image') || cleanHTML.includes('<svg'));
+                    (processedHTML.includes('<img') || processedHTML.includes('<image') || processedHTML.includes('<svg'));
 
                 chapters.push(
-                    isImageOnly ? `<div class="image-only-chapter">${cleanHTML}</div>` : cleanHTML
+                    isImageOnly ? `<div class="image-only-chapter">${processedHTML}</div>` : processedHTML
                 );
                 chapterFilenames.push(filename);
             }
