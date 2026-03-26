@@ -1,3 +1,11 @@
+## Release v3.4.10
+
+- Fix OCR manga image fetch compatibility (5cea7ee)
+- Fix iOS WebUI cache invalidation (5b1c0ae)
+- Match Mihon double-tap quick-scale zoom (dcd5e6a)
+- Fix continuous reader OCR taps (3af9df7)
+- Fix mobile OCR textbox interactions (f08c426)
+
 ## Release v3.4.9
 
 - Preserve continuous reader page on rotation (f642cd1)
