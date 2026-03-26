@@ -1,3 +1,9 @@
+## Release v3.4.11
+
+- Fix mobile OCR overlay image hit testing (4f6397a)
+- Fix Android bridge Main dispatcher support (b4778db)
+- Fix OCR manga image fetches for AVIF sources (a735ebf)
+
 ## Release v3.4.10
 
 - Fix OCR manga image fetch compatibility (5cea7ee)
