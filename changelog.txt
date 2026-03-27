@@ -1,3 +1,12 @@
+## Release v3.4.12
+
+- Hide anime cursor after playback idle (cf0f73b)
+- Add subtitle outline thickness setting (ee1eaea)
+- Fix OCR image fetch fallback (3f6d85e)
+- Enable high refresh rate on iPhone (3cd1e69)
+- Match Aniyomi library update behavior (b340393)
+- Request max Android WebView refresh rate (5f0d537)
+
 ## Release v3.4.11
 
 - Fix mobile OCR overlay image hit testing (4f6397a)
