@@ -1,3 +1,14 @@
+## Release v3.4.14
+
+- Cache manga thumbnails for offline restart (92c7fe3)
+- Harden anime download queue restore (fa09a0f)
+- Use dismiss icon for completed download cards (e43c482)
+- Apply download queue reorder updates correctly (e5fd78f)
+- Refresh downloads queue after item deletion (17580f9)
+- Show download error details in queue (d81bb52)
+- Return Google Drive auth to app on iOS (ecd698d)
+- Repair anime extension metadata on startup (2cb38cb)
+
 ## Release v3.4.13
 
 - Open mobile guide links in external browser (5d94a85)
