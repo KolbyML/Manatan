@@ -1,3 +1,16 @@
+## Release v3.4.13
+
+- Open mobile guide links in external browser (5d94a85)
+- Remove unused server settings sections (85b6680)
+- Fix image processing settings hook ordering (f6b2226)
+- Prefer selected Anki model over compatible fallback (c92af27)
+- Persist download queue across restarts (6139bb5)
+- Fix active download deletion cleanup (c3eaa44)
+- Auto-add downloaded media to library (bf2894f)
+- Replace browser dialogs with app dialogs (1eee9d9)
+- Fix anime download queue item collisions (57964f4)
+- Add fast-release profile and stabilize anime download dialog (fb45faa)
+
 ## Release v3.4.12
 
 - Hide anime cursor after playback idle (cf0f73b)
