@@ -1,3 +1,8 @@
+## Release v3.4.15
+
+- Fix anime extension update persistence (581605a)
+- Expire offline thumbnail cache after 30 days (cdfab0c)
+
 ## Release v3.4.14
 
 - Cache manga thumbnails for offline restart (92c7fe3)
