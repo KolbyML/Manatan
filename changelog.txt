@@ -1,3 +1,11 @@
+## Release v3.4.16
+
+- Limit fix assumptions to failed anime downloads (397a917)
+- Combine reader RTL direction into reading modes (40d2a18)
+- Repair malformed unicode escapes during kanji import (b32d1f7)
+- Ignore dictionary zip checksum errors during import (9c2b9e5)
+- Fix anime extension bootstrap version drift (6a86dad)
+
 ## Release v3.4.15
 
 - Fix anime extension update persistence (581605a)
