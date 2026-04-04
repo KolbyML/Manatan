@@ -1,3 +1,16 @@
+## Release v3.4.17
+
+- Improve reader pager preloading and zoom interactions (028ed21)
+- Fix Android Komga startup crash (1828858)
+- Speed up mobile reader overlay tap (11cf346)
+- Improve LN image page layout on mobile (7bbfade)
+- Restore paged LN reader behavior (f850443)
+- Improve iOS resume stability (bb02c28)
+- Smooth iOS foreground resume (93db589)
+- Refine iOS startup and source experience (557f9c5)
+- Move sync auth bootstrap off startup path (15c2cfb)
+- Enable FFmpeg downloads on macOS (2cc358e)
+
 ## Release v3.4.16
 
 - Limit fix assumptions to failed anime downloads (397a917)
