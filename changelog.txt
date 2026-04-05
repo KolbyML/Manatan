@@ -1,3 +1,19 @@
+## Release v3.4.18
+
+- Package sqlite-jdbc as embedded framework (0429e60)
+- Fix iOS App Store upload packaging (b318647)
+- Fix iOS sqlite-jdbc app bundle layout (b9451ee)
+- Fix Android media saving on legacy devices (8077126)
+- Fix iOS sqlite-jdbc archive fallback (d5ccf9c)
+- Fix iOS sqlite-jdbc archive rebuild (0dfe498)
+- Fix iOS sqlite-jdbc bundle embedding (7c5be98)
+- Improve mobile double-tap zoom reliability (801fc2e)
+- Reset stale reader zoom on distant pages (58bad16)
+- Fix Android AppInfo bridge ABI compatibility (09623ff)
+- Fix LN paged reader character progress (0047a21)
+- Fix iOS sqlite-jdbc startup packaging (c483024)
+- Fix iOS runtime asset bundling for app startup (e740af3)
+
 ## Release v3.4.17
 
 - Improve reader pager preloading and zoom interactions (028ed21)
