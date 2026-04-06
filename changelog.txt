@@ -1,3 +1,19 @@
+## Release v3.4.19
+
+- Fix windows build (777d3f9)
+- Refresh manga sources after Android extension uninstall (d3a4388)
+- Handle Android hardware keyboard config changes (9536c78)
+- Keep reader page counter order in RTL mode (0b1466b)
+- Fix mixed-script OCR bubble merging (dab5729)
+- Fix iOS background activity platform detection (9c89354)
+- Use legacy OCR merger for all languages (47e61e1)
+- Fix OCR merger dropping kana (ebb3b96)
+- Update dictionary language helper text (3eaf1f4)
+- Add anime subtitle vertical offset setting (feb1648)
+- Handle corrupted zip checksums in fast dictionary import (d99aeda)
+- Refactor server subsystems into dedicated crates (9524a80)
+- Use prebuilt CEF bundles in publish (2efaebd)
+
 ## Release v3.4.18
 
 - Package sqlite-jdbc as embedded framework (0429e60)
