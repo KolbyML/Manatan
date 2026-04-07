@@ -1,3 +1,12 @@
+## Release v3.4.20
+
+- Add Android native Cloudflare bypass (b018a14)
+- Fix iOS video playback and runtime warmup (25950ad)
+- Add iOS native bypass and runtime fixes (f5dc002)
+- Fix Android local video sentence audio capture (f84cf69)
+- Fix Android NativeActivity pause hang on launch (b20f553)
+- Guard Android extension preference screen crashes (a17e4d9)
+
 ## Release v3.4.19
 
 - Fix windows build (777d3f9)
