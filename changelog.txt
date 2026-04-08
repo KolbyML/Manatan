@@ -1,3 +1,7 @@
+## Release v3.4.21
+
+- Fixed desktop cookie issues (a4e4cbc)
+
 ## Release v3.4.20
 
 - Add Android native Cloudflare bypass (b018a14)
