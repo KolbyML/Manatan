@@ -1,3 +1,21 @@
+## Release v3.4.22
+
+- Fix some sources not working on iOS (d9139b6)
+- Add exit button to reader load error state (8887da7)
+- Fix source list sticky headers (7873541)
+- Improve source error screens and webview fallback (e0ac5b1)
+- Fix queued OCR and errored download resume (fca00f3)
+- OCR downloaded pages through queue (cb9ae03)
+- Auto-start queued downloads (aa7ac32)
+- Remove desktop native zip and bump Suwayomi release (1417d0b)
+- Fix Android add-to-library source ID handling (465803d)
+- Fix iOS Rust build headers (5811403)
+- Add native mobile webview bridge (1c9d4da)
+- Filter OCR textbox garbage (a7f435a)
+- Require manual crop selection (0727ab3)
+- Simplify manga OCR settings (0e71b9d)
+- Move status icon setting to manga settings (fb4e946)
+
 ## Release v3.4.21
 
 - Fixed desktop cookie issues (a4e4cbc)
