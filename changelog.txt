@@ -1,3 +1,7 @@
+## Release v3.4.23
+
+- Fix desktop CEF runtime version resolution (abf7dab)
+
 ## Release v3.4.22
 
 - Fix some sources not working on iOS (d9139b6)
