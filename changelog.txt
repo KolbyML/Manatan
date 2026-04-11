@@ -1,3 +1,17 @@
+## Release v3.4.24
+
+- Fix Windows CEF modifier flag type (cbd53c4)
+- Fix webview proxy fallback handling (bf1d8d5)
+- Match anime no-video error behavior (c8189ab)
+- Fix Korean lookup click position (24aa772)
+- Fix make pr failures (ba2c6e1)
+- Kill stale desktop startup processes (a90d53f)
+- Fix anime extension runtime recovery (bbce2dc)
+- Stabilize Android webview activity handoff (67e2679)
+- Harden desktop CEF runtime recovery (3627df3)
+- Fix iPhone search retry handling (8801d06)
+- Add local manga file import flow (31ef3dc)
+
 ## Release v3.4.23
 
 - Fix desktop CEF runtime version resolution (abf7dab)
