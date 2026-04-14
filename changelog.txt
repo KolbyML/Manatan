@@ -1,3 +1,18 @@
+## Release v3.4.25
+
+- Remove natives java package dependency (1793405)
+- Keep frequency metadata without readings (902bd10)
+- Support grayscale AVIF images in OCR (b6a9115)
+- Fix Yomitan SVG rendering and runtime-only launcher (a82eec1)
+- Improve anime popup hover responsiveness (edd616f)
+- Fix desktop restart shutdown sequencing (e6aae07)
+- Improve popup dictionary render latency (ce284bc)
+- Preload fastdict term indexes on startup (4eabe93)
+- Auto-migrate legacy fastdict installs (140bbca)
+- Cut fastdicts runtime memory growth (bc28b8e)
+- Reduce fastdicts shard memory on Windows (a2faaaa)
+- Fix lookup speed for fast backend on windows (67abe57)
+
 ## Release v3.4.24
 
 - Fix Windows CEF modifier flag type (cbd53c4)
