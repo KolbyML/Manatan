@@ -1,3 +1,8 @@
+## Release v3.4.26
+
+- Show fastdict migration progress on Windows startup (1135536)
+- Fast backend v4 (e30c1d3)
+
 ## Release v3.4.25
 
 - Remove natives java package dependency (1793405)
