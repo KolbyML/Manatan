@@ -1,3 +1,7 @@
+## Release v3.4.28
+
+- Fix anime (aa62ff9)
+
 ## Release v3.4.27
 
 - Update Runtime release to v1.0.46 (4cbe124)
