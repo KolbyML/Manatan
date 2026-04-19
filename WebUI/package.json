@@ -49,6 +49,7 @@
     "@vibrant/color": "4.0.0",
     "awaitable-component": "1.0.0",
     "csstype": "3.2.2",
+    "dashjs": "^5.1.1",
     "dayjs": "1.11.19",
     "dompurify": "3.1.7",
     "fast-average-color": "9.5.0",
