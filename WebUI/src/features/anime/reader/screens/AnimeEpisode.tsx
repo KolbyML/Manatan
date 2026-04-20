@@ -53,6 +53,9 @@ type VideoResponse = {
     proxyUrl: string;
     videoUrl: string;
     isHls: boolean;
+    containerHint?: string | null;
+    ffmpegSourceUrl?: string | null;
+    headers?: Array<{ first: string; second: string }> | null;
     subtitleTracks: Array<{ url: string; lang: string }>;
 };
 
@@ -298,6 +301,21 @@ export const AnimeEpisode = () => {
             isLikelyHlsUrl(currentVideo?.proxyUrl) ||
             isLikelyHlsUrl(currentVideo?.videoUrl),
     );
+    const isDashSource = Boolean(
+        !isHlsSource && (
+            currentVideo?.containerHint === 'mpd' ||
+            /\.mpd(\?|$)/i.test(currentVideo?.videoUrl ?? '') ||
+            /\.mpd(\?|$)/i.test(currentVideo?.proxyUrl ?? '')
+        ),
+    );
+    const dashHeaders = useMemo(() => {
+        if (!isDashSource || !currentVideo?.headers) return undefined;
+        const h: Record<string, string> = {};
+        for (const { first, second } of currentVideo.headers) {
+            h[first] = second;
+        }
+        return h;
+    }, [isDashSource, currentVideo?.headers]);
     const proxyBaseUrl = currentVideo?.proxyUrl
         ? currentVideo.proxyUrl.startsWith('http')
             ? currentVideo.proxyUrl
@@ -310,7 +328,10 @@ export const AnimeEpisode = () => {
     const playlistSrc = !isDirectVideo && isHlsSource && id && episodeIndex
         ? `${requestManager.getBaseUrl()}/api/v1/anime/${id}/episode/${episodeIndex}/video/${resolvedVideoIndex}/playlist`
         : null;
-    const videoSrc = playlistSrc ?? proxyBaseUrl ?? '';
+    const dashSrc = isDashSource && currentVideo?.ffmpegSourceUrl
+        ? currentVideo.ffmpegSourceUrl
+        : null;
+    const videoSrc = playlistSrc ?? dashSrc ?? proxyBaseUrl ?? '';
     const enableBraveAudioFix = Boolean(videoSrc && isHlsSource);
     const videoLabel = useMemo(
         () =>
@@ -592,6 +613,8 @@ export const AnimeEpisode = () => {
             currentEpisodeIndex={currentEpisodeIndex}
             onEpisodeSelect={handleEpisodeSelect}
             isHlsSource={Boolean(videoSrc && isHlsSource)}
+            isDashSource={Boolean(videoSrc && isDashSource)}
+            dashHeaders={dashHeaders}
             videoOptions={videoLabel.map((label, index) => ({ label, index }))}
             selectedVideoIndex={resolvedVideoIndex}
             onVideoChange={handleVideoChange}

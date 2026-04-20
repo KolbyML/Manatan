@@ -57,6 +57,7 @@ import { useCallback, useEffect, useMemo, useRef, useState, Fragment } from 'rea
 import type { MouseEvent as ReactMouseEvent } from 'react';
 import { useHotkeys as useHotkeysHook, useHotkeysContext } from 'react-hotkeys-hook';
 import Hls from 'hls.js';
+import { MediaPlayer as createDashPlayer, type MediaPlayerClass as DashPlayerClass } from 'dashjs';
 import { requestManager } from '@/lib/requests/RequestManager.ts';
 import { useLocalStorage } from '@/base/hooks/useStorage.tsx';
 import { Hotkey } from '@/features/reader/hotkeys/settings/components/Hotkey.tsx';
@@ -140,6 +141,8 @@ type Props = {
     currentEpisodeIndex?: number | null;
     onEpisodeSelect?: (index: number) => void;
     isHlsSource: boolean;
+    isDashSource?: boolean;
+    dashHeaders?: Record<string, string>;
     videoOptions: VideoOption[];
     selectedVideoIndex: number;
     onVideoChange: (index: number) => void;
@@ -579,6 +582,8 @@ export const AnimeVideoPlayer = ({
     currentEpisodeIndex = null,
     onEpisodeSelect,
     isHlsSource,
+    isDashSource = false,
+    dashHeaders,
     videoOptions,
     selectedVideoIndex,
     onVideoChange,
@@ -757,6 +762,7 @@ export const AnimeVideoPlayer = ({
     const braveResetPendingRef = useRef(false);
     const userPausedRef = useRef(false);
     const hlsRef = useRef<Hls | null>(null);
+    const dashPlayerRef = useRef<dashjs.MediaPlayerClass | null>(null);
     const hlsManifestReadyRef = useRef(false);
     const braveResetScheduledRef = useRef(false);
     const braveScheduleRef = useRef<((instance: Hls) => void) | null>(null);
@@ -1391,6 +1397,47 @@ export const AnimeVideoPlayer = ({
             video.play().catch(() => {});
         };
 
+        if (isDashSource) {
+            const player = createDashPlayer().create();
+            player.updateSettings({
+                streaming: {
+                    buffer: {
+                        fastSwitchEnabled: true,
+                    },
+                },
+            });
+            if (dashHeaders && Object.keys(dashHeaders).length > 0) {
+                player.extend('RequestModifier', () => ({
+                    modifyRequestHeader(xhr: XMLHttpRequest) {
+                        for (const [key, value] of Object.entries(dashHeaders)) {
+                            xhr.setRequestHeader(key, value);
+                        }
+                        return xhr;
+                    },
+                    modifyRequestURL(url: string) {
+                        return url;
+                    },
+                }), true);
+            }
+            dashPlayerRef.current = player;
+            player.initialize(video, videoSrc, false);
+            const onStreamInitialized = () => {
+                userPausedRef.current = false;
+                attemptPlay(true);
+            };
+            player.on('streamInitialized', onStreamInitialized);
+            return () => {
+                if (playTimeout !== null) {
+                    window.clearTimeout(playTimeout);
+                }
+                player.off('streamInitialized', onStreamInitialized);
+                player.destroy();
+                dashPlayerRef.current = null;
+                clearBraveResets();
+                restoreBraveAudio();
+            };
+        }
+
         if (!shouldUseHls) {
             video.src = videoSrc;
             video.load();
@@ -1479,6 +1526,8 @@ export const AnimeVideoPlayer = ({
     }, [
         videoSrc,
         isHlsSource,
+        isDashSource,
+        dashHeaders,
         isBrave,
         isBraveLinux,
         braveBufferSeconds,
