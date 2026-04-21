@@ -1,3 +1,9 @@
+## Release v3.4.29
+
+- feat: add ManatanBK backup format (c6c7ced)
+- feat: add MPEG-DASH (MPD) video playback support (#286) (49237b7)
+- Fix anime playback on iOS (38500d9)
+
 ## Release v3.4.28
 
 - Fix anime (aa62ff9)
