@@ -1,3 +1,7 @@
+## Release v3.4.31
+
+- Fix Android Cloudflare bypass input blocking (5077b9e)
+
 ## Release v3.4.30
 
 - Prevent Android extension bridge from blocking runtime (a9a1b57)
