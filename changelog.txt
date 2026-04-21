@@ -1,3 +1,7 @@
+## Release v3.4.30
+
+- Prevent Android extension bridge from blocking runtime (a9a1b57)
+
 ## Release v3.4.29
 
 - feat: add ManatanBK backup format (c6c7ced)
