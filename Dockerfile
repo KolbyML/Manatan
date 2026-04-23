@@ -20,11 +20,29 @@ FROM ubuntu:24.04
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
     ca-certificates \
+    tini \
     libglib2.0-0 \
     libgtk-3-0 \
     libappindicator3-1 \
     librsvg2-common \
     libxdo3 \
+    libnss3 \
+    libnspr4 \
+    libxss1 \
+    libxext6 \
+    libxrender1 \
+    libxcomposite1 \
+    libxdamage1 \
+    libxkbcommon0 \
+    libxtst6 \
+    libdbus-1-3 \
+    libpango-1.0-0 \
+    libcairo2 \
+    libasound2t64 \
+    libatk-bridge2.0-0t64 \
+    libcups2t64 \
+    libdrm2 \
+    libgbm1 \
     fuse \
  && rm -rf /var/lib/apt/lists/*
 
@@ -44,4 +62,4 @@ ENV MANATAN_HEADLESS=true
 ENV LANG=C.UTF-8
 ENV LC_ALL=C.UTF-8
 
-ENTRYPOINT ["/app/manatan"]
+ENTRYPOINT ["tini", "--", "/app/manatan"]
