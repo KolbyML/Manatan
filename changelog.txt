@@ -1,3 +1,17 @@
+## Release v4.0.1
+
+- Fix Android legacy extension migration result type (2213f7e)
+- Fix video extension install persistence (9c83359)
+- Fix tracker remote search cancellation (d12b266)
+- Gate extension sidecars to manual installs (d7bbe05)
+- Add Yomitan glossary and pitch graph fields (211268c)
+- Exclude Manatan settings from sync snapshots (9cc4797)
+- Improve paused sync status UX (9c899a1)
+- Improve Manatan settings layout (474695e)
+- Fix iOS build number generation (776f240)
+- Add lookup tag detail panels (dc893a6)
+- Add deinflection details to lookups (4157ab8)
+
 ## Release v4.0.0
 
 - Fix builds (ac4dc45)
