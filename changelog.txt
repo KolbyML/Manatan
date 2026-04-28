@@ -1,3 +1,19 @@
+## Release v4.0.2
+
+- Update Suwayomi runtime release (81044b3)
+- Improve sync restore robustness (286b4b7)
+- Recover from missing sync delta baseline cache (12595c9)
+- Refine syncable settings scope (87e4e07)
+- Fix hidden launcher shutdown (a31759c)
+- Preserve uncategorized anime library tab (5edf9a3)
+- Add track action to anime card menu (00226c9)
+- Fix anime category labels (1b6b80e)
+- Fix manga detail loading flicker (62f2f98)
+- Update embedded Suwayomi runtime jar (ba35368)
+- Fix iOS build number generation (a7c35af)
+- Merge duplicate frequency tags visually (1cc8eda)
+- Show filler status on anime episode cards (e11e6b1)
+
 ## Release v4.0.1
 
 - Fix Android legacy extension migration result type (2213f7e)
