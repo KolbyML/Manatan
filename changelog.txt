@@ -1,3 +1,24 @@
+## Release v4.0.3
+
+- Fix manual extension sync restore (cbc43bb)
+- Always enable EPUB sync (83477a0)
+- Add AnkiMobile support on iOS (689c4aa)
+- Add brief glossary Anki tokens (9d82b30)
+- Fix deinflected Anki sentence bolding (7b95590)
+- Improve anime subtitle matching and download UX (0abe43c)
+- Reserve system category ids (987ffdc)
+- Match Yomitan dictionary result ordering (af13e18)
+- Fix iPad reader viewport restore (b4ed459)
+- Fix extension source toggle persistence (e0ce860)
+- Fix tracker icon rendering (0c3a23e)
+- Fix Komga enhanced tracking sync (5132d93)
+- Allow Anki cards without word audio (fb3628a)
+- Add novel category selection dialog (7daafc0)
+- Fix library options sheet height (5cca6bd)
+- Fix novel library navigation actions (78b156f)
+- Add novel category library UX (c9d63c8)
+- Optimize manga library category loading (c99b168)
+
 ## Release v4.0.2
 
 - Update Suwayomi runtime release (81044b3)
