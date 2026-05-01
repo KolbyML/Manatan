@@ -1,3 +1,13 @@
+## Release v4.0.4
+
+- Fix vertical OCR digit lookup layout (bb135ba)
+- Fix Jimaku direct episode matching (78ac05c)
+- Add FPS overlay and OCR hit registry (a7ab852)
+- Fix sanitized OCR geometry hit tests (679e16a)
+- Drop legacy OCR overlay fallbacks (765a40a)
+- Fix ocr overlay mobile ttaps not working (973d3e2)
+- Integrate manga OCR overlays with reader (14d7e99)
+
 ## Release v4.0.3
 
 - Fix manual extension sync restore (cbc43bb)
