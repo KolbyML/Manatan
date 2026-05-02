@@ -1,3 +1,15 @@
+## Release v4.0.5
+
+- Improve image loading scheduling and prewarming (7715ddd)
+- Unify app event sockets (9ba038d)
+- Fix ScreenAI OCR geometry (e20a90c)
+- Refine continuous reader zoom transform (a611282)
+- Fix continuous reader OCR overlay interactions (cb68ea6)
+- Rename mobile pause tap zone setting (f692e29)
+- Improve dictionary tag tap targets (1b7c797)
+- Update support backers about page (bbf6662)
+- Add native self-hosted sources (b2e0d7c)
+
 ## Release v4.0.4
 
 - Fix vertical OCR digit lookup layout (bb135ba)
