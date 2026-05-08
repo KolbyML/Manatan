@@ -1,3 +1,9 @@
+## Release v4.1.0
+
+- Update bundled runtime release (877a44a)
+- Update Manatan logo assets (7bbf5cc)
+- Add brand new continuous manga reader (d1f06e6)
+
 ## Release v4.0.5
 
 - Improve image loading scheduling and prewarming (7715ddd)
