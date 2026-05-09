@@ -3,7 +3,7 @@
 
 [![Github All Releases](https://img.shields.io/github/downloads/kolbyml/manatan/total.svg)](https://github.com/kolbyml/manatan/releases)
 [![GitHub Sponsors](https://img.shields.io/github/sponsors/kolbyml)](https://github.com/sponsors/kolbyml)
-[![Static Badge](https://img.shields.io/badge/donate-ko--fi-ed6760?label=donate)](https://ko-fi.com/manatancom)
+[![Static Badge](https://img.shields.io/badge/donate-support-ed6760?label=donate)](https://manatan.com/support)
 [![GitHub License](https://img.shields.io/github/license/kolbyml/manatan)](https://github.com/kolbyml/manatan?tab=MIT-1-ov-file)
 [![Discord](https://img.shields.io/discord/1448140648950530182?color=%237785cc)](https://discord.gg/tDAtpPN8KK)
 
@@ -11,7 +11,16 @@
 
 **The easiest way to watch anime or read manga, light novels, and EPUBs with instant OCR/subtitle lookup.** *No scripts, no complex setup—just download and go.*
 
+Website: https://manatan.com  
 Discord Server: https://discord.gg/tDAtpPN8KK
+
+## Screenshots
+
+<p align="center">
+  <img src="docs/assets/screenshots/manga-library.png" width="240" alt="Manatan manga library on mobile">
+  <img src="docs/assets/screenshots/manga-reader-dictionary.png" width="240" alt="Manatan manga reader dictionary lookup on mobile">
+  <img src="docs/assets/screenshots/video-dictionary-overlay.png" width="420" alt="Manatan video dictionary lookup overlay">
+</p>
 
 ## ✨ Why Manatan?
 
@@ -23,9 +32,10 @@ Traditional setups for watching anime or reading manga with Japanese lookup can 
 * **Built-in OCR for Manga:** Just hover over text to get selectable text for dictionary lookups.
 * **Anime Support:** Subtitle parsing with popup dictionary lookups while you watch.
 * **1-Click Anime Cards:** Generate Anki cards from anime sentences with a single click, with sentence audio.
-* **Novel Support:** Read EPUBS with sync accross devices, instant dictionary lookups, and Anki card generation.
+* **Novel Support:** Read EPUBs with sync across devices, instant dictionary lookups, and Anki card generation.
+* **Sync:** Keep your media progress and learning data synced across devices.
+* **Manga File Support:** Read local manga from folders, CBZ/ZIP, EPUB, and modern image formats like JPEG XL.
 * **Cross-Platform:** Run the exact same interface on your PC, Mac, Android, or iOS device.
-* **Browser Interface:** Uses the familiar [Suwayomi](https://github.com/Suwayomi/Suwayomi-Server) interface in your favorite web browser.
 * **Extensible:** Supports Mihon, Aniyomi, and Aidoku extensions
 
 ### 🖥️ Supported Platforms
@@ -39,29 +49,34 @@ Traditional setups for watching anime or reading manga with Japanese lookup can 
 
 Download the latest release for your platform from the [Releases](https://github.com/KolbyML/Manatan/releases) page.
 
-Run the executable, then visit `http://127.0.0.1:4568/` in your web browser to access the Manatan web interface.
+Run the executable, then visit `http://127.0.0.1:4567/` in your web browser to access the Manatan web interface.
 
 For Nix and NixOS, a [Flake](https://github.com/GKHWB/Manatan-Flake) is available.
 
 ## Roadmap
 
-- [x] Package Manatan, OCR Server, and Suwayomi into a single binary
-- [x] Add Android Support https://github.com/KolbyML/Manatan/issues/17
-- [x] Add iOS Support https://github.com/KolbyML/Manatan/issues/19
-- [x] Add Anime Support
-- [x] 1 click anime/video cards
-- [x] Novel Support
-- [x] Rust backend rewrite, faster load times, smaller binary, smaller ram usage
-- [x] Add Novel sync support across devices
-- [x] Add Word Audio
-- [x] Add Aidoku extension support, ontop of existing Mihon/Aniyomi extension support
-- [x] Add local .mkv video support
-- [ ] Massively improve local media UX
-- [ ] Add Mangayomi, LNReader extension support
-- [ ] Add 1 click setup local audio support for popup dictionary lookups
-- [ ] Local OCR engine support
-- [ ] Add Manga Immersion Stats page https://github.com/KolbyML/Manatan/issues/1
-- [ ] Suggest more features https://github.com/KolbyML/Manatan/issues/new
+- [x] Package Manatan, OCR server, and source runtime into a single app.
+- [x] Add Windows, Linux, macOS, Android, and iOS support.
+- [x] Add anime/video playback and subtitle lookup.
+- [x] Add manga reading and OCR lookup.
+- [x] Add one-click anime/video cards.
+- [x] Add novel and EPUB reading.
+- [x] Add novel sync support across devices.
+- [x] Add word audio.
+- [x] Add Mihon/Tachiyomi, Aniyomi, and Aidoku extension support.
+- [x] Add local `.mkv` video support.
+- [x] Add local manga archive and EPUB support.
+- [x] Add native Android runtime without bundled JVM assets.
+- [x] Add Sync support for Video, Manga, Novels, and more.
+- [x] Add EPUB support for Manga
+- [ ] Fully Rewrite the Novel Reader
+- [ ] Add MPV-based video player for Android
+- [ ] Continue improving local media setup and scanning UX.
+- [ ] Add Mangayomi and LNReader extension support.
+- [ ] Add one-click local audio setup for popup dictionary lookups.
+- [ ] Add local OCR engine support.
+- [ ] Add manga immersion stats.
+- [ ] Suggest more features on [GitHub Issues](https://github.com/KolbyML/Manatan/issues/new).
 
 ## Setup
 
@@ -72,7 +87,7 @@ For Nix and NixOS, a [Flake](https://github.com/GKHWB/Manatan-Flake) is availabl
       * *If macOS blocks the app because it is unsigned, go to **System Settings** > **Privacy & Security** and click **Open Anyway** for Manatan, then reopen the app.*
 2.  A "Manatan Launcher" window will appear. Click "**Open Web UI**".
 3.  **Windows:** Allow Windows Firewall connections if prompted.
-4.  The Manatan web interface (`127.0.0.1:4568/`) should open in a new browser tab.
+4.  The Manatan web interface (`127.0.0.1:4567/`) should open in a new browser tab.
     * *Please wait ~30 seconds for the initial setup to finish. Reload the page to access the library.*
 5.  **Adding Sources:**
     * Google how to use Mihon, then if you want to try other extension support google how to use Aniyomi or Aidoku.
@@ -115,61 +130,15 @@ To fully clear cache and data from previous installs, delete the following folde
 * `%Temp%\Tachidesk*`
 * **Browser Data:** Clear Site data & cookies for `127.0.0.1`
 
-## 🤝 Help Improve OCR Accuracy
-
-Manatan's text overlay precision relies on a robust set of test cases. We are crowdsourcing data to fine-tune our engine, fix merging errors, and ensure text detection works perfectly across all manga styles.
-
-**We need your help!**
-If you have examples of complex text bubbles, or just want to help us prevent future bugs, please contribute to our test suite:
-
-👉 **[Contribute to KolbyML/ocr-test-data](https://github.com/KolbyML/ocr-test-data)**
-
-Your submissions directly help us improve the reading experience for everyone.
-
-## Development
-
-We have detailed build instructions for each platform. Please refer to the specific documentation below to set up your environment:
-
-* **Windows:** [Building on Windows (WSL2)](docs/build/windows.md)
-* **macOS:** [Building on macOS](docs/build/mac.md)
-* **Linux:** [Building on Linux](docs/build/linux.md)
-* **Android:** [Building for Android](docs/build/android.md)
-
-### Quick Start (General)
-
-1.  **Clone the repository:**
-    ```bash
-    git clone --recursive https://github.com/KolbyML/Manatan
-    cd Manatan
-    ```
-
-2.  **Run in Development Mode:**
-    Assuming you have the [prerequisites installed](docs/build/linux.md), you can use the Makefile to setup dependencies and run the app:
-    ```bash
-    make dev-embedded
-    ```
-
 ## 📚 References and acknowledgements
 The following links, repos, companies and projects have been important in the development of this repo, we have learned a lot from them and want to thank and acknowledge them.
 - https://github.com/kaihouguide/Mangatan
 - https://github.com/exn251/Mangatan/
 - https://github.com/Suwayomi/Suwayomi-Server
 - https://github.com/Suwayomi/Suwayomi-WebUI
-
-## Privacy Policy
-
-Manatan does not collect, transmit, or share any user data. All data including imported comics, reading progress, bookmarks, and saved vocabulary words are stored locally on your device and never leave it.
-
-The only external communication occurs during OCR which is optional and uses Google Cloud Vision API. When enabled, selected image regions are sent over HTTPS for text recognition only. No user accounts are used, and images are not linked to personal identity. OCR can be disabled at any time in Settings.
-
-No analytics, tracking, or telemetry data is collected.
-
-Last updated: 12/23/2025
+- https://github.com/Manhhao/hoshidicts/tree/main-mit
 
 ## Star History
 
 [![Star History Chart](https://api.star-history.com/svg?repos=KolbyML/Manatan&type=date&legend=top-left)](https://www.star-history.com/#KolbyML/Manatan&type=date&legend=top-left)
 
-## License Disclaimer
-
-The WebUI folder is licensed under MPL-2.0. The rest of this repository is licensed under MIT unless otherwise noted.
