@@ -1,3 +1,15 @@
+## Release v4.1.1
+
+- Clean publish flow (ee348b0)
+- Update README screenshots and support link (27576ea)
+- Fix local manga source refresh and loading (3172684)
+- Fix reader overlay timing (955abc6)
+- Split app media and job traffic lanes (1a45742)
+- Add EPUB manga support (2623191)
+- Add JPEG XL image support (ec854eb)
+- Fix built-in source visibility filters (de20c0f)
+- Mask sensitive source preferences (c95c400)
+
 ## Release v4.1.0
 
 - Update bundled runtime release (877a44a)
