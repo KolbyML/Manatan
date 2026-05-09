@@ -15,6 +15,10 @@ services:
       - FLARESOLVERR_ENABLED=true
       - FLARESOLVERR_URL=http://flaresolverr:8191
       - MANATAN_HEADLESS=true
+      - MANATAN_HOST=0.0.0.0
+      - MANATAN_PORT=4567
+      - MANATAN_MEDIA_PORT=4568
+      - MANATAN_JOBS_PORT=4570
 #  #################################################################################################
 #
 #    !!! IMPORTANT !!!
@@ -25,8 +29,10 @@ services:
 #
 #    example for setting env vars:
 #
-#      - BIND_IP=0.0.0.0
-#      - BIND_PORT=4568
+#      - MANATAN_HOST=0.0.0.0
+#      - MANATAN_PORT=4567
+#      - MANATAN_MEDIA_PORT=4568
+#      - MANATAN_JOBS_PORT=4570
 #      - SOCKS_PROXY_ENABLED=false
 #      - DOWNLOAD_AS_CBZ=true
 #      - AUTH_MODE=basic_auth
@@ -37,7 +43,9 @@ services:
       - ./data/Tachidesk:/home/manatan/.local/share/Tachidesk
       - ./data/manatan:/home/manatan/.local/share/manatan
     ports:
+      - "4567:4567"
       - "4568:4568"
+      - "4570:4570"
     restart: unless-stopped
     depends_on:
       - flaresolverr
