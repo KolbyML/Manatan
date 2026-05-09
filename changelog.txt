@@ -1,3 +1,9 @@
+## Release v4.1.2
+
+- Fix continuous reader OCR lookup taps (48a5b44)
+- Limit continuous manga reader preloading (7ff303a)
+- Update Docker ports (382fc55)
+
 ## Release v4.1.1
 
 - Clean publish flow (ee348b0)
