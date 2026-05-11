@@ -1,3 +1,14 @@
+## Release v4.1.3
+
+- Stabilize continuous reader backscroll (405e016)
+- Support root local manga archives (42b6213)
+- fix native local source visibility (c1f6856)
+- Fix Jitendex glossary rendering (0e52b04)
+- Fix AVIF OCR and Anki offline checks (d2b1ea1)
+- Fix anime and manga source filter dialog UX (651fbdb)
+- Fix Komga and Kavita tracker progress sync (3992aac)
+- Fix source filter reset genres (1563325)
+
 ## Release v4.1.2
 
 - Fix continuous reader OCR lookup taps (48a5b44)
