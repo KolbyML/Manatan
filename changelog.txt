@@ -1,3 +1,28 @@
+## Release v4.2.1
+
+- Fix publish cache (53eb443)
+- Add Yomitan cloze template markers (cc089f9)
+- Fix native local episode navigation (b943134)
+- Improve Jimaku status in native player (9e22443)
+- Fix Android Toonkor data thumbnails (a91811e)
+- Fix Android native Jimaku title subtitle action (6d5f3b0)
+- Fix local video episode number parsing (60f41ce)
+- Remove Android fake local sources (5b5df68)
+- Fix local MPV sentence audio capture (85f5d43)
+- Fix Android Anki deck assignment (04bde4a)
+- Fix Android native MPV anime playback (63e34d0)
+- Fix Android extension archive permissions (e01c6a4)
+- Use web anime player on iOS (3ac18b9)
+- Fix mobile textbox outside tap dismissal (8af6a46)
+- Fix continuous textbox pan dismissal (810348e)
+- Fix zoomed-out textbox panning (98c84d3)
+- Fix textbox pan blocking (e2e063b)
+- Fix continuous reader zoom position (81970f5)
+- Fix continuous reader textbox tap dismissal (3a85c79)
+- Fix continuous reader rotation width (64ab38d)
+- iOS: fix context menu popping up on click (6c3ce08)
+- Stabilize continuous reader scrolling (7367584)
+
 ## Release v4.2.0
 
 - Fix HLS audio playback compatibility (26660ca)
