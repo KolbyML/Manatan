@@ -1,3 +1,9 @@
+## Release v4.3.0
+
+- Fix iOS backend build script defaults (b7988a7)
+- Fix iOS publish linker conflict (187edeb)
+- Remove unused server settings sections (b556c70)
+
 ## Release v4.2.1
 
 - Fix publish cache (53eb443)
