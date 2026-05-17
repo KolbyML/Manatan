@@ -1,3 +1,10 @@
+## Release v4.3.2
+
+- Rename anime settings section to video (04bc12f)
+- Fix Android OEM rotation handling (c9b3f0f)
+- Fix iOS Live Text line geometry (fe985bc)
+- Restore Android startup update prompt (386f8ca)
+
 ## Release v4.3.1
 
 - Fix iOS publish CocoaPods setup (fd94f00)
