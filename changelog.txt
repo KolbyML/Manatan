@@ -1,3 +1,25 @@
+## Release v4.3.1
+
+- Fix iOS publish CocoaPods setup (fd94f00)
+- Fix iOS settings modal safe area (9696397)
+- Add global search to video sources (c88668a)
+- Fix iOS account auth callback (5dddcbc)
+- Fix Android playback memory pressure (7ff4150)
+- Add Android AnkiDroid sync on create setting (476c041)
+- Support IPA term metadata in fast lookup (3c7b028)
+- Persist navbar collapsed state in metadata (e29d786)
+- Add Yomitan audio source and TTS support (515c2d6)
+- Persist iOS local source folder access (200d172)
+- Fix native MPV rotation on iOS (09aeab0)
+- Add AppleLiveText  on iOS and OwOCR OCR backend support (cc04ded)
+- Refine mobile media and Anki lookup (e8b970a)
+- Adjust dictionary wording (b471c67)
+- Use mp4 ffmpeg bundle for fmp4 transcoding (34fe891)
+- Remove old Suwayomi jar download fallback (e9bdef2)
+- Fix iOS publish runtime jar artifact (e7ef161)
+- Fix publish release note tag range (e1a54cc)
+- Fix iOS runtime jar validation (0b4ad13)
+
 ## Release v4.3.0
 
 - Fix iOS backend build script defaults (b7988a7)
