@@ -1,3 +1,13 @@
+## Release v4.3.4
+
+- Respect reader overlay for volume keys (2cdf4878)
+- Fix iOS native subtitle cue timing (08ec3922)
+- Fix Android Anki preset temp import (539fc1d4)
+- Hide empty dictionary popup while loading (9fdda231)
+- add native debug info sharing (07bfc6d0)
+- fix native video dictionary safe area (282bcbcf)
+- fix native anime local playback (64a59647)
+
 ## Release v4.3.3
 
 - Prefer native MPV playback on mobile (54d71469)
