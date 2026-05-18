@@ -1,3 +1,7 @@
+## Release v4.3.3
+
+- Prefer native MPV playback on mobile (54d71469)
+
 ## Release v4.3.2
 
 - Rename anime settings section to video (04bc12f)
