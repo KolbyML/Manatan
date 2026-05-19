@@ -1,3 +1,7 @@
+## Release v4.3.7
+
+- Improve Android storage permission UX (81680ce7)
+
 ## Release v4.3.6
 
 - Fix local manga type detection null metadata (ed17e04a)
