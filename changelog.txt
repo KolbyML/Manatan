@@ -1,3 +1,7 @@
+## Release v4.3.6
+
+- Fix local manga type detection null metadata (ed17e04a)
+
 ## Release v4.3.5
 
 - Keep Android public folders shared (0e29a901)
