@@ -1,3 +1,10 @@
+## Release v4.3.5
+
+- Keep Android public folders shared (0e29a901)
+- Add RAR support for local manga (bba744f3)
+- Disable legacy dictionary backend selection (b100db35)
+- Move maintenance actions to relevant settings tabs (71f1c704)
+
 ## Release v4.3.4
 
 - Respect reader overlay for volume keys (2cdf4878)
