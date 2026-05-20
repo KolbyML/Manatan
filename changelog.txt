@@ -1,3 +1,8 @@
+## Release v4.3.8
+
+- Add profile-based settings (4b240629)
+- Filter SSA subtitle boilerplate (0852db45)
+
 ## Release v4.3.7
 
 - Improve Android storage permission UX (81680ce7)
