@@ -1,3 +1,17 @@
+## Release v4.3.9
+
+- Improve Jellyfin playback auth and subtitles (67b929fe)
+- Improve local anime subtitle downloads (e7803b57)
+- Preserve native manga progress on refresh (0439c921)
+- Render headword furigana like Yomitan (df74e6b4)
+- Add dictionary legacy file maintenance (5dcb44cc)
+- Improve Android native login callback (c55d9e42)
+- Search Jimaku live-action subtitles in parallel (11109cf4)
+- Clean up stale update artifacts (70a1d560)
+- Fix mobile OCR textbox lookup offsets (44a800ba)
+- Add Hikka tracker support (9f2f25c8)
+- Add MangaBaka tracker support (40d5bd4c)
+
 ## Release v4.3.8
 
 - Add profile-based settings (4b240629)
