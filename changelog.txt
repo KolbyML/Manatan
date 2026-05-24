@@ -1,3 +1,12 @@
+## Release v5.0.3
+
+- Fix Android AnkiDroid visibility query (1f025a37)
+- Fix offline app update crash (bcfe9e8c)
+- Fix Android startup accessibility crash (637ae8fe)
+- Fix Good Local OCR Lens asset initializer lookup (d70cc9ce)
+- Add novel volume button navigation setting (031c5978)
+- Fix novel paged swipe direction (914f51c1)
+
 ## Release v5.0.2
 
 - Fix Android startup stability (98f5e6b9)
