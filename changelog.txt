@@ -1,3 +1,8 @@
+## Release v5.0.1
+
+- Fix iOS player AnkiMobile callback (ee196052)
+- Fix Android extension archive loading (811cd52a)
+
 ## Release v5.0.0
 
 - Fix Android native playback resources (fc77a8f0)
