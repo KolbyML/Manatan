@@ -69,12 +69,15 @@ For Nix and NixOS, a [Flake](https://github.com/GKHWB/Manatan-Flake) is availabl
 - [x] Add native Android runtime without bundled JVM assets.
 - [x] Add Sync support for Video, Manga, Novels, and more.
 - [x] Add EPUB support for Manga
-- [ ] Fully Rewrite the Novel Reader
-- [ ] Add MPV-based video player for Android
+- [x] Fully Rewrite the Novel Reader
+- [x] Add MPV-based video player for Android & iOS (All Video Codecs are supported)
+- [x] Add local OCR engine support for Android, iOS, and Desktop.
+- [x] Add one-click local audio setup for popup dictionary lookups.
+- [ ] Port Mihon's Manga Reader to Manatan Android
+- [ ] Port Mihon's Manga Reader to Manatan iOS
+- [ ] Add Browser & Youtube Mining Support
 - [ ] Continue improving local media setup and scanning UX.
 - [ ] Add Mangayomi and LNReader extension support.
-- [ ] Add one-click local audio setup for popup dictionary lookups.
-- [ ] Add local OCR engine support.
 - [ ] Add manga immersion stats.
 - [ ] Suggest more features on [GitHub Issues](https://github.com/KolbyML/Manatan/issues/new).
 
