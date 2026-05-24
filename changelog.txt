@@ -1,3 +1,23 @@
+## Release v5.0.0
+
+- Fix Android native playback resources (fc77a8f0)
+- Use vendored Android build tool (864b1c01)
+- Modernize Android runtime (0871c87c)
+- Some more reader fixes (e56b85a3)
+- Refine Android OCR integration (05d053d7)
+- Port native Android updater (a0fe6dc1)
+- Vendor cargo-apk2 for Android Kotlin Compose (575d2d3d)
+- Persist AnkiMobile deck metadata (3fff281c)
+- Fix Android publish (b61d3745)
+- Fix Android Good Local OCR runtime shim build (98b71a3b)
+- Fix iOS MPV episode navigation resume (d387bc31)
+- Fix novel selection touch navigation (1d7d9d9d)
+- Fix novel SVG image page rendering (27598cb3)
+- Fix starting on text instead of cover (1e58c1ab)
+- Add downloadable Good Local OCR assets (c9f817ec)
+- Port TTSU novel reader storage and UX fixes (6f167436)
+- feat: port ttsu novel reader (e11644ac)
+
 ## Release v4.3.9
 
 - Improve Jellyfin playback auth and subtitles (67b929fe)
