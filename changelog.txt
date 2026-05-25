@@ -1,3 +1,9 @@
+## Release v5.0.6
+
+- Fix continuous novel reader overlay taps (d5d6e401)
+- fix: add mobile tap margins for horizontal novels (84249e97)
+- fix: restore android continuous reader touch scroll (ea14c485)
+
 ## Release v5.0.5
 
 - fix: avoid loading stored fonts for built-in novel fonts (0622eafd)
