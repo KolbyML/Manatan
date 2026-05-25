@@ -1,3 +1,26 @@
+## Release v5.0.5
+
+- fix: avoid loading stored fonts for built-in novel fonts (0622eafd)
+- Restore custom novel font import (a9aa734a)
+- Speed up novel page turns (18340351)
+- Fix Android Anki deck discovery (e92b0bee)
+- Fix continuous reader overlay click passthrough (921bbef4)
+- Fix novel reader mode direction restore (7c67299d)
+- Fix novel furigana lookup clicks (2b5dfdb1)
+- Fix highlight toolbar outside tap fallthrough (8a4dd752)
+- Add novel navbar resume target (16a34f04)
+- Fix dictionary popup inside clicks (028a05f5)
+- Fix modal wheel scroll leaking in novel reader (d2efa0c4)
+- Add mobile browse button for download location (3b70516f)
+- Fix local source pin metadata scope (ecfa0378)
+- Add desktop update notification (838fec32)
+- Improve download folder layout (1e0d8720)
+- Add browse button for download location (be60dca0)
+- Honor configured download location (43247d8f)
+- Fix mobile cropper touch handling (c7ac80d8)
+- Add profile creation dialog (4615c29d)
+- Update Roadmap (f2ae778e)
+
 ## Release v5.0.4
 
 - Fix novel swipe page direction (bce5df8f)
