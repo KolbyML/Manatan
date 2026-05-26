@@ -1,3 +1,21 @@
+## Release v5.0.7
+
+- Compact pronunciation metadata pills (431c52af)
+- Fix empty reading dictionary metadata lookup (e9e7cd49)
+- Support patterned pitch accent metadata (0617731c)
+- Fix mobile appbar search layout (aa37f0f6)
+- Fix novel reader snackbar text direction (f657f74c)
+- Fix Android novel font import bridge (bf47759e)
+- Add novel paragraph margin settings (e57fe921)
+- Fix novel reader font switching (fd6443fc)
+- Fix Japanese lookup text variant ranking (973fcfb0)
+- Use profile storage for novel reader settings (146d31ba)
+- Improve popup dictionary lookup parity (cb55c27b)
+- Fix popup dictionary term ordering (ea0fbaca)
+- Improve Android Anki diagnostics (4a5a1f99)
+- Hide novel fullscreen button on mobile (840b19cb)
+- Fix Android continuous novel native scrolling (2c5b9d8e)
+
 ## Release v5.0.6
 
 - Fix continuous novel reader overlay taps (d5d6e401)
