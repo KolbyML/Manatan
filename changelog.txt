@@ -1,3 +1,7 @@
+## Release v5.0.9
+
+- Fix Android Good Local OCR asset initialization (7f637f70)
+
 ## Release v5.0.8
 
 - Keep v2 downloads in owned app storage (46fae2ab)
