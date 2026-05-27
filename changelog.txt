@@ -1,3 +1,20 @@
+## Release v5.0.8
+
+- Keep v2 downloads in owned app storage (46fae2ab)
+- Add novel screen lock setting (bce801a4)
+- Add novel text justification setting (29310b45)
+- Fix novel reader portal text direction (7dc7cc6f)
+- Fix updating logging users out on Android (c900b5f7)
+- Prevent iOS MPV playback from auto-locking (db703da7)
+- Clarify mobile settings tab scrolling (4a828831)
+- Simplify profile settings UX (d8163b49)
+- Fix OCR text lookup tap offsets (9aa2c633)
+- Fix iOS local anime downloads (a37fdfda)
+- Improve desktop updater restart UX (dcac9aca)
+- Improve Android AnkiDroid provider compatibility (a88ef0cc)
+- Fix desktop updater restart UX (68e3b772)
+- Fix Android good local OCR runtime (c4371e0c)
+
 ## Release v5.0.7
 
 - Compact pronunciation metadata pills (431c52af)
