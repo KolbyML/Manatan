@@ -1,3 +1,16 @@
+## Release v5.0.11
+
+- Fix AnkiDroid provider detection (eaf3ad3b)
+- Fix AnkiConnect on iOS (40ade3d5)
+- Fix continuous horizontal bookmark restore (0485a06b)
+- add crate/npm legal notices (92ad39b2)
+- add legal page (0c4e18d5)
+- fix novel loading speed (11bf7707)
+- Speed up large novel reader opens (55a8de5e)
+- Count Korean syllables in novel reader progress (bb8879bb)
+- Fix Anki preset custom template field reconciliation (56025d29)
+- Separate ScreenAI and Good Local OCR backend keys (c5249ae8)
+
 ## Release v5.0.10
 
 - Make offline network handling non-blocking (c9a1fd8c)

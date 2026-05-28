@@ -1,7 +1,7 @@
 use std::collections::HashMap;
 
 use super::transformer::{
-    ConditionDefinition, Descriptor, LanguageTransformer, RuleDefinition, RuleKind,
+    ConditionDefinition, Descriptor, InitialMode, LanguageTransformer, RuleDefinition, RuleKind,
     TransformDefinition,
 };
 
@@ -152,6 +152,7 @@ pub fn transformer() -> LanguageTransformer {
             kind: RuleKind::EnglishPhrasalInterposedObject,
             conditions_in: Vec::new(),
             conditions_out: vec!["v_phr".to_string()],
+            initial_mode: InitialMode::Any,
         }],
     });
 
@@ -295,6 +296,7 @@ fn suffix_rule(
             .iter()
             .map(|item| (*item).to_string())
             .collect(),
+        initial_mode: InitialMode::Any,
     }
 }
 
@@ -317,6 +319,7 @@ fn prefix_rule(
             .iter()
             .map(|item| (*item).to_string())
             .collect(),
+        initial_mode: InitialMode::Any,
     }
 }
 
@@ -356,6 +359,7 @@ fn create_phrasal_verb_inflections_from_suffix_inflections(
                 },
                 conditions_in: vec!["v".to_string()],
                 conditions_out: vec!["v_phr".to_string()],
+                initial_mode: InitialMode::Any,
             }),
             _ => None,
         })

@@ -7,10 +7,12 @@ use anyhow::{Context, Result};
 use regex::Regex;
 use serde::Deserialize;
 
+pub type ConditionFlags = u128;
+
 #[derive(Debug, Clone)]
 pub struct LanguageTransformer {
     transforms: Vec<Transform>,
-    condition_flags_map: HashMap<String, u32>,
+    condition_flags_map: HashMap<String, ConditionFlags>,
 }
 
 #[derive(Debug, Clone)]
@@ -22,9 +24,28 @@ struct Transform {
 struct Rule {
     transform_id: String,
     rule_index: usize,
-    conditions_in: u32,
-    conditions_out: u32,
+    conditions_in: ConditionFlags,
+    conditions_out: ConditionFlags,
+    initial_mode: InitialMode,
     kind: RuleKind,
+}
+
+#[derive(Debug, Clone, Copy, Default)]
+pub enum InitialMode {
+    #[default]
+    Any,
+    Only,
+    NonInitial,
+}
+
+impl InitialMode {
+    fn matches(self, is_initial: bool) -> bool {
+        match self {
+            Self::Any => true,
+            Self::Only => is_initial,
+            Self::NonInitial => !is_initial,
+        }
+    }
 }
 
 #[derive(Debug, Clone)]
@@ -73,6 +94,7 @@ pub struct RuleDefinition {
     pub kind: RuleKind,
     pub conditions_in: Vec<String>,
     pub conditions_out: Vec<String>,
+    pub initial_mode: InitialMode,
 }
 
 #[derive(Debug, Clone)]
@@ -89,13 +111,13 @@ pub struct Descriptor {
 #[derive(Debug, Clone)]
 pub struct TransformedText {
     pub text: String,
-    pub conditions: u32,
+    pub conditions: ConditionFlags,
 }
 
 #[derive(Debug, Clone)]
 pub struct TransformedTextTrace {
     pub text: String,
-    pub conditions: u32,
+    pub conditions: ConditionFlags,
     pub trace: Vec<TraceFrameInfo>,
 }
 
@@ -155,6 +177,8 @@ struct JsonRule {
     conditions_in: Vec<String>,
     #[serde(rename = "conditionsOut")]
     conditions_out: Vec<String>,
+    #[serde(rename = "initialMode")]
+    initial_mode: Option<String>,
 }
 
 impl LanguageTransformer {
@@ -194,6 +218,7 @@ impl LanguageTransformer {
                     rule_index,
                     conditions_in,
                     conditions_out,
+                    initial_mode: rule_def.initial_mode,
                     kind: rule_def.kind,
                 });
             }
@@ -241,6 +266,7 @@ impl LanguageTransformer {
                     replacement,
                     conditions_in,
                     conditions_out,
+                    initial_mode,
                 } = rule;
                 let kind = match rule_type.as_str() {
                     "suffix" => RuleKind::Suffix {
@@ -287,6 +313,7 @@ impl LanguageTransformer {
                     kind,
                     conditions_in,
                     conditions_out,
+                    initial_mode: parse_initial_mode(initial_mode.as_deref())?,
                 });
             }
             transforms.push(TransformDefinition {
@@ -330,6 +357,9 @@ impl LanguageTransformer {
             for transform in &self.transforms {
                 for rule in &transform.rules {
                     if !conditions_match(current.conditions, rule.conditions_in) {
+                        continue;
+                    }
+                    if !rule.initial_mode.matches(current_trace.is_empty()) {
                         continue;
                     }
                     if !rule.kind.is_inflected(&current.text) {
@@ -385,11 +415,11 @@ impl LanguageTransformer {
         results
     }
 
-    pub fn condition_flags_for_type(&self, condition_type: &str) -> Option<u32> {
+    pub fn condition_flags_for_type(&self, condition_type: &str) -> Option<ConditionFlags> {
         self.condition_flags_map.get(condition_type).copied()
     }
 
-    pub fn condition_flags_for_types(&self, condition_types: &[String]) -> u32 {
+    pub fn condition_flags_for_types(&self, condition_types: &[String]) -> ConditionFlags {
         let mut flags = 0;
         for condition_type in condition_types {
             if let Some(flag) = self.condition_flags_map.get(condition_type) {
@@ -399,7 +429,7 @@ impl LanguageTransformer {
         flags
     }
 
-    pub fn conditions_match(current: u32, next: u32) -> bool {
+    pub fn conditions_match(current: ConditionFlags, next: ConditionFlags) -> bool {
         conditions_match(current, next)
     }
 }
@@ -416,6 +446,15 @@ fn parse_json_char(value: Option<&str>) -> Result<Option<char>> {
         return Err(anyhow::anyhow!("Expected single character, got {value}"));
     }
     Ok(Some(first))
+}
+
+fn parse_initial_mode(value: Option<&str>) -> Result<InitialMode> {
+    match value {
+        None => Ok(InitialMode::Any),
+        Some("only") => Ok(InitialMode::Only),
+        Some("nonInitial") => Ok(InitialMode::NonInitial),
+        Some(other) => Err(anyhow::anyhow!("Unsupported initialMode: {other}")),
+    }
 }
 
 impl RuleKind {
@@ -566,13 +605,13 @@ fn is_arabic_letter(c: char) -> bool {
         || u == 0x06FF
 }
 
-fn conditions_match(current: u32, next: u32) -> bool {
+fn conditions_match(current: ConditionFlags, next: ConditionFlags) -> bool {
     current == 0 || (current & next) != 0
 }
 
 fn build_condition_flags(
     conditions: &HashMap<String, ConditionDefinition>,
-) -> Result<HashMap<String, u32>> {
+) -> Result<HashMap<String, ConditionFlags>> {
     let mut condition_flags_map = HashMap::new();
     let mut next_flag_index = 0;
     let mut targets: Vec<(String, ConditionDefinition)> = conditions
@@ -595,10 +634,10 @@ fn build_condition_flags(
                     continue;
                 }
             } else {
-                if next_flag_index >= 32 {
+                if next_flag_index >= ConditionFlags::BITS {
                     return Err(anyhow::anyhow!("Maximum number of conditions exceeded"));
                 }
-                let flags = 1 << next_flag_index;
+                let flags = (1 as ConditionFlags) << next_flag_index;
                 next_flag_index += 1;
                 flags
             };
@@ -617,9 +656,9 @@ fn build_condition_flags(
 }
 
 fn get_condition_flags_strict(
-    condition_flags_map: &HashMap<String, u32>,
+    condition_flags_map: &HashMap<String, ConditionFlags>,
     condition_types: &[String],
-) -> Option<u32> {
+) -> Option<ConditionFlags> {
     let mut flags = 0;
     for condition_type in condition_types {
         let flag = condition_flags_map.get(condition_type)?;
