@@ -1,3 +1,8 @@
+## Release v5.0.14
+
+- Fix deinflector bugs (395475d5)
+- Fix Android popup dictionary migration roots (347fbf24)
+
 ## Release v5.0.13
 
 - Migrate legacy popup dictionary profiles (4ca9cd3d)
