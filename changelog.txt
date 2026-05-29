@@ -1,3 +1,16 @@
+## Release v5.0.13
+
+- Migrate legacy popup dictionary profiles (4ca9cd3d)
+- Fix Windows startup diagnostics build (8b156f73)
+- Restore network timeouts and offline gating (57b9fe8c)
+- Add native cookie bridge availability check (ec78061c)
+- Add draggable dictionary reordering (4e8a49fe)
+- Log startup diagnostics (b7666742)
+- Fix flaky AnkiDroid provider reads (0afd505f)
+- Drop empty deinflection candidates (54cb71cc)
+- Fix Japanese deinflection candidate ordering (8f744e16)
+- Normalize deinflection rule display labels (b21c09d6)
+
 ## Release v5.0.12
 
 - Speed up manga extension installs (67b66e4a)
