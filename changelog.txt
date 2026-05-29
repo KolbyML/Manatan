@@ -1,3 +1,12 @@
+## Release v5.0.12
+
+- Speed up manga extension installs (67b66e4a)
+- Fix Android extension install timeouts (ee4a0e52)
+- Normalize local OCR backend identity (5523186d)
+- Detect broken internet for offline sync UI (842faf47)
+- Make offline network handling non-blocking (a5f6dd8b)
+- Fix page load latency (aa267b45)
+
 ## Release v5.0.11
 
 - Fix AnkiDroid provider detection (eaf3ad3b)
