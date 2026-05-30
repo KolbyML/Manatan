@@ -1,3 +1,17 @@
+## Release v5.1.0
+
+- Fix local audio VFS Windows build (3f8aad89)
+- Add local audio database support (072de42f)
+- Add native Plex anime source (d9bd265e)
+- Add Anki cover image token (6537f958)
+- Fix AnkiDroid provider visibility (199e5dca)
+- Fix TTSU image-only EPUB pages (10e62133)
+- Improve native source credential errors (2086e629)
+- Fix Jellyfin embedded subtitles for source streams (37dab8df)
+- Deny CEF page permission prompts (a0dcbfb4)
+- Support Manatan iOS simulator builds (fd63d7c5)
+- Fix Japanese deinflection lookup compatibility (b9f0a2ab)
+
 ## Release v5.0.14
 
 - Fix deinflector bugs (395475d5)
