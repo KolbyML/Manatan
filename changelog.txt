@@ -1,3 +1,19 @@
+## Release v5.2.0
+
+- Fix Android MPV subtitle visibility toggle (67bf331d)
+- Support Android TTS engines (42dfe976)
+- Use Manatan notetype as default (4ca09984)
+- Add Plex account sign-in flow (02efbaba)
+- Add plain glossary Anki tokens (95c076ff)
+- Hide local manga download actions (f793f993)
+- Fix Android MPV autoplay toggle (a3e5188d)
+- Fix native MPV duplicate Anki actions (90f7b896)
+- Fix native MPV Anki custom templates (e9d70381)
+- Fix self-hosted anime cover images (9da02215)
+- Add Plex and Emby tracker support (227c1fff)
+- Add native Emby anime source (b6a3da9f)
+- Update Korean deinflector grammar (9bec890f)
+
 ## Release v5.1.0
 
 - Fix local audio VFS Windows build (3f8aad89)
