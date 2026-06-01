@@ -1,3 +1,12 @@
+## Release v5.2.2
+
+- Clean up finished download queue cards (939ab5b0)
+- Fix download queue state import (39a989fd)
+- Run downloads in per-source queues (dcd3ca77)
+- Improve anime download progress and throttling (6f652ed3)
+- Fix download path dialog defaults (645b72e5)
+- Speed up anime HLS downloads on iOS (b301bfbd)
+
 ## Release v5.2.1
 
 - Fix iOS downloads path after app update (3dc24417)
