@@ -1,3 +1,9 @@
+## Release v5.2.4
+
+- Fix ASS subtitle overlay flicker (cf2d388a)
+- Fix local audio db Anki media payloads (f76753e1)
+- Fix Android native back navigation (68035e49)
+
 ## Release v5.2.3
 
 - Fix iOS local subtitle import (d52ec731)
