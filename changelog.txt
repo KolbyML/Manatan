@@ -1,3 +1,14 @@
+## Release v5.2.5
+
+- Derive WebUI service lane ports (00e77865)
+- Respect system proxy on iOS (686c45a7)
+- Fix Aidoku legacy std imports (d89cf301)
+- Capture iOS sentence audio from mpv source (f8f8bb1f)
+- Route word audio through media lane (7b582ea3)
+- Ignore subtitle hover lookup off glyphs (7f36f976)
+- Stop desktop version check loop (4a9befb7)
+- Bypass system proxy for runtime calls (a34c687a)
+
 ## Release v5.2.4
 
 - Fix ASS subtitle overlay flicker (cf2d388a)
