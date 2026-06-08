@@ -1,3 +1,13 @@
+## Release v5.2.6
+
+- Cycle popup dictionary entries with arrow keys (2dc3a69d)
+- Render heavy popup dictionary entries as structured content (2219eb41)
+- Fix mpv cache audio capture test (eab08d62)
+- Start iOS simulator JVM by default (529f3c36)
+- Fix manga reader scan sharpness (1fdc422f)
+- Add native audio track picker (41f96576)
+- Use mpv cache for iOS sentence audio capture (19ffd067)
+
 ## Release v5.2.5
 
 - Derive WebUI service lane ports (00e77865)
