@@ -1,3 +1,11 @@
+## Release v5.2.7
+
+- Fix iOS MPV sentence audio fallback (e796d09f)
+- Match structured content data attributes (66953dc3)
+- Cycle popup dictionary entries with arrow keys (fefde8c2)
+- Avoid self-proxying local media images (abfee06d)
+- Revert "Cycle popup dictionary entries with arrow keys" (6d711053)
+
 ## Release v5.2.6
 
 - Cycle popup dictionary entries with arrow keys (2dc3a69d)
