@@ -9,13 +9,13 @@
       {
         "title": "Jiten deconjugation rules",
         "url": "https://github.com/Sirush/Jiten/blob/master/Shared/resources/deconjugator.json",
-        "license": "Repository code is MIT; data provenance points to JL/Nazeka",
+        "license": "Apache-2.0; data provenance points to JL/Nazeka",
         "usage": "Immediate upstream rules consumed in the same JSON resource format."
       },
       {
         "title": "JL README",
         "url": "https://github.com/rampaa/JL/blob/master/README.md",
-        "license": "Repository license is MIT; README credits Nazeka for deconjugation rules",
+        "license": "Apache-2.0; README credits Nazeka for deconjugation rules",
         "usage": "Intermediate provenance link."
       },
       {
