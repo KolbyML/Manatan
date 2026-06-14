@@ -1,3 +1,9 @@
+## Release v5.3.0
+
+- Add Manatan extension runtime support (3d4073ee)
+- Fix Anki glossary exports (04aed324)
+- Clean up Manatan settings layout (21337a59)
+
 ## Release v5.2.7
 
 - Fix iOS MPV sentence audio fallback (e796d09f)
