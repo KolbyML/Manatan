@@ -1,3 +1,7 @@
+## Release v5.3.1
+
+- Handle multiple repo callback URLs (f34ba90f)
+
 ## Release v5.3.0
 
 - Add Manatan extension runtime support (3d4073ee)
