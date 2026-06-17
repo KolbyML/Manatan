@@ -1,3 +1,16 @@
+## Release v5.3.3
+
+- Fix frequency dictionary display values (5ffe6096)
+- Respect selected audio track for sentence capture (6c20e5ae)
+- Improve Good Local OCR page chunking (16917d21)
+- Fix Anki media overwrite modes (3efa97aa)
+- Fix frequency dictionary sort setting reset (22053324)
+- Fix novel reader daily statistics rollover (1036f405)
+- Add white novel reader theme (14960fe9)
+- Render missing dynamic Anki tokens empty (cae900a0)
+- Add audio clip smoke coverage (9a9678c5)
+- Use ffmpeg for audio clip capture (7c862e21)
+
 ## Release v5.3.2
 
 - Preserve original reader image sizing (9d5a76d6)
