@@ -1,3 +1,9 @@
+## Release v5.3.4
+
+- Fix Jimaku live-action subtitle matching (50bb3e5e)
+- Revert "Preserve original reader image sizing" (ea67b8bd)
+- Preserve frequency display values (19ea62cf)
+
 ## Release v5.3.3
 
 - Fix frequency dictionary display values (5ffe6096)
