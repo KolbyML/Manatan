@@ -1,3 +1,26 @@
+## Release v6.0.1
+
+- Fix iOS release archive dependencies (bf28e487)
+- Harden iOS OpenJDK slice preparation (21367f72)
+- Use MPV encoder for iOS sentence audio capture (389cb640)
+- Add download path settings (bf51660b)
+- Fix native video subtitle selection and rendering (2cc3ad3b)
+- Fix native subtitle offset audio capture (e453363f)
+- Fix desktop sentence audio capture (55cddf81)
+- Harden iOS Flutter plugin registration (24fca8af)
+- Remove top video volume control (e4904cb7)
+- Clean up Manatan source branding (e708f1d1)
+- Use extension video URLs for native mpv (0dcd90b4)
+- Fix Android source runtime classpath merge (0809053c)
+- Add video source global search (b610d92f)
+- Re-enable Flutter sync toggle (44f57ca2)
+- Fix native novel popup dismissal (65951396)
+- Improve sync reliability and E2E coverage (278fbe72)
+- Require iOS embedded JVM startup (e1254197)
+- Use 127.0.0.1 on desktop instead of localhost (ce0dc57b)
+- Safely strip iOS release builds (a7fa3008)
+- Fix iOS release startup crash (b0ae69bc)
+
 ## Release v6.0.0
 
 - Stage Flutter assets for Android publish (dd659fad)
