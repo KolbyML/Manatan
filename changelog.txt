@@ -1,3 +1,15 @@
+## Release v5.3.5
+
+- Fix iOS archive output backport (9f13debb)
+- Remove duplicate anime extension helper (215dcf4b)
+- Allow manual publish versions (c6717d0b)
+- Update bundled ffmpeg release (5f3a649c)
+- Improve sync reliability and E2E coverage (9830054a)
+- Use 127.0.0.1 on desktop instead of localhost (34218533)
+- Fix native subtitle offset audio capture (19151672)
+- Use MPV encoder for iOS sentence audio capture (c934dc06)
+- Fix iOS release archive dependencies (f4101074)
+
 ## Release v6.0.1
 
 - Fix iOS release archive dependencies (bf28e487)
