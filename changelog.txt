@@ -1,3 +1,8 @@
+## Release v5.3.7
+
+- Point bundled ffmpeg at dash release (c353c423)
+- Export ffmpeg audio clips as M4A (06a4bd35)
+
 ## Release v5.3.6
 
 
