@@ -1,3 +1,7 @@
+## Release v5.3.9
+
+- Fix manga extension repo parse fallback (f781b709)
+
 ## Release v5.3.8
 
 - Fix stale extension APK updates (245d00a1)
