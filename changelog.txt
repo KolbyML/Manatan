@@ -1,3 +1,7 @@
+## Release v5.3.10
+
+- Fix manga extension update state races (a8b6e46c)
+
 ## Release v5.3.9
 
 - Fix manga extension repo parse fallback (f781b709)
