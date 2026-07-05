@@ -1,3 +1,51 @@
+## Release v6.0.6
+
+- Fix desktop release smoke fixtures (696f391)
+- Route login (b8c09de)
+- Fix docker (f934ce9)
+- Update Dockerfile (53eff97)
+- Fix launcher update smoke versions (c03590a)
+- Fix docker image (d6c1837)
+- Bundle Linux encoder runtime library (8738934)
+- Bump rust version (788533e)
+- Export Windows callback symbols (441a072)
+- Install Windows native asset template dependency (7b56af5)
+- Install Windows native asset schema dependency (72c366f)
+- Install Windows native asset parser tools (42bfb1a)
+- Align Linux native playback stack (b64e9ab)
+- Fix native asset CI jobs (7712f6a)
+- Retry MinIO client download (42e48e7)
+- Stabilize native asset builds (828161a)
+- Use version 6 for Linux native assets (e95f448)
+- Fix Windows package dependency order (59803cc)
+- Add Manatan SRS integration (9f236a4)
+- Fix desktop installer and runtime lifecycle (68d0545)
+- Update Flutter sync triggers (1b5bf90)
+- Fix macOS DMG layout and launcher seeding (0122938)
+- Fix iOS extension runtime crash (63e60f5)
+- Suppress setup wizard on native dictionary route (3654b5b)
+- Hide empty default manga category tab (bf8d937)
+- Fix Android AnkiDroid provider settings (9f2f943)
+- Fix Jimaku show selection flow (1c57403)
+- Add native media clip tooling (2f32bed)
+- Use public token for public changelog updates (ec7fd48)
+### Downloads
+
+| System | Architecture | Download |
+|:---:|:---:|:---|
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/apple/apple-original.svg" width="50" alt="macOS"/> | aarch64 | [Manatan-v6.0.6-macOS-Silicon.dmg](https://github.com/KolbyML/Manatan/releases/download/v6.0.6/Manatan-v6.0.6-macOS-Silicon.dmg) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/apple/apple-original.svg" width="50" alt="macOS"/> | x86_64 | [Manatan-v6.0.6-macOS-Intel.dmg](https://github.com/KolbyML/Manatan/releases/download/v6.0.6/Manatan-v6.0.6-macOS-Intel.dmg) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/windows8/windows8-original.svg" width="50" alt="Windows"/> | x86_64 | [ManatanSetup-v6.0.6-Windows-x64.exe](https://github.com/KolbyML/Manatan/releases/download/v6.0.6/ManatanSetup-v6.0.6-Windows-x64.exe) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/linux/linux-original.svg" width="50" alt="Linux"/> | x86_64 | [manatan_6.0.6_amd64.deb](https://github.com/KolbyML/Manatan/releases/download/v6.0.6/manatan_6.0.6_amd64.deb) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/linux/linux-original.svg" width="50" alt="Linux"/> | aarch64 | [manatan_6.0.6_arm64.deb](https://github.com/KolbyML/Manatan/releases/download/v6.0.6/manatan_6.0.6_arm64.deb) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/android/android-original.svg" width="50" alt="Android"/> | arm64 | [Manatan-Android-v6.0.6.apk](https://github.com/KolbyML/Manatan/releases/download/v6.0.6/Manatan-Android-v6.0.6.apk) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/apple/apple-original.svg" width="50" alt="iOS"/> | arm64 | [Manatan-v6.0.6-iOS.ipa](https://github.com/KolbyML/Manatan/releases/download/v6.0.6/Manatan-v6.0.6-iOS.ipa) |
+
+- The manatan-app and manatan-launcher archives are updater payloads, not the normal manual install path.
+- The legacy Manatan archives are one-time migration assets for older clients.
+- Checksums: [Checksums.sha256](https://github.com/KolbyML/Manatan/releases/download/v6.0.6/Checksums.sha256)
+
+
 ## Release v6.0.5
 
 - Retry media-kit native asset downloads (f761b06)
