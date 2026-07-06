@@ -1,3 +1,27 @@
+## Release v6.0.7
+
+- Fix setup bootstrap manifest fallback (99bf87f)
+- Lint (30b6cce)
+- Fix desktop setup payload extraction (cfef0d1)
+- SRS changes (9ae585f)
+- Fix favicon (0c4746a)
+### Downloads
+
+| System | Architecture | Download |
+|:---:|:---:|:---|
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/apple/apple-original.svg" width="50" alt="macOS"/> | aarch64 | [Manatan-v6.0.7-macOS-Silicon.dmg](https://github.com/KolbyML/Manatan/releases/download/v6.0.7/Manatan-v6.0.7-macOS-Silicon.dmg) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/apple/apple-original.svg" width="50" alt="macOS"/> | x86_64 | [Manatan-v6.0.7-macOS-Intel.dmg](https://github.com/KolbyML/Manatan/releases/download/v6.0.7/Manatan-v6.0.7-macOS-Intel.dmg) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/windows8/windows8-original.svg" width="50" alt="Windows"/> | x86_64 | [ManatanSetup-v6.0.7-Windows-x64.exe](https://github.com/KolbyML/Manatan/releases/download/v6.0.7/ManatanSetup-v6.0.7-Windows-x64.exe) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/linux/linux-original.svg" width="50" alt="Linux"/> | x86_64 | [manatan_6.0.7_amd64.deb](https://github.com/KolbyML/Manatan/releases/download/v6.0.7/manatan_6.0.7_amd64.deb) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/linux/linux-original.svg" width="50" alt="Linux"/> | aarch64 | [manatan_6.0.7_arm64.deb](https://github.com/KolbyML/Manatan/releases/download/v6.0.7/manatan_6.0.7_arm64.deb) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/android/android-original.svg" width="50" alt="Android"/> | arm64 | [Manatan-Android-v6.0.7.apk](https://github.com/KolbyML/Manatan/releases/download/v6.0.7/Manatan-Android-v6.0.7.apk) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/apple/apple-original.svg" width="50" alt="iOS"/> | arm64 | [Manatan-v6.0.7-iOS.ipa](https://github.com/KolbyML/Manatan/releases/download/v6.0.7/Manatan-v6.0.7-iOS.ipa) |
+
+- The manatan-app and manatan-launcher archives are updater payloads, not the normal manual install path.
+- The legacy Manatan archives are one-time migration assets for older clients.
+- Checksums: [Checksums.sha256](https://github.com/KolbyML/Manatan/releases/download/v6.0.7/Checksums.sha256)
+
+
 ## Release v6.0.6
 
 - Fix desktop release smoke fixtures (696f391)
