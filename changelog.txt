@@ -1,3 +1,40 @@
+## Release v6.0.11
+
+- Extend desktop smoke capture wait (045c7a6)
+- Fix desktop smoke state waits (579bb03)
+- Add Linux audio dev packages (fe6cfbd)
+- Fix Linux release dependencies (05f0c57)
+- Update ext updater (e75d7d8)
+- Make updater robust (faf21ad)
+- Update srs (1763d73)
+- Update linux build (c16709b)
+- Render download model button (065429b)
+- Fix icons (d181818)
+- Fix novel popup dictionary guard (c2cdae1)
+- Add library tab resume shortcut (e047bf1)
+- Improve click ux (c24782e)
+- Fix manga textbox tap UX (6653515)
+- Continue work on srs extensions (34272b3)
+- Update repo parsing format (5296800)
+- Fix flashing default Manga category (6a94ae3)
+- Update model label (48f4df0)
+### Downloads
+
+| System | Architecture | Download |
+|:---:|:---:|:---|
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/apple/apple-original.svg" width="50" alt="macOS"/> | aarch64 | [Manatan-v6.0.11-Mac-Silicon.dmg](https://github.com/KolbyML/Manatan/releases/download/v6.0.11/Manatan-v6.0.11-Mac-Silicon.dmg) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/apple/apple-original.svg" width="50" alt="macOS"/> | x86_64 | [Manatan-v6.0.11-Mac-Intel.dmg](https://github.com/KolbyML/Manatan/releases/download/v6.0.11/Manatan-v6.0.11-Mac-Intel.dmg) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/windows8/windows8-original.svg" width="50" alt="Windows"/> | x86_64 | [ManatanSetup-v6.0.11-Windows-x64.exe](https://github.com/KolbyML/Manatan/releases/download/v6.0.11/ManatanSetup-v6.0.11-Windows-x64.exe) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/linux/linux-original.svg" width="50" alt="Linux"/> | x86_64 | [manatan_6.0.11_amd64.deb](https://github.com/KolbyML/Manatan/releases/download/v6.0.11/manatan_6.0.11_amd64.deb) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/linux/linux-original.svg" width="50" alt="Linux"/> | aarch64 | [manatan_6.0.11_arm64.deb](https://github.com/KolbyML/Manatan/releases/download/v6.0.11/manatan_6.0.11_arm64.deb) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/android/android-original.svg" width="50" alt="Android"/> | arm64 | [Manatan-Android-v6.0.11.apk](https://github.com/KolbyML/Manatan/releases/download/v6.0.11/Manatan-Android-v6.0.11.apk) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/apple/apple-original.svg" width="50" alt="iOS"/> | arm64 | [Manatan-v6.0.11-iOS.ipa](https://github.com/KolbyML/Manatan/releases/download/v6.0.11/Manatan-v6.0.11-iOS.ipa) |
+
+- The manatan-app and manatan-launcher archives are updater payloads, not the normal manual install path.
+- The legacy Manatan archives are one-time migration assets for older clients.
+- Checksums: [Checksums.sha256](https://github.com/KolbyML/Manatan/releases/download/v6.0.11/Checksums.sha256)
+
+
 ## Release v6.0.10
 
 - Add SRS WASM extension host (f1791c5)
