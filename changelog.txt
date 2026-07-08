@@ -1,3 +1,41 @@
+## Release v6.0.13
+
+- Reduce Linux arm64 release memory (f6b2e0b)
+- Fix video playback linux (dfaa2be)
+- Fix video detail page filter restore (3055397)
+- Fix word audio playback mobile (4d8b64c)
+- Fix launcher updates (b0f7434)
+- Fix slot textbox tap apperence (897dcbc)
+- Parse AnkiMobile responses (7b06eb4)
+- Fix iOS app crash on startup (5b447ea)
+- Plug in developer depends (a11f4e9)
+- Fix webui sentence audio capture (108cd4a)
+- Fix rare lookup bug in utf8 subtitle (def368f)
+- Fix keybinding being stolen in Native video player on lookup (867ae92)
+- Fix flutter video player popup dict tap interaction (a91a10c)
+- Make video player more robust (3457a3d)
+- Add native image cropper (1a79671)
+- Fix highlight edgecase (3a66b80)
+- Update manga reader overlays (d97b1bd)
+- Update Flutter Anki Integration (b3f3ab3)
+- Fix Native Manga Read Popup Dictionary placement (6a14791)
+### Downloads
+
+| System | Architecture | Download |
+|:---:|:---:|:---|
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/apple/apple-original.svg" width="50" alt="macOS"/> | aarch64 | [Manatan-v6.0.13-Mac-Silicon.dmg](https://github.com/KolbyML/Manatan/releases/download/v6.0.13/Manatan-v6.0.13-Mac-Silicon.dmg) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/apple/apple-original.svg" width="50" alt="macOS"/> | x86_64 | [Manatan-v6.0.13-Mac-Intel.dmg](https://github.com/KolbyML/Manatan/releases/download/v6.0.13/Manatan-v6.0.13-Mac-Intel.dmg) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/windows8/windows8-original.svg" width="50" alt="Windows"/> | x86_64 | [ManatanSetup-v6.0.13-Windows-x64.exe](https://github.com/KolbyML/Manatan/releases/download/v6.0.13/ManatanSetup-v6.0.13-Windows-x64.exe) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/linux/linux-original.svg" width="50" alt="Linux"/> | x86_64 | [manatan_6.0.13_amd64.deb](https://github.com/KolbyML/Manatan/releases/download/v6.0.13/manatan_6.0.13_amd64.deb) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/linux/linux-original.svg" width="50" alt="Linux"/> | aarch64 | [manatan_6.0.13_arm64.deb](https://github.com/KolbyML/Manatan/releases/download/v6.0.13/manatan_6.0.13_arm64.deb) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/android/android-original.svg" width="50" alt="Android"/> | arm64 | [Manatan-Android-v6.0.13.apk](https://github.com/KolbyML/Manatan/releases/download/v6.0.13/Manatan-Android-v6.0.13.apk) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/apple/apple-original.svg" width="50" alt="iOS"/> | arm64 | [Manatan-v6.0.13-iOS.ipa](https://github.com/KolbyML/Manatan/releases/download/v6.0.13/Manatan-v6.0.13-iOS.ipa) |
+
+- The manatan-app and manatan-launcher archives are updater payloads, not the normal manual install path.
+- The legacy Manatan archives are one-time migration assets for older clients.
+- Checksums: [Checksums.sha256](https://github.com/KolbyML/Manatan/releases/download/v6.0.13/Checksums.sha256)
+
+
 ## Release v6.0.12
 
 - Skip headless desktop link smoke (32089c3)
