@@ -1,3 +1,23 @@
+## Release v6.0.15
+
+- Link libs on linux properly (6b2c460)
+### Downloads
+
+| System | Architecture | Download |
+|:---:|:---:|:---|
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/apple/apple-original.svg" width="50" alt="macOS"/> | aarch64 | [Manatan-v6.0.15-Mac-Silicon.dmg](https://github.com/KolbyML/Manatan/releases/download/v6.0.15/Manatan-v6.0.15-Mac-Silicon.dmg) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/apple/apple-original.svg" width="50" alt="macOS"/> | x86_64 | [Manatan-v6.0.15-Mac-Intel.dmg](https://github.com/KolbyML/Manatan/releases/download/v6.0.15/Manatan-v6.0.15-Mac-Intel.dmg) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/windows8/windows8-original.svg" width="50" alt="Windows"/> | x86_64 | [ManatanSetup-v6.0.15-Windows-x64.exe](https://github.com/KolbyML/Manatan/releases/download/v6.0.15/ManatanSetup-v6.0.15-Windows-x64.exe) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/linux/linux-original.svg" width="50" alt="Linux"/> | x86_64 | [manatan_6.0.15_amd64.deb](https://github.com/KolbyML/Manatan/releases/download/v6.0.15/manatan_6.0.15_amd64.deb) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/linux/linux-original.svg" width="50" alt="Linux"/> | aarch64 | [manatan_6.0.15_arm64.deb](https://github.com/KolbyML/Manatan/releases/download/v6.0.15/manatan_6.0.15_arm64.deb) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/android/android-original.svg" width="50" alt="Android"/> | arm64 | [Manatan-Android-v6.0.15.apk](https://github.com/KolbyML/Manatan/releases/download/v6.0.15/Manatan-Android-v6.0.15.apk) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/apple/apple-original.svg" width="50" alt="iOS"/> | arm64 | [Manatan-v6.0.15-iOS.ipa](https://github.com/KolbyML/Manatan/releases/download/v6.0.15/Manatan-v6.0.15-iOS.ipa) |
+
+- The manatan-app and manatan-launcher archives are updater payloads, not the normal manual install path.
+- The legacy Manatan archives are one-time migration assets for older clients.
+- Checksums: [Checksums.sha256](https://github.com/KolbyML/Manatan/releases/download/v6.0.15/Checksums.sha256)
+
+
 ## Release v6.0.14
 
 - Move Windows nested build temp path (8945707)
