@@ -1,0 +1,202 @@
+name: Publish Flatpak repository
+
+on:
+  release:
+    types: [published]
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: Release tag to package; leave empty for the latest stable release
+        required: false
+        type: string
+
+concurrency:
+  group: flatpak-repository
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+env:
+  APP_ID: io.github.kolbyml.Manatan
+  PAGES_BASE_URL: https://kolbyml.github.io/Manatan
+  RELEASE_TAG: ${{ github.event.release.tag_name || inputs.tag }}
+
+jobs:
+  build:
+    name: Build ${{ matrix.arch }}
+    runs-on: ${{ matrix.runner }}
+    timeout-minutes: 180
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - arch: x86_64
+            runner: ubuntu-24.04
+          - arch: aarch64
+            runner: ubuntu-24.04-arm
+
+    steps:
+      - name: Check out packaging
+        uses: actions/checkout@v4
+
+      - name: Install Flatpak tooling
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y appstream desktop-file-utils flatpak flatpak-builder gnupg ostree zstd
+          flatpak remote-add --user --if-not-exists flathub https://flathub.org/repo/flathub.flatpakrepo
+
+      - name: Cache immutable sources
+        uses: actions/cache@v4
+        with:
+          path: |
+            packaging/flatpak/.flatpak-builder/downloads
+            packaging/flatpak/.flatpak-builder/git
+            packaging/flatpak/.flatpak-builder/ccache
+          key: flatpak-${{ matrix.arch }}-${{ hashFiles('packaging/flatpak/io.github.kolbyml.Manatan.yml') }}
+          restore-keys: flatpak-${{ matrix.arch }}-
+
+      - name: Pin the requested public release
+        working-directory: packaging/flatpak
+        run: |
+          if [[ -n "${RELEASE_TAG}" ]]; then
+            python3 update_release.py --tag "${RELEASE_TAG}"
+          else
+            python3 update_release.py
+          fi
+          python3 validate.py
+
+      - name: Import repository signing key
+        env:
+          FLATPAK_GPG_PRIVATE_KEY: ${{ secrets.FLATPAK_GPG_PRIVATE_KEY }}
+        run: |
+          set -euo pipefail
+          test -n "${FLATPAK_GPG_PRIVATE_KEY}"
+          export GNUPGHOME="${RUNNER_TEMP}/flatpak-gnupg"
+          install -d -m 0700 "${GNUPGHOME}"
+          printf '%s' "${FLATPAK_GPG_PRIVATE_KEY}" | gpg --batch --import
+          key_id="$(gpg --batch --with-colons --list-secret-keys | awk -F: '$1 == "fpr" { print $10; exit }')"
+          test -n "${key_id}"
+          echo "GNUPGHOME=${GNUPGHOME}" >> "${GITHUB_ENV}"
+          echo "FLATPAK_GPG_KEY_ID=${key_id}" >> "${GITHUB_ENV}"
+
+      - name: Build signed repository
+        working-directory: packaging/flatpak
+        run: |
+          flatpak-builder --force-clean --disable-rofiles-fuse --user \
+            --arch="${{ matrix.arch }}" \
+            --install-deps-from=flathub \
+            --mirror-screenshots-url="${PAGES_BASE_URL}/media" \
+            --compose-url-policy=full \
+            --gpg-sign="${FLATPAK_GPG_KEY_ID}" \
+            --gpg-homedir="${GNUPGHOME}" \
+            --repo="repo-${{ matrix.arch }}" \
+            "build-${{ matrix.arch }}" \
+            "${APP_ID}.yml"
+
+      - name: Validate exported repository
+        working-directory: packaging/flatpak
+        run: |
+          desktop-file-validate "${APP_ID}.desktop"
+          appstreamcli validate --pedantic "${APP_ID}.metainfo.xml"
+          test -n "$(ostree --repo="repo-${{ matrix.arch }}" refs "app/${APP_ID}/${{ matrix.arch }}/master")"
+
+      - name: Archive architecture repository
+        working-directory: packaging/flatpak
+        run: tar --zstd -cf "${RUNNER_TEMP}/repo-${{ matrix.arch }}.tar.zst" "repo-${{ matrix.arch }}"
+
+      - name: Upload architecture repository
+        uses: actions/upload-artifact@v4
+        with:
+          name: flatpak-repo-${{ matrix.arch }}
+          path: ${{ runner.temp }}/repo-${{ matrix.arch }}.tar.zst
+          compression-level: 0
+          if-no-files-found: error
+          retention-days: 1
+
+  publish:
+    name: Publish signed update remote
+    needs: build
+    runs-on: ubuntu-24.04
+    timeout-minutes: 60
+    permissions:
+      contents: read
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+
+    steps:
+      - name: Check out packaging
+        uses: actions/checkout@v4
+
+      - name: Install repository tooling
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y flatpak gnupg ostree zstd
+
+      - name: Download architecture repositories
+        uses: actions/download-artifact@v4
+        with:
+          pattern: flatpak-repo-*
+          path: artifacts
+          merge-multiple: true
+
+      - name: Import repository signing key
+        env:
+          FLATPAK_GPG_PRIVATE_KEY: ${{ secrets.FLATPAK_GPG_PRIVATE_KEY }}
+        run: |
+          set -euo pipefail
+          test -n "${FLATPAK_GPG_PRIVATE_KEY}"
+          export GNUPGHOME="${RUNNER_TEMP}/flatpak-gnupg"
+          install -d -m 0700 "${GNUPGHOME}"
+          printf '%s' "${FLATPAK_GPG_PRIVATE_KEY}" | gpg --batch --import
+          key_id="$(gpg --batch --with-colons --list-secret-keys | awk -F: '$1 == "fpr" { print $10; exit }')"
+          test -n "${key_id}"
+          echo "GNUPGHOME=${GNUPGHOME}" >> "${GITHUB_ENV}"
+          echo "FLATPAK_GPG_KEY_ID=${key_id}" >> "${GITHUB_ENV}"
+
+      - name: Merge and sign update repository
+        run: |
+          set -euo pipefail
+          mkdir -p extracted site/repo site/media
+          for archive in artifacts/repo-*.tar.zst; do
+            tar --zstd -xf "${archive}" -C extracted
+          done
+          ostree init --repo=site/repo --mode=archive-z2
+          for source in extracted/repo-*; do
+            ostree --repo=site/repo pull-local "${source}" --mirror
+          done
+          flatpak build-update-repo \
+            --gpg-sign="${FLATPAK_GPG_KEY_ID}" \
+            --gpg-homedir="${GNUPGHOME}" \
+            --prune \
+            site/repo
+
+      - name: Publish mirrored screenshots and installer descriptors
+        run: |
+          set -euo pipefail
+          for arch in x86_64 aarch64; do
+            screenshot_tree="${RUNNER_TEMP}/screenshots-${arch}"
+            ostree --repo=site/repo checkout "screenshots/${arch}" "${screenshot_tree}"
+            cp -a "${screenshot_tree}/." site/media/
+          done
+          python3 packaging/flatpak/render_repository_files.py \
+            --base-url="${PAGES_BASE_URL}" \
+            --public-key=packaging/flatpak/manatan-flatpak.gpg \
+            --output-dir=site
+          install -m 0644 packaging/flatpak/site-index.html site/index.html
+          install -m 0644 "packaging/flatpak/${APP_ID}.png" "site/${APP_ID}.png"
+
+      - name: Configure GitHub Pages
+        uses: actions/configure-pages@v5
+
+      - name: Upload GitHub Pages artifact
+        uses: actions/upload-pages-artifact@v4
+        with:
+          path: site
+
+      - name: Deploy GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4

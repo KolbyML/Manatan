@@ -49,6 +49,21 @@ Traditional setups for watching anime or reading manga with Japanese lookup can 
 
 Download the latest release for your platform from the [Releases](https://github.com/KolbyML/Manatan/releases) page.
 
+### Linux Flatpak
+
+Install the signed official Flatpak repository and Manatan with one command:
+
+```sh
+flatpak install --user https://kolbyml.github.io/Manatan/io.github.kolbyml.Manatan.flatpakref
+```
+
+The repository is added automatically, so future releases arrive through your
+software center or the normal update command:
+
+```sh
+flatpak update --user io.github.kolbyml.Manatan
+```
+
 Run the executable, then visit `http://127.0.0.1:4567/` in your web browser to access the Manatan web interface.
 
 For Nix and NixOS, a [Flake](https://github.com/GKHWB/Manatan-Flake) is available.
@@ -144,4 +159,3 @@ The following links, repos, companies and projects have been important in the de
 ## Star History
 
 [![Star History Chart](https://api.star-history.com/svg?repos=KolbyML/Manatan&type=date&legend=top-left)](https://www.star-history.com/#KolbyML/Manatan&type=date&legend=top-left)
-

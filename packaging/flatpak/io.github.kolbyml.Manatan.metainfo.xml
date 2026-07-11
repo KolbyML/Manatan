@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Copyright 2026 Manatan Team -->
+<component type="desktop-application">
+  <id>io.github.kolbyml.Manatan</id>
+  <metadata_license>CC0-1.0</metadata_license>
+  <project_license>MIT</project_license>
+  <name>Manatan</name>
+  <summary>Learn languages with your media</summary>
+  <developer id="io.github.kolbyml">
+    <name>Manatan Team</name>
+  </developer>
+  <description>
+    <p>
+      Manatan is an immersion language-learning app for watching anime and
+      reading manga, light novels, and EPUBs with instant word lookup.
+    </p>
+    <p>It brings the complete learning workflow into one desktop app:</p>
+    <ul>
+      <li>Selectable subtitles and popup dictionary lookups while watching video</li>
+      <li>Built-in OCR and instant lookup while reading manga</li>
+      <li>EPUB and light-novel reading with progress synchronization</li>
+      <li>One-click Anki cards with sentence text, images, and audio</li>
+      <li>Local media libraries and supported extension sources</li>
+    </ul>
+  </description>
+  <launchable type="desktop-id">io.github.kolbyml.Manatan.desktop</launchable>
+  <provides>
+    <binary>manatan</binary>
+  </provides>
+  <categories>
+    <category>Education</category>
+  </categories>
+  <keywords>
+    <keyword>language learning</keyword>
+    <keyword>anime</keyword>
+    <keyword>manga</keyword>
+    <keyword>subtitles</keyword>
+    <keyword>OCR</keyword>
+    <keyword>Anki</keyword>
+  </keywords>
+  <url type="homepage">https://manatan.com/</url>
+  <url type="bugtracker">https://github.com/KolbyML/Manatan/issues</url>
+  <url type="help">https://manatan.com/</url>
+  <url type="donation">https://manatan.com/support</url>
+  <screenshots>
+    <screenshot type="default">
+      <image>https://raw.githubusercontent.com/KolbyML/Manatan/master/docs/assets/screenshots/video-dictionary-overlay.png</image>
+      <caption>Instant dictionary lookup from anime subtitles</caption>
+    </screenshot>
+    <screenshot>
+      <image>https://raw.githubusercontent.com/KolbyML/Manatan/master/docs/assets/screenshots/manga-reader-dictionary.png</image>
+      <caption>OCR-assisted lookup while reading manga</caption>
+    </screenshot>
+    <screenshot>
+      <image>https://raw.githubusercontent.com/KolbyML/Manatan/master/docs/assets/screenshots/manga-library.png</image>
+      <caption>Keep manga and reading progress in one library</caption>
+    </screenshot>
+  </screenshots>
+  <releases>
+    <release version="6.0.18" date="2026-07-10">
+      <description>
+        <ul>
+          <li>Update Launcher</li>
+          <li>Make Stable/beta stream more robust</li>
+          <li>Fix bug in launcher</li>
+          <li>Fix desktop transition archives</li>
+          <li>Add SRS stats</li>
+        </ul>
+      </description>
+      <url>https://github.com/KolbyML/Manatan/releases/tag/v6.0.18</url>
+    </release>
+  </releases>
+  <content_rating type="oars-1.1" />
+  <supports>
+    <control>pointing</control>
+    <control>keyboard</control>
+    <control>touch</control>
+  </supports>
+</component>
