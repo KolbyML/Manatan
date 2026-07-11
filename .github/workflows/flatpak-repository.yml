@@ -104,7 +104,7 @@ jobs:
         run: tar --zstd -cf "${RUNNER_TEMP}/repo-${{ matrix.arch }}.tar.zst" "repo-${{ matrix.arch }}"
 
       - name: Upload architecture repository
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: flatpak-repo-${{ matrix.arch }}
           path: ${{ runner.temp }}/repo-${{ matrix.arch }}.tar.zst
@@ -135,7 +135,7 @@ jobs:
           sudo apt-get install -y flatpak gnupg ostree zstd
 
       - name: Download architecture repositories
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           pattern: flatpak-repo-*
           path: artifacts
@@ -164,7 +164,7 @@ jobs:
           done
           ostree init --repo=site/repo --mode=archive-z2
           for source in extracted/repo-*; do
-            ostree --repo=site/repo pull-local "${source}" --mirror
+            ostree --repo=site/repo pull-local "${source}"
           done
           flatpak build-update-repo \
             --gpg-sign="${FLATPAK_GPG_KEY_ID}" \
