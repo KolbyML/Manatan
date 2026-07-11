@@ -50,6 +50,8 @@ def validate_manifest(directory: Path) -> None:
         fail("manifest must use the current GNOME 50 runtime")
     if not re.search(r"^command: manatan$", text, re.MULTILINE):
         fail("manifest command must be manatan")
+    if text.count("      - --libdir=lib\n") != 2:
+        fail("libplacebo and libmpv must install in /app/lib on every architecture")
 
     finish_match = re.search(r"^finish-args:\n(?P<body>.*?)(?=^modules:)", text, re.MULTILINE | re.DOTALL)
     if not finish_match:
