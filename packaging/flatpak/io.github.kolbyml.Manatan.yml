@@ -1,0 +1,198 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/flatpak/flatpak-builder/main/data/flatpak-manifest.schema.json
+app-id: io.github.kolbyml.Manatan
+runtime: org.gnome.Platform
+runtime-version: '50'
+sdk: org.gnome.Sdk
+command: manatan
+
+# Public Manatan and CEF releases are already-built binaries. Keeping separate
+# debug extensions for them adds hundreds of megabytes without producing
+# source-level diagnostics, and can exceed GitHub Pages' repository budget.
+build-options:
+  no-debuginfo: true
+
+# The full codec extension is ABI-compatible with the FFmpeg libraries in the
+# Freedesktop runtime. Manatan's fftools-ffi/custom FFmpeg remains isolated in
+# the upstream payload and continues to handle mining encodes.
+add-extensions:
+  org.freedesktop.Platform.ffmpeg-full:
+    version: '25.08'
+    directory: lib/ffmpeg
+    add-ld-path: .
+
+cleanup-commands:
+  - mkdir -p ${FLATPAK_DEST}/lib/ffmpeg
+
+finish-args:
+  - --share=ipc
+  - --share=network
+  - --socket=fallback-x11
+  - --socket=wayland
+  - --socket=pulseaudio
+  - --device=dri
+  - --env=GTK_USE_PORTAL=1
+
+modules:
+  # Future Manatan Linux payloads use the distribution's libmpv. Build an
+  # equivalent Flatpak-owned libmpv because host libraries are not visible in
+  # the sandbox. The current 6.0.18 payload's private media runtime continues
+  # to take precedence through its runner-relative RUNPATH.
+  - name: libplacebo
+    buildsystem: meson
+    config-opts:
+      - -Dopengl=enabled
+      - -Dvulkan=enabled
+      - -Dglslang=disabled
+      - -Dd3d11=disabled
+      - -Ddemos=false
+    cleanup:
+      - /include
+      - /lib/pkgconfig
+    sources:
+      - type: archive
+        url: https://code.videolan.org/videolan/libplacebo/-/archive/v7.360.1/libplacebo-v7.360.1.tar.gz
+        sha256: 14c0a99f4b01557ec9826ce6b1d52f6de21be274ba03fd5aab7307f18766dc39
+        x-checker-data:
+          type: anitya
+          project-id: 20101
+          stable-only: true
+          url-template: https://code.videolan.org/videolan/libplacebo/-/archive/v$version/libplacebo-v$version.tar.gz
+      - type: archive
+        url: https://github.com/pallets/jinja/archive/refs/tags/3.1.6.tar.gz
+        sha256: 2074b22a72caa65474902234b320d73463d6d4c223ee49f4b433495758356337
+        dest: 3rdparty/jinja
+        x-checker-data:
+          type: anitya
+          project-id: 3894
+          url-template: https://github.com/pallets/jinja/archive/refs/tags/$version.tar.gz
+      - type: archive
+        url: https://github.com/Dav1dde/glad/archive/refs/tags/v2.0.8.tar.gz
+        sha256: 44f06f9195427c7017f5028d0894f57eb216b0a8f7c4eda7ce883732aeb2d0fc
+        dest: 3rdparty/glad
+        x-checker-data:
+          type: anitya
+          project-id: 300234
+          url-template: https://github.com/Dav1dde/glad/archive/refs/tags/v$version.tar.gz
+
+  - name: libass
+    config-opts:
+      - --disable-static
+    cleanup:
+      - /include
+      - /lib/*.la
+      - /lib/pkgconfig
+    sources:
+      - type: archive
+        url: https://github.com/libass/libass/releases/download/0.17.5/libass-0.17.5.tar.xz
+        sha256: 2dca25c0e0c837ddf00b52011b3f82cac1e4ddd3ad018227806b0c2288864acc
+        x-checker-data:
+          type: anitya
+          project-id: 1560
+          stable-only: true
+          url-template: https://github.com/libass/libass/releases/download/$version/libass-$version.tar.xz
+
+  - name: libmpv
+    buildsystem: meson
+    config-opts:
+      - -Dlibmpv=true
+      - -Dcplayer=false
+      - -Dlua=disabled
+      - -Djavascript=disabled
+      - -Dbuild-date=false
+      - -Dalsa=disabled
+      - -Dmanpage-build=disabled
+      - -Dvulkan=enabled
+    cleanup:
+      - /include
+      - /lib/pkgconfig
+      - /share/bash-completion
+      - /share/doc
+      - /share/icons
+      - /share/man
+      - /share/zsh
+    sources:
+      - type: archive
+        url: https://github.com/mpv-player/mpv/archive/refs/tags/v0.41.0.tar.gz
+        sha256: ee21092a5ee427353392360929dc64645c54479aefdb5babc5cfbb5fad626209
+        x-checker-data:
+          type: anitya
+          project-id: 5348
+          stable-only: true
+          url-template: https://github.com/mpv-player/mpv/archive/refs/tags/v$version.tar.gz
+          is-important: true
+
+  # Manatan's normal launcher downloads CEF into the user's data directory.
+  # Flatpak instead installs the exact pinned CEF runtime read-only in /app so
+  # first launch is deterministic and does not require runtime provisioning.
+  - name: cef-runtime
+    buildsystem: simple
+    build-commands:
+      - install -d ${FLATPAK_DEST}/lib/cef
+      - cp -a cef/Release/. ${FLATPAK_DEST}/lib/cef/
+      - cp -a cef/Resources/. ${FLATPAK_DEST}/lib/cef/
+      - chmod 0755 ${FLATPAK_DEST}/lib/cef/chrome-sandbox
+      - install -Dm0644 cef/LICENSE.txt ${FLATPAK_DEST}/share/licenses/${FLATPAK_ID}/cef/LICENSE.txt
+      - install -Dm0644 cef/CREDITS.html ${FLATPAK_DEST}/share/licenses/${FLATPAK_ID}/cef/CREDITS.html
+    sources:
+      - type: archive
+        dest: cef
+        url: https://cef-builds.spotifycdn.com/cef_binary_149.0.6%2Bg0d0eeb6%2Bchromium-149.0.7827.201_linux64_minimal.tar.bz2
+        sha256: f90dec4c5c42a7bbd4f2bd80a7a77e0ac6aacfc6627bb43572d803e77f26dfbc
+        only-arches:
+          - x86_64
+      - type: archive
+        dest: cef
+        url: https://cef-builds.spotifycdn.com/cef_binary_149.0.6%2Bg0d0eeb6%2Bchromium-149.0.7827.201_linuxarm64_minimal.tar.bz2
+        sha256: 8aa87c0f0e848b747903ffbd5e5751179c1bdedf32afb32afaad51dd777c960d
+        only-arches:
+          - aarch64
+
+  - name: manatan
+    buildsystem: simple
+    build-options:
+      strip: false
+    build-commands:
+      - install -d ${FLATPAK_DEST}/lib/manatan
+      - cp -a manatan/. ${FLATPAK_DEST}/lib/manatan/
+      - chmod 0755 ${FLATPAK_DEST}/lib/manatan/Manatan ${FLATPAK_DEST}/lib/manatan/manatan-helper
+      - install -Dm0755 manatan-flatpak ${FLATPAK_DEST}/bin/manatan
+      - if test -f manatan/share/applications/io.github.kolbyml.Manatan.desktop; then install -Dm0644 manatan/share/applications/io.github.kolbyml.Manatan.desktop ${FLATPAK_DEST}/share/applications/io.github.kolbyml.Manatan.desktop; else install -Dm0644 io.github.kolbyml.Manatan.desktop ${FLATPAK_DEST}/share/applications/io.github.kolbyml.Manatan.desktop; fi
+      - if test -f manatan/share/metainfo/io.github.kolbyml.Manatan.metainfo.xml; then install -Dm0644 manatan/share/metainfo/io.github.kolbyml.Manatan.metainfo.xml ${FLATPAK_DEST}/share/metainfo/io.github.kolbyml.Manatan.metainfo.xml; else install -Dm0644 io.github.kolbyml.Manatan.metainfo.xml ${FLATPAK_DEST}/share/metainfo/io.github.kolbyml.Manatan.metainfo.xml; fi
+      - if test -f manatan/share/icons/hicolor/512x512/apps/io.github.kolbyml.Manatan.png; then install -Dm0644 manatan/share/icons/hicolor/512x512/apps/io.github.kolbyml.Manatan.png ${FLATPAK_DEST}/share/icons/hicolor/512x512/apps/io.github.kolbyml.Manatan.png; else install -Dm0644 io.github.kolbyml.Manatan.png ${FLATPAK_DEST}/share/icons/hicolor/512x512/apps/io.github.kolbyml.Manatan.png; fi
+      - if test -f manatan/share/licenses/io.github.kolbyml.Manatan/manatan/LICENSE; then install -Dm0644 manatan/share/licenses/io.github.kolbyml.Manatan/manatan/LICENSE ${FLATPAK_DEST}/share/licenses/${FLATPAK_ID}/manatan/LICENSE; else install -Dm0644 LICENSE.manatan ${FLATPAK_DEST}/share/licenses/${FLATPAK_ID}/manatan/LICENSE; fi
+    sources:
+      - type: archive
+        dest: manatan
+        url: https://github.com/KolbyML/Manatan/releases/download/v6.0.18/manatan-app-linux-amd64-6.0.18.tar.gz
+        sha256: 37bea64291cb94ba12bfcbf20c1121aef7d8ffe0fdf700e7f205329773d6a252
+        only-arches:
+          - x86_64
+        x-checker-data:
+          type: json
+          url: https://api.github.com/repos/KolbyML/Manatan/releases/latest
+          version-query: .tag_name | sub("^v"; "")
+          url-query: .assets[] | select(.name == "manatan-app-linux-amd64-" + $version + ".tar.gz") | .browser_download_url
+          release-url-template: https://github.com/KolbyML/Manatan/releases/tag/v$version
+          is-main-source: true
+      - type: archive
+        dest: manatan
+        url: https://github.com/KolbyML/Manatan/releases/download/v6.0.18/manatan-app-linux-arm64-6.0.18.tar.gz
+        sha256: 1beff3a35f69fc88a7a1ba5508d674a303253e17912e087ab41a3a053de8a15b
+        only-arches:
+          - aarch64
+        x-checker-data:
+          type: json
+          url: https://api.github.com/repos/KolbyML/Manatan/releases/latest
+          version-query: .tag_name | sub("^v"; "")
+          url-query: .assets[] | select(.name == "manatan-app-linux-arm64-" + $version + ".tar.gz") | .browser_download_url
+      - type: file
+        path: manatan-flatpak.sh
+        dest-filename: manatan-flatpak
+      - type: file
+        path: io.github.kolbyml.Manatan.desktop
+      - type: file
+        path: io.github.kolbyml.Manatan.metainfo.xml
+      - type: file
+        path: io.github.kolbyml.Manatan.png
+      - type: file
+        path: LICENSE.manatan

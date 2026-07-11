@@ -1,0 +1,13 @@
+[Desktop Entry]
+Type=Application
+Name=Manatan
+GenericName=Immersion Language Learning
+Comment=Learn languages with anime, manga, and novels
+Exec=manatan %u
+Icon=io.github.kolbyml.Manatan
+Terminal=false
+Categories=Education;Languages;
+Keywords=Language;Learning;Anime;Manga;Novel;EPUB;OCR;Subtitles;Anki;
+MimeType=x-scheme-handler/manatan;
+StartupNotify=true
+StartupWMClass=Manatan
