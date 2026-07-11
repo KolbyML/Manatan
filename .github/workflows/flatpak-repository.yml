@@ -38,7 +38,7 @@ jobs:
 
     steps:
       - name: Check out packaging
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Install Flatpak tooling
         run: |
@@ -47,7 +47,7 @@ jobs:
           flatpak remote-add --user --if-not-exists flathub https://flathub.org/repo/flathub.flatpakrepo
 
       - name: Cache immutable sources
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: |
             packaging/flatpak/.flatpak-builder/downloads
@@ -86,8 +86,6 @@ jobs:
           flatpak-builder --force-clean --disable-rofiles-fuse --user \
             --arch="${{ matrix.arch }}" \
             --install-deps-from=flathub \
-            --mirror-screenshots-url="${PAGES_BASE_URL}/media" \
-            --compose-url-policy=full \
             --gpg-sign="${FLATPAK_GPG_KEY_ID}" \
             --gpg-homedir="${GNUPGHOME}" \
             --repo="repo-${{ matrix.arch }}" \
@@ -129,7 +127,7 @@ jobs:
 
     steps:
       - name: Check out packaging
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Install repository tooling
         run: |
@@ -160,7 +158,7 @@ jobs:
       - name: Merge and sign update repository
         run: |
           set -euo pipefail
-          mkdir -p extracted site/repo site/media
+          mkdir -p extracted site/repo
           for archive in artifacts/repo-*.tar.zst; do
             tar --zstd -xf "${archive}" -C extracted
           done
@@ -174,20 +172,16 @@ jobs:
             --prune \
             site/repo
 
-      - name: Publish mirrored screenshots and installer descriptors
+      - name: Publish website and installer descriptors
         run: |
           set -euo pipefail
-          for arch in x86_64 aarch64; do
-            screenshot_tree="${RUNNER_TEMP}/screenshots-${arch}"
-            ostree --repo=site/repo checkout "screenshots/${arch}" "${screenshot_tree}"
-            cp -a "${screenshot_tree}/." site/media/
-          done
           python3 packaging/flatpak/render_repository_files.py \
             --base-url="${PAGES_BASE_URL}" \
             --public-key=packaging/flatpak/manatan-flatpak.gpg \
             --output-dir=site
           install -m 0644 packaging/flatpak/site-index.html site/index.html
           install -m 0644 "packaging/flatpak/${APP_ID}.png" "site/${APP_ID}.png"
+          cp -a docs/assets/screenshots site/screenshots
 
       - name: Configure GitHub Pages
         uses: actions/configure-pages@v5

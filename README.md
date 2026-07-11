@@ -51,6 +51,8 @@ Download the latest release for your platform from the [Releases](https://github
 
 ### Linux Flatpak
 
+Flatpak website: https://kolbyml.github.io/Manatan/
+
 Install the signed official Flatpak repository and Manatan with one command:
 
 ```sh

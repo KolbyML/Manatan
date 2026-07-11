@@ -4,13 +4,34 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Manatan Flatpak Repository</title>
+    <style>
+      :root { color-scheme: dark; font-family: system-ui, sans-serif; }
+      body { margin: 0; background: #111318; color: #f1f3f8; }
+      main { max-width: 900px; margin: auto; padding: 4rem 1.5rem; }
+      h1 { font-size: clamp(2.25rem, 7vw, 4.5rem); margin-bottom: .5rem; }
+      p { color: #bdc3d4; font-size: 1.1rem; line-height: 1.6; }
+      .install { display: inline-block; margin: 1rem 0; padding: .9rem 1.2rem;
+        border-radius: .75rem; background: #a9bfff; color: #10131b;
+        font-weight: 700; text-decoration: none; }
+      pre { overflow-x: auto; padding: 1rem; border: 1px solid #343947;
+        border-radius: .75rem; background: #191c24; }
+      .screenshots { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+        gap: 1rem; margin-top: 2.5rem; }
+      .screenshots img { width: 100%; border-radius: .75rem; border: 1px solid #343947; }
+    </style>
   </head>
   <body>
     <main>
       <h1>Manatan Flatpak Repository</h1>
-      <p>This repository provides signed Manatan releases for Linux.</p>
-      <p><a href="io.github.kolbyml.Manatan.flatpakref">Install Manatan</a></p>
+      <p>Signed, automatically updated Manatan releases for Linux on x86_64 and ARM64.</p>
+      <a class="install" href="io.github.kolbyml.Manatan.flatpakref">Install Manatan</a>
       <pre>flatpak install --user https://kolbyml.github.io/Manatan/io.github.kolbyml.Manatan.flatpakref</pre>
+      <p>Updates arrive through your software center or <code>flatpak update</code>.</p>
+      <section class="screenshots" aria-label="Manatan screenshots">
+        <img src="screenshots/manga-library.png" alt="Manatan manga library">
+        <img src="screenshots/manga-reader-dictionary.png" alt="Dictionary lookup in the manga reader">
+        <img src="screenshots/video-dictionary-overlay.png" alt="Dictionary lookup over video subtitles">
+      </section>
     </main>
   </body>
 </html>
