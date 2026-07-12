@@ -1,3 +1,35 @@
+## Release v6.0.20
+
+- Enable iOS features for simulator builds (3b8316f)
+- Improve Android Cloudflare source handling (27d8b4d)
+- Show repository labels in Flutter browse lists (b3d1c0c)
+- Bring WebUI Jimaku selection in sync with Flutter (5c432d0)
+- Isolate Windows card mining encoder (e5f6acd)
+- Fix Windows setup restoring stale app payload (c99be4f)
+- Preserve video controls across dictionary lookups (d60f431)
+- Fix native tracker progress from Flutter (c948f15)
+- Fix manga reader resume progress (5833bfd)
+- Build iOS mpv without Lua (cb618e5)
+- Add cross-platform torrent streaming (a1c111d)
+- feat(desktop): add headless WebUI mode (fb567e9)
+- Fix extension catalog cache after repo changes (ecf7bd1)
+### Downloads
+
+| System | Architecture | Download |
+|:---:|:---:|:---|
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/apple/apple-original.svg" width="50" alt="macOS"/> | aarch64 | [Manatan-v6.0.20-Mac-Silicon.dmg](https://github.com/KolbyML/Manatan/releases/download/v6.0.20/Manatan-v6.0.20-Mac-Silicon.dmg) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/apple/apple-original.svg" width="50" alt="macOS"/> | x86_64 | [Manatan-v6.0.20-Mac-Intel.dmg](https://github.com/KolbyML/Manatan/releases/download/v6.0.20/Manatan-v6.0.20-Mac-Intel.dmg) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/windows8/windows8-original.svg" width="50" alt="Windows"/> | x86_64 | [ManatanSetup-v6.0.20-Windows-x64.exe](https://github.com/KolbyML/Manatan/releases/download/v6.0.20/ManatanSetup-v6.0.20-Windows-x64.exe) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/linux/linux-original.svg" width="50" alt="Linux"/> | x86_64 | [manatan_6.0.20_amd64.deb](https://github.com/KolbyML/Manatan/releases/download/v6.0.20/manatan_6.0.20_amd64.deb) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/linux/linux-original.svg" width="50" alt="Linux"/> | aarch64 | [manatan_6.0.20_arm64.deb](https://github.com/KolbyML/Manatan/releases/download/v6.0.20/manatan_6.0.20_arm64.deb) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/android/android-original.svg" width="50" alt="Android"/> | arm64 | [Manatan-Android-v6.0.20.apk](https://github.com/KolbyML/Manatan/releases/download/v6.0.20/Manatan-Android-v6.0.20.apk) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/apple/apple-original.svg" width="50" alt="iOS"/> | arm64 | [Manatan-v6.0.20-iOS.ipa](https://github.com/KolbyML/Manatan/releases/download/v6.0.20/Manatan-v6.0.20-iOS.ipa) |
+
+- The manatan-app and manatan-launcher archives are updater payloads, not the normal manual install path.
+- The legacy Manatan archives are one-time migration assets for older clients.
+- Checksums: [Checksums.sha256](https://github.com/KolbyML/Manatan/releases/download/v6.0.20/Checksums.sha256)
+
+
 ## Release v6.0.19
 
 - Pin compatible Windows graphics headers (a378160)
