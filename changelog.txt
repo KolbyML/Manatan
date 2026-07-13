@@ -1,3 +1,55 @@
+## Release v6.0.24
+
+- Fix macOS nested application signing (63f89b3)
+- Stage macOS OCR data as app resources (480b54e)
+- Preinstall Android CMake in release builds (a858eab)
+- Move mobile video filters to overflow menu (bca77a3)
+- Relocate macOS OCR resources for signing (08842f9)
+- Fix macOS resource code signing (936f792)
+- Fix iOS extension artwork requests (4f3de94)
+- Fix Android runtime not-found handling (84c9ee0)
+- Integrate Manatan SDK 0.3 extension runtime (b8a42a3)
+- Fix double tap hold quick scale (f0a50aa)
+- Fix one-finger manga reader quick scaling (f2a28dd)
+- Fix stale AnkiMobile field mappings (98deec6)
+- Prevent OCR request storms (630fdc9)
+- Complete Manatan SRS account sync and import UX (9a4f04b)
+- Add local video playback to Flutter library (7b88ceb)
+- Add configurable mobile subtitle tap action (5a3b3b6)
+- Fix macOS build and improve Live OCR (fd11170)
+- fix(android): stream large EPUB imports (3ff4441)
+- Fix IPA pronunciation behavior (c8b3759)
+- Fix cross-platform manga loading (035b351)
+- Fix Android dictionary deletion persistence (29d6a8b)
+- fix(flutter): enable dictionary drag reordering (de98612)
+- Add continuous Live OCR to video player (feb046a)
+- fix(android): surface updates in Flutter UI (2e454d7)
+- Restore Android reader volume controls (612d4ea)
+- Fix mined card media across platforms (865fc76)
+- Preserve account sessions on authorization failures (5b8a2cd)
+- Persist media library category sorting (76513c9)
+- Match Mihon reader zoom gestures (5907128)
+- Add Manatan account sign-out audit logs (4ed4ee3)
+- Restore desktop ScreenAI bootstrap assets (520d45b)
+- Show chapter number before upload date (aaec70c)
+- Keep subtitle sidebar active when overlay is hidden (f25b2d8)
+### Downloads
+
+| System | Architecture | Download |
+|:---:|:---:|:---|
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/apple/apple-original.svg" width="50" alt="macOS"/> | aarch64 | [Manatan-v6.0.24-Mac-Silicon.dmg](https://github.com/KolbyML/Manatan/releases/download/v6.0.24/Manatan-v6.0.24-Mac-Silicon.dmg) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/apple/apple-original.svg" width="50" alt="macOS"/> | x86_64 | [Manatan-v6.0.24-Mac-Intel.dmg](https://github.com/KolbyML/Manatan/releases/download/v6.0.24/Manatan-v6.0.24-Mac-Intel.dmg) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/windows8/windows8-original.svg" width="50" alt="Windows"/> | x86_64 | [ManatanSetup-v6.0.24-Windows-x64.exe](https://github.com/KolbyML/Manatan/releases/download/v6.0.24/ManatanSetup-v6.0.24-Windows-x64.exe) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/linux/linux-original.svg" width="50" alt="Linux"/> | x86_64 | [manatan_6.0.24_amd64.deb](https://github.com/KolbyML/Manatan/releases/download/v6.0.24/manatan_6.0.24_amd64.deb) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/linux/linux-original.svg" width="50" alt="Linux"/> | aarch64 | [manatan_6.0.24_arm64.deb](https://github.com/KolbyML/Manatan/releases/download/v6.0.24/manatan_6.0.24_arm64.deb) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/android/android-original.svg" width="50" alt="Android"/> | arm64 | [Manatan-Android-v6.0.24.apk](https://github.com/KolbyML/Manatan/releases/download/v6.0.24/Manatan-Android-v6.0.24.apk) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/apple/apple-original.svg" width="50" alt="iOS"/> | arm64 | [Manatan-v6.0.24-iOS.ipa](https://github.com/KolbyML/Manatan/releases/download/v6.0.24/Manatan-v6.0.24-iOS.ipa) |
+
+- The manatan-app and manatan-launcher archives are updater payloads, not the normal manual install path.
+- The legacy Manatan archives are one-time migration assets for older clients.
+- Checksums: [Checksums.sha256](https://github.com/KolbyML/Manatan/releases/download/v6.0.24/Checksums.sha256)
+
+
 ## Release v6.0.23
 
 - Fix ipad? (de525cc)
