@@ -1,3 +1,41 @@
+## Release v6.0.25
+
+- Isolate concurrent macOS packaging tools (e1d88a4)
+- Retry transient release downloads (8ce63bd)
+- Use isolated Python for macOS DMG layout (31d6f42)
+- Stabilize desktop rollback smoke test (38fbb38)
+- Fix Emby browsing and playback tracking (96a02b7)
+- Fix Plex browsing and playback sync (13f2a56)
+- Fix Jellyfin transcode quality switching (ea4d283)
+- Add configurable subtitle backgrounds (dcdb1f9)
+- Harden desktop CEF runtime provisioning (b53e5f5)
+- Add extension language scrollbar (6afa609)
+- Resume partial chapter OCR (a2a6d62)
+- Improve Flutter dictionary drag UX (5689b95)
+- Fix Flutter manga migration (665ca0c)
+- Improve native player error guidance (9c2d59f)
+- Fix Ubuntu libmpv runtime dependency (f47ffd5)
+- Add Flutter debug info sharing badges (36745c6)
+- Repair installed extension bytecode (3262541)
+- Refresh stale manga chapter pages (979ee0e)
+- Fix Flutter video library toolbar layout (1121bba)
+### Downloads
+
+| System | Architecture | Download |
+|:---:|:---:|:---|
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/apple/apple-original.svg" width="50" alt="macOS"/> | aarch64 | [Manatan-v6.0.25-Mac-Silicon.dmg](https://github.com/KolbyML/Manatan/releases/download/v6.0.25/Manatan-v6.0.25-Mac-Silicon.dmg) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/apple/apple-original.svg" width="50" alt="macOS"/> | x86_64 | [Manatan-v6.0.25-Mac-Intel.dmg](https://github.com/KolbyML/Manatan/releases/download/v6.0.25/Manatan-v6.0.25-Mac-Intel.dmg) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/windows8/windows8-original.svg" width="50" alt="Windows"/> | x86_64 | [ManatanSetup-v6.0.25-Windows-x64.exe](https://github.com/KolbyML/Manatan/releases/download/v6.0.25/ManatanSetup-v6.0.25-Windows-x64.exe) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/linux/linux-original.svg" width="50" alt="Linux"/> | x86_64 | [manatan_6.0.25_amd64.deb](https://github.com/KolbyML/Manatan/releases/download/v6.0.25/manatan_6.0.25_amd64.deb) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/linux/linux-original.svg" width="50" alt="Linux"/> | aarch64 | [manatan_6.0.25_arm64.deb](https://github.com/KolbyML/Manatan/releases/download/v6.0.25/manatan_6.0.25_arm64.deb) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/android/android-original.svg" width="50" alt="Android"/> | arm64 | [Manatan-Android-v6.0.25.apk](https://github.com/KolbyML/Manatan/releases/download/v6.0.25/Manatan-Android-v6.0.25.apk) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/apple/apple-original.svg" width="50" alt="iOS"/> | arm64 | [Manatan-v6.0.25-iOS.ipa](https://github.com/KolbyML/Manatan/releases/download/v6.0.25/Manatan-v6.0.25-iOS.ipa) |
+
+- The manatan-app and manatan-launcher archives are updater payloads, not the normal manual install path.
+- The legacy Manatan archives are one-time migration assets for older clients.
+- Checksums: [Checksums.sha256](https://github.com/KolbyML/Manatan/releases/download/v6.0.25/Checksums.sha256)
+
+
 ## Release v6.0.24
 
 - Fix macOS nested application signing (63f89b3)
