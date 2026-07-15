@@ -1,3 +1,37 @@
+## Release v6.0.27
+
+- Fix Plex browsing and embedded subtitles (87acbad)
+- Add local manga archive import flow (df8fa99)
+- Fix Android anime volume key handling (cf72193)
+- Unify media tracking and detail APIs (1d1f2ae)
+- Improve dictionary reordering interactions (d239616)
+- Fix Android app update installation flow (5b39966)
+- Fix Linux video mining screenshots (bd64429)
+- Fix database concurrency and MangaDex loading (a238d98)
+- Fix AnkiConnect reliability on Linux (04dc945)
+- Fix video source long-press library add (2209f73)
+- Match Mihon quick-scale behavior (8d229fe)
+- Unify Flutter library membership APIs (f0816c5)
+- Fix scoped local source folder access (4ec2da0)
+- Fix Android backup restore for JSON preferences (02a3b23)
+- Improve Anki connection failure messages (4918c9a)
+### Downloads
+
+| System | Architecture | Download |
+|:---:|:---:|:---|
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/apple/apple-original.svg" width="50" alt="macOS"/> | aarch64 | [Manatan-v6.0.27-Mac-Silicon.dmg](https://github.com/KolbyML/Manatan/releases/download/v6.0.27/Manatan-v6.0.27-Mac-Silicon.dmg) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/apple/apple-original.svg" width="50" alt="macOS"/> | x86_64 | [Manatan-v6.0.27-Mac-Intel.dmg](https://github.com/KolbyML/Manatan/releases/download/v6.0.27/Manatan-v6.0.27-Mac-Intel.dmg) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/windows8/windows8-original.svg" width="50" alt="Windows"/> | x86_64 | [ManatanSetup-v6.0.27-Windows-x64.exe](https://github.com/KolbyML/Manatan/releases/download/v6.0.27/ManatanSetup-v6.0.27-Windows-x64.exe) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/linux/linux-original.svg" width="50" alt="Linux"/> | x86_64 | [manatan_6.0.27_amd64.deb](https://github.com/KolbyML/Manatan/releases/download/v6.0.27/manatan_6.0.27_amd64.deb) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/linux/linux-original.svg" width="50" alt="Linux"/> | aarch64 | [manatan_6.0.27_arm64.deb](https://github.com/KolbyML/Manatan/releases/download/v6.0.27/manatan_6.0.27_arm64.deb) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/android/android-original.svg" width="50" alt="Android"/> | arm64 | [Manatan-Android-v6.0.27.apk](https://github.com/KolbyML/Manatan/releases/download/v6.0.27/Manatan-Android-v6.0.27.apk) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/apple/apple-original.svg" width="50" alt="iOS"/> | arm64 | [Manatan-v6.0.27-iOS.ipa](https://github.com/KolbyML/Manatan/releases/download/v6.0.27/Manatan-v6.0.27-iOS.ipa) |
+
+- The manatan-app and manatan-launcher archives are updater payloads, not the normal manual install path.
+- The legacy Manatan archives are one-time migration assets for older clients.
+- Checksums: [Checksums.sha256](https://github.com/KolbyML/Manatan/releases/download/v6.0.27/Checksums.sha256)
+
+
 ## Release v6.0.26
 
 - Speed up manga reader zoom animation (0997a90)
