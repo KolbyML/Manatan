@@ -1,3 +1,51 @@
+## Release v6.0.28
+
+- Harden iOS native dependency fetch (5081ee1)
+- Move Windows package cache outside System32 (81497f8)
+- Retry Windows dependency link resolution (56dc1d4)
+- Harden arm64 CI package bootstrap (73e6a70)
+- Retry arm64 package setup over HTTPS (dc609ae)
+- Install NuGet for Windows desktop builds (2feed58)
+- Keep iOS dependency outside app signing (bba8b07)
+- Fix iOS pod archive output conflict (de29f50)
+- Simplify Flutter automatic sync settings (b07989c)
+- Improve Flutter sync progress UX (a12b295)
+- fix(bootstrapper): migrate launcher UI to egui (cf4612d)
+- Add prioritized audio sources and cross-platform TTS (490e651)
+- Add resilient iOS background work (1f29ac4)
+- Add resilient Android background work (b36c057)
+- Replace anime downloads with FFmpeg pipeline (be9fbf8)
+- Fix Plex invalid server recovery (09d3a2b)
+- Fix immediate manga reader resume progress (b72eff1)
+- feat: add Discord Rich Presence (e40f47e)
+- Fix manga chapter download feedback and scroll state (6fa537a)
+- Restore dictionary-derived Anki mappings (472c041)
+- Hide idle cursor during MPV playback (644a7ea)
+- Compact global search layout on desktop (0824c00)
+- Use Rustls for source HTTP clients (591eac5)
+- Fix packaged font imports (e1ab344)
+- App (7eaf04d)
+- App store changes (92a6aec)
+- Fix source preference payload contract (a2dd5a1)
+- Fix source filters in quick search (9387584)
+- Restore manga chapter position after reader (6abea9d)
+### Downloads
+
+| System | Architecture | Download |
+|:---:|:---:|:---|
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/apple/apple-original.svg" width="50" alt="macOS"/> | aarch64 | [Manatan-v6.0.28-Mac-Silicon.dmg](https://github.com/KolbyML/Manatan/releases/download/v6.0.28/Manatan-v6.0.28-Mac-Silicon.dmg) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/apple/apple-original.svg" width="50" alt="macOS"/> | x86_64 | [Manatan-v6.0.28-Mac-Intel.dmg](https://github.com/KolbyML/Manatan/releases/download/v6.0.28/Manatan-v6.0.28-Mac-Intel.dmg) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/windows8/windows8-original.svg" width="50" alt="Windows"/> | x86_64 | [ManatanSetup-v6.0.28-Windows-x64.exe](https://github.com/KolbyML/Manatan/releases/download/v6.0.28/ManatanSetup-v6.0.28-Windows-x64.exe) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/linux/linux-original.svg" width="50" alt="Linux"/> | x86_64 | [manatan_6.0.28_amd64.deb](https://github.com/KolbyML/Manatan/releases/download/v6.0.28/manatan_6.0.28_amd64.deb) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/linux/linux-original.svg" width="50" alt="Linux"/> | aarch64 | [manatan_6.0.28_arm64.deb](https://github.com/KolbyML/Manatan/releases/download/v6.0.28/manatan_6.0.28_arm64.deb) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/android/android-original.svg" width="50" alt="Android"/> | arm64 | [Manatan-Android-v6.0.28.apk](https://github.com/KolbyML/Manatan/releases/download/v6.0.28/Manatan-Android-v6.0.28.apk) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/apple/apple-original.svg" width="50" alt="iOS"/> | arm64 | [Manatan-v6.0.28-iOS.ipa](https://github.com/KolbyML/Manatan/releases/download/v6.0.28/Manatan-v6.0.28-iOS.ipa) |
+
+- The manatan-app and manatan-launcher archives are updater payloads, not the normal manual install path.
+- The legacy Manatan archives are one-time migration assets for older clients.
+- Checksums: [Checksums.sha256](https://github.com/KolbyML/Manatan/releases/download/v6.0.28/Checksums.sha256)
+
+
 ## Release v6.0.27
 
 - Fix Plex browsing and embedded subtitles (87acbad)
