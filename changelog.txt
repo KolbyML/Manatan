@@ -1,3 +1,44 @@
+## Release v6.0.30
+
+- Keep downloaded manga playback offline (6e7cad6)
+- Add customizable live OCR regions (178a467)
+- Fix offline playback for downloaded videos (40d6f7e)
+- Share sync snapshot buffers (db091a2)
+- Fix Flutter local manga imports (022cb46)
+- Fix profile-aware novel font handling (659e111)
+- Download optional fonts on demand (f6845bc)
+- Add mobile video landscape lock (4328cf9)
+- Add profile-aware dictionary text filtering (d662cec)
+- Reduce Android live OCR playback stutter (316572c)
+- Match Mihon pan momentum in manga reader (9d7394d)
+- Synchronize iOS release versions with Git tags (d9cd9c3)
+- Improve library browse navigation (cf39ab0)
+- Bundle all profile font presets (28230eb)
+- Polish mobile startup (ae35711)
+- Fix quick-scale sensitivity across zoom levels (92b6ed1)
+- Add customizable navigation style settings (3b0ea76)
+- Fix Android sync memory and service crashes (1c83f0d)
+- Unify media library filters and sorting (c48caa0)
+- Clean up bootstrapper download progress (dd961b6)
+- Clean up Android update changelog (93cbada)
+- Move Discord settings to standard settings (f68de5e)
+### Downloads
+
+| System | Architecture | Download |
+|:---:|:---:|:---|
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/apple/apple-original.svg" width="50" alt="macOS"/> | aarch64 | [Manatan-v6.0.30-Mac-Silicon.dmg](https://github.com/KolbyML/Manatan/releases/download/v6.0.30/Manatan-v6.0.30-Mac-Silicon.dmg) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/apple/apple-original.svg" width="50" alt="macOS"/> | x86_64 | [Manatan-v6.0.30-Mac-Intel.dmg](https://github.com/KolbyML/Manatan/releases/download/v6.0.30/Manatan-v6.0.30-Mac-Intel.dmg) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/windows8/windows8-original.svg" width="50" alt="Windows"/> | x86_64 | [ManatanSetup-v6.0.30-Windows-x64.exe](https://github.com/KolbyML/Manatan/releases/download/v6.0.30/ManatanSetup-v6.0.30-Windows-x64.exe) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/linux/linux-original.svg" width="50" alt="Linux"/> | x86_64 | [manatan_6.0.30_amd64.deb](https://github.com/KolbyML/Manatan/releases/download/v6.0.30/manatan_6.0.30_amd64.deb) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/linux/linux-original.svg" width="50" alt="Linux"/> | aarch64 | [manatan_6.0.30_arm64.deb](https://github.com/KolbyML/Manatan/releases/download/v6.0.30/manatan_6.0.30_arm64.deb) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/android/android-original.svg" width="50" alt="Android"/> | arm64 | [Manatan-Android-v6.0.30.apk](https://github.com/KolbyML/Manatan/releases/download/v6.0.30/Manatan-Android-v6.0.30.apk) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/apple/apple-original.svg" width="50" alt="iOS"/> | arm64 | [Manatan-v6.0.30-iOS.ipa](https://github.com/KolbyML/Manatan/releases/download/v6.0.30/Manatan-v6.0.30-iOS.ipa) |
+
+- The manatan-app and manatan-launcher archives are updater payloads, not the normal manual install path.
+- The legacy Manatan archives are one-time migration assets for older clients.
+- Checksums: [Checksums.sha256](https://github.com/KolbyML/Manatan/releases/download/v6.0.30/Checksums.sha256)
+
+
 ## Release v6.0.29
 
 - Fix Android release APK native library packaging (af7aa7d)
