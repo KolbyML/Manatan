@@ -1,3 +1,31 @@
+## Release v6.0.37
+
+- Fix online sentence audio capture (714d83a)
+- Match Mihon paged reader zoom retention (315de9d)
+- Use blue subtitle highlights (a1e5be9)
+- Fix native video playlist autoplay (25846e5)
+- Add Google Play distribution support (397aea3)
+- Fix desktop update channels and restart (878eb38)
+- Refine automatic subtitle selection (a92f7e5)
+- language (c47e735)
+- Add novel extension support and novel pdf support (624a337)
+### Downloads
+
+| System | Architecture | Download |
+|:---:|:---:|:---|
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/apple/apple-original.svg" width="50" alt="macOS"/> | aarch64 | [Manatan-v6.0.37-Mac-Silicon.dmg](https://github.com/KolbyML/Manatan/releases/download/v6.0.37/Manatan-v6.0.37-Mac-Silicon.dmg) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/apple/apple-original.svg" width="50" alt="macOS"/> | x86_64 | [Manatan-v6.0.37-Mac-Intel.dmg](https://github.com/KolbyML/Manatan/releases/download/v6.0.37/Manatan-v6.0.37-Mac-Intel.dmg) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/windows8/windows8-original.svg" width="50" alt="Windows"/> | x86_64 | [ManatanSetup-v6.0.37-Windows-x64.exe](https://github.com/KolbyML/Manatan/releases/download/v6.0.37/ManatanSetup-v6.0.37-Windows-x64.exe) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/linux/linux-original.svg" width="50" alt="Linux"/> | x86_64 | [manatan_6.0.37_amd64.deb](https://github.com/KolbyML/Manatan/releases/download/v6.0.37/manatan_6.0.37_amd64.deb) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/linux/linux-original.svg" width="50" alt="Linux"/> | aarch64 | [manatan_6.0.37_arm64.deb](https://github.com/KolbyML/Manatan/releases/download/v6.0.37/manatan_6.0.37_arm64.deb) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/android/android-original.svg" width="50" alt="Android"/> | arm64 | [Manatan-Android-v6.0.37.apk](https://github.com/KolbyML/Manatan/releases/download/v6.0.37/Manatan-Android-v6.0.37.apk) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/apple/apple-original.svg" width="50" alt="iOS"/> | arm64 | [Manatan-v6.0.37-iOS.ipa](https://github.com/KolbyML/Manatan/releases/download/v6.0.37/Manatan-v6.0.37-iOS.ipa) |
+
+- The manatan-app and manatan-launcher archives are updater payloads, not the normal manual install path.
+- The legacy Manatan archives are one-time migration assets for older clients.
+- Checksums: [Checksums.sha256](https://github.com/KolbyML/Manatan/releases/download/v6.0.37/Checksums.sha256)
+
+
 ## Release v6.0.36
 
 - Retry transient Windows signing failures (e0d29ba)
