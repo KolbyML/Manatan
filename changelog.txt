@@ -1,3 +1,31 @@
+## Release v6.0.38
+
+- Add native Komga and Kavita novel support (5f61d42)
+- Restore subtitle provider series selection (5cfd2f7)
+- Add interactive image OCR dictionary lookup (23cd095)
+- Improve large chapter loading reliability (eca3537)
+- Fix continuous novel scrolling past illustrations (95f1f58)
+- Finish novel local source integration (334931d)
+- Automatically install required desktop updates (84a5a64)
+- Gate third-party extension repositories behind opt-in (288067b)
+- Add LAN-first cross-device manga libraries (f0e8361)
+### Downloads
+
+| System | Architecture | Download |
+|:---:|:---:|:---|
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/apple/apple-original.svg" width="50" alt="macOS"/> | aarch64 | [Manatan-v6.0.38-Mac-Silicon.dmg](https://github.com/KolbyML/Manatan/releases/download/v6.0.38/Manatan-v6.0.38-Mac-Silicon.dmg) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/apple/apple-original.svg" width="50" alt="macOS"/> | x86_64 | [Manatan-v6.0.38-Mac-Intel.dmg](https://github.com/KolbyML/Manatan/releases/download/v6.0.38/Manatan-v6.0.38-Mac-Intel.dmg) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/windows8/windows8-original.svg" width="50" alt="Windows"/> | x86_64 | [ManatanSetup-v6.0.38-Windows-x64.exe](https://github.com/KolbyML/Manatan/releases/download/v6.0.38/ManatanSetup-v6.0.38-Windows-x64.exe) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/linux/linux-original.svg" width="50" alt="Linux"/> | x86_64 | [manatan_6.0.38_amd64.deb](https://github.com/KolbyML/Manatan/releases/download/v6.0.38/manatan_6.0.38_amd64.deb) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/linux/linux-original.svg" width="50" alt="Linux"/> | aarch64 | [manatan_6.0.38_arm64.deb](https://github.com/KolbyML/Manatan/releases/download/v6.0.38/manatan_6.0.38_arm64.deb) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/android/android-original.svg" width="50" alt="Android"/> | arm64 | [Manatan-Android-v6.0.38.apk](https://github.com/KolbyML/Manatan/releases/download/v6.0.38/Manatan-Android-v6.0.38.apk) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/apple/apple-original.svg" width="50" alt="iOS"/> | arm64 | [Manatan-v6.0.38-iOS.ipa](https://github.com/KolbyML/Manatan/releases/download/v6.0.38/Manatan-v6.0.38-iOS.ipa) |
+
+- The manatan-app and manatan-launcher archives are updater payloads, not the normal manual install path.
+- The legacy Manatan archives are one-time migration assets for older clients.
+- Checksums: [Checksums.sha256](https://github.com/KolbyML/Manatan/releases/download/v6.0.38/Checksums.sha256)
+
+
 ## Release v6.0.37
 
 - Fix online sentence audio capture (714d83a)
