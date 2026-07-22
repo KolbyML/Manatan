@@ -1,3 +1,34 @@
+## Release v6.0.45
+
+- Bootstrap HTTPS apt sources without CA bundle (e4c0c5e)
+- Prepare apt sources in prebuilt CI images (886d751)
+- Prefer HTTPS for Ubuntu CI packages (3d6376f)
+- Fix novel character progress scope (3597bb9)
+- Gate premium Anki translation mappings (fc9f941)
+- Add selectable glossary mining templates (42ce7bd)
+- Polish novel selection and Anki translation fallback (f6d5e3d)
+- Improve chapter selection actions (86ef1d1)
+- Fix library category state refresh (7e93dcb)
+- Fix mobile V3 history recovery memory accounting (3825fc8)
+- Fix manga OCR preprocessing cache reuse (15a49c0)
+- Update list (692706b)
+### Downloads
+
+| System | Architecture | Download |
+|:---:|:---:|:---|
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/apple/apple-original.svg" width="50" alt="macOS"/> | aarch64 | [Manatan-v6.0.45-Mac-Silicon.dmg](https://github.com/KolbyML/Manatan/releases/download/v6.0.45/Manatan-v6.0.45-Mac-Silicon.dmg) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/apple/apple-original.svg" width="50" alt="macOS"/> | x86_64 | [Manatan-v6.0.45-Mac-Intel.dmg](https://github.com/KolbyML/Manatan/releases/download/v6.0.45/Manatan-v6.0.45-Mac-Intel.dmg) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/windows8/windows8-original.svg" width="50" alt="Windows"/> | x86_64 | [ManatanSetup-v6.0.45-Windows-x64.exe](https://github.com/KolbyML/Manatan/releases/download/v6.0.45/ManatanSetup-v6.0.45-Windows-x64.exe) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/linux/linux-original.svg" width="50" alt="Linux"/> | x86_64 | [manatan_6.0.45_amd64.deb](https://github.com/KolbyML/Manatan/releases/download/v6.0.45/manatan_6.0.45_amd64.deb) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/linux/linux-original.svg" width="50" alt="Linux"/> | aarch64 | [manatan_6.0.45_arm64.deb](https://github.com/KolbyML/Manatan/releases/download/v6.0.45/manatan_6.0.45_arm64.deb) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/android/android-original.svg" width="50" alt="Android"/> | arm64 | [Manatan-Android-v6.0.45.apk](https://github.com/KolbyML/Manatan/releases/download/v6.0.45/Manatan-Android-v6.0.45.apk) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/apple/apple-original.svg" width="50" alt="iOS"/> | arm64 | [Manatan-v6.0.45-iOS.ipa](https://github.com/KolbyML/Manatan/releases/download/v6.0.45/Manatan-v6.0.45-iOS.ipa) |
+
+- The manatan-app and manatan-launcher archives are updater payloads, not the normal manual install path.
+- The legacy Manatan archives are one-time migration assets for older clients.
+- Checksums: [Checksums.sha256](https://github.com/KolbyML/Manatan/releases/download/v6.0.45/Checksums.sha256)
+
+
 ## Release v6.0.44
 
 - Stabilize Linux ARM release verification (f650e5a)
