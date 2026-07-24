@@ -152,8 +152,6 @@ To fully clear cache and data from previous installs, delete the following folde
 
 ## 📚 References and acknowledgements
 The following links, repos, companies and projects have been important in the development of this repo, we have learned a lot from them and want to thank and acknowledge them.
-- https://github.com/kaihouguide/Mangatan
-- https://github.com/exn251/Mangatan/
 - https://github.com/Suwayomi/Suwayomi-Server
 - https://github.com/Suwayomi/Suwayomi-WebUI
 - https://github.com/Manhhao/hoshidicts/tree/main-mit
