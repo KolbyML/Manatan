@@ -1,3 +1,38 @@
+## Release v6.0.54
+
+- Use fat LTO for release builds (15462d9)
+- Fix Android repository identity and icons (d8daa24)
+- Revert "Fix multi-repository catalog loading" (dba7f1d)
+- Move desktop WebUI into shared runtime (3dc7978)
+- Fix manga popup keyboard focus restoration (64295cc)
+- Fix multi-repository catalog loading (1c338f2)
+- Add archaic passive lookup regression (bbc3e44)
+- Remove embedded Swagger and OpenAPI endpoints (394afe3)
+- Fix desktop webview wheel scrolling (c1bf989)
+- Migrate Aidoku runtime from Wasmer to Wasmtime (21b4d01)
+- Add passive past lookup regression (d17492e)
+- Fix continuous EPUB scrolling and bookmarks (af934f2)
+- Fix deinflection condition deduplication (96c0bdc)
+- Fix Linux video resume rendering (5c9f57c)
+- Fix Android account refresh locking (6453f48)
+- Trim target-specific Wasmtime features (5054486)
+### Downloads
+
+| System | Architecture | Download |
+|:---:|:---:|:---|
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/apple/apple-original.svg" width="50" alt="macOS"/> | aarch64 | [Manatan-v6.0.54-Mac-Silicon.dmg](https://github.com/KolbyML/Manatan/releases/download/v6.0.54/Manatan-v6.0.54-Mac-Silicon.dmg) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/apple/apple-original.svg" width="50" alt="macOS"/> | x86_64 | [Manatan-v6.0.54-Mac-Intel.dmg](https://github.com/KolbyML/Manatan/releases/download/v6.0.54/Manatan-v6.0.54-Mac-Intel.dmg) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/windows8/windows8-original.svg" width="50" alt="Windows"/> | x86_64 | [ManatanSetup-v6.0.54-Windows-x64.exe](https://github.com/KolbyML/Manatan/releases/download/v6.0.54/ManatanSetup-v6.0.54-Windows-x64.exe) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/linux/linux-original.svg" width="50" alt="Linux"/> | x86_64 | [manatan_6.0.54_amd64.deb](https://github.com/KolbyML/Manatan/releases/download/v6.0.54/manatan_6.0.54_amd64.deb) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/linux/linux-original.svg" width="50" alt="Linux"/> | aarch64 | [manatan_6.0.54_arm64.deb](https://github.com/KolbyML/Manatan/releases/download/v6.0.54/manatan_6.0.54_arm64.deb) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/android/android-original.svg" width="50" alt="Android"/> | arm64 | [Manatan-Android-v6.0.54.apk](https://github.com/KolbyML/Manatan/releases/download/v6.0.54/Manatan-Android-v6.0.54.apk) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/apple/apple-original.svg" width="50" alt="iOS"/> | arm64 | [Manatan-v6.0.54-iOS.ipa](https://github.com/KolbyML/Manatan/releases/download/v6.0.54/Manatan-v6.0.54-iOS.ipa) |
+
+- The manatan-app and manatan-launcher archives are updater payloads, not the normal manual install path.
+- The legacy Manatan archives are one-time migration assets for older clients.
+- Checksums: [Checksums.sha256](https://github.com/KolbyML/Manatan/releases/download/v6.0.54/Checksums.sha256)
+
+
 ## Release v6.0.53
 
 - Strip release binaries across desktop platforms (69d60d0)
