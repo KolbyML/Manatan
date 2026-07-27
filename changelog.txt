@@ -1,3 +1,39 @@
+## Release v6.0.56
+
+- Retry transient App Store export failures (46bee3f)
+- Optimize local PDF import and rendering (3ac36ae)
+- Preserve desktop release environment in Cargokit (05910ee)
+- Support self-hosted profiles in Flutter (779937d)
+- Fix headless Docker image packaging (c12ffe3)
+- Show Manatan credit balances in account settings (c3ea0a9)
+- Speed up streamed sentence audio capture (fa1af0f)
+- Remove unused advanced log settings (6618bfe)
+- Add Komga and Kavita source profiles (5c35276)
+- Expose safe extension artwork directly to Flutter (4d03043)
+- Fix EPUB reader TOC and search stability (88b0095)
+- Fix Flutter saved filter persistence (5f3d416)
+- Fix source search button translation (5322c3b)
+- Fix native novel reader edge taps (5fe2253)
+- Fix Windows sentence audio attachments (c6c8c63)
+- Fix novel progress on app suspension (ac53b97)
+- Fix continuous modifier hover lookup (bc08e7a)
+### Downloads
+
+| System | Architecture | Download |
+|:---:|:---:|:---|
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/apple/apple-original.svg" width="50" alt="macOS"/> | aarch64 | [Manatan-v6.0.56-Mac-Silicon.dmg](https://github.com/KolbyML/Manatan/releases/download/v6.0.56/Manatan-v6.0.56-Mac-Silicon.dmg) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/apple/apple-original.svg" width="50" alt="macOS"/> | x86_64 | [Manatan-v6.0.56-Mac-Intel.dmg](https://github.com/KolbyML/Manatan/releases/download/v6.0.56/Manatan-v6.0.56-Mac-Intel.dmg) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/windows8/windows8-original.svg" width="50" alt="Windows"/> | x86_64 | [ManatanSetup-v6.0.56-Windows-x64.exe](https://github.com/KolbyML/Manatan/releases/download/v6.0.56/ManatanSetup-v6.0.56-Windows-x64.exe) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/linux/linux-original.svg" width="50" alt="Linux"/> | x86_64 | [manatan_6.0.56_amd64.deb](https://github.com/KolbyML/Manatan/releases/download/v6.0.56/manatan_6.0.56_amd64.deb) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/linux/linux-original.svg" width="50" alt="Linux"/> | aarch64 | [manatan_6.0.56_arm64.deb](https://github.com/KolbyML/Manatan/releases/download/v6.0.56/manatan_6.0.56_arm64.deb) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/android/android-original.svg" width="50" alt="Android"/> | arm64 | [Manatan-Android-v6.0.56.apk](https://github.com/KolbyML/Manatan/releases/download/v6.0.56/Manatan-Android-v6.0.56.apk) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/apple/apple-original.svg" width="50" alt="iOS"/> | arm64 | [Manatan-v6.0.56-iOS.ipa](https://github.com/KolbyML/Manatan/releases/download/v6.0.56/Manatan-v6.0.56-iOS.ipa) |
+
+- The manatan-app and manatan-launcher archives are updater payloads, not the normal manual install path.
+- The legacy Manatan archives are one-time migration assets for older clients.
+- Checksums: [Checksums.sha256](https://github.com/KolbyML/Manatan/releases/download/v6.0.56/Checksums.sha256)
+
+
 ## Release v6.0.55
 
 - Keep novel repositories out of legacy runtime settings (7063360)
