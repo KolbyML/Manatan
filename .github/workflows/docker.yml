@@ -85,8 +85,9 @@ jobs:
             return 1
           }
 
-          download_asset "Manatan-${TAG_NAME}-Linux-amd64.tar.gz" download_amd64
-          download_asset "Manatan-${TAG_NAME}-Linux-arm64.tar.gz" download_arm64
+          CLEAN_VERSION="${TAG_NAME#v}"
+          download_asset "manatan-server-linux-amd64-${CLEAN_VERSION}.tar.gz" download_amd64
+          download_asset "manatan-server-linux-arm64-${CLEAN_VERSION}.tar.gz" download_arm64
 
           ls -lh download_amd64
           ls -lh download_arm64
@@ -97,6 +98,48 @@ jobs:
           cp download_arm64/*.tar.gz manatan-linux-arm64.tar.gz
 
           ls -lh *.tar.gz
+
+      - name: Verify Headless Startup
+        run: |
+          set -euo pipefail
+
+          IMAGE="manatan-headless-smoke:${{ steps.release.outputs.tag }}"
+          docker build \
+            --build-arg TARGETARCH=amd64 \
+            --tag "$IMAGE" \
+            .
+
+          CONTAINER_ID="$(docker run --detach \
+            --env MANATAN_HEADLESS=true \
+            --env MANATAN_HOST=0.0.0.0 \
+            --publish 127.0.0.1::4567 \
+            "$IMAGE")"
+          trap 'docker rm --force "$CONTAINER_ID" >/dev/null 2>&1 || true' EXIT
+
+          wait_until_ready() {
+            local host_port
+            host_port="$(docker port "$CONTAINER_ID" 4567/tcp)"
+            host_port="${host_port##*:}"
+
+            for _ in {1..120}; do
+              if curl --fail --silent --show-error \
+                --max-time 2 \
+                "http://127.0.0.1:${host_port}/" >/dev/null; then
+                return 0
+              fi
+              if [[ "$(docker inspect --format '{{.State.Running}}' "$CONTAINER_ID")" != "true" ]]; then
+                break
+              fi
+              sleep 1
+            done
+
+            docker logs "$CONTAINER_ID"
+            return 1
+          }
+
+          wait_until_ready
+          docker restart "$CONTAINER_ID" >/dev/null
+          wait_until_ready
 
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v3

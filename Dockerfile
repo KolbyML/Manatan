@@ -21,6 +21,7 @@ FROM ubuntu:24.04
 RUN apt-get update && apt-get install -y --no-install-recommends \
     ca-certificates \
     tini \
+    lsof \
     libglib2.0-0 \
     libgtk-3-0 \
     libappindicator3-1 \
@@ -59,6 +60,7 @@ USER 1000:1000
 
 EXPOSE 4567 4568 4570
 ENV MANATAN_HEADLESS=true
+ENV MANATAN_DISABLE_RUNTIME_WEBVIEW_HELPER=true
 ENV LANG=C.UTF-8
 ENV LC_ALL=C.UTF-8
 
