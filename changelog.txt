@@ -1,3 +1,29 @@
+## Release v6.0.61
+
+- Fix source catalog metadata (e0097d2)
+- Fix stale desktop WebUI runtime caching (5829328)
+- Limit Arabic EPUB rules to Arabic books (5ee0d3b)
+- Fix Android volume keys after dictionary focus (aabefd1)
+- Make OWocr page handling reliable (cfc8edc)
+- Introduce compressed sync protocol V5 (5326fa4)
+- Revert "Optimize native playback and dictionary startup" (f73c043)
+### Downloads
+
+| System | Architecture | Download |
+|:---:|:---:|:---|
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/apple/apple-original.svg" width="50" alt="macOS"/> | aarch64 | [Manatan-v6.0.61-Mac-Silicon.dmg](https://github.com/KolbyML/Manatan/releases/download/v6.0.61/Manatan-v6.0.61-Mac-Silicon.dmg) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/apple/apple-original.svg" width="50" alt="macOS"/> | x86_64 | [Manatan-v6.0.61-Mac-Intel.dmg](https://github.com/KolbyML/Manatan/releases/download/v6.0.61/Manatan-v6.0.61-Mac-Intel.dmg) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/windows8/windows8-original.svg" width="50" alt="Windows"/> | x86_64 | [ManatanSetup-v6.0.61-Windows-x64.exe](https://github.com/KolbyML/Manatan/releases/download/v6.0.61/ManatanSetup-v6.0.61-Windows-x64.exe) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/linux/linux-original.svg" width="50" alt="Linux"/> | x86_64 | [manatan_6.0.61_amd64.deb](https://github.com/KolbyML/Manatan/releases/download/v6.0.61/manatan_6.0.61_amd64.deb) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/linux/linux-original.svg" width="50" alt="Linux"/> | aarch64 | [manatan_6.0.61_arm64.deb](https://github.com/KolbyML/Manatan/releases/download/v6.0.61/manatan_6.0.61_arm64.deb) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/android/android-original.svg" width="50" alt="Android"/> | arm64 | [Manatan-Android-v6.0.61.apk](https://github.com/KolbyML/Manatan/releases/download/v6.0.61/Manatan-Android-v6.0.61.apk) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/apple/apple-original.svg" width="50" alt="iOS"/> | arm64 | [Manatan-v6.0.61-iOS.ipa](https://github.com/KolbyML/Manatan/releases/download/v6.0.61/Manatan-v6.0.61-iOS.ipa) |
+
+- The manatan-app and manatan-launcher archives are updater payloads, not the normal manual install path.
+- The legacy Manatan archives are one-time migration assets for older clients.
+- Checksums: [Checksums.sha256](https://github.com/KolbyML/Manatan/releases/download/v6.0.61/Checksums.sha256)
+
+
 ## Release v6.0.60
 
 - Optimize native playback and dictionary startup (1eb60f8)
