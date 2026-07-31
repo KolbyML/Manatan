@@ -1,3 +1,30 @@
+## Release v6.0.64
+
+- Harden Cloudflare recovery across platforms (be769c1)
+- Harden Google Drive sync recovery (872f3cd)
+- Add detailed dictionary storage inspector (afa8854)
+- Add Ctrl-wheel zoom to desktop reader (81d9c68)
+- Fix Windows manga lookup focus recovery (c088ae6)
+- Fix native service network resolution (c9791ad)
+- Fix direct JVM package installation (4fbade4)
+- Fix protected manga image fallback (7a0977f)
+### Downloads
+
+| System | Architecture | Download |
+|:---:|:---:|:---|
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/apple/apple-original.svg" width="50" alt="macOS"/> | aarch64 | [Manatan-v6.0.64-Mac-Silicon.dmg](https://github.com/KolbyML/Manatan/releases/download/v6.0.64/Manatan-v6.0.64-Mac-Silicon.dmg) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/apple/apple-original.svg" width="50" alt="macOS"/> | x86_64 | [Manatan-v6.0.64-Mac-Intel.dmg](https://github.com/KolbyML/Manatan/releases/download/v6.0.64/Manatan-v6.0.64-Mac-Intel.dmg) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/windows8/windows8-original.svg" width="50" alt="Windows"/> | x86_64 | [ManatanSetup-v6.0.64-Windows-x64.exe](https://github.com/KolbyML/Manatan/releases/download/v6.0.64/ManatanSetup-v6.0.64-Windows-x64.exe) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/linux/linux-original.svg" width="50" alt="Linux"/> | x86_64 | [manatan_6.0.64_amd64.deb](https://github.com/KolbyML/Manatan/releases/download/v6.0.64/manatan_6.0.64_amd64.deb) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/linux/linux-original.svg" width="50" alt="Linux"/> | aarch64 | [manatan_6.0.64_arm64.deb](https://github.com/KolbyML/Manatan/releases/download/v6.0.64/manatan_6.0.64_arm64.deb) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/android/android-original.svg" width="50" alt="Android"/> | arm64 | [Manatan-Android-v6.0.64.apk](https://github.com/KolbyML/Manatan/releases/download/v6.0.64/Manatan-Android-v6.0.64.apk) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/apple/apple-original.svg" width="50" alt="iOS"/> | arm64 | [Manatan-v6.0.64-iOS.ipa](https://github.com/KolbyML/Manatan/releases/download/v6.0.64/Manatan-v6.0.64-iOS.ipa) |
+
+- The manatan-app and manatan-launcher archives are updater payloads, not the normal manual install path.
+- The legacy Manatan archives are one-time migration assets for older clients.
+- Checksums: [Checksums.sha256](https://github.com/KolbyML/Manatan/releases/download/v6.0.64/Checksums.sha256)
+
+
 ## Release v6.0.63
 
 - Enable precise Darwin sentence audio encoding (69b4bc9)
