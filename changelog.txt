@@ -1,3 +1,34 @@
+## Release v6.0.65
+
+- Keep release publishing after symbol upload errors (344d687)
+- ci: split private symbols by platform (ed8bdeb)
+- ci: keep symbol upload failures non-blocking (5686a88)
+- ci: exclude iOS pod frameworks from signing (15b6dae)
+- ci: preserve Sentry Swift APIs in iOS builds (30d8846)
+- ci: isolate iOS archive build data (e6da2c6)
+- ci: provide JNI headers for Linux desktop builds (104e455)
+- ci: install Linux CURL development headers (14dd966)
+- Update mangabaka api route (9257b3d)
+- Monitor application performance (bd0b43b)
+- Add compact v7 dictionary storage (c1f755e)
+- Fix Manatan anime status labels (0147b6e)
+### Downloads
+
+| System | Architecture | Download |
+|:---:|:---:|:---|
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/apple/apple-original.svg" width="50" alt="macOS"/> | aarch64 | [Manatan-v6.0.65-Mac-Silicon.dmg](https://github.com/KolbyML/Manatan/releases/download/v6.0.65/Manatan-v6.0.65-Mac-Silicon.dmg) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/apple/apple-original.svg" width="50" alt="macOS"/> | x86_64 | [Manatan-v6.0.65-Mac-Intel.dmg](https://github.com/KolbyML/Manatan/releases/download/v6.0.65/Manatan-v6.0.65-Mac-Intel.dmg) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/windows8/windows8-original.svg" width="50" alt="Windows"/> | x86_64 | [ManatanSetup-v6.0.65-Windows-x64.exe](https://github.com/KolbyML/Manatan/releases/download/v6.0.65/ManatanSetup-v6.0.65-Windows-x64.exe) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/linux/linux-original.svg" width="50" alt="Linux"/> | x86_64 | [manatan_6.0.65_amd64.deb](https://github.com/KolbyML/Manatan/releases/download/v6.0.65/manatan_6.0.65_amd64.deb) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/linux/linux-original.svg" width="50" alt="Linux"/> | aarch64 | [manatan_6.0.65_arm64.deb](https://github.com/KolbyML/Manatan/releases/download/v6.0.65/manatan_6.0.65_arm64.deb) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/android/android-original.svg" width="50" alt="Android"/> | arm64 | [Manatan-Android-v6.0.65.apk](https://github.com/KolbyML/Manatan/releases/download/v6.0.65/Manatan-Android-v6.0.65.apk) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/apple/apple-original.svg" width="50" alt="iOS"/> | arm64 | [Manatan-v6.0.65-iOS.ipa](https://github.com/KolbyML/Manatan/releases/download/v6.0.65/Manatan-v6.0.65-iOS.ipa) |
+
+- The manatan-app and manatan-launcher archives are updater payloads, not the normal manual install path.
+- The legacy Manatan archives are one-time migration assets for older clients.
+- Checksums: [Checksums.sha256](https://github.com/KolbyML/Manatan/releases/download/v6.0.65/Checksums.sha256)
+
+
 ## Release v6.0.64
 
 - Harden Cloudflare recovery across platforms (be769c1)
