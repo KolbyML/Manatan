@@ -6,10 +6,17 @@ ARG TARGETARCH
 
 COPY manatan-linux-amd64.tar.gz /tmp/amd64.tar.gz
 COPY manatan-linux-arm64.tar.gz /tmp/arm64.tar.gz
+COPY manatan-screenai-v1-linux-x64.zip /tmp/screenai-linux-x64.zip
 
 RUN set -eux; \
     if [ "$TARGETARCH" = "amd64" ]; then \
       tar -xzf /tmp/amd64.tar.gz -C /out/app; \
+      mkdir -p /out/app/resources/screenai; \
+      unzip -q /tmp/screenai-linux-x64.zip -d /out/app/resources/screenai; \
+      test -s /out/app/resources/screenai/v1/manifest.json; \
+      test -s /out/app/resources/screenai/v1/runtime/runtime-manifest.json; \
+      test -s /out/app/resources/screenai/v1/runtime/libscreenai_runtime.so; \
+      test -s /out/app/resources/screenai/v1/resources/libchromescreenai.so; \
     elif [ "$TARGETARCH" = "arm64" ]; then \
       tar -xzf /tmp/arm64.tar.gz -C /out/app; \
     else \

@@ -14,6 +14,9 @@ on:
 env:
   REGISTRY: ghcr.io
   IMAGE_NAME: ${{ github.repository }}
+  SCREENAI_ASSET_REPOSITORY: KolbyML/assets
+  SCREENAI_ASSET_TAG: screenai-v1
+  SCREENAI_LINUX_AMD64_ASSET: manatan-screenai-v1-linux-x64.zip
 
 jobs:
   push_to_registry:
@@ -92,6 +95,23 @@ jobs:
           ls -lh download_amd64
           ls -lh download_arm64
 
+      - name: Download ScreenAI Runtime
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+
+          gh release download "$SCREENAI_ASSET_TAG" \
+            --repo "$SCREENAI_ASSET_REPOSITORY" \
+            --pattern "$SCREENAI_LINUX_AMD64_ASSET" \
+            --dir .
+
+          test -s "$SCREENAI_LINUX_AMD64_ASSET"
+          unzip -Z1 "$SCREENAI_LINUX_AMD64_ASSET" | grep -qx 'v1/manifest.json'
+          unzip -Z1 "$SCREENAI_LINUX_AMD64_ASSET" | grep -qx 'v1/runtime/runtime-manifest.json'
+          unzip -Z1 "$SCREENAI_LINUX_AMD64_ASSET" | grep -qx 'v1/runtime/libscreenai_runtime.so'
+          unzip -Z1 "$SCREENAI_LINUX_AMD64_ASSET" | grep -qx 'v1/resources/libchromescreenai.so'
+
       - name: Prepare Context
         run: |
           cp download_amd64/*.tar.gz manatan-linux-amd64.tar.gz
@@ -137,9 +157,32 @@ jobs:
             return 1
           }
 
+          assert_screenai_ready() {
+            local host_port ocr_status
+            host_port="$(docker port "$CONTAINER_ID" 4567/tcp)"
+            host_port="${host_port##*:}"
+            ocr_status="$(curl --fail --silent --show-error \
+              --max-time 30 \
+              "http://127.0.0.1:${host_port}/api/ocr/backends/status")"
+            python3 - "$ocr_status" <<'PY'
+          import json
+          import sys
+
+          status = json.loads(sys.argv[1])["backends"]["goodlocalocr"]
+          assert status["available"] is True, status
+          assert status["platform_supported"] is True, status
+          assert status["install_state"] == "ready", status
+          assert status["runtime_backend"] == "native-good-local-ocr", status
+          assert status["runtime_version"], status
+          assert status["error"] is None, status
+          PY
+          }
+
           wait_until_ready
+          assert_screenai_ready
           docker restart "$CONTAINER_ID" >/dev/null
           wait_until_ready
+          assert_screenai_ready
 
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v3
