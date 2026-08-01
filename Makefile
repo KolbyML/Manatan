@@ -508,7 +508,17 @@ ios_jre: bin/manatan_ios/Manatan/lib/lib/modules
 
 
 .PHONY: docker-build
-docker-build: desktop_webui download_jar download_natives bundle_jre
+SCREENAI_DOCKER_ARCHIVE ?= manatan-screenai-v1-linux-x64.zip
+SCREENAI_DOCKER_ASSET_URL ?= https://github.com/KolbyML/assets/releases/download/screenai-v1/$(SCREENAI_DOCKER_ARCHIVE)
+
+$(SCREENAI_DOCKER_ARCHIVE):
+	curl --fail --location --retry 3 "$(SCREENAI_DOCKER_ASSET_URL)" -o "$@"
+	unzip -Z1 "$@" | grep -qx 'v1/manifest.json'
+	unzip -Z1 "$@" | grep -qx 'v1/runtime/runtime-manifest.json'
+	unzip -Z1 "$@" | grep -qx 'v1/runtime/libscreenai_runtime.so'
+	unzip -Z1 "$@" | grep -qx 'v1/resources/libchromescreenai.so'
+
+docker-build: desktop_webui download_jar download_natives bundle_jre $(SCREENAI_DOCKER_ARCHIVE)
 	@echo "🐳 Building Docker image for local architecture: $(DOCKER_ARCH)"
 	
 	# 1. Build the Rust binary
