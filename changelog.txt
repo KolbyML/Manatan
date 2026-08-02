@@ -1,3 +1,27 @@
+## Release v6.0.68
+
+- Improve production diagnostics (52a94ae)
+- Publish SRS learning state snapshots (4fa35ac)
+- Protect native crash diagnostics (d5925ea)
+- Honor Android foreground service startup (f9b065e)
+- Add i+1 immersion learning across readers (3247396)
+### Downloads
+
+| System | Architecture | Download |
+|:---:|:---:|:---|
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/apple/apple-original.svg" width="50" alt="macOS"/> | aarch64 | [Manatan-v6.0.68-Mac-Silicon.dmg](https://github.com/KolbyML/Manatan/releases/download/v6.0.68/Manatan-v6.0.68-Mac-Silicon.dmg) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/apple/apple-original.svg" width="50" alt="macOS"/> | x86_64 | [Manatan-v6.0.68-Mac-Intel.dmg](https://github.com/KolbyML/Manatan/releases/download/v6.0.68/Manatan-v6.0.68-Mac-Intel.dmg) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/windows8/windows8-original.svg" width="50" alt="Windows"/> | x86_64 | [ManatanSetup-v6.0.68-Windows-x64.exe](https://github.com/KolbyML/Manatan/releases/download/v6.0.68/ManatanSetup-v6.0.68-Windows-x64.exe) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/linux/linux-original.svg" width="50" alt="Linux"/> | x86_64 | [manatan_6.0.68_amd64.deb](https://github.com/KolbyML/Manatan/releases/download/v6.0.68/manatan_6.0.68_amd64.deb) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/linux/linux-original.svg" width="50" alt="Linux"/> | aarch64 | [manatan_6.0.68_arm64.deb](https://github.com/KolbyML/Manatan/releases/download/v6.0.68/manatan_6.0.68_arm64.deb) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/android/android-original.svg" width="50" alt="Android"/> | arm64 | [Manatan-Android-v6.0.68.apk](https://github.com/KolbyML/Manatan/releases/download/v6.0.68/Manatan-Android-v6.0.68.apk) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/apple/apple-original.svg" width="50" alt="iOS"/> | arm64 | [Manatan-v6.0.68-iOS.ipa](https://github.com/KolbyML/Manatan/releases/download/v6.0.68/Manatan-v6.0.68-iOS.ipa) |
+
+- The manatan-app and manatan-launcher archives are updater payloads, not the normal manual install path.
+- The legacy Manatan archives are one-time migration assets for older clients.
+- Checksums: [Checksums.sha256](https://github.com/KolbyML/Manatan/releases/download/v6.0.68/Checksums.sha256)
+
+
 ## Release v6.0.67
 
 - Contain dictionary controller teardown (208bffc)
