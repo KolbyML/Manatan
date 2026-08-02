@@ -1,3 +1,35 @@
+## Release v6.0.71
+
+- Keep Android playback callbacks engine-safe (178d9f0)
+- Preserve network request call sites (329dee6)
+- Stop Android background services safely (71bdf82)
+- Classify HTTP protocol failures (21f3f8c)
+- Contain background tracker preload failures (0fab532)
+- Fix novel reader loading and bookmark restoration (12e9013)
+- Contain abandoned search request failures (85fe3ef)
+- Handle rejected external link launches (df7dc85)
+- Dispose video surfaces before engine shutdown (b6a3bc8)
+- Prevent settings toggle ANR (0563188)
+- Prevent iOS broken pipe termination (300a5b2)
+- Handle immediate Anki connection failures (9f90063)
+- Provide selection overlays for app-level screens (cafbf09)
+### Downloads
+
+| System | Architecture | Download |
+|:---:|:---:|:---|
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/apple/apple-original.svg" width="50" alt="macOS"/> | aarch64 | [Manatan-v6.0.71-Mac-Silicon.dmg](https://github.com/KolbyML/Manatan/releases/download/v6.0.71/Manatan-v6.0.71-Mac-Silicon.dmg) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/apple/apple-original.svg" width="50" alt="macOS"/> | x86_64 | [Manatan-v6.0.71-Mac-Intel.dmg](https://github.com/KolbyML/Manatan/releases/download/v6.0.71/Manatan-v6.0.71-Mac-Intel.dmg) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/windows8/windows8-original.svg" width="50" alt="Windows"/> | x86_64 | [ManatanSetup-v6.0.71-Windows-x64.exe](https://github.com/KolbyML/Manatan/releases/download/v6.0.71/ManatanSetup-v6.0.71-Windows-x64.exe) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/linux/linux-original.svg" width="50" alt="Linux"/> | x86_64 | [manatan_6.0.71_amd64.deb](https://github.com/KolbyML/Manatan/releases/download/v6.0.71/manatan_6.0.71_amd64.deb) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/linux/linux-original.svg" width="50" alt="Linux"/> | aarch64 | [manatan_6.0.71_arm64.deb](https://github.com/KolbyML/Manatan/releases/download/v6.0.71/manatan_6.0.71_arm64.deb) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/android/android-original.svg" width="50" alt="Android"/> | arm64 | [Manatan-Android-v6.0.71.apk](https://github.com/KolbyML/Manatan/releases/download/v6.0.71/Manatan-Android-v6.0.71.apk) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/apple/apple-original.svg" width="50" alt="iOS"/> | arm64 | [Manatan-v6.0.71-iOS.ipa](https://github.com/KolbyML/Manatan/releases/download/v6.0.71/Manatan-v6.0.71-iOS.ipa) |
+
+- The manatan-app and manatan-launcher archives are updater payloads, not the normal manual install path.
+- The legacy Manatan archives are one-time migration assets for older clients.
+- Checksums: [Checksums.sha256](https://github.com/KolbyML/Manatan/releases/download/v6.0.71/Checksums.sha256)
+
+
 ## Release v6.0.70
 
 - Harden macOS duplicate launch handling (cedf1e7)
