@@ -1,3 +1,58 @@
+## Release v6.0.72
+
+- Signal completed payload launch in smoke (e31f4d8)
+- Propagate OCR cache initialization failures (0da4885)
+- Keep image cache cleanup from interrupting downloads (178a9b1)
+- Keep reader settings localized after reader disposal (af6e9fc)
+- Reuse rendered manga bytes for OCR (8404e54)
+- Cover Windows text selection overlays (4f2abec)
+- Synchronize desktop rollback smoke (f2bf783)
+- Preserve public media context in backend failures (07a91b8)
+- Fix Windows sentence audio capture (ccceb6b)
+- Document production issue delivery workflow (ca1526b)
+- Fix Android release artifact selection (2edee06)
+- Clarify actionable production diagnostics (235b9cc)
+- Identify backend failures by route and status (1e78f06)
+- Refresh updated chapters through supported routes (4f0b4fb)
+- Start Android background monitor before freeze (3a4c682)
+- Require symbols before release publication (7aa40bd)
+- Harden native release dependency setup (41bb2c6)
+- Fix native cross-platform link setup (18fc6af)
+- Contain chapter OCR polling failures (5886ac9)
+- Keep production issue history current during triage (a87d65d)
+- Fix global library update request (a71807d)
+- Document authenticated error triage access (99c8c12)
+- Fix Android native source compatibility (bdd1a0f)
+- Require Windows runner debug symbols (a48b714)
+- Guard extension refresh after disposal (16cceb2)
+- Handle legacy source filter state (c0805ab)
+- Keep dictionary word status footer flush and configurable (fc486c6)
+- Prepare macOS WebView runtime before launch (118e9b2)
+- Keep manga dictionary ready across desktop activation (6e6883d)
+- Open split-stream audio directly on Linux (4efee8f)
+- Capture split-stream audio (524283a)
+- Add dialogue bracket subtitle filter (f9aa412)
+- Keep Android novel imports available (2182a3e)
+- Export all Anki audio as M4A (d5a852b)
+- Handle novel picker failures gracefully (d9767bd)
+- Serialize Windows video texture replacement (0d05837)
+### Downloads
+
+| System | Architecture | Download |
+|:---:|:---:|:---|
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/apple/apple-original.svg" width="50" alt="macOS"/> | aarch64 | [Manatan-v6.0.72-Mac-Silicon.dmg](https://github.com/KolbyML/Manatan/releases/download/v6.0.72/Manatan-v6.0.72-Mac-Silicon.dmg) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/apple/apple-original.svg" width="50" alt="macOS"/> | x86_64 | [Manatan-v6.0.72-Mac-Intel.dmg](https://github.com/KolbyML/Manatan/releases/download/v6.0.72/Manatan-v6.0.72-Mac-Intel.dmg) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/windows8/windows8-original.svg" width="50" alt="Windows"/> | x86_64 | [ManatanSetup-v6.0.72-Windows-x64.exe](https://github.com/KolbyML/Manatan/releases/download/v6.0.72/ManatanSetup-v6.0.72-Windows-x64.exe) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/linux/linux-original.svg" width="50" alt="Linux"/> | x86_64 | [manatan_6.0.72_amd64.deb](https://github.com/KolbyML/Manatan/releases/download/v6.0.72/manatan_6.0.72_amd64.deb) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/linux/linux-original.svg" width="50" alt="Linux"/> | aarch64 | [manatan_6.0.72_arm64.deb](https://github.com/KolbyML/Manatan/releases/download/v6.0.72/manatan_6.0.72_arm64.deb) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/android/android-original.svg" width="50" alt="Android"/> | arm64 | [Manatan-Android-v6.0.72.apk](https://github.com/KolbyML/Manatan/releases/download/v6.0.72/Manatan-Android-v6.0.72.apk) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/apple/apple-original.svg" width="50" alt="iOS"/> | arm64 | [Manatan-v6.0.72-iOS.ipa](https://github.com/KolbyML/Manatan/releases/download/v6.0.72/Manatan-v6.0.72-iOS.ipa) |
+
+- The manatan-app and manatan-launcher archives are updater payloads, not the normal manual install path.
+- The legacy Manatan archives are one-time migration assets for older clients.
+- Checksums: [Checksums.sha256](https://github.com/KolbyML/Manatan/releases/download/v6.0.72/Checksums.sha256)
+
+
 ## Release v6.0.71
 
 - Keep Android playback callbacks engine-safe (178d9f0)
