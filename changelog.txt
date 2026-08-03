@@ -1,3 +1,37 @@
+## Release v6.0.73
+
+- Bootstrap Python before Windows release build (bea3175)
+- Scope learning highlights to Manatan SRS (afdef84)
+- Restore unknown subtitle underlines (923662c)
+- Update tracked subtitle underlines immediately (5de1d55)
+- Make subtitle learning highlights visible (c5bf3b4)
+- Keep desktop readers on embedded backend (3278ed5)
+- Resolve Python launcher on Windows CI (d780462)
+- Restore WebUI learning snapshot route (035a170)
+- Make oversized CEF symbols uploadable (ddc38d7)
+- Stage private CEF symbols for Windows releases (65b0b4c)
+- Settle source requests cancelled by disposal (f4b8608)
+- Stop Android surface refresh after player disposal (f078450)
+- Avoid run-loop waits during macOS shutdown (68cd66f)
+- Keep failed refreshes in error surfaces (d754ef0)
+- Keep novel source refresh failures in the page (e4581b5)
+### Downloads
+
+| System | Architecture | Download |
+|:---:|:---:|:---|
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/apple/apple-original.svg" width="50" alt="macOS"/> | aarch64 | [Manatan-v6.0.73-Mac-Silicon.dmg](https://github.com/KolbyML/Manatan/releases/download/v6.0.73/Manatan-v6.0.73-Mac-Silicon.dmg) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/apple/apple-original.svg" width="50" alt="macOS"/> | x86_64 | [Manatan-v6.0.73-Mac-Intel.dmg](https://github.com/KolbyML/Manatan/releases/download/v6.0.73/Manatan-v6.0.73-Mac-Intel.dmg) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/windows8/windows8-original.svg" width="50" alt="Windows"/> | x86_64 | [ManatanSetup-v6.0.73-Windows-x64.exe](https://github.com/KolbyML/Manatan/releases/download/v6.0.73/ManatanSetup-v6.0.73-Windows-x64.exe) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/linux/linux-original.svg" width="50" alt="Linux"/> | x86_64 | [manatan_6.0.73_amd64.deb](https://github.com/KolbyML/Manatan/releases/download/v6.0.73/manatan_6.0.73_amd64.deb) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/linux/linux-original.svg" width="50" alt="Linux"/> | aarch64 | [manatan_6.0.73_arm64.deb](https://github.com/KolbyML/Manatan/releases/download/v6.0.73/manatan_6.0.73_arm64.deb) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/android/android-original.svg" width="50" alt="Android"/> | arm64 | [Manatan-Android-v6.0.73.apk](https://github.com/KolbyML/Manatan/releases/download/v6.0.73/Manatan-Android-v6.0.73.apk) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/apple/apple-original.svg" width="50" alt="iOS"/> | arm64 | [Manatan-v6.0.73-iOS.ipa](https://github.com/KolbyML/Manatan/releases/download/v6.0.73/Manatan-v6.0.73-iOS.ipa) |
+
+- The manatan-app and manatan-launcher archives are updater payloads, not the normal manual install path.
+- The legacy Manatan archives are one-time migration assets for older clients.
+- Checksums: [Checksums.sha256](https://github.com/KolbyML/Manatan/releases/download/v6.0.73/Checksums.sha256)
+
+
 ## Release v6.0.72
 
 - Signal completed payload launch in smoke (e31f4d8)
