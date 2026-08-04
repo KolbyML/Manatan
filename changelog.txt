@@ -1,3 +1,38 @@
+## Release v6.0.76
+
+- Provide observability secrets to WebUI release (59ac7e4)
+- Persist rapid reader setting changes reliably (d1f27d9)
+- Ignore native crash build artifacts (bc565e3)
+- Preserve Linux crash handler permissions (21fd6ae)
+- Fix Linux webview startup crash (f0ceae2)
+- Report handled Flutter transport failures (64ae0c5)
+- Capture symbolicated WebUI runtime failures (aadae80)
+- Report failures from detached app workers (27a5832)
+- Cover every native API failure boundary (ad4181b)
+- Keep manga OCR overlays aligned on cached pages (3bda90c)
+- Add actionable Google Drive sync diagnostics (7c2b1ac)
+- Keep Android media diagnostics bounded (fad39ea)
+- Stabilize AnkiDroid sentence audio playback (5ec4a91)
+- Make AnkiDroid note insertion deterministic (d51a9d0)
+- Reflect reader setting selections immediately (49058ed)
+- Add iOS reader resource diagnostics (a07f2db)
+### Downloads
+
+| System | Architecture | Download |
+|:---:|:---:|:---|
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/apple/apple-original.svg" width="50" alt="macOS"/> | aarch64 | [Manatan-v6.0.76-Mac-Silicon.dmg](https://github.com/KolbyML/Manatan/releases/download/v6.0.76/Manatan-v6.0.76-Mac-Silicon.dmg) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/apple/apple-original.svg" width="50" alt="macOS"/> | x86_64 | [Manatan-v6.0.76-Mac-Intel.dmg](https://github.com/KolbyML/Manatan/releases/download/v6.0.76/Manatan-v6.0.76-Mac-Intel.dmg) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/windows8/windows8-original.svg" width="50" alt="Windows"/> | x86_64 | [ManatanSetup-v6.0.76-Windows-x64.exe](https://github.com/KolbyML/Manatan/releases/download/v6.0.76/ManatanSetup-v6.0.76-Windows-x64.exe) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/linux/linux-original.svg" width="50" alt="Linux"/> | x86_64 | [manatan_6.0.76_amd64.deb](https://github.com/KolbyML/Manatan/releases/download/v6.0.76/manatan_6.0.76_amd64.deb) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/linux/linux-original.svg" width="50" alt="Linux"/> | aarch64 | [manatan_6.0.76_arm64.deb](https://github.com/KolbyML/Manatan/releases/download/v6.0.76/manatan_6.0.76_arm64.deb) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/android/android-original.svg" width="50" alt="Android"/> | arm64 | [Manatan-Android-v6.0.76.apk](https://github.com/KolbyML/Manatan/releases/download/v6.0.76/Manatan-Android-v6.0.76.apk) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/apple/apple-original.svg" width="50" alt="iOS"/> | arm64 | [Manatan-v6.0.76-iOS.ipa](https://github.com/KolbyML/Manatan/releases/download/v6.0.76/Manatan-v6.0.76-iOS.ipa) |
+
+- The manatan-app and manatan-launcher archives are updater payloads, not the normal manual install path.
+- The legacy Manatan archives are one-time migration assets for older clients.
+- Checksums: [Checksums.sha256](https://github.com/KolbyML/Manatan/releases/download/v6.0.76/Checksums.sha256)
+
+
 ## Release v6.0.75
 
 - Classify YouTube access outages (0cb13b7)
