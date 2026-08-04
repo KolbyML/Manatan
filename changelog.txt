@@ -1,3 +1,48 @@
+## Release v6.0.74
+
+- Fix Windows word audio export (4556bac)
+- Own YouTube player retry failures (e41cf37)
+- Wait for extension runtime migration status (3f169e9)
+- Keep secure-screen dialog state alive (b32dee2)
+- Stop anime refresh after screen disposal (fd4fc6d)
+- Use Apple system allocator for dictionaries (ab8ea47)
+- Preserve embedded backend startup stages (630f0ff)
+- Serialize Android foreground service launches (a6a1277)
+- Map external failures in Android runtime (c47b43f)
+- Handle reader image decode failures (e18fff0)
+- Preserve source failure classifications (b3f8ffc)
+- Fix paged novel search and chapter jumps (3b6efa3)
+- Parse EPUB 2 table of contents declarations (87439f3)
+- Identify local API request failures (999933d)
+- Wait for CEF browsers before shutdown (373cd46)
+- Use canonical Manatan tracker API (e4908ee)
+- Identify local media protocol failures (fa72c8c)
+- Ignore handled iOS broken pipe signals (35d0ed3)
+- Identify reader learning request failures (c14393f)
+- Classify source media failures separately (9dda68b)
+- Separate AnkiConnect availability from backend failures (0a56e96)
+- Keep dictionary details above status controls (2df63d0)
+- Add reader pitch coloring modes (f9a0a37)
+- Add reader learning underline setting (c1724d6)
+- Keep signed-out reader learning optional (7fd54e7)
+- Resolve launcher-managed CEF runtime on macOS (1707fd9)
+### Downloads
+
+| System | Architecture | Download |
+|:---:|:---:|:---|
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/apple/apple-original.svg" width="50" alt="macOS"/> | aarch64 | [Manatan-v6.0.74-Mac-Silicon.dmg](https://github.com/KolbyML/Manatan/releases/download/v6.0.74/Manatan-v6.0.74-Mac-Silicon.dmg) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/apple/apple-original.svg" width="50" alt="macOS"/> | x86_64 | [Manatan-v6.0.74-Mac-Intel.dmg](https://github.com/KolbyML/Manatan/releases/download/v6.0.74/Manatan-v6.0.74-Mac-Intel.dmg) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/windows8/windows8-original.svg" width="50" alt="Windows"/> | x86_64 | [ManatanSetup-v6.0.74-Windows-x64.exe](https://github.com/KolbyML/Manatan/releases/download/v6.0.74/ManatanSetup-v6.0.74-Windows-x64.exe) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/linux/linux-original.svg" width="50" alt="Linux"/> | x86_64 | [manatan_6.0.74_amd64.deb](https://github.com/KolbyML/Manatan/releases/download/v6.0.74/manatan_6.0.74_amd64.deb) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/linux/linux-original.svg" width="50" alt="Linux"/> | aarch64 | [manatan_6.0.74_arm64.deb](https://github.com/KolbyML/Manatan/releases/download/v6.0.74/manatan_6.0.74_arm64.deb) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/android/android-original.svg" width="50" alt="Android"/> | arm64 | [Manatan-Android-v6.0.74.apk](https://github.com/KolbyML/Manatan/releases/download/v6.0.74/Manatan-Android-v6.0.74.apk) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/apple/apple-original.svg" width="50" alt="iOS"/> | arm64 | [Manatan-v6.0.74-iOS.ipa](https://github.com/KolbyML/Manatan/releases/download/v6.0.74/Manatan-v6.0.74-iOS.ipa) |
+
+- The manatan-app and manatan-launcher archives are updater payloads, not the normal manual install path.
+- The legacy Manatan archives are one-time migration assets for older clients.
+- Checksums: [Checksums.sha256](https://github.com/KolbyML/Manatan/releases/download/v6.0.74/Checksums.sha256)
+
+
 ## Release v6.0.73
 
 - Bootstrap Python before Windows release build (bea3175)
