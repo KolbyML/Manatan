@@ -1,3 +1,32 @@
+## Release v6.0.77
+
+- Retry Darwin native asset downloads (66662b0)
+- Use paragraph geometry for Premium OCR (f283a5e)
+- Fix Android laced Opus sentence audio (1bdac78)
+- Prevent failed anime sources from skipping episodes (933238d)
+- Keep WebUI API traffic on its public origin (ef14471)
+- Export Android Anki audio as M4A (93afc79)
+- Restore native player keyboard shortcuts (0c478ec)
+- Preserve Android sentence audio timing (bb88fd2)
+- Align native subtitle word underlines (b5f556b)
+- Align reader word underlines with text flow (bec7508)
+### Downloads
+
+| System | Architecture | Download |
+|:---:|:---:|:---|
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/apple/apple-original.svg" width="50" alt="macOS"/> | aarch64 | [Manatan-v6.0.77-Mac-Silicon.dmg](https://github.com/KolbyML/Manatan/releases/download/v6.0.77/Manatan-v6.0.77-Mac-Silicon.dmg) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/apple/apple-original.svg" width="50" alt="macOS"/> | x86_64 | [Manatan-v6.0.77-Mac-Intel.dmg](https://github.com/KolbyML/Manatan/releases/download/v6.0.77/Manatan-v6.0.77-Mac-Intel.dmg) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/windows8/windows8-original.svg" width="50" alt="Windows"/> | x86_64 | [ManatanSetup-v6.0.77-Windows-x64.exe](https://github.com/KolbyML/Manatan/releases/download/v6.0.77/ManatanSetup-v6.0.77-Windows-x64.exe) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/linux/linux-original.svg" width="50" alt="Linux"/> | x86_64 | [manatan_6.0.77_amd64.deb](https://github.com/KolbyML/Manatan/releases/download/v6.0.77/manatan_6.0.77_amd64.deb) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/linux/linux-original.svg" width="50" alt="Linux"/> | aarch64 | [manatan_6.0.77_arm64.deb](https://github.com/KolbyML/Manatan/releases/download/v6.0.77/manatan_6.0.77_arm64.deb) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/android/android-original.svg" width="50" alt="Android"/> | arm64 | [Manatan-Android-v6.0.77.apk](https://github.com/KolbyML/Manatan/releases/download/v6.0.77/Manatan-Android-v6.0.77.apk) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/apple/apple-original.svg" width="50" alt="iOS"/> | arm64 | [Manatan-v6.0.77-iOS.ipa](https://github.com/KolbyML/Manatan/releases/download/v6.0.77/Manatan-v6.0.77-iOS.ipa) |
+
+- The manatan-app and manatan-launcher archives are updater payloads, not the normal manual install path.
+- The legacy Manatan archives are one-time migration assets for older clients.
+- Checksums: [Checksums.sha256](https://github.com/KolbyML/Manatan/releases/download/v6.0.77/Checksums.sha256)
+
+
 ## Release v6.0.76
 
 - Provide observability secrets to WebUI release (59ac7e4)
