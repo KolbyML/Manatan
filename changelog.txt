@@ -1,3 +1,39 @@
+## Release v6.0.78
+
+- Use reliable Windows installer download (96ca155)
+- Retry Linux desktop launch smoke (8285902)
+- Retry Windows installer tool download (d207336)
+- Materialize archive-backed novels atomically (7296ea7)
+- Keep reader highlights close to vertical text (3b257d5)
+- Hide OCR decorations with closed textboxes (a08a8b9)
+- Complete persistent dual subtitle playback (1ad28ea)
+- Release retained WebView keyboard focus (74689de)
+- Identify background sync failures by lifecycle stage (617af45)
+- Make WebUI failures reproducible by route and cause (a984971)
+- Group transport diagnostics by bounded cause (d3ec4d7)
+- Identify native diagnostics by failing operation (a9cd7fe)
+- Reduce iOS LAN discovery CPU usage (0e69a4c)
+- Anchor subtitles to rendered video frames (6959ffa)
+- Prevent iOS lifecycle run-loop crashes (0635fef)
+- Avoid full-table scans when validating local audio (f251452)
+- Refresh tracker progress across media (ffa5368)
+### Downloads
+
+| System | Architecture | Download |
+|:---:|:---:|:---|
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/apple/apple-original.svg" width="50" alt="macOS"/> | aarch64 | [Manatan-v6.0.78-Mac-Silicon.dmg](https://github.com/KolbyML/Manatan/releases/download/v6.0.78/Manatan-v6.0.78-Mac-Silicon.dmg) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/apple/apple-original.svg" width="50" alt="macOS"/> | x86_64 | [Manatan-v6.0.78-Mac-Intel.dmg](https://github.com/KolbyML/Manatan/releases/download/v6.0.78/Manatan-v6.0.78-Mac-Intel.dmg) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/windows8/windows8-original.svg" width="50" alt="Windows"/> | x86_64 | [ManatanSetup-v6.0.78-Windows-x64.exe](https://github.com/KolbyML/Manatan/releases/download/v6.0.78/ManatanSetup-v6.0.78-Windows-x64.exe) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/linux/linux-original.svg" width="50" alt="Linux"/> | x86_64 | [manatan_6.0.78_amd64.deb](https://github.com/KolbyML/Manatan/releases/download/v6.0.78/manatan_6.0.78_amd64.deb) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/linux/linux-original.svg" width="50" alt="Linux"/> | aarch64 | [manatan_6.0.78_arm64.deb](https://github.com/KolbyML/Manatan/releases/download/v6.0.78/manatan_6.0.78_arm64.deb) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/android/android-original.svg" width="50" alt="Android"/> | arm64 | [Manatan-Android-v6.0.78.apk](https://github.com/KolbyML/Manatan/releases/download/v6.0.78/Manatan-Android-v6.0.78.apk) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/apple/apple-original.svg" width="50" alt="iOS"/> | arm64 | [Manatan-v6.0.78-iOS.ipa](https://github.com/KolbyML/Manatan/releases/download/v6.0.78/Manatan-v6.0.78-iOS.ipa) |
+
+- The manatan-app and manatan-launcher archives are updater payloads, not the normal manual install path.
+- The legacy Manatan archives are one-time migration assets for older clients.
+- Checksums: [Checksums.sha256](https://github.com/KolbyML/Manatan/releases/download/v6.0.78/Checksums.sha256)
+
+
 ## Release v6.0.77
 
 - Retry Darwin native asset downloads (66662b0)
