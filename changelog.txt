@@ -1,3 +1,44 @@
+## Release v6.0.79
+
+- Improve novel read-aloud playback (e8bb7b8)
+- Add independent novel read-aloud controls (995927e)
+- Respect subtitle dictionary lookup triggers (f27727a)
+- Use authenticated MyAnimeList tracker search (c015fe5)
+- Keep novel reader responsive across navigation (d68694b)
+- Speed up reader learning state bootstrap (a29827a)
+- Stabilize desktop novel reading and word learning (88c42c4)
+- Serve local anime covers consistently in libraries (8b3861e)
+- Keep embedded novel pages stable while resizing (38299d0)
+- Restore synced extensions on every device (a6a24de)
+- Restore compact novel selection toolbar (01b9b87)
+- Remove novel i+1 selection action (c221030)
+- Keep novel pages visible while resizing (833ed0b)
+- Let the desktop launcher own update prompts (51ef859)
+- Preserve custom local source paths (2857a3d)
+- Make novel highlights respond immediately (7fbb97c)
+- Preserve actionable backend failure diagnostics (aef04e2)
+- Shut down the desktop WebView runtime cleanly (322d3f7)
+- Serialize embedded backend startup (4aecd2a)
+- Treat signed-out device mesh state as optional (9ff61d6)
+- Identify frame-less React failures by component (7bbafb8)
+- Preserve failed audio encodes for exact replay (75118e4)
+### Downloads
+
+| System | Architecture | Download |
+|:---:|:---:|:---|
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/apple/apple-original.svg" width="50" alt="macOS"/> | aarch64 | [Manatan-v6.0.79-Mac-Silicon.dmg](https://github.com/KolbyML/Manatan/releases/download/v6.0.79/Manatan-v6.0.79-Mac-Silicon.dmg) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/apple/apple-original.svg" width="50" alt="macOS"/> | x86_64 | [Manatan-v6.0.79-Mac-Intel.dmg](https://github.com/KolbyML/Manatan/releases/download/v6.0.79/Manatan-v6.0.79-Mac-Intel.dmg) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/windows8/windows8-original.svg" width="50" alt="Windows"/> | x86_64 | [ManatanSetup-v6.0.79-Windows-x64.exe](https://github.com/KolbyML/Manatan/releases/download/v6.0.79/ManatanSetup-v6.0.79-Windows-x64.exe) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/linux/linux-original.svg" width="50" alt="Linux"/> | x86_64 | [manatan_6.0.79_amd64.deb](https://github.com/KolbyML/Manatan/releases/download/v6.0.79/manatan_6.0.79_amd64.deb) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/linux/linux-original.svg" width="50" alt="Linux"/> | aarch64 | [manatan_6.0.79_arm64.deb](https://github.com/KolbyML/Manatan/releases/download/v6.0.79/manatan_6.0.79_arm64.deb) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/android/android-original.svg" width="50" alt="Android"/> | arm64 | [Manatan-Android-v6.0.79.apk](https://github.com/KolbyML/Manatan/releases/download/v6.0.79/Manatan-Android-v6.0.79.apk) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/apple/apple-original.svg" width="50" alt="iOS"/> | arm64 | [Manatan-v6.0.79-iOS.ipa](https://github.com/KolbyML/Manatan/releases/download/v6.0.79/Manatan-v6.0.79-iOS.ipa) |
+
+- The manatan-app and manatan-launcher archives are updater payloads, not the normal manual install path.
+- The legacy Manatan archives are one-time migration assets for older clients.
+- Checksums: [Checksums.sha256](https://github.com/KolbyML/Manatan/releases/download/v6.0.79/Checksums.sha256)
+
+
 ## Release v6.0.78
 
 - Use reliable Windows installer download (96ca155)
