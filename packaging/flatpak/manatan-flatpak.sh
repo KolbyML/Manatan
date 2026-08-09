@@ -7,6 +7,11 @@ export MANATAN_CEF_ROOT="$cef_root"
 export CEF_PATH="$cef_root"
 export WEBVIEW_CEF_USER_DATA_DIR="${XDG_DATA_HOME:-$HOME/.local/share}/manatan/cef/flutter-webview"
 
+# Flatpak packages the exact shared runtimes declared by this app release.
+# Keep this generated environment beside the immutable runtime files so the
+# direct Flatpak launch has the same contract as the normal desktop launcher.
+. /app/share/manatan/flatpak-runtimes
+
 # The bootstrapper normally owns application updates and CEF provisioning.
 # Flatpak owns both for this installation, so expose an always-up-to-date state
 # to the UI and never attempt to replace the read-only /app payload.
