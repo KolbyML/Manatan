@@ -133,6 +133,7 @@ modules:
       - cp -a cef/Release/. ${FLATPAK_DEST}/lib/cef/
       - cp -a cef/Resources/. ${FLATPAK_DEST}/lib/cef/
       - chmod 0755 ${FLATPAK_DEST}/lib/cef/chrome-sandbox
+      - install -Dm0644 cef-archive.json ${FLATPAK_DEST}/lib/cef/archive.json
       - install -Dm0644 cef/LICENSE.txt ${FLATPAK_DEST}/share/licenses/${FLATPAK_ID}/cef/LICENSE.txt
       - install -Dm0644 cef/CREDITS.html ${FLATPAK_DEST}/share/licenses/${FLATPAK_ID}/cef/CREDITS.html
     sources:
@@ -148,6 +149,61 @@ modules:
         sha256: 8aa87c0f0e848b747903ffbd5e5751179c1bdedf32afb32afaad51dd777c960d
         only-arches:
           - aarch64
+      - type: file
+        path: cef-linux64-archive.json
+        dest-filename: cef-archive.json
+        only-arches:
+          - x86_64
+      - type: file
+        path: cef-linuxarm64-archive.json
+        dest-filename: cef-archive.json
+        only-arches:
+          - aarch64
+
+  # Desktop releases keep large, slow-changing runtimes separate from the app
+  # payload. The regular Manatan launcher provisions these content-addressed
+  # assets before starting the app. Flatpak owns its immutable application
+  # files, so install the same release-declared runtimes under /app and expose
+  # them through the launch environment instead of downloading on first use.
+  - name: manatan-runtimes
+    buildsystem: simple
+    build-commands:
+      - install -d ${FLATPAK_DEST}/lib/manatan-runtimes/jre ${FLATPAK_DEST}/lib/manatan-runtimes/extension-server ${FLATPAK_DEST}/lib/manatan-runtimes/webui
+      - cp -a jre/. ${FLATPAK_DEST}/lib/manatan-runtimes/jre/
+      - cp -a extension-server/. ${FLATPAK_DEST}/lib/manatan-runtimes/extension-server/
+      - cp -a webui/. ${FLATPAK_DEST}/lib/manatan-runtimes/webui/
+      - chmod 0755 ${FLATPAK_DEST}/lib/manatan-runtimes/jre/bin/java
+      - test -s ${FLATPAK_DEST}/lib/manatan-runtimes/jre/bin/java
+      - test -s ${FLATPAK_DEST}/lib/manatan-runtimes/extension-server/Extension-Server.jar
+      - test -s ${FLATPAK_DEST}/lib/manatan-runtimes/webui/index.html
+      - install -Dm0644 manatan-flatpak-runtimes.sh ${FLATPAK_DEST}/share/manatan/flatpak-runtimes
+    sources:
+      - type: archive
+        dest: jre
+        strip-components: 0
+        url: https://github.com/KolbyML/Manatan/releases/download/v6.0.79/manatan-runtime-jre-linux-amd64-2fd6caaad7d44184421be300e3d01408220424d318ebc783f776e063f3b14421.zip
+        sha256: a75e894ab58accb95007754c84a3787b28f53d03096b1250834523da4c95d5da
+        only-arches:
+          - x86_64
+      - type: archive
+        dest: jre
+        strip-components: 0
+        url: https://github.com/KolbyML/Manatan/releases/download/v6.0.79/manatan-runtime-jre-linux-arm64-62b6a773794922996815201ab82ad2315993a25a4664f5eae45999e8097bf79e.zip
+        sha256: a269efbf5cd35c76400ae2080b8c37677de7c0c78de9ea15489f10d90fe2c435
+        only-arches:
+          - aarch64
+      - type: archive
+        dest: extension-server
+        strip-components: 0
+        url: https://github.com/KolbyML/Manatan/releases/download/v6.0.79/manatan-runtime-extension-server-d10702d645c99a494e47eb018b3c7f19ab934ba10003d7dba257b052e1c3b4d8.zip
+        sha256: ddc5f69a6dc8207741a3e04bd454805c7041bdb91f6b305344ebd70fbc7cda81
+      - type: archive
+        dest: webui
+        strip-components: 0
+        url: https://github.com/KolbyML/Manatan/releases/download/v6.0.79/manatan-runtime-webui-4176345a5ded49699f426108ee5f74e7e3ad5361d19b72304d5d00885939d448.zip
+        sha256: 881cc134230157cdf35eeeaba8b1c8ce329e646bf8d1d156c9ff1b2971e15002
+      - type: file
+        path: manatan-flatpak-runtimes.sh
 
   - name: manatan
     buildsystem: simple
@@ -158,6 +214,7 @@ modules:
       - cp -a manatan/. ${FLATPAK_DEST}/lib/manatan/
       - chmod 0755 ${FLATPAK_DEST}/lib/manatan/Manatan ${FLATPAK_DEST}/lib/manatan/manatan-helper
       - install -Dm0755 manatan-flatpak ${FLATPAK_DEST}/bin/manatan
+      - install -Dm0755 manatan-flatpak-helper ${FLATPAK_DEST}/bin/manatan-helper
       - if test -f manatan/share/applications/io.github.kolbyml.Manatan.desktop; then install -Dm0644 manatan/share/applications/io.github.kolbyml.Manatan.desktop ${FLATPAK_DEST}/share/applications/io.github.kolbyml.Manatan.desktop; else install -Dm0644 io.github.kolbyml.Manatan.desktop ${FLATPAK_DEST}/share/applications/io.github.kolbyml.Manatan.desktop; fi
       - if test -f manatan/share/metainfo/io.github.kolbyml.Manatan.metainfo.xml; then install -Dm0644 manatan/share/metainfo/io.github.kolbyml.Manatan.metainfo.xml ${FLATPAK_DEST}/share/metainfo/io.github.kolbyml.Manatan.metainfo.xml; else install -Dm0644 io.github.kolbyml.Manatan.metainfo.xml ${FLATPAK_DEST}/share/metainfo/io.github.kolbyml.Manatan.metainfo.xml; fi
       - if test -f manatan/share/icons/hicolor/512x512/apps/io.github.kolbyml.Manatan.png; then install -Dm0644 manatan/share/icons/hicolor/512x512/apps/io.github.kolbyml.Manatan.png ${FLATPAK_DEST}/share/icons/hicolor/512x512/apps/io.github.kolbyml.Manatan.png; else install -Dm0644 io.github.kolbyml.Manatan.png ${FLATPAK_DEST}/share/icons/hicolor/512x512/apps/io.github.kolbyml.Manatan.png; fi
@@ -190,6 +247,9 @@ modules:
       - type: file
         path: manatan-flatpak.sh
         dest-filename: manatan-flatpak
+      - type: file
+        path: manatan-flatpak-helper.sh
+        dest-filename: manatan-flatpak-helper
       - type: file
         path: io.github.kolbyml.Manatan.desktop
       - type: file

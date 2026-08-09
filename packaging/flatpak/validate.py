@@ -39,6 +39,73 @@ def manifest_module(text: str, name: str) -> str:
     return match.group("body")
 
 
+def validate_packaged_runtimes(directory: Path, text: str) -> None:
+    runtime = manifest_module(text, "manatan-runtimes")
+    if runtime.count("        strip-components: 0\n") != 4:
+        fail("every shared runtime archive must preserve its root directory layout")
+    for fragment, expected_count in (
+        ("manatan-runtime-jre-linux-amd64-", 1),
+        ("manatan-runtime-jre-linux-arm64-", 1),
+        ("manatan-runtime-extension-server-", 1),
+        ("manatan-runtime-webui-", 1),
+    ):
+        if runtime.count(fragment) != expected_count:
+            fail(f"runtime module must contain exactly one {fragment} source")
+
+    for required in (
+        "${FLATPAK_DEST}/lib/manatan-runtimes/jre",
+        "${FLATPAK_DEST}/lib/manatan-runtimes/extension-server",
+        "${FLATPAK_DEST}/lib/manatan-runtimes/webui",
+        "${FLATPAK_DEST}/share/manatan/flatpak-runtimes",
+    ):
+        if required not in runtime:
+            fail(f"runtime module does not install {required}")
+
+    config_path = directory / "manatan-flatpak-runtimes.sh"
+    if not config_path.is_file():
+        fail("Flatpak runtime environment file is missing")
+    config = config_path.read_text(encoding="utf-8")
+    expected_assignments = {
+        "MANATAN_JRE_ROOT": "/app/lib/manatan-runtimes/jre",
+        "MANATAN_EXTENSION_SERVER_JAR": (
+            "/app/lib/manatan-runtimes/extension-server/Extension-Server.jar"
+        ),
+        "MANATAN_WEBUI_ROOT": "/app/lib/manatan-runtimes/webui",
+        "MANATAN_HELPER_BIN": "/app/bin/manatan-helper",
+    }
+    for name, value in expected_assignments.items():
+        if not re.search(rf"^{name}={re.escape(value)}$", config, re.MULTILINE):
+            fail(f"Flatpak runtime environment has an invalid {name}")
+    match = re.search(
+        r"^MANATAN_WEBUI_RUNTIME_ID=([0-9a-f]{64})$", config, re.MULTILINE
+    )
+    if not match:
+        fail("Flatpak runtime environment has no content-addressed WebUI ID")
+    if f"manatan-runtime-webui-{match.group(1)}.zip" not in runtime:
+        fail("Flatpak WebUI runtime ID does not match its archive")
+    exported = re.search(
+        r"^export (.+)$", config, re.MULTILINE
+    )
+    if not exported or set(exported.group(1).split()) != {
+        *expected_assignments,
+        "MANATAN_WEBUI_RUNTIME_ID",
+    }:
+        fail("Flatpak runtime environment does not export every runtime variable")
+
+    wrapper = (directory / "manatan-flatpak.sh").read_text(encoding="utf-8")
+    if ". /app/share/manatan/flatpak-runtimes" not in wrapper:
+        fail("Flatpak launcher does not load the packaged runtime environment")
+
+    helper = (directory / "manatan-flatpak-helper.sh").read_text(encoding="utf-8")
+    for required in (
+        "unset FLATPAK",
+        'export LD_PRELOAD="$cef_root/libcef.so${LD_PRELOAD:+:$LD_PRELOAD}"',
+        'exec /app/lib/manatan/manatan-helper "$@"',
+    ):
+        if required not in helper:
+            fail("Flatpak helper does not initialize its private CEF runtime")
+
+
 def validate_manifest(directory: Path) -> None:
     path = directory / f"{APP_ID}.yml"
     text = path.read_text(encoding="utf-8")
@@ -69,6 +136,22 @@ def validate_manifest(directory: Path) -> None:
     cef_sources = re.findall(r"^      - type: archive$", cef, re.MULTILINE)
     if len(cef_sources) != 2:
         fail("CEF must have exactly two architecture-specific sources")
+    if "${FLATPAK_DEST}/lib/cef/archive.json" not in cef:
+        fail("CEF runtime does not install its version metadata")
+    cef_urls = re.findall(r"^        url: (\S+)$", cef, re.MULTILINE)
+    if len(cef_urls) != 2:
+        fail("CEF runtime archive URLs are invalid")
+    for arch in ("linux64", "linuxarm64"):
+        metadata_path = directory / f"cef-{arch}-archive.json"
+        if not metadata_path.is_file():
+            fail(f"CEF {arch} runtime metadata is missing")
+        metadata = json.loads(metadata_path.read_text(encoding="utf-8"))
+        name = metadata.get("name") if isinstance(metadata, dict) else None
+        if not isinstance(name, str) or not any(
+            name in urllib.parse.unquote(url) for url in cef_urls
+        ):
+            fail(f"CEF {arch} runtime metadata does not match its archive")
+    validate_packaged_runtimes(directory, text)
     app = manifest_module(text, "manatan")
     if "    sources:\n" not in app:
         fail("Manatan module has no sources")
