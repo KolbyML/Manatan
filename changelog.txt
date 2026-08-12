@@ -1,3 +1,41 @@
+## Release v6.0.81
+
+- Use prepared server artifact for iOS (d558904)
+- Improve production failure diagnostics (5198ff4)
+- Add audio track selection to web video player (998507c)
+- Preserve manga page when switching reader modes (3f50066)
+- Identify unsupported manga request callers (ee2f794)
+- Use native Bonjour for iOS device discovery (fd06d2c)
+- Fix Windows reader keyboard navigation (1a27e6b)
+- Make mobile LAN discovery demand-driven (1e1cc43)
+- Align Manatan OCR boxes with manga text (b260fd1)
+- Manage downloaded anime subtitles (dd431d2)
+- Ship source-built Japanese reader analysis (326396f)
+- Add deterministic Japanese dictionary source builds (c22a4dc)
+- Add optional second dictionary lookup trigger (0ccf4ab)
+- Keep extension installs on configured repositories (ebb8908)
+- Refresh manga reader settings when mode changes (600084f)
+- Remove spacing between dual subtitles (98f2bf4)
+- Keep manga page actions aligned with rendered images (c256f57)
+- Preserve anime media context in mined cards (755f263)
+- Export novel annotations through native file pickers (6566a11)
+### Downloads
+
+| System | Architecture | Download |
+|:---:|:---:|:---|
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/apple/apple-original.svg" width="50" alt="macOS"/> | aarch64 | [Manatan-v6.0.81-Mac-Silicon.dmg](https://github.com/KolbyML/Manatan/releases/download/v6.0.81/Manatan-v6.0.81-Mac-Silicon.dmg) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/apple/apple-original.svg" width="50" alt="macOS"/> | x86_64 | [Manatan-v6.0.81-Mac-Intel.dmg](https://github.com/KolbyML/Manatan/releases/download/v6.0.81/Manatan-v6.0.81-Mac-Intel.dmg) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/windows8/windows8-original.svg" width="50" alt="Windows"/> | x86_64 | [ManatanSetup-v6.0.81-Windows-x64.exe](https://github.com/KolbyML/Manatan/releases/download/v6.0.81/ManatanSetup-v6.0.81-Windows-x64.exe) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/linux/linux-original.svg" width="50" alt="Linux"/> | x86_64 | [manatan_6.0.81_amd64.deb](https://github.com/KolbyML/Manatan/releases/download/v6.0.81/manatan_6.0.81_amd64.deb) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/linux/linux-original.svg" width="50" alt="Linux"/> | aarch64 | [manatan_6.0.81_arm64.deb](https://github.com/KolbyML/Manatan/releases/download/v6.0.81/manatan_6.0.81_arm64.deb) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/android/android-original.svg" width="50" alt="Android"/> | arm64 | [Manatan-Android-v6.0.81.apk](https://github.com/KolbyML/Manatan/releases/download/v6.0.81/Manatan-Android-v6.0.81.apk) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/apple/apple-original.svg" width="50" alt="iOS"/> | arm64 | [Manatan-v6.0.81-iOS.ipa](https://github.com/KolbyML/Manatan/releases/download/v6.0.81/Manatan-v6.0.81-iOS.ipa) |
+
+- The manatan-app and manatan-launcher archives are updater payloads, not the normal manual install path.
+- The legacy Manatan archives are one-time migration assets for older clients.
+- Checksums: [Checksums.sha256](https://github.com/KolbyML/Manatan/releases/download/v6.0.81/Checksums.sha256)
+
+
 ## Release v6.0.80
 
 - Improve cross-platform reproduction diagnostics (15e124a)
