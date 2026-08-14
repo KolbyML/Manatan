@@ -1,3 +1,38 @@
+## Release v6.0.83
+
+- Make Windows patching shallow-clone safe (ed3446a)
+- Retry transient native preparation failures (eefe11f)
+- Support pinned native source revisions (a401de5)
+- Fix Darwin native cache patch (09bddb7)
+- Improve mobile subtitle sidebar playback (42a25b5)
+- Improve self-hosted source settings (ac6ae58)
+- Capture complete sentence audio from streamed video (6413642)
+- Capture YouTube card media across platforms (9f48a2f)
+- Keep secondary subtitle providers off by default (750b218)
+- Enable YouTube card media capture (6725b74)
+- Add bulk migration for video and manga libraries (794386e)
+- Improve audio capture reliability (9313444)
+- Keep media library titles readable without covers (584ad32)
+- Make Crystal membership easy to find (89ecc9d)
+- Use encrypted relay for iOS device sync (1107c09)
+- Use device-specific subtitle position defaults (d284dec)
+### Downloads
+
+| System | Architecture | Download |
+|:---:|:---:|:---|
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/apple/apple-original.svg" width="50" alt="macOS"/> | aarch64 | [Manatan-v6.0.83-Mac-Silicon.dmg](https://github.com/KolbyML/Manatan/releases/download/v6.0.83/Manatan-v6.0.83-Mac-Silicon.dmg) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/apple/apple-original.svg" width="50" alt="macOS"/> | x86_64 | [Manatan-v6.0.83-Mac-Intel.dmg](https://github.com/KolbyML/Manatan/releases/download/v6.0.83/Manatan-v6.0.83-Mac-Intel.dmg) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/windows8/windows8-original.svg" width="50" alt="Windows"/> | x86_64 | [ManatanSetup-v6.0.83-Windows-x64.exe](https://github.com/KolbyML/Manatan/releases/download/v6.0.83/ManatanSetup-v6.0.83-Windows-x64.exe) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/linux/linux-original.svg" width="50" alt="Linux"/> | x86_64 | [manatan_6.0.83_amd64.deb](https://github.com/KolbyML/Manatan/releases/download/v6.0.83/manatan_6.0.83_amd64.deb) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/linux/linux-original.svg" width="50" alt="Linux"/> | aarch64 | [manatan_6.0.83_arm64.deb](https://github.com/KolbyML/Manatan/releases/download/v6.0.83/manatan_6.0.83_arm64.deb) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/android/android-original.svg" width="50" alt="Android"/> | arm64 | [Manatan-Android-v6.0.83.apk](https://github.com/KolbyML/Manatan/releases/download/v6.0.83/Manatan-Android-v6.0.83.apk) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/apple/apple-original.svg" width="50" alt="iOS"/> | arm64 | [Manatan-v6.0.83-iOS.ipa](https://github.com/KolbyML/Manatan/releases/download/v6.0.83/Manatan-v6.0.83-iOS.ipa) |
+
+- The manatan-app and manatan-launcher archives are updater payloads, not the normal manual install path.
+- The legacy Manatan archives are one-time migration assets for older clients.
+- Checksums: [Checksums.sha256](https://github.com/KolbyML/Manatan/releases/download/v6.0.83/Checksums.sha256)
+
+
 ## Release v6.0.82
 
 - Centralize platform webview ownership (3ddc6e0)
