@@ -158,4 +158,4 @@ The following links, repos, companies and projects have been important in the de
 
 ## Star History
 
-[![Star History Chart](https://api.star-history.com/svg?repos=KolbyML/Manatan&type=date&legend=top-left)](https://www.star-history.com/#KolbyML/Manatan&type=date&legend=top-left)
+[![Star History Chart](https://star-history.dera.page/svg?repos=KolbyML/Manatan&type=date&legend=top-left)](https://star-history.dera.page/#KolbyML/Manatan&type=date&legend=top-left)
