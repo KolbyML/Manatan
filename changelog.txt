@@ -1,3 +1,24 @@
+## Release v6.0.90
+
+- Keep profile settings isolated in the novel reader (12bf61b)
+- Speed up iPhone development builds (4ecfbee)
+### Downloads
+
+| System | Architecture | Download |
+|:---:|:---:|:---|
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/apple/apple-original.svg" width="50" alt="macOS"/> | aarch64 | [Manatan-v6.0.90-Mac-Silicon.dmg](https://github.com/KolbyML/Manatan/releases/download/v6.0.90/Manatan-v6.0.90-Mac-Silicon.dmg) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/apple/apple-original.svg" width="50" alt="macOS"/> | x86_64 | [Manatan-v6.0.90-Mac-Intel.dmg](https://github.com/KolbyML/Manatan/releases/download/v6.0.90/Manatan-v6.0.90-Mac-Intel.dmg) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/windows8/windows8-original.svg" width="50" alt="Windows"/> | x86_64 | [ManatanSetup-v6.0.90-Windows-x64.exe](https://github.com/KolbyML/Manatan/releases/download/v6.0.90/ManatanSetup-v6.0.90-Windows-x64.exe) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/linux/linux-original.svg" width="50" alt="Linux"/> | x86_64 | [manatan_6.0.90_amd64.deb](https://github.com/KolbyML/Manatan/releases/download/v6.0.90/manatan_6.0.90_amd64.deb) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/linux/linux-original.svg" width="50" alt="Linux"/> | aarch64 | [manatan_6.0.90_arm64.deb](https://github.com/KolbyML/Manatan/releases/download/v6.0.90/manatan_6.0.90_arm64.deb) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/android/android-original.svg" width="50" alt="Android"/> | arm64 | [Manatan-Android-v6.0.90.apk](https://github.com/KolbyML/Manatan/releases/download/v6.0.90/Manatan-Android-v6.0.90.apk) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/apple/apple-original.svg" width="50" alt="iOS"/> | arm64 | [Manatan-v6.0.90-iOS.ipa](https://github.com/KolbyML/Manatan/releases/download/v6.0.90/Manatan-v6.0.90-iOS.ipa) |
+
+- The manatan-app and manatan-launcher archives are updater payloads, not the normal manual install path.
+- The legacy Manatan archives are one-time migration assets for older clients.
+- Checksums: [Checksums.sha256](https://github.com/KolbyML/Manatan/releases/download/v6.0.90/Checksums.sha256)
+
+
 ## Release v6.0.89
 
 - Merge premium OCR lines in the app backend (cdd2c06)
