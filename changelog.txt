@@ -1,3 +1,33 @@
+## Release v6.0.93
+
+- Preserve novel pages across image boundaries (2b16c65)
+- Correct extension novel progress percentages (02866ce)
+- Keep novel reader input responsive during startup (65082e0)
+- Preserve manga metadata across desktop runtime calls (abaab57)
+- Make novel reader interaction and highlights immediately available (d14d1c7)
+- Keep novel learning marks aligned with words (c6c2687)
+- Make novel reader restoration fast and deterministic (7dec2de)
+- Load local EPUB pages directly from extracted spines (2e43d76)
+- Make mouse navigation reordering immediate (b9f7cf6)
+- Make novel pagination deterministic across layouts (748538b)
+- Make iPhone test installs launch independently (32090b5)
+### Downloads
+
+| System | Architecture | Download |
+|:---:|:---:|:---|
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/apple/apple-original.svg" width="50" alt="macOS"/> | aarch64 | [Manatan-v6.0.93-Mac-Silicon.dmg](https://github.com/KolbyML/Manatan/releases/download/v6.0.93/Manatan-v6.0.93-Mac-Silicon.dmg) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/apple/apple-original.svg" width="50" alt="macOS"/> | x86_64 | [Manatan-v6.0.93-Mac-Intel.dmg](https://github.com/KolbyML/Manatan/releases/download/v6.0.93/Manatan-v6.0.93-Mac-Intel.dmg) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/windows8/windows8-original.svg" width="50" alt="Windows"/> | x86_64 | [ManatanSetup-v6.0.93-Windows-x64.exe](https://github.com/KolbyML/Manatan/releases/download/v6.0.93/ManatanSetup-v6.0.93-Windows-x64.exe) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/linux/linux-original.svg" width="50" alt="Linux"/> | x86_64 | [manatan_6.0.93_amd64.deb](https://github.com/KolbyML/Manatan/releases/download/v6.0.93/manatan_6.0.93_amd64.deb) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/linux/linux-original.svg" width="50" alt="Linux"/> | aarch64 | [manatan_6.0.93_arm64.deb](https://github.com/KolbyML/Manatan/releases/download/v6.0.93/manatan_6.0.93_arm64.deb) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/android/android-original.svg" width="50" alt="Android"/> | arm64 | [Manatan-Android-v6.0.93.apk](https://github.com/KolbyML/Manatan/releases/download/v6.0.93/Manatan-Android-v6.0.93.apk) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/apple/apple-original.svg" width="50" alt="iOS"/> | arm64 | [Manatan-v6.0.93-iOS.ipa](https://github.com/KolbyML/Manatan/releases/download/v6.0.93/Manatan-v6.0.93-iOS.ipa) |
+
+- The manatan-app and manatan-launcher archives are updater payloads, not the normal manual install path.
+- The legacy Manatan archives are one-time migration assets for older clients.
+- Checksums: [Checksums.sha256](https://github.com/KolbyML/Manatan/releases/download/v6.0.93/Checksums.sha256)
+
+
 ## Release v6.0.92
 
 - Support F11 desktop fullscreen (51fb546)
