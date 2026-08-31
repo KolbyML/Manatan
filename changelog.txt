@@ -1,3 +1,38 @@
+## Release v6.0.101
+
+- Retry transient symbol uploads (82cef60)
+- Speed up macOS release linking (5c1d4e4)
+- Route desktop Apple builds to the Pro runner (42017c1)
+- Fix novel progress after table of contents jumps (a115f06)
+- Fix release dependency scheduling (9463929)
+- Expose download location in browse settings (86f14b0)
+- Make download folders configurable across platforms (63aae2c)
+- Renew video controls timeout on interaction (b1db413)
+- Add compact popup glossaries (ace7e62)
+- Keep synced vocabulary status consistent in the dictionary (19748dd)
+- Add kanji stroke-order reference details (6667cef)
+- Add dictionary-free single glossary templates (d453d84)
+- Fix Wayland portal session handling (346c2e7)
+- Keep download state local to each device (037fe1e)
+- Make interrupted sidecar syncs recoverable (7a992b2)
+- Polish screen lookup controller and mining behavior (a97fc73)
+### Downloads
+
+| System | Architecture | Download |
+|:---:|:---:|:---|
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/apple/apple-original.svg" width="50" alt="macOS"/> | aarch64 | [Manatan-v6.0.101-Mac-Silicon.dmg](https://github.com/KolbyML/Manatan/releases/download/v6.0.101/Manatan-v6.0.101-Mac-Silicon.dmg) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/apple/apple-original.svg" width="50" alt="macOS"/> | x86_64 | [Manatan-v6.0.101-Mac-Intel.dmg](https://github.com/KolbyML/Manatan/releases/download/v6.0.101/Manatan-v6.0.101-Mac-Intel.dmg) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/windows8/windows8-original.svg" width="50" alt="Windows"/> | x86_64 | [ManatanSetup-v6.0.101-Windows-x64.exe](https://github.com/KolbyML/Manatan/releases/download/v6.0.101/ManatanSetup-v6.0.101-Windows-x64.exe) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/linux/linux-original.svg" width="50" alt="Linux"/> | x86_64 | [manatan_6.0.101_amd64.deb](https://github.com/KolbyML/Manatan/releases/download/v6.0.101/manatan_6.0.101_amd64.deb) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/linux/linux-original.svg" width="50" alt="Linux"/> | aarch64 | [manatan_6.0.101_arm64.deb](https://github.com/KolbyML/Manatan/releases/download/v6.0.101/manatan_6.0.101_arm64.deb) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/android/android-original.svg" width="50" alt="Android"/> | arm64 | [Manatan-Android-v6.0.101.apk](https://github.com/KolbyML/Manatan/releases/download/v6.0.101/Manatan-Android-v6.0.101.apk) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/apple/apple-original.svg" width="50" alt="iOS"/> | arm64 | [Manatan-v6.0.101-iOS.ipa](https://github.com/KolbyML/Manatan/releases/download/v6.0.101/Manatan-v6.0.101-iOS.ipa) |
+
+- The manatan-app and manatan-launcher archives are updater payloads, not the normal manual install path.
+- The legacy Manatan archives are one-time migration assets for older clients.
+- Checksums: [Checksums.sha256](https://github.com/KolbyML/Manatan/releases/download/v6.0.101/Checksums.sha256)
+
+
 ## Release v6.0.100
 
 - Keep iOS build numbers monotonic (6cd0d34)
