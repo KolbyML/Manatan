@@ -1,3 +1,31 @@
+## Release v6.1.2
+
+- Require local OCR setup before screen lookup (30b0239)
+- Standardize SRS media across supported platforms (8bc0981)
+- Improve screen lookup region mining and feedback (7ebb92a)
+- Keep video subtitles behind player controls (aba6d4c)
+- Honor Android folder grants for local videos (aae07ac)
+- Keep manga OCR text within detected bounds (c75f407)
+- Attach screen lookup captures to Anki cards (6b58d83)
+- Keep Android temporary files inside app storage (0df36a3)
+- Recover AnkiDroid media writes during startup (e277031)
+### Downloads
+
+| System | Architecture | Download |
+|:---:|:---:|:---|
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/apple/apple-original.svg" width="50" alt="macOS"/> | aarch64 | [Manatan-v6.1.2-Mac-Silicon.dmg](https://github.com/KolbyML/Manatan/releases/download/v6.1.2/Manatan-v6.1.2-Mac-Silicon.dmg) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/apple/apple-original.svg" width="50" alt="macOS"/> | x86_64 | [Manatan-v6.1.2-Mac-Intel.dmg](https://github.com/KolbyML/Manatan/releases/download/v6.1.2/Manatan-v6.1.2-Mac-Intel.dmg) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/windows8/windows8-original.svg" width="50" alt="Windows"/> | x86_64 | [ManatanSetup-v6.1.2-Windows-x64.exe](https://github.com/KolbyML/Manatan/releases/download/v6.1.2/ManatanSetup-v6.1.2-Windows-x64.exe) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/linux/linux-original.svg" width="50" alt="Linux"/> | x86_64 | [manatan_6.1.2_amd64.deb](https://github.com/KolbyML/Manatan/releases/download/v6.1.2/manatan_6.1.2_amd64.deb) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/linux/linux-original.svg" width="50" alt="Linux"/> | aarch64 | [manatan_6.1.2_arm64.deb](https://github.com/KolbyML/Manatan/releases/download/v6.1.2/manatan_6.1.2_arm64.deb) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/android/android-original.svg" width="50" alt="Android"/> | arm64 | [Manatan-Android-v6.1.2.apk](https://github.com/KolbyML/Manatan/releases/download/v6.1.2/Manatan-Android-v6.1.2.apk) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/apple/apple-original.svg" width="50" alt="iOS"/> | arm64 | [Manatan-v6.1.2-iOS.ipa](https://github.com/KolbyML/Manatan/releases/download/v6.1.2/Manatan-v6.1.2-iOS.ipa) |
+
+- The manatan-app and manatan-launcher archives are updater payloads, not the normal manual install path.
+- The legacy Manatan archives are one-time migration assets for older clients.
+- Checksums: [Checksums.sha256](https://github.com/KolbyML/Manatan/releases/download/v6.1.2/Checksums.sha256)
+
+
 ## Release v6.1.1
 
 - Stabilize horizontal continuous novel reading (0bfd51f)
