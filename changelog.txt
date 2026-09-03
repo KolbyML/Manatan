@@ -1,3 +1,41 @@
+## Release v6.1.3
+
+- Add power-user Audiobookshelf browsing and playback (c7759ab)
+- Keep iOS audio export ready after resume (f888a5b)
+- Speed up large Anki media imports (d7fca7c)
+- Add Audiobookshelf listening and offline playback (26bed8d)
+- Add recoverable SRS media cleanup and accurate sync progress (13688ba)
+- Automatically install Android app updates (693c7a9)
+- Make Android updates installable from the app (beddaac)
+- Keep AnkiDroid mining available in background (5e94c15)
+- Repair Google Drive sync across snapshot policy changes (ef707bf)
+- Add Chinese readings to mined sentences (db4c47c)
+- Improve YouTube subtitle navigation controls (2decbfa)
+- Apply Incognito mode across media activity (c9c62ac)
+- Highlight the complete visible novel page (cb450a5)
+- Show active app modes above navigation (4af854c)
+- Fix novel reader native fullscreen controls (dfaf250)
+- Make controller navigation flow across OCR lines (68b107e)
+- Clarify screen lookup modifier controls (df88f84)
+- Add sentence audio to Android screen lookup (af9e4a4)
+- Default video dictionary popups to floating (54763bd)
+### Downloads
+
+| System | Architecture | Download |
+|:---:|:---:|:---|
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/apple/apple-original.svg" width="50" alt="macOS"/> | aarch64 | [Manatan-v6.1.3-Mac-Silicon.dmg](https://github.com/KolbyML/Manatan/releases/download/v6.1.3/Manatan-v6.1.3-Mac-Silicon.dmg) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/apple/apple-original.svg" width="50" alt="macOS"/> | x86_64 | [Manatan-v6.1.3-Mac-Intel.dmg](https://github.com/KolbyML/Manatan/releases/download/v6.1.3/Manatan-v6.1.3-Mac-Intel.dmg) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/windows8/windows8-original.svg" width="50" alt="Windows"/> | x86_64 | [ManatanSetup-v6.1.3-Windows-x64.exe](https://github.com/KolbyML/Manatan/releases/download/v6.1.3/ManatanSetup-v6.1.3-Windows-x64.exe) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/linux/linux-original.svg" width="50" alt="Linux"/> | x86_64 | [manatan_6.1.3_amd64.deb](https://github.com/KolbyML/Manatan/releases/download/v6.1.3/manatan_6.1.3_amd64.deb) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/linux/linux-original.svg" width="50" alt="Linux"/> | aarch64 | [manatan_6.1.3_arm64.deb](https://github.com/KolbyML/Manatan/releases/download/v6.1.3/manatan_6.1.3_arm64.deb) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/android/android-original.svg" width="50" alt="Android"/> | arm64 | [Manatan-Android-v6.1.3.apk](https://github.com/KolbyML/Manatan/releases/download/v6.1.3/Manatan-Android-v6.1.3.apk) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/apple/apple-original.svg" width="50" alt="iOS"/> | arm64 | [Manatan-v6.1.3-iOS.ipa](https://github.com/KolbyML/Manatan/releases/download/v6.1.3/Manatan-v6.1.3-iOS.ipa) |
+
+- The manatan-app and manatan-launcher archives are updater payloads, not the normal manual install path.
+- The legacy Manatan archives are one-time migration assets for older clients.
+- Checksums: [Checksums.sha256](https://github.com/KolbyML/Manatan/releases/download/v6.1.3/Checksums.sha256)
+
+
 ## Release v6.1.2
 
 - Require local OCR setup before screen lookup (30b0239)
