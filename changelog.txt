@@ -1,3 +1,41 @@
+## Release v6.1.4
+
+- Fix youtube support (897168d)
+- Prevent dictionary lookups from overwhelming large collections (dcee342)
+- Fix Android local subtitle audio preparation (7c95ee3)
+- Show enhanced subtitles only for Japanese profiles (ddafabf)
+- Complete the iOS membership purchase flow (ff3d820)
+- Add podcast bulk download controls (242b48e)
+- Fix podcast episode navigation controls (95da477)
+- Polish Audiobookshelf playback and library (11c5101)
+- Restore Android local OCR requests (91ae954)
+- Add popup profile switching (4d79dc3)
+- Add cursor-driven dictionary lookups (62b2062)
+- Speed up large Anki media imports (199d41b)
+- Prevent paged novel reader from skipping text (a7e409a)
+- Make desktop extension updates lock-safe (a71f66f)
+- Start Screen Lookup without unnecessary microphone access (da7727e)
+- Use native Screen Lookup cropping and tile identity (7f34add)
+- Add Windows release recovery workflow (7749ebc)
+- Bootstrap Git in Linux recovery jobs (dff5327)
+- Install Linux secure storage dependencies (30befca)
+### Downloads
+
+| System | Architecture | Download |
+|:---:|:---:|:---|
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/apple/apple-original.svg" width="50" alt="macOS"/> | aarch64 | [Manatan-v6.1.4-Mac-Silicon.dmg](https://github.com/KolbyML/Manatan/releases/download/v6.1.4/Manatan-v6.1.4-Mac-Silicon.dmg) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/apple/apple-original.svg" width="50" alt="macOS"/> | x86_64 | [Manatan-v6.1.4-Mac-Intel.dmg](https://github.com/KolbyML/Manatan/releases/download/v6.1.4/Manatan-v6.1.4-Mac-Intel.dmg) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/windows8/windows8-original.svg" width="50" alt="Windows"/> | x86_64 | [ManatanSetup-v6.1.4-Windows-x64.exe](https://github.com/KolbyML/Manatan/releases/download/v6.1.4/ManatanSetup-v6.1.4-Windows-x64.exe) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/linux/linux-original.svg" width="50" alt="Linux"/> | x86_64 | [manatan_6.1.4_amd64.deb](https://github.com/KolbyML/Manatan/releases/download/v6.1.4/manatan_6.1.4_amd64.deb) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/linux/linux-original.svg" width="50" alt="Linux"/> | aarch64 | [manatan_6.1.4_arm64.deb](https://github.com/KolbyML/Manatan/releases/download/v6.1.4/manatan_6.1.4_arm64.deb) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/android/android-original.svg" width="50" alt="Android"/> | arm64 | [Manatan-Android-v6.1.4.apk](https://github.com/KolbyML/Manatan/releases/download/v6.1.4/Manatan-Android-v6.1.4.apk) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/apple/apple-original.svg" width="50" alt="iOS"/> | arm64 | [Manatan-v6.1.4-iOS.ipa](https://github.com/KolbyML/Manatan/releases/download/v6.1.4/Manatan-v6.1.4-iOS.ipa) |
+
+- The manatan-app and manatan-launcher archives are updater payloads, not the normal manual install path.
+- The legacy Manatan archives are one-time migration assets for older clients.
+- Checksums: [Checksums.sha256](https://github.com/KolbyML/Manatan/releases/download/v6.1.4/Checksums.sha256)
+
+
 ## Release v6.1.3
 
 - Add power-user Audiobookshelf browsing and playback (c7759ab)
