@@ -1,3 +1,30 @@
+## Release v6.1.6
+
+- Enable profile switching on the dictionary page (abd57ec)
+- Fix profile switching in Screen Lookup (3493432)
+- Revert "Stabilize novel pagination with learning highlights" (f685510)
+- Identify the user action behind translation requests (cd14cc5)
+- Add word highlights and pitch colors to YouTube subtitles (0263612)
+- Fix YouTube subtitle navigation with overlapping captions (3ea89bd)
+- Sign and verify downloaded Windows browser runtimes (d86506d)
+- Stabilize novel pagination with learning highlights (6dccf27)
+### Downloads
+
+| System | Architecture | Download |
+|:---:|:---:|:---|
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/apple/apple-original.svg" width="50" alt="macOS"/> | aarch64 | [Manatan-v6.1.6-Mac-Silicon.dmg](https://github.com/KolbyML/Manatan/releases/download/v6.1.6/Manatan-v6.1.6-Mac-Silicon.dmg) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/apple/apple-original.svg" width="50" alt="macOS"/> | x86_64 | [Manatan-v6.1.6-Mac-Intel.dmg](https://github.com/KolbyML/Manatan/releases/download/v6.1.6/Manatan-v6.1.6-Mac-Intel.dmg) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/windows8/windows8-original.svg" width="50" alt="Windows"/> | x86_64 | [ManatanSetup-v6.1.6-Windows-x64.exe](https://github.com/KolbyML/Manatan/releases/download/v6.1.6/ManatanSetup-v6.1.6-Windows-x64.exe) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/linux/linux-original.svg" width="50" alt="Linux"/> | x86_64 | [manatan_6.1.6_amd64.deb](https://github.com/KolbyML/Manatan/releases/download/v6.1.6/manatan_6.1.6_amd64.deb) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/linux/linux-original.svg" width="50" alt="Linux"/> | aarch64 | [manatan_6.1.6_arm64.deb](https://github.com/KolbyML/Manatan/releases/download/v6.1.6/manatan_6.1.6_arm64.deb) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/android/android-original.svg" width="50" alt="Android"/> | arm64 | [Manatan-Android-v6.1.6.apk](https://github.com/KolbyML/Manatan/releases/download/v6.1.6/Manatan-Android-v6.1.6.apk) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/apple/apple-original.svg" width="50" alt="iOS"/> | arm64 | [Manatan-v6.1.6-iOS.ipa](https://github.com/KolbyML/Manatan/releases/download/v6.1.6/Manatan-v6.1.6-iOS.ipa) |
+
+- The manatan-app and manatan-launcher archives are updater payloads, not the normal manual install path.
+- The legacy Manatan archives are one-time migration assets for older clients.
+- Checksums: [Checksums.sha256](https://github.com/KolbyML/Manatan/releases/download/v6.1.6/Checksums.sha256)
+
+
 ## Release v6.1.5
 
 - Restore desktop startup after extension updates (c8c358c)
