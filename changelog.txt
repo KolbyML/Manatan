@@ -1,3 +1,41 @@
+## Release v6.1.7
+
+- Align Screen Lookup selection with OCR text (7db5d08)
+- Prevent macOS launcher crashes and recover native reports (47e1ca1)
+- Finish Screen Lookup mining after closing (50ce0df)
+- Keep AnkiDroid mining in the background (e21ec0b)
+- Add subtitle sidebar player toggle (173e857)
+- Keep missing video prompt below app bar (98ec475)
+- Show unique pitch accents inline (3714b01)
+- Show unwatched episode counts in video library (71fc4b3)
+- Capture Screen Lookup audio at mine time (d171746)
+- Fix extension cover persistence and saving (9bb782c)
+- Reference imported local videos without copying (755dcc9)
+- Allow Screen Lookup cards without sentence audio (0a36195)
+- Show dictionary forms in popup learning footer (a495654)
+- Show Manatan catalogs in extension repositories (d4a09a9)
+- Fix podcast downloads and episode preferences (018042d)
+- Add destination-aware local video imports (df9c08f)
+- Launch desktop immediately while updates download (bd8bd47)
+- Add local manga imports to the library (783e86f)
+- Improve desktop screen lookup (371cef8)
+### Downloads
+
+| System | Architecture | Download |
+|:---:|:---:|:---|
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/apple/apple-original.svg" width="50" alt="macOS"/> | aarch64 | [Manatan-v6.1.7-Mac-Silicon.dmg](https://github.com/KolbyML/Manatan/releases/download/v6.1.7/Manatan-v6.1.7-Mac-Silicon.dmg) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/apple/apple-original.svg" width="50" alt="macOS"/> | x86_64 | [Manatan-v6.1.7-Mac-Intel.dmg](https://github.com/KolbyML/Manatan/releases/download/v6.1.7/Manatan-v6.1.7-Mac-Intel.dmg) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/windows8/windows8-original.svg" width="50" alt="Windows"/> | x86_64 | [ManatanSetup-v6.1.7-Windows-x64.exe](https://github.com/KolbyML/Manatan/releases/download/v6.1.7/ManatanSetup-v6.1.7-Windows-x64.exe) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/linux/linux-original.svg" width="50" alt="Linux"/> | x86_64 | [manatan_6.1.7_amd64.deb](https://github.com/KolbyML/Manatan/releases/download/v6.1.7/manatan_6.1.7_amd64.deb) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/linux/linux-original.svg" width="50" alt="Linux"/> | aarch64 | [manatan_6.1.7_arm64.deb](https://github.com/KolbyML/Manatan/releases/download/v6.1.7/manatan_6.1.7_arm64.deb) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/android/android-original.svg" width="50" alt="Android"/> | arm64 | [Manatan-Android-v6.1.7.apk](https://github.com/KolbyML/Manatan/releases/download/v6.1.7/Manatan-Android-v6.1.7.apk) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/apple/apple-original.svg" width="50" alt="iOS"/> | arm64 | [Manatan-v6.1.7-iOS.ipa](https://github.com/KolbyML/Manatan/releases/download/v6.1.7/Manatan-v6.1.7-iOS.ipa) |
+
+- The manatan-app and manatan-launcher archives are updater payloads, not the normal manual install path.
+- The legacy Manatan archives are one-time migration assets for older clients.
+- Checksums: [Checksums.sha256](https://github.com/KolbyML/Manatan/releases/download/v6.1.7/Checksums.sha256)
+
+
 ## Release v6.1.6
 
 - Enable profile switching on the dictionary page (abd57ec)
