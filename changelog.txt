@@ -1,3 +1,40 @@
+## Release v6.1.8
+
+- Add quick OCR controls to Screen Lookup (763a45d)
+- Make desktop screen lookup opt in (5b36bd7)
+- Pause screen lookup while Manatan is focused (3ad608a)
+- Fix Android extension video playback (7a38eea)
+- Show chapter and total novel progress (305c486)
+- Let users hide the Screen Lookup activator (6e56978)
+- Recognize decimal manga chapter numbers (652a8d0)
+- Keep desktop popup input isolated (507b591)
+- Add OCR provider choices to Screen Lookup (25a6c58)
+- Show desktop update preparation progress (2c70af0)
+- Finish background desktop update status (e6ef59c)
+- Add custom Screen Lookup recognition areas (fa6f685)
+- Keep completed manga chapters marked read (e8baad0)
+- Make manga fullscreen control desktop windows (9138446)
+- Crop Screen Lookup card images around video content (1ce867c)
+- Keep podcast metadata current during auto-advance (86ecd27)
+- Create Screen Lookup cards with the confirm button (5398ab5)
+- Attach Screen Lookup audio only for detected speech (86bb244)
+### Downloads
+
+| System | Architecture | Download |
+|:---:|:---:|:---|
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/apple/apple-original.svg" width="50" alt="macOS"/> | aarch64 | [Manatan-v6.1.8-Mac-Silicon.dmg](https://github.com/KolbyML/Manatan/releases/download/v6.1.8/Manatan-v6.1.8-Mac-Silicon.dmg) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/apple/apple-original.svg" width="50" alt="macOS"/> | x86_64 | [Manatan-v6.1.8-Mac-Intel.dmg](https://github.com/KolbyML/Manatan/releases/download/v6.1.8/Manatan-v6.1.8-Mac-Intel.dmg) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/windows8/windows8-original.svg" width="50" alt="Windows"/> | x86_64 | [ManatanSetup-v6.1.8-Windows-x64.exe](https://github.com/KolbyML/Manatan/releases/download/v6.1.8/ManatanSetup-v6.1.8-Windows-x64.exe) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/linux/linux-original.svg" width="50" alt="Linux"/> | x86_64 | [manatan_6.1.8_amd64.deb](https://github.com/KolbyML/Manatan/releases/download/v6.1.8/manatan_6.1.8_amd64.deb) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/linux/linux-original.svg" width="50" alt="Linux"/> | aarch64 | [manatan_6.1.8_arm64.deb](https://github.com/KolbyML/Manatan/releases/download/v6.1.8/manatan_6.1.8_arm64.deb) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/android/android-original.svg" width="50" alt="Android"/> | arm64 | [Manatan-Android-v6.1.8.apk](https://github.com/KolbyML/Manatan/releases/download/v6.1.8/Manatan-Android-v6.1.8.apk) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/apple/apple-original.svg" width="50" alt="iOS"/> | arm64 | [Manatan-v6.1.8-iOS.ipa](https://github.com/KolbyML/Manatan/releases/download/v6.1.8/Manatan-v6.1.8-iOS.ipa) |
+
+- The manatan-app and manatan-launcher archives are updater payloads, not the normal manual install path.
+- The legacy Manatan archives are one-time migration assets for older clients.
+- Checksums: [Checksums.sha256](https://github.com/KolbyML/Manatan/releases/download/v6.1.8/Checksums.sha256)
+
+
 ## Release v6.1.7
 
 - Align Screen Lookup selection with OCR text (7db5d08)
