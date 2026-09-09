@@ -1,3 +1,34 @@
+## Release v6.1.9
+
+- Expand library organization and display controls (16f0d85)
+- Add unified media history (ddabb2f)
+- Render imported subtitles without duplicate tracks (5083b6d)
+- Support Chinese in Apple Live Text OCR (6523086)
+- Record abnormal Android process exits (5b4d410)
+- Use compact picker for tracker scores (d6163ed)
+- Fix manga migration source loading (ed228dc)
+- Fix false Anki duplicate matches (e5063dc)
+- Scale video subtitles with the player (7ba95fa)
+- Preserve active Woodpecker temp workspace (d325d80)
+- Make Apple signing keychains job-safe (1f73743)
+- Isolate Woodpecker workflow temp directories (d1c4ba5)
+### Downloads
+
+| System | Architecture | Download |
+|:---:|:---:|:---|
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/apple/apple-original.svg" width="50" alt="macOS"/> | aarch64 | [Manatan-v6.1.9-Mac-Silicon.dmg](https://github.com/KolbyML/Manatan/releases/download/v6.1.9/Manatan-v6.1.9-Mac-Silicon.dmg) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/apple/apple-original.svg" width="50" alt="macOS"/> | x86_64 | [Manatan-v6.1.9-Mac-Intel.dmg](https://github.com/KolbyML/Manatan/releases/download/v6.1.9/Manatan-v6.1.9-Mac-Intel.dmg) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/windows8/windows8-original.svg" width="50" alt="Windows"/> | x86_64 | [ManatanSetup-v6.1.9-Windows-x64.exe](https://github.com/KolbyML/Manatan/releases/download/v6.1.9/ManatanSetup-v6.1.9-Windows-x64.exe) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/linux/linux-original.svg" width="50" alt="Linux"/> | x86_64 | [manatan_6.1.9_amd64.deb](https://github.com/KolbyML/Manatan/releases/download/v6.1.9/manatan_6.1.9_amd64.deb) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/linux/linux-original.svg" width="50" alt="Linux"/> | aarch64 | [manatan_6.1.9_arm64.deb](https://github.com/KolbyML/Manatan/releases/download/v6.1.9/manatan_6.1.9_arm64.deb) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/android/android-original.svg" width="50" alt="Android"/> | arm64 | [Manatan-Android-v6.1.9.apk](https://github.com/KolbyML/Manatan/releases/download/v6.1.9/Manatan-Android-v6.1.9.apk) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/apple/apple-original.svg" width="50" alt="iOS"/> | arm64 | [Manatan-v6.1.9-iOS.ipa](https://github.com/KolbyML/Manatan/releases/download/v6.1.9/Manatan-v6.1.9-iOS.ipa) |
+
+- The manatan-app and manatan-launcher archives are updater payloads, not the normal manual install path.
+- The legacy Manatan archives are one-time migration assets for older clients.
+- Checksums: [Checksums.sha256](https://github.com/KolbyML/Manatan/releases/download/v6.1.9/Checksums.sha256)
+
+
 ## Release v6.1.8
 
 - Add quick OCR controls to Screen Lookup (763a45d)
