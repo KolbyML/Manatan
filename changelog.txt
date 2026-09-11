@@ -1,3 +1,39 @@
+## Release v6.1.11
+
+- Stabilize novel selection actions on iOS (a0511cb)
+- Use signed browser runtime during Windows startup (79160da)
+- Show chapters left for imported EPUBs (c91250c)
+- Clarify Screen Lookup volume close controls (d00df6f)
+- Repeat Screen Lookup navigation while holding volume down (7a161cd)
+- Apply Screen Lookup profile changes immediately (fd7c5af)
+- Keep Screen Lookup cursor visible after popup close (1639844)
+- Keep checkbox accents visible across themes (cf8d5eb)
+- Look up every word during volume navigation (2ba2ad1)
+- Route global video updates through source adapters (3d389ce)
+- Keep Screen Lookup over the current app (1f9efce)
+- Unify desktop reader fullscreen lifecycle (d756784)
+- Route global manga updates through source adapters (239f7bf)
+- Keep reader learning actions on analyzed tokens (d345a2a)
+- Keep manga learning actions on parser tokens (60a3d28)
+- Preserve concurrent Apple signing identities (4e798d2)
+- Prevent macOS CI temp cleanup race (4345379)
+### Downloads
+
+| System | Architecture | Download |
+|:---:|:---:|:---|
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/apple/apple-original.svg" width="50" alt="macOS"/> | aarch64 | [Manatan-v6.1.11-Mac-Silicon.dmg](https://github.com/KolbyML/Manatan/releases/download/v6.1.11/Manatan-v6.1.11-Mac-Silicon.dmg) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/apple/apple-original.svg" width="50" alt="macOS"/> | x86_64 | [Manatan-v6.1.11-Mac-Intel.dmg](https://github.com/KolbyML/Manatan/releases/download/v6.1.11/Manatan-v6.1.11-Mac-Intel.dmg) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/windows8/windows8-original.svg" width="50" alt="Windows"/> | x86_64 | [ManatanSetup-v6.1.11-Windows-x64.exe](https://github.com/KolbyML/Manatan/releases/download/v6.1.11/ManatanSetup-v6.1.11-Windows-x64.exe) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/linux/linux-original.svg" width="50" alt="Linux"/> | x86_64 | [manatan_6.1.11_amd64.deb](https://github.com/KolbyML/Manatan/releases/download/v6.1.11/manatan_6.1.11_amd64.deb) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/linux/linux-original.svg" width="50" alt="Linux"/> | aarch64 | [manatan_6.1.11_arm64.deb](https://github.com/KolbyML/Manatan/releases/download/v6.1.11/manatan_6.1.11_arm64.deb) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/android/android-original.svg" width="50" alt="Android"/> | arm64 | [Manatan-Android-v6.1.11.apk](https://github.com/KolbyML/Manatan/releases/download/v6.1.11/Manatan-Android-v6.1.11.apk) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/apple/apple-original.svg" width="50" alt="iOS"/> | arm64 | [Manatan-v6.1.11-iOS.ipa](https://github.com/KolbyML/Manatan/releases/download/v6.1.11/Manatan-v6.1.11-iOS.ipa) |
+
+- The manatan-app and manatan-launcher archives are updater payloads, not the normal manual install path.
+- The legacy Manatan archives are one-time migration assets for older clients.
+- Checksums: [Checksums.sha256](https://github.com/KolbyML/Manatan/releases/download/v6.1.11/Checksums.sha256)
+
+
 ## Release v6.1.10
 
 - Explain Japanese pitch accent colors (18e6422)
