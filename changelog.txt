@@ -1,3 +1,32 @@
+## Release v6.1.23
+
+- Repair desktop startup through the launcher (e5a10a4)
+- fix: press escape to exit fullscreen (f149cff)
+- Match iOS credits to verified membership (2ca4c86)
+- Allow CBZ manga imports on iOS (15b00d5)
+- Finish purchase restores without waiting forever (0e9a9d3)
+- Classify desktop launcher startup failures (0393e97)
+- Keep Apple membership state tied to real purchases (7eff0b9)
+- Initialize Linux webviews before driving frames (48a6447)
+- Load CEF shutdown through the runtime bridge (0c998e5)
+- Guide users to enable hidden adult media (4dd2658)
+### Downloads
+
+| System | Architecture | Download |
+|:---:|:---:|:---|
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/apple/apple-original.svg" width="50" alt="macOS"/> | aarch64 | [Manatan-v6.1.23-Mac-Silicon.dmg](https://github.com/KolbyML/Manatan/releases/download/v6.1.23/Manatan-v6.1.23-Mac-Silicon.dmg) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/apple/apple-original.svg" width="50" alt="macOS"/> | x86_64 | [Manatan-v6.1.23-Mac-Intel.dmg](https://github.com/KolbyML/Manatan/releases/download/v6.1.23/Manatan-v6.1.23-Mac-Intel.dmg) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/windows8/windows8-original.svg" width="50" alt="Windows"/> | x86_64 | [ManatanSetup-v6.1.23-Windows-x64.exe](https://github.com/KolbyML/Manatan/releases/download/v6.1.23/ManatanSetup-v6.1.23-Windows-x64.exe) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/linux/linux-original.svg" width="50" alt="Linux"/> | x86_64 | [manatan_6.1.23_amd64.deb](https://github.com/KolbyML/Manatan/releases/download/v6.1.23/manatan_6.1.23_amd64.deb) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/linux/linux-original.svg" width="50" alt="Linux"/> | aarch64 | [manatan_6.1.23_arm64.deb](https://github.com/KolbyML/Manatan/releases/download/v6.1.23/manatan_6.1.23_arm64.deb) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/android/android-original.svg" width="50" alt="Android"/> | arm64 | [Manatan-Android-v6.1.23.apk](https://github.com/KolbyML/Manatan/releases/download/v6.1.23/Manatan-Android-v6.1.23.apk) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/apple/apple-original.svg" width="50" alt="iOS"/> | arm64 | [Manatan-v6.1.23-iOS.ipa](https://github.com/KolbyML/Manatan/releases/download/v6.1.23/Manatan-v6.1.23-iOS.ipa) |
+
+- The manatan-app and manatan-launcher archives are updater payloads, not the normal manual install path.
+- The legacy Manatan archives are one-time migration assets for older clients.
+- Checksums: [Checksums.sha256](https://github.com/KolbyML/Manatan/releases/download/v6.1.23/Checksums.sha256)
+
+
 ## Release v6.1.22
 
 - Cache Windows symbol tooling across builds (d8fcb2f)
