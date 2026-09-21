@@ -1283,8 +1283,8 @@ async fn start_web_server(
         .fallback(serve_react_app)
         .layer(cors);
 
-    let listener = TcpListener::bind("0.0.0.0:4568").await?;
-    info!("✅ Web Server listening on 0.0.0.0:4568");
+    let listener = TcpListener::bind("127.0.0.1:4568").await?;
+    info!("✅ Web Server listening on 127.0.0.1:4568");
     axum::serve(listener, app).await?;
     Ok(())
 }
