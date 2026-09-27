@@ -1,3 +1,36 @@
+## Release v6.1.28
+
+- Serialize CocoaPods dependency setup (265354e)
+- Use LAN endpoint for CI artifacts (2ef26c6)
+- Keep manga dictionary lookup following the pointer (ead5fc3)
+- Fix Komga EPUB novel position restoration (6c266cc)
+- Add Mokuro OCR support for manga (72e46fa)
+- Speed up subtitle audio extraction (beb9eb4)
+- Fix Anki furigana field formatting (ab8506a)
+- Keep continuous reader width and chapter flow stable (f715d16)
+- Restore local video subtitle selections (c4ebb43)
+- update documentation (a70f244)
+- Keep Android subtitle preparation responsive (282ffcc)
+- Restore text selection in screen lookup popups (d268206)
+- Require server confirmation for Apple memberships (2e86857)
+- Capture Windows Screen Lookup exit diagnostics (2c3ae91)
+### Downloads
+
+| System | Architecture | Download |
+|:---:|:---:|:---|
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/apple/apple-original.svg" width="50" alt="macOS"/> | aarch64 | [Manatan-v6.1.28-Mac-Silicon.dmg](https://github.com/KolbyML/Manatan/releases/download/v6.1.28/Manatan-v6.1.28-Mac-Silicon.dmg) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/apple/apple-original.svg" width="50" alt="macOS"/> | x86_64 | [Manatan-v6.1.28-Mac-Intel.dmg](https://github.com/KolbyML/Manatan/releases/download/v6.1.28/Manatan-v6.1.28-Mac-Intel.dmg) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/windows8/windows8-original.svg" width="50" alt="Windows"/> | x86_64 | [ManatanSetup-v6.1.28-Windows-x64.exe](https://github.com/KolbyML/Manatan/releases/download/v6.1.28/ManatanSetup-v6.1.28-Windows-x64.exe) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/linux/linux-original.svg" width="50" alt="Linux"/> | x86_64 | [manatan_6.1.28_amd64.deb](https://github.com/KolbyML/Manatan/releases/download/v6.1.28/manatan_6.1.28_amd64.deb) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/linux/linux-original.svg" width="50" alt="Linux"/> | aarch64 | [manatan_6.1.28_arm64.deb](https://github.com/KolbyML/Manatan/releases/download/v6.1.28/manatan_6.1.28_arm64.deb) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/android/android-original.svg" width="50" alt="Android"/> | arm64 | [Manatan-Android-v6.1.28.apk](https://github.com/KolbyML/Manatan/releases/download/v6.1.28/Manatan-Android-v6.1.28.apk) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/apple/apple-original.svg" width="50" alt="iOS"/> | arm64 | [Manatan-v6.1.28-iOS.ipa](https://github.com/KolbyML/Manatan/releases/download/v6.1.28/Manatan-v6.1.28-iOS.ipa) |
+
+- The manatan-app and manatan-launcher archives are updater payloads, not the normal manual install path.
+- The legacy Manatan archives are one-time migration assets for older clients.
+- Checksums: [Checksums.sha256](https://github.com/KolbyML/Manatan/releases/download/v6.1.28/Checksums.sha256)
+
+
 ## Release v6.1.27
 
 - Open novel images in the fullscreen viewer (4ad608f)
