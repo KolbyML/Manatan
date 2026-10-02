@@ -1,3 +1,35 @@
+## Release v6.1.31
+
+- Restore current Komga bookmarks across devices and reader sessions (93b09227)
+- Preserve episode progress when refreshing server metadata (287e8575)
+- Unify global search controls across video, manga, and novels (40e0ca8b)
+- Open Jellyfin items with canonical web client links (b1de4867)
+- Show full language names in audio track labels (5677c967)
+- Handle Screen Lookup volume navigation in the focused overlay (c8311f74)
+- Preserve and display complete dictionary import details (13deaaa7)
+- Remember audio track choices across episodes and player restarts (b83cec25)
+- Add manual update checks to About on Android and desktop (5db2d02c)
+- Keep cached manga OCR available offline (29399449)
+- Fix local PDF discovery and reader restoration (129da671)
+- Fix PDF reader startup in native apps (3095ad7c)
+- Retry transient Linux dependency installs (c0e266e4)
+### Downloads
+
+| System | Architecture | Download |
+|:---:|:---:|:---|
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/apple/apple-original.svg" width="50" alt="macOS"/> | aarch64 | [Manatan-v6.1.31-Mac-Silicon.dmg](https://github.com/KolbyML/Manatan/releases/download/v6.1.31/Manatan-v6.1.31-Mac-Silicon.dmg) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/apple/apple-original.svg" width="50" alt="macOS"/> | x86_64 | [Manatan-v6.1.31-Mac-Intel.dmg](https://github.com/KolbyML/Manatan/releases/download/v6.1.31/Manatan-v6.1.31-Mac-Intel.dmg) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/windows8/windows8-original.svg" width="50" alt="Windows"/> | x86_64 | [ManatanSetup-v6.1.31-Windows-x64.exe](https://github.com/KolbyML/Manatan/releases/download/v6.1.31/ManatanSetup-v6.1.31-Windows-x64.exe) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/linux/linux-original.svg" width="50" alt="Linux"/> | x86_64 | [manatan_6.1.31_amd64.deb](https://github.com/KolbyML/Manatan/releases/download/v6.1.31/manatan_6.1.31_amd64.deb) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/linux/linux-original.svg" width="50" alt="Linux"/> | aarch64 | [manatan_6.1.31_arm64.deb](https://github.com/KolbyML/Manatan/releases/download/v6.1.31/manatan_6.1.31_arm64.deb) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/android/android-original.svg" width="50" alt="Android"/> | arm64 | [Manatan-Android-v6.1.31.apk](https://github.com/KolbyML/Manatan/releases/download/v6.1.31/Manatan-Android-v6.1.31.apk) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/apple/apple-original.svg" width="50" alt="iOS"/> | arm64 | [Manatan-v6.1.31-iOS.ipa](https://github.com/KolbyML/Manatan/releases/download/v6.1.31/Manatan-v6.1.31-iOS.ipa) |
+
+- The manatan-app and manatan-launcher archives are updater payloads, not the normal manual install path.
+- The legacy Manatan archives are one-time migration assets for older clients.
+- Checksums: [Checksums.sha256](https://github.com/KolbyML/Manatan/releases/download/v6.1.31/Checksums.sha256)
+
+
 ## Release v6.1.30
 
 - Retry transient extension server builds (85031053)
