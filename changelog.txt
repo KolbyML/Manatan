@@ -1,3 +1,38 @@
+## Release v6.1.33
+
+- Fix local manga reading across devices (404dadb8)
+- Fix closing PDFs in the desktop novel reader (9c7cc422)
+- Fix Android reader audio export for Anki cards (6bd1b52e)
+- Allow independent primary and secondary video subtitle sizes (2631fad7)
+- Honor kanji lookup settings and preserve dictionary navigation (96338232)
+- Allow Kanji and Hanzi dictionaries to collapse (df196b74)
+- Add PDF zoom and local novel folder discovery (a2cf7328)
+- Preserve renewed playback sessions across cookie synchronization (c66a6a20)
+- Show Chinese stroke order in Hanzi diagrams (3e69433a)
+- Keep video playback working across rotating CDN hosts (07597f62)
+- Keep desktop dictionary popup controls aligned after layout changes (7cf45b70)
+- Add weekly anime schedule across desktop, mobile, and WebUI (405868aa)
+- Improve Jimaku show selection with a unified native dialog (f3d33a8b)
+- Add search to Manatan and WebUI settings (d68d0eaf)
+- Improve native study editing and reader navigation (ad5202af)
+- Prevent false pitch accents in dictionary results (62fcfb35)
+### Downloads
+
+| System | Architecture | Download |
+|:---:|:---:|:---|
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/apple/apple-original.svg" width="50" alt="macOS"/> | aarch64 | [Manatan-v6.1.33-Mac-Silicon.dmg](https://github.com/KolbyML/Manatan/releases/download/v6.1.33/Manatan-v6.1.33-Mac-Silicon.dmg) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/apple/apple-original.svg" width="50" alt="macOS"/> | x86_64 | [Manatan-v6.1.33-Mac-Intel.dmg](https://github.com/KolbyML/Manatan/releases/download/v6.1.33/Manatan-v6.1.33-Mac-Intel.dmg) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/windows8/windows8-original.svg" width="50" alt="Windows"/> | x86_64 | [ManatanSetup-v6.1.33-Windows-x64.exe](https://github.com/KolbyML/Manatan/releases/download/v6.1.33/ManatanSetup-v6.1.33-Windows-x64.exe) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/linux/linux-original.svg" width="50" alt="Linux"/> | x86_64 | [manatan_6.1.33_amd64.deb](https://github.com/KolbyML/Manatan/releases/download/v6.1.33/manatan_6.1.33_amd64.deb) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/linux/linux-original.svg" width="50" alt="Linux"/> | aarch64 | [manatan_6.1.33_arm64.deb](https://github.com/KolbyML/Manatan/releases/download/v6.1.33/manatan_6.1.33_arm64.deb) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/android/android-original.svg" width="50" alt="Android"/> | arm64 | [Manatan-Android-v6.1.33.apk](https://github.com/KolbyML/Manatan/releases/download/v6.1.33/Manatan-Android-v6.1.33.apk) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/apple/apple-original.svg" width="50" alt="iOS"/> | arm64 | [Manatan-v6.1.33-iOS.ipa](https://github.com/KolbyML/Manatan/releases/download/v6.1.33/Manatan-v6.1.33-iOS.ipa) |
+
+- The manatan-app and manatan-launcher archives are updater payloads, not the normal manual install path.
+- The legacy Manatan archives are one-time migration assets for older clients.
+- Checksums: [Checksums.sha256](https://github.com/KolbyML/Manatan/releases/download/v6.1.33/Checksums.sha256)
+
+
 ## Release v6.1.32
 
 - Repair cached anime source links and open the correct WebView (af0e542b)
