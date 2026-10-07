@@ -1,3 +1,31 @@
+## Release v6.1.34
+
+- Add local popup input diagnostics (967b001)
+- Add cross-device immersion stats and progress tracking (de437e4)
+- update the build pipeline (850ea94)
+- Fix Jellyfin tracker progress, refresh, and browser links (3be1869)
+- Distinguish iOS distribution builds with a shared monotonic counter (bc4b916)
+- Fix local manga page loading and OCR recovery (2c700f9)
+- Fix catalog refresh errors and removal state (4cc9823)
+- Update text (de5d4a1)
+- Use release versions for iOS uploads (d3e4487)
+### Downloads
+
+| System | Architecture | Download |
+|:---:|:---:|:---|
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/apple/apple-original.svg" width="50" alt="macOS"/> | aarch64 | [Manatan-v6.1.34-Mac-Silicon.dmg](https://github.com/KolbyML/Manatan/releases/download/v6.1.34/Manatan-v6.1.34-Mac-Silicon.dmg) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/apple/apple-original.svg" width="50" alt="macOS"/> | x86_64 | [Manatan-v6.1.34-Mac-Intel.dmg](https://github.com/KolbyML/Manatan/releases/download/v6.1.34/Manatan-v6.1.34-Mac-Intel.dmg) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/windows8/windows8-original.svg" width="50" alt="Windows"/> | x86_64 | [ManatanSetup-v6.1.34-Windows-x64.exe](https://github.com/KolbyML/Manatan/releases/download/v6.1.34/ManatanSetup-v6.1.34-Windows-x64.exe) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/linux/linux-original.svg" width="50" alt="Linux"/> | x86_64 | [manatan_6.1.34_amd64.deb](https://github.com/KolbyML/Manatan/releases/download/v6.1.34/manatan_6.1.34_amd64.deb) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/linux/linux-original.svg" width="50" alt="Linux"/> | aarch64 | [manatan_6.1.34_arm64.deb](https://github.com/KolbyML/Manatan/releases/download/v6.1.34/manatan_6.1.34_arm64.deb) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/android/android-original.svg" width="50" alt="Android"/> | arm64 | [Manatan-Android-v6.1.34.apk](https://github.com/KolbyML/Manatan/releases/download/v6.1.34/Manatan-Android-v6.1.34.apk) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/apple/apple-original.svg" width="50" alt="iOS"/> | arm64 | [Manatan-v6.1.34-iOS.ipa](https://github.com/KolbyML/Manatan/releases/download/v6.1.34/Manatan-v6.1.34-iOS.ipa) |
+
+- The manatan-app and manatan-launcher archives are updater payloads, not the normal manual install path.
+- The legacy Manatan archives are one-time migration assets for older clients.
+- Checksums: [Checksums.sha256](https://github.com/KolbyML/Manatan/releases/download/v6.1.34/Checksums.sha256)
+
+
 ## Release v6.1.33
 
 - Fix local manga reading across devices (404dadb8)
