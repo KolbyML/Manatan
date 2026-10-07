@@ -1,3 +1,41 @@
+## Release v6.1.35
+
+- Upload symbol mappings independently (152c23c7)
+- Stabilize Windows dependency build ordering (cdece604)
+- Make Windows compatibility patch shell-safe (6c132d51)
+- Add targeted Windows artifact recovery (1f09e8c4)
+- Fix MinGW oneVPL compatibility guard (4d8d64f3)
+- Install missing Android native build dependency (06d9fa66)
+- Add optional animated AVIF captures for video cards (2a71ecce)
+- Fix YouTube subtitle word lookup and popup placement (da7709ef)
+- Allow independent primary and secondary subtitle timing (9c128cae)
+- Add shortcut to toggle automatic Screen Lookup popups (5a75068a)
+- Add adjustable manga tap zones and preserve reader padding (3cc11232)
+- Hide stroke diagrams in collapsed dictionaries (ecc2b397)
+- Reject invalid word audio and preserve provider failure details (560d1d60)
+- Upgrade Android playback to mpv 0.41 and FFmpeg 8.1.2 (f401885a)
+- Add experimental ARM32 Android builds and architecture-aware updates (e92ac334)
+- Keep dictionary lookups alive when the Android card provider restarts (4935559c)
+### Downloads
+
+| System | Architecture | Download |
+|:---:|:---:|:---|
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/apple/apple-original.svg" width="50" alt="macOS"/> | aarch64 | [Manatan-v6.1.35-Mac-Silicon.dmg](https://github.com/KolbyML/Manatan/releases/download/v6.1.35/Manatan-v6.1.35-Mac-Silicon.dmg) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/apple/apple-original.svg" width="50" alt="macOS"/> | x86_64 | [Manatan-v6.1.35-Mac-Intel.dmg](https://github.com/KolbyML/Manatan/releases/download/v6.1.35/Manatan-v6.1.35-Mac-Intel.dmg) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/windows8/windows8-original.svg" width="50" alt="Windows"/> | x86_64 | [ManatanSetup-v6.1.35-Windows-x64.exe](https://github.com/KolbyML/Manatan/releases/download/v6.1.35/ManatanSetup-v6.1.35-Windows-x64.exe) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/linux/linux-original.svg" width="50" alt="Linux"/> | x86_64 | [manatan_6.1.35_amd64.deb](https://github.com/KolbyML/Manatan/releases/download/v6.1.35/manatan_6.1.35_amd64.deb) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/linux/linux-original.svg" width="50" alt="Linux"/> | aarch64 | [manatan_6.1.35_arm64.deb](https://github.com/KolbyML/Manatan/releases/download/v6.1.35/manatan_6.1.35_arm64.deb) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/android/android-original.svg" width="50" alt="Android"/> | ARM64 | [Manatan-Android-ARM64-v6.1.35.apk](https://github.com/KolbyML/Manatan/releases/download/v6.1.35/Manatan-Android-ARM64-v6.1.35.apk) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/android/android-original.svg" width="50" alt="Android"/> | ARM32 | [Manatan-Android-NativeWebview-ARM32-v6.1.35.apk](https://github.com/KolbyML/Manatan/releases/download/v6.1.35/Manatan-Android-NativeWebview-ARM32-v6.1.35.apk) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/apple/apple-original.svg" width="50" alt="iOS"/> | arm64 | [Manatan-v6.1.35-iOS.ipa](https://github.com/KolbyML/Manatan/releases/download/v6.1.35/Manatan-v6.1.35-iOS.ipa) |
+
+- The manatan-app and manatan-launcher archives are updater payloads, not the normal manual install path.
+- The legacy Manatan archives are one-time migration assets for older clients.
+- Android requires Android 8.0 or newer. Choose ARM64 for a 64-bit Android system, or ARM32 for a 32-bit Android system.
+- ARM32 support is experimental.
+- Checksums: [Checksums.sha256](https://github.com/KolbyML/Manatan/releases/download/v6.1.35/Checksums.sha256)
+
+
 ## Release v6.1.34
 
 - Add local popup input diagnostics (967b001)
