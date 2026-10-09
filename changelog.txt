@@ -1,3 +1,49 @@
+## Release v6.1.36
+
+- Serialize macOS desktop release builds (03dcf4c8)
+- Validate Android camera providers by application ID (3b6db967)
+- Fix Jellyfin tracking when media record IDs overlap (6c22187b)
+- Scope Android bridge linkage check by flavor (cb1d32ba)
+- Accept NDK readelf symlink in Play audit (1faf077f)
+- Disable unused Compose plugin for Play build (36038def)
+- Restage Android classes for packaged builds (d70c30a5)
+- Fix Google Play resource namespace (b8bb6513)
+- Fix dictionary popup clicks across zoom and display scales (b3214db1)
+- Upload signed Android builds to Google Play (ee970e86)
+- Adapt manga library filters to available screen space (343d9be2)
+- Improve local OCR setup and immersion activity diagnostics (eece4584)
+- Add desktop startup debug export (644903a9)
+- Restore cover artwork in immersion statistics (ac43e6b3)
+- Fix iOS startup and immersion activity saving (2afe7e1f)
+- Prepare Google Play memberships and signed app bundles (786f6c6d)
+- Simplify subtitle timing selection and add player shortcut (84bebc43)
+- Add single-page novel layout and optional landscape spread (2798cf76)
+- Match ARM32 Android release naming to ARM64 (253ad208)
+- Upload symbol mappings independently (152c23c7)
+- Stabilize Windows dependency build ordering (cdece604)
+- Make Windows compatibility patch shell-safe (6c132d51)
+- Add targeted Windows artifact recovery (1f09e8c4)
+- Fix MinGW oneVPL compatibility guard (4d8d64f3)
+### Downloads
+
+| System | Architecture | Download |
+|:---:|:---:|:---|
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/apple/apple-original.svg" width="50" alt="macOS"/> | aarch64 | [Manatan-v6.1.36-Mac-Silicon.dmg](https://github.com/KolbyML/Manatan/releases/download/v6.1.36/Manatan-v6.1.36-Mac-Silicon.dmg) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/apple/apple-original.svg" width="50" alt="macOS"/> | x86_64 | [Manatan-v6.1.36-Mac-Intel.dmg](https://github.com/KolbyML/Manatan/releases/download/v6.1.36/Manatan-v6.1.36-Mac-Intel.dmg) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/windows8/windows8-original.svg" width="50" alt="Windows"/> | x86_64 | [ManatanSetup-v6.1.36-Windows-x64.exe](https://github.com/KolbyML/Manatan/releases/download/v6.1.36/ManatanSetup-v6.1.36-Windows-x64.exe) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/linux/linux-original.svg" width="50" alt="Linux"/> | x86_64 | [manatan_6.1.36_amd64.deb](https://github.com/KolbyML/Manatan/releases/download/v6.1.36/manatan_6.1.36_amd64.deb) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/linux/linux-original.svg" width="50" alt="Linux"/> | aarch64 | [manatan_6.1.36_arm64.deb](https://github.com/KolbyML/Manatan/releases/download/v6.1.36/manatan_6.1.36_arm64.deb) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/android/android-original.svg" width="50" alt="Android"/> | ARM64 | [Manatan-Android-ARM64-v6.1.36.apk](https://github.com/KolbyML/Manatan/releases/download/v6.1.36/Manatan-Android-ARM64-v6.1.36.apk) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/android/android-original.svg" width="50" alt="Android"/> | ARM32 | [Manatan-Android-ARM32-v6.1.36.apk](https://github.com/KolbyML/Manatan/releases/download/v6.1.36/Manatan-Android-ARM32-v6.1.36.apk) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/apple/apple-original.svg" width="50" alt="iOS"/> | arm64 | [Manatan-v6.1.36-iOS.ipa](https://github.com/KolbyML/Manatan/releases/download/v6.1.36/Manatan-v6.1.36-iOS.ipa) |
+
+- The manatan-app and manatan-launcher archives are updater payloads, not the normal manual install path.
+- The legacy Manatan archives are one-time migration assets for older clients.
+- Android requires Android 8.0 or newer. Choose ARM64 for a 64-bit Android system, or ARM32 for a 32-bit Android system.
+- ARM32 support is experimental.
+- Checksums: [Checksums.sha256](https://github.com/KolbyML/Manatan/releases/download/v6.1.36/Checksums.sha256)
+
+
 ## Release v6.1.35
 
 - Upload symbol mappings independently (152c23c7)
