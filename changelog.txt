@@ -1,3 +1,52 @@
+## Release v6.1.39
+
+- Filter dictionary conjugations by word class (d0ff2f6b)
+- Repair the desktop app when rerunning Windows setup (97c3f0ab)
+- Verify Play Billing metadata across Android build tools (a17b3bd4)
+- Keep automatic Android updates idle during app use (298afc0e)
+- Render weekly anime schedule natively in Flutter (5108bfff)
+- Preserve resolved Google Play Billing metadata (495a1dc6)
+- Allow selecting multiple Jellyfin media libraries (6645e233)
+- Keep popup toggle shortcut active in Windows settings (e982636d)
+- Preserve playback speed when reopening videos (f7619609)
+- Show simultaneous subtitle lines during study pauses (3287a6ed)
+- Share Android package identity and signing across distributions (a286b2fa)
+- Add on-device Paddle OCR for Android with aligned text geometry (ab6f03f0)
+- Record verified Play build and remaining testing gates (4cc14f63)
+- Align Play permissions and settings with supported reader features (5a15bd6a)
+- Record Play replacement build and playback capture review notes (673a8e13)
+- Advance release versions past untagged Play candidates (bc62c0a5)
+- Serialize bootstrap smoke payload launches (49e38490)
+- Fix Play startup resource bindings and shortcut consent (ad1021f7)
+- Preserve macOS recovery smoke fixes (8d84121f)
+- Sign macOS bootstrap smoke fixtures (3c61406d)
+- Allow empty Play draft placeholders (eb0bcb67)
+- Identify conflicting Play drafts safely (58634cb3)
+- Respect automatic Play review submission (acece7b7)
+- Fix macOS release recovery verification (b7eaa432)
+- Explain Play upload rejections safely (0df67d77)
+- Handle resumable Play upload responses (16b8ebca)
+- Add signed Play upload recovery (d9cb8b06)
+### Downloads
+
+| System | Architecture | Download |
+|:---:|:---:|:---|
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/apple/apple-original.svg" width="50" alt="macOS"/> | aarch64 | [Manatan-v6.1.39-Mac-Silicon.dmg](https://github.com/KolbyML/Manatan/releases/download/v6.1.39/Manatan-v6.1.39-Mac-Silicon.dmg) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/apple/apple-original.svg" width="50" alt="macOS"/> | x86_64 | [Manatan-v6.1.39-Mac-Intel.dmg](https://github.com/KolbyML/Manatan/releases/download/v6.1.39/Manatan-v6.1.39-Mac-Intel.dmg) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/windows8/windows8-original.svg" width="50" alt="Windows"/> | x86_64 | [ManatanSetup-v6.1.39-Windows-x64.exe](https://github.com/KolbyML/Manatan/releases/download/v6.1.39/ManatanSetup-v6.1.39-Windows-x64.exe) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/linux/linux-original.svg" width="50" alt="Linux"/> | x86_64 | [manatan_6.1.39_amd64.deb](https://github.com/KolbyML/Manatan/releases/download/v6.1.39/manatan_6.1.39_amd64.deb) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/linux/linux-original.svg" width="50" alt="Linux"/> | aarch64 | [manatan_6.1.39_arm64.deb](https://github.com/KolbyML/Manatan/releases/download/v6.1.39/manatan_6.1.39_arm64.deb) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/android/android-original.svg" width="50" alt="Android"/> | ARM64 | [Manatan-Android-ARM64-v6.1.39.apk](https://github.com/KolbyML/Manatan/releases/download/v6.1.39/Manatan-Android-ARM64-v6.1.39.apk) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/android/android-original.svg" width="50" alt="Android"/> | ARM32 | [Manatan-Android-ARM32-v6.1.39.apk](https://github.com/KolbyML/Manatan/releases/download/v6.1.39/Manatan-Android-ARM32-v6.1.39.apk) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/apple/apple-original.svg" width="50" alt="iOS"/> | arm64 | [Manatan-v6.1.39-iOS.ipa](https://github.com/KolbyML/Manatan/releases/download/v6.1.39/Manatan-v6.1.39-iOS.ipa) |
+
+- The manatan-app and manatan-launcher archives are updater payloads, not the normal manual install path.
+- The legacy Manatan archives are one-time migration assets for older clients.
+- Android requires Android 8.0 or newer. Choose ARM64 for a 64-bit Android system, or ARM32 for a 32-bit Android system.
+- ARM32 support is experimental.
+- Checksums: [Checksums.sha256](https://github.com/KolbyML/Manatan/releases/download/v6.1.39/Checksums.sha256)
+
+
 ## Release v6.1.36
 
 - Serialize macOS desktop release builds (03dcf4c8)
