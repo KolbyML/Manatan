@@ -1,3 +1,29 @@
+## Release v6.1.43
+
+- Recover damaged Windows UI preferences safely (0f06daad)
+- Resolve Linux ARM64 bundle output (f7b21c91)
+- Enable iOS speech audio encoding (9441c28d)
+- Prepare iOS native frameworks before CocoaPods (fa6988e9)
+### Downloads
+
+| System | Architecture | Download |
+|:---:|:---:|:---|
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/apple/apple-original.svg" width="50" alt="macOS"/> | aarch64 | [Manatan-v6.1.43-Mac-Silicon.dmg](https://github.com/KolbyML/Manatan/releases/download/v6.1.43/Manatan-v6.1.43-Mac-Silicon.dmg) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/apple/apple-original.svg" width="50" alt="macOS"/> | x86_64 | [Manatan-v6.1.43-Mac-Intel.dmg](https://github.com/KolbyML/Manatan/releases/download/v6.1.43/Manatan-v6.1.43-Mac-Intel.dmg) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/windows8/windows8-original.svg" width="50" alt="Windows"/> | x86_64 | [ManatanSetup-v6.1.43-Windows-x64.exe](https://github.com/KolbyML/Manatan/releases/download/v6.1.43/ManatanSetup-v6.1.43-Windows-x64.exe) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/linux/linux-original.svg" width="50" alt="Linux"/> | x86_64 | [manatan_6.1.43_amd64.deb](https://github.com/KolbyML/Manatan/releases/download/v6.1.43/manatan_6.1.43_amd64.deb) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/linux/linux-original.svg" width="50" alt="Linux"/> | aarch64 | [manatan_6.1.43_arm64.deb](https://github.com/KolbyML/Manatan/releases/download/v6.1.43/manatan_6.1.43_arm64.deb) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/android/android-original.svg" width="50" alt="Android"/> | ARM64 | [Manatan-Android-ARM64-v6.1.43.apk](https://github.com/KolbyML/Manatan/releases/download/v6.1.43/Manatan-Android-ARM64-v6.1.43.apk) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/android/android-original.svg" width="50" alt="Android"/> | ARM32 | [Manatan-Android-ARM32-v6.1.43.apk](https://github.com/KolbyML/Manatan/releases/download/v6.1.43/Manatan-Android-ARM32-v6.1.43.apk) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/apple/apple-original.svg" width="50" alt="iOS"/> | arm64 | [Manatan-v6.1.43-iOS.ipa](https://github.com/KolbyML/Manatan/releases/download/v6.1.43/Manatan-v6.1.43-iOS.ipa) |
+
+- The manatan-app and manatan-launcher archives are updater payloads, not the normal manual install path.
+- The legacy Manatan archives are one-time migration assets for older clients.
+- Android requires Android 8.0 or newer. Choose ARM64 for a 64-bit Android system, or ARM32 for a 32-bit Android system.
+- ARM32 support is experimental.
+- Checksums: [Checksums.sha256](https://github.com/KolbyML/Manatan/releases/download/v6.1.43/Checksums.sha256)
+
+
 ## Release v6.1.42
 
 - Keep iOS signing keychain available (019b38b1)
