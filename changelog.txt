@@ -1,3 +1,40 @@
+## Release v6.1.42
+
+- Keep iOS signing keychain available (019b38b1)
+- Recover Android account sign-in after process restart (8e78255f)
+- Include Google Play checkout activities in Android packages (361d6ed2)
+- Preserve glossary sections in mined cards (1b123588)
+- Improve subtitle sidebar search and timing controls (40fd5fea)
+- Resolve duplicate Android runtime classes (4dcbac40)
+- Stabilize Android media downloads (fd69bbc3)
+- Use automatic immersion tracking in the novel reader (152f36ee)
+- Add audiobook read-along and subtitle books (0e2d2b93)
+- Improve performance monitor readability and reduce popup layout work (b4a7ac78)
+- Add podcast discovery and RSS to the audio library (fe2961e6)
+- Track automatic manga reading pace and integrate reader stats (9f0386e5)
+- Reduce subtitle rebuilds and add performance monitor (4b8bd72f)
+- Restore compact subtitle timing controls (38a76371)
+- Fix embedded subtitle timelines and track labels on Windows (1078611a)
+### Downloads
+
+| System | Architecture | Download |
+|:---:|:---:|:---|
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/apple/apple-original.svg" width="50" alt="macOS"/> | aarch64 | [Manatan-v6.1.42-Mac-Silicon.dmg](https://github.com/KolbyML/Manatan/releases/download/v6.1.42/Manatan-v6.1.42-Mac-Silicon.dmg) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/apple/apple-original.svg" width="50" alt="macOS"/> | x86_64 | [Manatan-v6.1.42-Mac-Intel.dmg](https://github.com/KolbyML/Manatan/releases/download/v6.1.42/Manatan-v6.1.42-Mac-Intel.dmg) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/windows8/windows8-original.svg" width="50" alt="Windows"/> | x86_64 | [ManatanSetup-v6.1.42-Windows-x64.exe](https://github.com/KolbyML/Manatan/releases/download/v6.1.42/ManatanSetup-v6.1.42-Windows-x64.exe) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/linux/linux-original.svg" width="50" alt="Linux"/> | x86_64 | [manatan_6.1.42_amd64.deb](https://github.com/KolbyML/Manatan/releases/download/v6.1.42/manatan_6.1.42_amd64.deb) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/linux/linux-original.svg" width="50" alt="Linux"/> | aarch64 | [manatan_6.1.42_arm64.deb](https://github.com/KolbyML/Manatan/releases/download/v6.1.42/manatan_6.1.42_arm64.deb) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/android/android-original.svg" width="50" alt="Android"/> | ARM64 | [Manatan-Android-ARM64-v6.1.42.apk](https://github.com/KolbyML/Manatan/releases/download/v6.1.42/Manatan-Android-ARM64-v6.1.42.apk) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/android/android-original.svg" width="50" alt="Android"/> | ARM32 | [Manatan-Android-ARM32-v6.1.42.apk](https://github.com/KolbyML/Manatan/releases/download/v6.1.42/Manatan-Android-ARM32-v6.1.42.apk) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/apple/apple-original.svg" width="50" alt="iOS"/> | arm64 | [Manatan-v6.1.42-iOS.ipa](https://github.com/KolbyML/Manatan/releases/download/v6.1.42/Manatan-v6.1.42-iOS.ipa) |
+
+- The manatan-app and manatan-launcher archives are updater payloads, not the normal manual install path.
+- The legacy Manatan archives are one-time migration assets for older clients.
+- Android requires Android 8.0 or newer. Choose ARM64 for a 64-bit Android system, or ARM32 for a 32-bit Android system.
+- ARM32 support is experimental.
+- Checksums: [Checksums.sha256](https://github.com/KolbyML/Manatan/releases/download/v6.1.42/Checksums.sha256)
+
+
 ## Release v6.1.41
 
 - Fix manga coverage recording and prefetch OCR (944ed27a)
