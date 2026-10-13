@@ -1,3 +1,38 @@
+## Release v6.1.44
+
+- Support AVIF manga images on Android (d604dbe0)
+- Keep repository consent responsive during runtime startup (cd4b223a)
+- Verify immersion history survives library removal (d9fc6a0a)
+- Improve mobile review controls and learning intervals (d9b5830d)
+- Prevent Windows webview crashes during resizing (77aa470d)
+- Request repository consent when opening add links (8b85d601)
+- Disable subscription purchases in TestFlight builds (005ca24c)
+- Show correct membership tier and billing provider (203d98fb)
+- Improve study playback input and crash diagnostics (1df03f88)
+- Enable Android background playback and system audio controls (4af6a5c6)
+- Isolate desktop prerequisite failures (85c14f26)
+- Preserve Windows recovery dependency definition (440f8363)
+- Use reliable Windows dependency source (cdb8997f)
+### Downloads
+
+| System | Architecture | Download |
+|:---:|:---:|:---|
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/apple/apple-original.svg" width="50" alt="macOS"/> | aarch64 | [Manatan-v6.1.44-Mac-Silicon.dmg](https://github.com/KolbyML/Manatan/releases/download/v6.1.44/Manatan-v6.1.44-Mac-Silicon.dmg) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/apple/apple-original.svg" width="50" alt="macOS"/> | x86_64 | [Manatan-v6.1.44-Mac-Intel.dmg](https://github.com/KolbyML/Manatan/releases/download/v6.1.44/Manatan-v6.1.44-Mac-Intel.dmg) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/windows8/windows8-original.svg" width="50" alt="Windows"/> | x86_64 | [ManatanSetup-v6.1.44-Windows-x64.exe](https://github.com/KolbyML/Manatan/releases/download/v6.1.44/ManatanSetup-v6.1.44-Windows-x64.exe) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/linux/linux-original.svg" width="50" alt="Linux"/> | x86_64 | [manatan_6.1.44_amd64.deb](https://github.com/KolbyML/Manatan/releases/download/v6.1.44/manatan_6.1.44_amd64.deb) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/linux/linux-original.svg" width="50" alt="Linux"/> | aarch64 | [manatan_6.1.44_arm64.deb](https://github.com/KolbyML/Manatan/releases/download/v6.1.44/manatan_6.1.44_arm64.deb) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/android/android-original.svg" width="50" alt="Android"/> | ARM64 | [Manatan-Android-ARM64-v6.1.44.apk](https://github.com/KolbyML/Manatan/releases/download/v6.1.44/Manatan-Android-ARM64-v6.1.44.apk) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/android/android-original.svg" width="50" alt="Android"/> | ARM32 | [Manatan-Android-ARM32-v6.1.44.apk](https://github.com/KolbyML/Manatan/releases/download/v6.1.44/Manatan-Android-ARM32-v6.1.44.apk) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/apple/apple-original.svg" width="50" alt="iOS"/> | arm64 | [Manatan-v6.1.44-iOS.ipa](https://github.com/KolbyML/Manatan/releases/download/v6.1.44/Manatan-v6.1.44-iOS.ipa) |
+
+- The manatan-app and manatan-launcher archives are updater payloads, not the normal manual install path.
+- The legacy Manatan archives are one-time migration assets for older clients.
+- Android requires Android 8.0 or newer. Choose ARM64 for a 64-bit Android system, or ARM32 for a 32-bit Android system.
+- ARM32 support is experimental.
+- Checksums: [Checksums.sha256](https://github.com/KolbyML/Manatan/releases/download/v6.1.44/Checksums.sha256)
+
+
 ## Release v6.1.43
 
 - Recover damaged Windows UI preferences safely (0f06daad)
