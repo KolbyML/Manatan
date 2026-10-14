@@ -1,3 +1,38 @@
+## Release v6.1.46
+
+- Fix audiobook sentence capture and reader controls (668f33dfc)
+- Fix AnkiDroid preset setup and Japanese pitch defaults (744ab53d1)
+- Restore Android podcast playback and media controls (22344e18b)
+- Deploy hosted SRS directly from native CI (98f1dab85)
+- Restore hosted SRS builds and alert on publishing failures (459ad654e)
+- Keep audiobook playback direction consistent in vertical books (c8e99611a)
+- Expire cached institution access while preserving offline submissions (2627cb19f)
+- Use platform audio decoders for local transcription (db8ee7e93)
+- Preserve iOS podcast controls when switching episodes (f3c4db57d)
+- Add organization programs with durable offline submissions (a72809d93)
+- Forward release credentials to ARM recovery (f6ac076c5)
+- Add emulated ARM release recovery (b767feabb)
+- Disambiguate Windows string comparison (81ff8574c)
+### Downloads
+
+| System | Architecture | Download |
+|:---:|:---:|:---|
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/apple/apple-original.svg" width="50" alt="macOS"/> | aarch64 | [Manatan-v6.1.46-Mac-Silicon.dmg](https://github.com/KolbyML/Manatan/releases/download/v6.1.46/Manatan-v6.1.46-Mac-Silicon.dmg) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/apple/apple-original.svg" width="50" alt="macOS"/> | x86_64 | [Manatan-v6.1.46-Mac-Intel.dmg](https://github.com/KolbyML/Manatan/releases/download/v6.1.46/Manatan-v6.1.46-Mac-Intel.dmg) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/windows8/windows8-original.svg" width="50" alt="Windows"/> | x86_64 | [ManatanSetup-v6.1.46-Windows-x64.exe](https://github.com/KolbyML/Manatan/releases/download/v6.1.46/ManatanSetup-v6.1.46-Windows-x64.exe) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/linux/linux-original.svg" width="50" alt="Linux"/> | x86_64 | [manatan_6.1.46_amd64.deb](https://github.com/KolbyML/Manatan/releases/download/v6.1.46/manatan_6.1.46_amd64.deb) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/linux/linux-original.svg" width="50" alt="Linux"/> | aarch64 | [manatan_6.1.46_arm64.deb](https://github.com/KolbyML/Manatan/releases/download/v6.1.46/manatan_6.1.46_arm64.deb) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/android/android-original.svg" width="50" alt="Android"/> | ARM64 | [Manatan-Android-ARM64-v6.1.46.apk](https://github.com/KolbyML/Manatan/releases/download/v6.1.46/Manatan-Android-ARM64-v6.1.46.apk) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/android/android-original.svg" width="50" alt="Android"/> | ARM32 | [Manatan-Android-ARM32-v6.1.46.apk](https://github.com/KolbyML/Manatan/releases/download/v6.1.46/Manatan-Android-ARM32-v6.1.46.apk) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/apple/apple-original.svg" width="50" alt="iOS"/> | arm64 | [Manatan-v6.1.46-iOS.ipa](https://github.com/KolbyML/Manatan/releases/download/v6.1.46/Manatan-v6.1.46-iOS.ipa) |
+
+- The manatan-app and manatan-launcher archives are updater payloads, not the normal manual install path.
+- The legacy Manatan archives are one-time migration assets for older clients.
+- Android requires Android 8.0 or newer. Choose ARM64 for a 64-bit Android system, or ARM32 for a 32-bit Android system.
+- ARM32 support is experimental.
+- Checksums: [Checksums.sha256](https://github.com/KolbyML/Manatan/releases/download/v6.1.46/Checksums.sha256)
+
+
 ## Release v6.1.45
 
 - Disambiguate Windows string comparison (81ff8574c)
