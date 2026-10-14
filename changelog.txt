@@ -1,3 +1,46 @@
+## Release v6.1.45
+
+- Disambiguate Windows string comparison (81ff8574c)
+- Preserve appearance and chapter sorting preferences (8e1e90620)
+- Restore subtitle hover lookup and playback controls (9ef8d78fc)
+- Keep dictionary definitions within the screen width (8c2454313)
+- Fix dictionary frequency sorting and picker options (05f267dc4)
+- Display dictionary images at their requested size (b6b974d5a)
+- Restore selected profile dictionaries after app restart (294eeddb8)
+- Restore novel reader swipe threshold controls (19919ef95)
+- Keep novel reading fullscreen and progress clear (bb2f10303)
+- Add five-second video seek shortcuts (748dc41a3)
+- Show audio track details for Jellyfin downloads (6a85fb2c1)
+- Prevent stale episode lists during concurrent refreshes (239d3177f)
+- Sync completed Jellyfin episodes automatically (3c8766f28)
+- Keep checkbox ticks visible across app color schemes (eb0a35331)
+- Install Play recovery Python runtime (b2a612d6b)
+- Run Play recovery driver outside source tree (60a08e6bc)
+- Clean detached recovery worktrees (234c1bb79)
+- Preserve Play recovery provenance (00b03a8c7)
+- Install Git in Android recovery jobs (a6cd9150b)
+- Add Android release recovery workflows (dcd37780d)
+- Update Android ABI test fixtures (1ad62ea00)
+### Downloads
+
+| System | Architecture | Download |
+|:---:|:---:|:---|
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/apple/apple-original.svg" width="50" alt="macOS"/> | aarch64 | [Manatan-v6.1.45-Mac-Silicon.dmg](https://github.com/KolbyML/Manatan/releases/download/v6.1.45/Manatan-v6.1.45-Mac-Silicon.dmg) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/apple/apple-original.svg" width="50" alt="macOS"/> | x86_64 | [Manatan-v6.1.45-Mac-Intel.dmg](https://github.com/KolbyML/Manatan/releases/download/v6.1.45/Manatan-v6.1.45-Mac-Intel.dmg) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/windows8/windows8-original.svg" width="50" alt="Windows"/> | x86_64 | [ManatanSetup-v6.1.45-Windows-x64.exe](https://github.com/KolbyML/Manatan/releases/download/v6.1.45/ManatanSetup-v6.1.45-Windows-x64.exe) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/linux/linux-original.svg" width="50" alt="Linux"/> | x86_64 | [manatan_6.1.45_amd64.deb](https://github.com/KolbyML/Manatan/releases/download/v6.1.45/manatan_6.1.45_amd64.deb) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/linux/linux-original.svg" width="50" alt="Linux"/> | aarch64 | [manatan_6.1.45_arm64.deb](https://github.com/KolbyML/Manatan/releases/download/v6.1.45/manatan_6.1.45_arm64.deb) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/android/android-original.svg" width="50" alt="Android"/> | ARM64 | [Manatan-Android-ARM64-v6.1.45.apk](https://github.com/KolbyML/Manatan/releases/download/v6.1.45/Manatan-Android-ARM64-v6.1.45.apk) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/android/android-original.svg" width="50" alt="Android"/> | ARM32 | [Manatan-Android-ARM32-v6.1.45.apk](https://github.com/KolbyML/Manatan/releases/download/v6.1.45/Manatan-Android-ARM32-v6.1.45.apk) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/apple/apple-original.svg" width="50" alt="iOS"/> | arm64 | [Manatan-v6.1.45-iOS.ipa](https://github.com/KolbyML/Manatan/releases/download/v6.1.45/Manatan-v6.1.45-iOS.ipa) |
+
+- The manatan-app and manatan-launcher archives are updater payloads, not the normal manual install path.
+- The legacy Manatan archives are one-time migration assets for older clients.
+- Android requires Android 8.0 or newer. Choose ARM64 for a 64-bit Android system, or ARM32 for a 32-bit Android system.
+- ARM32 support is experimental.
+- Checksums: [Checksums.sha256](https://github.com/KolbyML/Manatan/releases/download/v6.1.45/Checksums.sha256)
+
+
 ## Release v6.1.44
 
 - Support AVIF manga images on Android (d604dbe0)
