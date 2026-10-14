@@ -1,3 +1,31 @@
+## Release v6.1.47
+
+- Update desktop launcher and app with one restart (9068e6644)
+- Restore EPUB reading positions across image pages (d5cacf174)
+- Record video hotkeys and honor configured seek duration (e9f755245)
+- Align Screen lookup and Schedule controls in More (86e8576d2)
+- Route CI artifacts over tailnet (88a8811c1)
+- Restore clean-runner iOS builds (2e2a0a4a7)
+### Downloads
+
+| System | Architecture | Download |
+|:---:|:---:|:---|
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/apple/apple-original.svg" width="50" alt="macOS"/> | aarch64 | [Manatan-v6.1.47-Mac-Silicon.dmg](https://github.com/KolbyML/Manatan/releases/download/v6.1.47/Manatan-v6.1.47-Mac-Silicon.dmg) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/apple/apple-original.svg" width="50" alt="macOS"/> | x86_64 | [Manatan-v6.1.47-Mac-Intel.dmg](https://github.com/KolbyML/Manatan/releases/download/v6.1.47/Manatan-v6.1.47-Mac-Intel.dmg) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/windows8/windows8-original.svg" width="50" alt="Windows"/> | x86_64 | [ManatanSetup-v6.1.47-Windows-x64.exe](https://github.com/KolbyML/Manatan/releases/download/v6.1.47/ManatanSetup-v6.1.47-Windows-x64.exe) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/linux/linux-original.svg" width="50" alt="Linux"/> | x86_64 | [manatan_6.1.47_amd64.deb](https://github.com/KolbyML/Manatan/releases/download/v6.1.47/manatan_6.1.47_amd64.deb) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/linux/linux-original.svg" width="50" alt="Linux"/> | aarch64 | [manatan_6.1.47_arm64.deb](https://github.com/KolbyML/Manatan/releases/download/v6.1.47/manatan_6.1.47_arm64.deb) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/android/android-original.svg" width="50" alt="Android"/> | ARM64 | [Manatan-Android-ARM64-v6.1.47.apk](https://github.com/KolbyML/Manatan/releases/download/v6.1.47/Manatan-Android-ARM64-v6.1.47.apk) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/android/android-original.svg" width="50" alt="Android"/> | ARM32 | [Manatan-Android-ARM32-v6.1.47.apk](https://github.com/KolbyML/Manatan/releases/download/v6.1.47/Manatan-Android-ARM32-v6.1.47.apk) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/apple/apple-original.svg" width="50" alt="iOS"/> | arm64 | [Manatan-v6.1.47-iOS.ipa](https://github.com/KolbyML/Manatan/releases/download/v6.1.47/Manatan-v6.1.47-iOS.ipa) |
+
+- The manatan-app and manatan-launcher archives are updater payloads, not the normal manual install path.
+- The legacy Manatan archives are one-time migration assets for older clients.
+- Android requires Android 8.0 or newer. Choose ARM64 for a 64-bit Android system, or ARM32 for a 32-bit Android system.
+- ARM32 support is experimental.
+- Checksums: [Checksums.sha256](https://github.com/KolbyML/Manatan/releases/download/v6.1.47/Checksums.sha256)
+
+
 ## Release v6.1.46
 
 - Fix audiobook sentence capture and reader controls (668f33dfc)
