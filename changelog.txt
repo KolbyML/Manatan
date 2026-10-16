@@ -1,3 +1,50 @@
+## Release v6.1.48
+
+- Preserve novel data across Android distribution changes (5c942aebd)
+- Keep media covers separate across libraries (8ce99eea6)
+- Refresh downloaded episodes after background completion (cb200925e)
+- Show accurate anime download progress (b4e8b0af7)
+- Set up accessible Android media folders (75cf9e4f1)
+- Add language-filtered YouTube browsing, scrolling and video discovery (7d775cce8)
+- Make download cancellation consistent across media (742231d9f)
+- Fix torrent streaming and downloaded video playback (86e9903d2)
+- Allow cancelling anime downloads from episode rows (ea7a847ab)
+- Fix Anki searches for fields with spaces (174430cc8)
+- Support Jellyfin external audio and scrollable download dialogs (9f16231d0)
+- Fix torrent episode downloads (557ddee28)
+- Clarify Jellyfin download versions and audio tracks (cc0640431)
+- Recover file sync after compatibility upgrades (86f6711b0)
+- Preserve EPUB reading position across app backgrounding (c8cb84558)
+- Correct Kavita volume labels (3a26eb601)
+- Preserve immersion tracking for titles with surrounding whitespace (54b16a078)
+- Explain card field options in Flutter and WebUI (96e7b407f)
+- Preserve new episodes when refreshes overlap (a924b237b)
+- Respect reader themes for EPUB page backgrounds (0ef4d0371)
+- Reduce dictionary storage and speed up lookups (7610f7fb8)
+- Preserve styles for every matching dictionary (45858e0f4)
+- Restore sync compatibility with older file checkpoints (a136d75b5)
+- Preserve release smoke fixes in recovery (9913249ce)
+- Fix cross-platform launcher smoke fixture (5757903f6)
+### Downloads
+
+| System | Architecture | Download |
+|:---:|:---:|:---|
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/apple/apple-original.svg" width="50" alt="macOS"/> | aarch64 | [Manatan-v6.1.48-Mac-Silicon.dmg](https://github.com/KolbyML/Manatan/releases/download/v6.1.48/Manatan-v6.1.48-Mac-Silicon.dmg) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/apple/apple-original.svg" width="50" alt="macOS"/> | x86_64 | [Manatan-v6.1.48-Mac-Intel.dmg](https://github.com/KolbyML/Manatan/releases/download/v6.1.48/Manatan-v6.1.48-Mac-Intel.dmg) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/windows8/windows8-original.svg" width="50" alt="Windows"/> | x86_64 | [ManatanSetup-v6.1.48-Windows-x64.exe](https://github.com/KolbyML/Manatan/releases/download/v6.1.48/ManatanSetup-v6.1.48-Windows-x64.exe) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/linux/linux-original.svg" width="50" alt="Linux"/> | x86_64 | [manatan_6.1.48_amd64.deb](https://github.com/KolbyML/Manatan/releases/download/v6.1.48/manatan_6.1.48_amd64.deb) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/linux/linux-original.svg" width="50" alt="Linux"/> | aarch64 | [manatan_6.1.48_arm64.deb](https://github.com/KolbyML/Manatan/releases/download/v6.1.48/manatan_6.1.48_arm64.deb) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/android/android-original.svg" width="50" alt="Android"/> | ARM64 | [Manatan-Android-ARM64-v6.1.48.apk](https://github.com/KolbyML/Manatan/releases/download/v6.1.48/Manatan-Android-ARM64-v6.1.48.apk) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/android/android-original.svg" width="50" alt="Android"/> | ARM32 | [Manatan-Android-ARM32-v6.1.48.apk](https://github.com/KolbyML/Manatan/releases/download/v6.1.48/Manatan-Android-ARM32-v6.1.48.apk) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/apple/apple-original.svg" width="50" alt="iOS"/> | arm64 | [Manatan-v6.1.48-iOS.ipa](https://github.com/KolbyML/Manatan/releases/download/v6.1.48/Manatan-v6.1.48-iOS.ipa) |
+
+- The manatan-app and manatan-launcher archives are updater payloads, not the normal manual install path.
+- The legacy Manatan archives are one-time migration assets for older clients.
+- Android requires Android 8.0 or newer. Choose ARM64 for a 64-bit Android system, or ARM32 for a 32-bit Android system.
+- ARM32 support is experimental.
+- Checksums: [Checksums.sha256](https://github.com/KolbyML/Manatan/releases/download/v6.1.48/Checksums.sha256)
+
+
 ## Release v6.1.47
 
 - Update desktop launcher and app with one restart (9068e6644)
