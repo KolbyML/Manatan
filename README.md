@@ -17,9 +17,14 @@ Discord Server: https://discord.gg/tDAtpPN8KK
 ## Screenshots
 
 <p align="center">
-  <img src="docs/assets/screenshots/manga-library.png" width="240" alt="Manatan manga library on mobile">
-  <img src="docs/assets/screenshots/manga-reader-dictionary.png" width="240" alt="Manatan manga reader dictionary lookup on mobile">
-  <img src="docs/assets/screenshots/video-dictionary-overlay.png" width="420" alt="Manatan video dictionary lookup overlay">
+  <a href="docs/assets/screenshots/dark/lookup.png"><img src="docs/assets/screenshots/dark/lookup.png" width="200" alt="Real JMdict kanji lookup inside Manatan's dark EPUB reader"></a>
+  <a href="docs/assets/screenshots/dark/podcasts.png"><img src="docs/assets/screenshots/dark/podcasts.png" width="200" alt="Nihongo con Teppei podcast with its official artwork and real episodes in Manatan"></a>
+  <a href="docs/assets/screenshots/dark/manga.png"><img src="docs/assets/screenshots/dark/manga.png" width="200" alt="Pepper and Carrot in the dark manga reader with processed Japanese OCR"></a>
+  <a href="docs/assets/screenshots/dark/books.png"><img src="docs/assets/screenshots/dark/books.png" width="200" alt="Vertical Japanese EPUB reading in dark mode"></a>
+</p>
+<p align="center">
+  <a href="docs/assets/screenshots/dark/video-library.png"><img src="docs/assets/screenshots/dark/video-library.png" width="240" alt="Manatan video library with the official Big Buck Bunny poster as its cover"></a>
+  <a href="docs/assets/screenshots/dark/video.png"><img src="docs/assets/screenshots/dark/video.png" width="560" alt="Manatan landscape video player with Japanese subtitles"></a>
 </p>
 
 ## ✨ Why Manatan?
@@ -155,6 +160,7 @@ The following links, repos, companies and projects have been important in the de
 - https://github.com/Suwayomi/Suwayomi-Server
 - https://github.com/Suwayomi/Suwayomi-WebUI
 - https://github.com/Manhhao/hoshidicts/tree/main-mit
+- [Screenshot media credits](docs/assets/screenshots/dark/CREDITS.txt)
 
 ## Star History
 
