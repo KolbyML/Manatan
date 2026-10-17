@@ -1,0 +1,22 @@
+JMdict — Electronic Dictionaries Research Group.
+This publication includes material from the JMdict dictionary files in accordance with EDRDG licence provisions. Imported Yomitan archive: JMdict [2026-01-26].
+https://www.edrdg.org/
+
+Podcast — Japanese podcast for beginners (Nihongo con Teppei), by Teppei.
+Official public RSS feed imported into Manatan: https://nihongoconteppei.com/feed/podcast/
+Publisher: https://nihongoconteppei.com/
+Podcast artwork, title, description and episode metadata belong to their respective owner. Shown only within the app's genuine browsing interface; no episode audio is redistributed. No endorsement or affiliation is implied. The Creative Commons licences below do not apply to this podcast.
+
+Original Japanese EPUB story — Manatan.
+
+Pepper & Carrot, Episode 1, The Potion of Flight — David Revoy and translation contributors.
+CC BY 4.0: https://creativecommons.org/licenses/by/4.0/
+https://www.peppercarrot.com/ja/webcomic/ep01_Potion-of-Flight.html
+
+Big Buck Bunny film and official poster — (c) copyright Blender Foundation | www.bigbuckbunny.org
+CC BY 3.0: https://creativecommons.org/licenses/by/3.0/
+Official poster source: https://download.blender.org/peach/presskit.zip (poster-presskit/poster_big.jpg).
+Film source: https://download.blender.org/demo/movies/BBB/bbb_sunflower_1080p_30fps_normal.mp4.zip
+The silent HD review excerpt has original Japanese descriptive captions by Manatan. The poster is displayed as an imported library cover; the captures are uniformly scaled without retouching app pixels. No endorsement is implied.
+
+Screenshots show imported content, not a claim that these titles are bundled with Manatan.
