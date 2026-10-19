@@ -1,3 +1,32 @@
+## Release v6.2.4
+
+- Customize Home layout and improve Continue covers and visibility (3a361dcf0)
+- Reclaim unused sync record blobs incrementally (a2bb251a2)
+- Restore YouTube screenshot and sentence audio capture (713314dd6)
+- Reject iOS decoders incompatible with podcast playback (12cf72d7a)
+- Verify sync packs against their original downloaded bytes (e4f321f43)
+- Use the real Manatan note type and restore Japanese card text (65f21e23f)
+- Keep dictionary scrolling stable across the full page (e25be3355)
+### Downloads
+
+| System | Architecture | Download |
+|:---:|:---:|:---|
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/apple/apple-original.svg" width="50" alt="macOS"/> | aarch64 | [Manatan-v6.2.4-Mac-Silicon.dmg](https://github.com/KolbyML/Manatan/releases/download/v6.2.4/Manatan-v6.2.4-Mac-Silicon.dmg) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/apple/apple-original.svg" width="50" alt="macOS"/> | x86_64 | [Manatan-v6.2.4-Mac-Intel.dmg](https://github.com/KolbyML/Manatan/releases/download/v6.2.4/Manatan-v6.2.4-Mac-Intel.dmg) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/windows8/windows8-original.svg" width="50" alt="Windows"/> | x86_64 | [ManatanSetup-v6.2.4-Windows-x64.exe](https://github.com/KolbyML/Manatan/releases/download/v6.2.4/ManatanSetup-v6.2.4-Windows-x64.exe) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/linux/linux-original.svg" width="50" alt="Linux"/> | x86_64 | [manatan_6.2.4_amd64.deb](https://github.com/KolbyML/Manatan/releases/download/v6.2.4/manatan_6.2.4_amd64.deb) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/linux/linux-original.svg" width="50" alt="Linux"/> | aarch64 | [manatan_6.2.4_arm64.deb](https://github.com/KolbyML/Manatan/releases/download/v6.2.4/manatan_6.2.4_arm64.deb) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/android/android-original.svg" width="50" alt="Android"/> | ARM64 | [Manatan-Android-ARM64-v6.2.4.apk](https://github.com/KolbyML/Manatan/releases/download/v6.2.4/Manatan-Android-ARM64-v6.2.4.apk) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/android/android-original.svg" width="50" alt="Android"/> | ARM32 | [Manatan-Android-ARM32-v6.2.4.apk](https://github.com/KolbyML/Manatan/releases/download/v6.2.4/Manatan-Android-ARM32-v6.2.4.apk) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/apple/apple-original.svg" width="50" alt="iOS"/> | arm64 | [Manatan-v6.2.4-iOS.ipa](https://github.com/KolbyML/Manatan/releases/download/v6.2.4/Manatan-v6.2.4-iOS.ipa) |
+
+- The manatan-app and manatan-launcher archives are updater payloads, not the normal manual install path.
+- The legacy Manatan archives are one-time migration assets for older clients.
+- Android requires Android 8.0 or newer. Choose ARM64 for a 64-bit Android system, or ARM32 for a 32-bit Android system.
+- ARM32 support is experimental.
+- Checksums: [Checksums.sha256](https://github.com/KolbyML/Manatan/releases/download/v6.2.4/Checksums.sha256)
+
+
 ## Release v6.2.3
 
 - Unify WebUI settings and organize More and categories (aeba58fd9)
