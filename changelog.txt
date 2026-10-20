@@ -1,3 +1,38 @@
+## Release v6.2.5
+
+- Improve YouTube subtitle study and comprehension controls (a3cf7803f)
+- Preserve dictionary images when exporting cards to Anki (191448f0d)
+- Fix mobile runtime package activation (8117d7266)
+- Fix novel title sorting and preserve imported filenames (c4dad13a4)
+- Let readers correct and remember novel languages (e26d0e311)
+- Refine SRS navigation, reviewer layout, and audio controls (5d164dcbe)
+- Recover diverged sidecar sync histories (cafc551f8)
+- Restore desktop YouTube playback and media capture (f7f9d717f)
+- Preserve extension settings through backup restore and sync (3ead2328f)
+- Keep expanded dictionary definitions within the screen (0ae226d8d)
+- Add configurable video click playback shortcuts (f20fe6b23)
+- Keep reader flashcard exports synchronized with the selected profile (ecba98c52)
+- Preserve SRS progress when importing official Manatan NoteType decks (316894cb5)
+### Downloads
+
+| System | Architecture | Download |
+|:---:|:---:|:---|
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/apple/apple-original.svg" width="50" alt="macOS"/> | aarch64 | [Manatan-v6.2.5-Mac-Silicon.dmg](https://github.com/KolbyML/Manatan/releases/download/v6.2.5/Manatan-v6.2.5-Mac-Silicon.dmg) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/apple/apple-original.svg" width="50" alt="macOS"/> | x86_64 | [Manatan-v6.2.5-Mac-Intel.dmg](https://github.com/KolbyML/Manatan/releases/download/v6.2.5/Manatan-v6.2.5-Mac-Intel.dmg) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/windows8/windows8-original.svg" width="50" alt="Windows"/> | x86_64 | [ManatanSetup-v6.2.5-Windows-x64.exe](https://github.com/KolbyML/Manatan/releases/download/v6.2.5/ManatanSetup-v6.2.5-Windows-x64.exe) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/linux/linux-original.svg" width="50" alt="Linux"/> | x86_64 | [manatan_6.2.5_amd64.deb](https://github.com/KolbyML/Manatan/releases/download/v6.2.5/manatan_6.2.5_amd64.deb) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/linux/linux-original.svg" width="50" alt="Linux"/> | aarch64 | [manatan_6.2.5_arm64.deb](https://github.com/KolbyML/Manatan/releases/download/v6.2.5/manatan_6.2.5_arm64.deb) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/android/android-original.svg" width="50" alt="Android"/> | ARM64 | [Manatan-Android-ARM64-v6.2.5.apk](https://github.com/KolbyML/Manatan/releases/download/v6.2.5/Manatan-Android-ARM64-v6.2.5.apk) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/android/android-original.svg" width="50" alt="Android"/> | ARM32 | [Manatan-Android-ARM32-v6.2.5.apk](https://github.com/KolbyML/Manatan/releases/download/v6.2.5/Manatan-Android-ARM32-v6.2.5.apk) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/apple/apple-original.svg" width="50" alt="iOS"/> | arm64 | [Manatan-v6.2.5-iOS.ipa](https://github.com/KolbyML/Manatan/releases/download/v6.2.5/Manatan-v6.2.5-iOS.ipa) |
+
+- The manatan-app and manatan-launcher archives are updater payloads, not the normal manual install path.
+- The legacy Manatan archives are one-time migration assets for older clients.
+- Android requires Android 8.0 or newer. Choose ARM64 for a 64-bit Android system, or ARM32 for a 32-bit Android system.
+- ARM32 support is experimental.
+- Checksums: [Checksums.sha256](https://github.com/KolbyML/Manatan/releases/download/v6.2.5/Checksums.sha256)
+
+
 ## Release v6.2.4
 
 - Customize Home layout and improve Continue covers and visibility (3a361dcf0)
