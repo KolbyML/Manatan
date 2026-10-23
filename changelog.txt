@@ -1,3 +1,47 @@
+## Release v6.2.9
+
+- Reduce idle iOS work and preserve CPU diagnostic evidence (3c9a40f26)
+- Add desktop and mobile immersion activity previews (3b2548c66)
+- Download desktop update components in parallel (8eba11ec8)
+- Fix generated PWA symbol staging (a6ed9c4d0)
+- Keep immersion calendars, goals, and title history consistent (57d73460d)
+- Change reader comments and project documentation (56d59385f)
+- Change audio preparation and narration timing (e73276dd2)
+- Change audiobook alignment and illustration playback (8d6ee81fe)
+- Change subtitle matching and illustration handling (e908fe3f1)
+- Restore AnkiMobile media handoff and isolate Apple signing keychains (c32780ba5)
+- Restore card creation from Windows screen lookup (73c998e0b)
+- Fix navigation lifecycles and Linux connectivity startup (8a19fee38)
+- Preserve actionable failure details across app and backend (422c6df18)
+- Use the main website for shared SRS extensions (12e93f660)
+- Preserve dictionary SVG formatting in popups and Anki cards (8277a5770)
+- Make pure black dark mode available to everyone (9dc261084)
+- Keep playback menus aligned and readable in light mode (1c23c7b39)
+- Fix browser Anki package uploads and note type conflicts (d77e41024)
+- Adapt schedule layouts to window shape (8395436b2)
+- Remove video playback instruction banners (b42172b5b)
+- Keep SRS field scrolling aligned and reuse browse editors (cf3ee7e8d)
+- Improve SRS browse responsiveness and Japanese bold text (8897c98a1)
+### Downloads
+
+| System | Architecture | Download |
+|:---:|:---:|:---|
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/apple/apple-original.svg" width="50" alt="macOS"/> | aarch64 | [Manatan-v6.2.9-Mac-Silicon.dmg](https://github.com/KolbyML/Manatan/releases/download/v6.2.9/Manatan-v6.2.9-Mac-Silicon.dmg) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/apple/apple-original.svg" width="50" alt="macOS"/> | x86_64 | [Manatan-v6.2.9-Mac-Intel.dmg](https://github.com/KolbyML/Manatan/releases/download/v6.2.9/Manatan-v6.2.9-Mac-Intel.dmg) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/windows8/windows8-original.svg" width="50" alt="Windows"/> | x86_64 | [ManatanSetup-v6.2.9-Windows-x64.exe](https://github.com/KolbyML/Manatan/releases/download/v6.2.9/ManatanSetup-v6.2.9-Windows-x64.exe) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/linux/linux-original.svg" width="50" alt="Linux"/> | x86_64 | [manatan_6.2.9_amd64.deb](https://github.com/KolbyML/Manatan/releases/download/v6.2.9/manatan_6.2.9_amd64.deb) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/linux/linux-original.svg" width="50" alt="Linux"/> | aarch64 | [manatan_6.2.9_arm64.deb](https://github.com/KolbyML/Manatan/releases/download/v6.2.9/manatan_6.2.9_arm64.deb) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/android/android-original.svg" width="50" alt="Android"/> | ARM64 | [Manatan-Android-ARM64-v6.2.9.apk](https://github.com/KolbyML/Manatan/releases/download/v6.2.9/Manatan-Android-ARM64-v6.2.9.apk) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/android/android-original.svg" width="50" alt="Android"/> | ARM32 | [Manatan-Android-ARM32-v6.2.9.apk](https://github.com/KolbyML/Manatan/releases/download/v6.2.9/Manatan-Android-ARM32-v6.2.9.apk) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/apple/apple-original.svg" width="50" alt="iOS"/> | arm64 | [Manatan-v6.2.9-iOS.ipa](https://github.com/KolbyML/Manatan/releases/download/v6.2.9/Manatan-v6.2.9-iOS.ipa) |
+
+- The manatan-app and manatan-launcher archives are updater payloads, not the normal manual install path.
+- The legacy Manatan archives are one-time migration assets for older clients.
+- Android requires Android 8.0 or newer. Choose ARM64 for a 64-bit Android system, or ARM32 for a 32-bit Android system.
+- ARM32 support is experimental.
+- Checksums: [Checksums.sha256](https://github.com/KolbyML/Manatan/releases/download/v6.2.9/Checksums.sha256)
+
+
 ## Release v6.2.7
 
 - Fix SRS editor button clicks and match the app background (0452afaab)
