@@ -1,3 +1,34 @@
+## Release v6.2.13
+
+- Raise macOS CI deployment target (59ba4bc)
+- Add iPhone Duo support and native Liquid Glass navigation (d2442f3)
+- Fix Linux playback of image-wrapped HLS streams (56f9dce)
+- Allow dragging theme previews on desktop (c0d53aa)
+- Keep heatmap tooltips and statistics inside the dashboard (99d86b1)
+- Show the heatmap before first review and refresh study activity (359dd56)
+- Prevent card selection from overwriting another note (00edec6)
+- Speed up cached manga OCR and align vertical text (037a469)
+- Fix manga card navigation and preview audio playback (04b6063)
+### Downloads
+
+| System | Architecture | Download |
+|:---:|:---:|:---|
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/apple/apple-original.svg" width="50" alt="macOS"/> | aarch64 | [Manatan-v6.2.13-Mac-Silicon.dmg](https://github.com/KolbyML/Manatan/releases/download/v6.2.13/Manatan-v6.2.13-Mac-Silicon.dmg) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/apple/apple-original.svg" width="50" alt="macOS"/> | x86_64 | [Manatan-v6.2.13-Mac-Intel.dmg](https://github.com/KolbyML/Manatan/releases/download/v6.2.13/Manatan-v6.2.13-Mac-Intel.dmg) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/windows8/windows8-original.svg" width="50" alt="Windows"/> | x86_64 | [ManatanSetup-v6.2.13-Windows-x64.exe](https://github.com/KolbyML/Manatan/releases/download/v6.2.13/ManatanSetup-v6.2.13-Windows-x64.exe) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/linux/linux-original.svg" width="50" alt="Linux"/> | x86_64 | [manatan_6.2.13_amd64.deb](https://github.com/KolbyML/Manatan/releases/download/v6.2.13/manatan_6.2.13_amd64.deb) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/linux/linux-original.svg" width="50" alt="Linux"/> | aarch64 | [manatan_6.2.13_arm64.deb](https://github.com/KolbyML/Manatan/releases/download/v6.2.13/manatan_6.2.13_arm64.deb) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/android/android-original.svg" width="50" alt="Android"/> | ARM64 | [Manatan-Android-ARM64-v6.2.13.apk](https://github.com/KolbyML/Manatan/releases/download/v6.2.13/Manatan-Android-ARM64-v6.2.13.apk) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/android/android-original.svg" width="50" alt="Android"/> | ARM32 | [Manatan-Android-ARM32-v6.2.13.apk](https://github.com/KolbyML/Manatan/releases/download/v6.2.13/Manatan-Android-ARM32-v6.2.13.apk) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/apple/apple-original.svg" width="50" alt="iOS"/> | arm64 | [Manatan-v6.2.13-iOS.ipa](https://github.com/KolbyML/Manatan/releases/download/v6.2.13/Manatan-v6.2.13-iOS.ipa) |
+
+- The manatan-app and manatan-launcher archives are updater payloads, not the normal manual install path.
+- The legacy Manatan archives are one-time migration assets for older clients.
+- Android requires Android 8.0 or newer. Choose ARM64 for a 64-bit Android system, or ARM32 for a 32-bit Android system.
+- ARM32 support is experimental.
+- Checksums: [Checksums.sha256](https://github.com/KolbyML/Manatan/releases/download/v6.2.13/Checksums.sha256)
+
+
 ## Release v6.2.12
 
 - Retry CI Node downloads (4dbfbcb)
