@@ -1,3 +1,32 @@
+## Release v6.2.15
+
+- Keep Android app updates on the latest release (2b5f57b)
+- Add Liquid Glass to media detail pages (c0118d3)
+- Add Liquid Glass navigation to Settings (0dfe8cd)
+- Keep Browse sources below navigation headers (f0ff4b9)
+- Import valid deck media and summarize skipped audio (54be564)
+- Add Liquid Glass navigation to Podcasts (39a7371)
+- Update playback controls and episode progress from events (6000100)
+### Downloads
+
+| System | Architecture | Download |
+|:---:|:---:|:---|
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/apple/apple-original.svg" width="50" alt="macOS"/> | aarch64 | [Manatan-v6.2.15-Mac-Silicon.dmg](https://github.com/KolbyML/Manatan/releases/download/v6.2.15/Manatan-v6.2.15-Mac-Silicon.dmg) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/apple/apple-original.svg" width="50" alt="macOS"/> | x86_64 | [Manatan-v6.2.15-Mac-Intel.dmg](https://github.com/KolbyML/Manatan/releases/download/v6.2.15/Manatan-v6.2.15-Mac-Intel.dmg) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/windows8/windows8-original.svg" width="50" alt="Windows"/> | x86_64 | [ManatanSetup-v6.2.15-Windows-x64.exe](https://github.com/KolbyML/Manatan/releases/download/v6.2.15/ManatanSetup-v6.2.15-Windows-x64.exe) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/linux/linux-original.svg" width="50" alt="Linux"/> | x86_64 | [manatan_6.2.15_amd64.deb](https://github.com/KolbyML/Manatan/releases/download/v6.2.15/manatan_6.2.15_amd64.deb) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/linux/linux-original.svg" width="50" alt="Linux"/> | aarch64 | [manatan_6.2.15_arm64.deb](https://github.com/KolbyML/Manatan/releases/download/v6.2.15/manatan_6.2.15_arm64.deb) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/android/android-original.svg" width="50" alt="Android"/> | ARM64 | [Manatan-Android-ARM64-v6.2.15.apk](https://github.com/KolbyML/Manatan/releases/download/v6.2.15/Manatan-Android-ARM64-v6.2.15.apk) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/android/android-original.svg" width="50" alt="Android"/> | ARM32 | [Manatan-Android-ARM32-v6.2.15.apk](https://github.com/KolbyML/Manatan/releases/download/v6.2.15/Manatan-Android-ARM32-v6.2.15.apk) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/apple/apple-original.svg" width="50" alt="iOS"/> | arm64 | [Manatan-v6.2.15-iOS.ipa](https://github.com/KolbyML/Manatan/releases/download/v6.2.15/Manatan-v6.2.15-iOS.ipa) |
+
+- The manatan-app and manatan-launcher archives are updater payloads, not the normal manual install path.
+- The legacy Manatan archives are one-time migration assets for older clients.
+- Android requires Android 8.0 or newer. Choose ARM64 for a 64-bit Android system, or ARM32 for a 32-bit Android system.
+- ARM32 support is experimental.
+- Checksums: [Checksums.sha256](https://github.com/KolbyML/Manatan/releases/download/v6.2.15/Checksums.sha256)
+
+
 ## Release v6.2.14
 
 - Remove unnecessary episode progress polling (c9f7e35)
