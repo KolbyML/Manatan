@@ -1,3 +1,31 @@
+## Release v6.2.18
+
+- Restore automatic AnkiMobile exports for dictionary images (05ab587)
+- Revert "Keep dictionary popups clear of reading text" (63ea60b)
+- Reduce macOS packaging disk usage (75b5151)
+- Prune stale Xcode export files (3d84f43)
+- Add podcast transcripts with word lookup (b566816)
+- Keep controller lookups aligned and dialogue visible (3e1398d)
+### Downloads
+
+| System | Architecture | Download |
+|:---:|:---:|:---|
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/apple/apple-original.svg" width="50" alt="macOS"/> | aarch64 | [Manatan-v6.2.18-Mac-Silicon.dmg](https://github.com/KolbyML/Manatan/releases/download/v6.2.18/Manatan-v6.2.18-Mac-Silicon.dmg) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/apple/apple-original.svg" width="50" alt="macOS"/> | x86_64 | [Manatan-v6.2.18-Mac-Intel.dmg](https://github.com/KolbyML/Manatan/releases/download/v6.2.18/Manatan-v6.2.18-Mac-Intel.dmg) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/windows8/windows8-original.svg" width="50" alt="Windows"/> | x86_64 | [ManatanSetup-v6.2.18-Windows-x64.exe](https://github.com/KolbyML/Manatan/releases/download/v6.2.18/ManatanSetup-v6.2.18-Windows-x64.exe) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/linux/linux-original.svg" width="50" alt="Linux"/> | x86_64 | [manatan_6.2.18_amd64.deb](https://github.com/KolbyML/Manatan/releases/download/v6.2.18/manatan_6.2.18_amd64.deb) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/linux/linux-original.svg" width="50" alt="Linux"/> | aarch64 | [manatan_6.2.18_arm64.deb](https://github.com/KolbyML/Manatan/releases/download/v6.2.18/manatan_6.2.18_arm64.deb) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/android/android-original.svg" width="50" alt="Android"/> | ARM64 | [Manatan-Android-ARM64-v6.2.18.apk](https://github.com/KolbyML/Manatan/releases/download/v6.2.18/Manatan-Android-ARM64-v6.2.18.apk) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/android/android-original.svg" width="50" alt="Android"/> | ARM32 | [Manatan-Android-ARM32-v6.2.18.apk](https://github.com/KolbyML/Manatan/releases/download/v6.2.18/Manatan-Android-ARM32-v6.2.18.apk) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/apple/apple-original.svg" width="50" alt="iOS"/> | arm64 | [Manatan-v6.2.18-iOS.ipa](https://github.com/KolbyML/Manatan/releases/download/v6.2.18/Manatan-v6.2.18-iOS.ipa) |
+
+- The manatan-app and manatan-launcher archives are updater payloads, not the normal manual install path.
+- The legacy Manatan archives are one-time migration assets for older clients.
+- Android requires Android 8.0 or newer. Choose ARM64 for a 64-bit Android system, or ARM32 for a 32-bit Android system.
+- ARM32 support is experimental.
+- Checksums: [Checksums.sha256](https://github.com/KolbyML/Manatan/releases/download/v6.2.18/Checksums.sha256)
+
+
 ## Release v6.2.17
 
 - Preserve immediate Windows screen lookups (e644da2e7)
