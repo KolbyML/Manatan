@@ -1,3 +1,46 @@
+## Release v6.2.17
+
+- Preserve immediate Windows screen lookups (e644da2e7)
+- Revert "Keep anime refreshes reliable across native runtimes" (9400de290)
+- Keep source availability consistent across distributions (796f3742e)
+- Add comprehension analysis to video and readers (c5d6f9897)
+- Install Japanese frequency data during language setup (1a318e304)
+- Keep dictionary popups clear of reading text (966a4a56a)
+- Verify Deck Counter installation and permission controls (8f92ccbf7)
+- Keep anime refreshes reliable across native runtimes (3fa5bb93f)
+- Support large local manga archive imports (79d3f4fbf)
+- Share player study controls and simplify subtitle settings (122e460fd)
+- Unify video subtitle sidebars and add YouTube timing sync (e8f4dcd1d)
+- Preserve novel reading position after illustrations load (30d4a1447)
+- Improve immersion stats navigation, goals, and activity views (886980763)
+- Clean up desktop update download archives (22cf74007)
+- Make mobile review tap grading optional (a218b609c)
+- Wait for cursor movement to settle before screen lookup (a75bbd439)
+- Prevent dictionary lookups on hidden video subtitles (583b4f5be)
+- Remember Live OCR pause state across videos (222c743dc)
+- Allow mining cards from secondary video subtitles (3277d4b02)
+- Retry transient artifact uploads (7e37d448b)
+- Add cover image uploads to media library menus (7958ce13d)
+### Downloads
+
+| System | Architecture | Download |
+|:---:|:---:|:---|
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/apple/apple-original.svg" width="50" alt="macOS"/> | aarch64 | [Manatan-v6.2.17-Mac-Silicon.dmg](https://github.com/KolbyML/Manatan/releases/download/v6.2.17/Manatan-v6.2.17-Mac-Silicon.dmg) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/apple/apple-original.svg" width="50" alt="macOS"/> | x86_64 | [Manatan-v6.2.17-Mac-Intel.dmg](https://github.com/KolbyML/Manatan/releases/download/v6.2.17/Manatan-v6.2.17-Mac-Intel.dmg) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/windows8/windows8-original.svg" width="50" alt="Windows"/> | x86_64 | [ManatanSetup-v6.2.17-Windows-x64.exe](https://github.com/KolbyML/Manatan/releases/download/v6.2.17/ManatanSetup-v6.2.17-Windows-x64.exe) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/linux/linux-original.svg" width="50" alt="Linux"/> | x86_64 | [manatan_6.2.17_amd64.deb](https://github.com/KolbyML/Manatan/releases/download/v6.2.17/manatan_6.2.17_amd64.deb) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/linux/linux-original.svg" width="50" alt="Linux"/> | aarch64 | [manatan_6.2.17_arm64.deb](https://github.com/KolbyML/Manatan/releases/download/v6.2.17/manatan_6.2.17_arm64.deb) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/android/android-original.svg" width="50" alt="Android"/> | ARM64 | [Manatan-Android-ARM64-v6.2.17.apk](https://github.com/KolbyML/Manatan/releases/download/v6.2.17/Manatan-Android-ARM64-v6.2.17.apk) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/android/android-original.svg" width="50" alt="Android"/> | ARM32 | [Manatan-Android-ARM32-v6.2.17.apk](https://github.com/KolbyML/Manatan/releases/download/v6.2.17/Manatan-Android-ARM32-v6.2.17.apk) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/apple/apple-original.svg" width="50" alt="iOS"/> | arm64 | [Manatan-v6.2.17-iOS.ipa](https://github.com/KolbyML/Manatan/releases/download/v6.2.17/Manatan-v6.2.17-iOS.ipa) |
+
+- The manatan-app and manatan-launcher archives are updater payloads, not the normal manual install path.
+- The legacy Manatan archives are one-time migration assets for older clients.
+- Android requires Android 8.0 or newer. Choose ARM64 for a 64-bit Android system, or ARM32 for a 32-bit Android system.
+- ARM32 support is experimental.
+- Checksums: [Checksums.sha256](https://github.com/KolbyML/Manatan/releases/download/v6.2.17/Checksums.sha256)
+
+
 ## Release v6.2.16
 
 - Preserve anime identity and progress when refreshing (81f4ac86c)
