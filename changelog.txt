@@ -1,3 +1,44 @@
+## Release v6.2.19
+
+- Keep Android screen lookup aligned around punctuation (4291b07ad)
+- Generate podcast transcripts incrementally with resumable progress (d5615822b)
+- Avoid forced layout when restoring dictionary popup scroll (910364bc6)
+- Reduce dictionary popup layout and rendering overhead (44d6c56ab)
+- Add opt-in manga OCR support diagnostics (f87027e5c)
+- Keep dictionary lookups fast with live settings updates (349d7655e)
+- Keep subtitle hover lookups responsive during rapid movement (ca4a57c53)
+- Make macOS screen lookup responsive without stealing focus (d1caaf968)
+- Add bulk dictionary updates to WebUI and Flutter (c2e2dd802)
+- Make animated video clips fast and reliable (72b7518f0)
+- Restore podcast player controls and transcript layout (1407dca31)
+- Fix Windows podcast transcript generation (f84960395)
+- Analyze cached OCR across entire manga chapters (4a2663d26)
+- Restore playback after dictionary lookups in study modes (cab41fd18)
+- Fix title wording (1d1ebbb72)
+- Use supplied podcast transcripts before generating new ones (37dfe8393)
+- Refresh tracker score displays after saving (0ab9da611)
+- Resume manga immersion tracking safely after backgrounding (4c720ef13)
+- Preserve Android screen lookup character positions (4ff0b9d5b)
+### Downloads
+
+| System | Architecture | Download |
+|:---:|:---:|:---|
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/apple/apple-original.svg" width="50" alt="macOS"/> | aarch64 | [Manatan-v6.2.19-Mac-Silicon.dmg](https://github.com/KolbyML/Manatan/releases/download/v6.2.19/Manatan-v6.2.19-Mac-Silicon.dmg) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/apple/apple-original.svg" width="50" alt="macOS"/> | x86_64 | [Manatan-v6.2.19-Mac-Intel.dmg](https://github.com/KolbyML/Manatan/releases/download/v6.2.19/Manatan-v6.2.19-Mac-Intel.dmg) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/windows8/windows8-original.svg" width="50" alt="Windows"/> | x86_64 | [ManatanSetup-v6.2.19-Windows-x64.exe](https://github.com/KolbyML/Manatan/releases/download/v6.2.19/ManatanSetup-v6.2.19-Windows-x64.exe) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/linux/linux-original.svg" width="50" alt="Linux"/> | x86_64 | [manatan_6.2.19_amd64.deb](https://github.com/KolbyML/Manatan/releases/download/v6.2.19/manatan_6.2.19_amd64.deb) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/linux/linux-original.svg" width="50" alt="Linux"/> | aarch64 | [manatan_6.2.19_arm64.deb](https://github.com/KolbyML/Manatan/releases/download/v6.2.19/manatan_6.2.19_arm64.deb) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/android/android-original.svg" width="50" alt="Android"/> | ARM64 | [Manatan-Android-ARM64-v6.2.19.apk](https://github.com/KolbyML/Manatan/releases/download/v6.2.19/Manatan-Android-ARM64-v6.2.19.apk) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/android/android-original.svg" width="50" alt="Android"/> | ARM32 | [Manatan-Android-ARM32-v6.2.19.apk](https://github.com/KolbyML/Manatan/releases/download/v6.2.19/Manatan-Android-ARM32-v6.2.19.apk) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/apple/apple-original.svg" width="50" alt="iOS"/> | arm64 | [Manatan-v6.2.19-iOS.ipa](https://github.com/KolbyML/Manatan/releases/download/v6.2.19/Manatan-v6.2.19-iOS.ipa) |
+
+- The manatan-app and manatan-launcher archives are updater payloads, not the normal manual install path.
+- The legacy Manatan archives are one-time migration assets for older clients.
+- Android requires Android 8.0 or newer. Choose ARM64 for a 64-bit Android system, or ARM32 for a 32-bit Android system.
+- ARM32 support is experimental.
+- Checksums: [Checksums.sha256](https://github.com/KolbyML/Manatan/releases/download/v6.2.19/Checksums.sha256)
+
+
 ## Release v6.2.18
 
 - Restore automatic AnkiMobile exports for dictionary images (05ab587)
