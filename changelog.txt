@@ -1,3 +1,42 @@
+## Release v6.2.20
+
+- Improve manga OCR resource diagnostics (341fcdc2b)
+- Open Screen lookup cards in the native SRS editor (f22cc6091)
+- Keep episodes and progress during library refreshes (b37634bfc)
+- Avoid hidden Home refreshes and unnecessary source updates (d27e0da7e)
+- Honor daily study limits and show complete collection statistics (2fd5eb880)
+- Keep YouTube playback awake while buffering (717318433)
+- Keep SRS editor fields aligned on phones (6f6bbd775)
+- Improve YouTube subtitle layouts and reclaim Shorts letterboxing (13c5fbe6c)
+- Keep saved source credentials out of settings responses (f9ae0aa05)
+- Keep MyAnimeList tracking working after session expiry (c59ad8d03)
+- Open card lookup links in the browser without overlapping controls (b27c21221)
+- Keep reviewer shortcuts active between cards (db4edd630)
+- Align subtitle underlines without changing their appearance (9a75bb502)
+- Keep dictionary popups attached to the selected character (b32aae3ec)
+- Keep rapid subtitle lookups responsive through the final hovered word (eee2647f2)
+- Keep video gestures out of playback settings (17c6ab8fd)
+- Make Home hide confirmations brief and dismissible (56be98d1f)
+### Downloads
+
+| System | Architecture | Download |
+|:---:|:---:|:---|
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/apple/apple-original.svg" width="50" alt="macOS"/> | aarch64 | [Manatan-v6.2.20-Mac-Silicon.dmg](https://github.com/KolbyML/Manatan/releases/download/v6.2.20/Manatan-v6.2.20-Mac-Silicon.dmg) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/apple/apple-original.svg" width="50" alt="macOS"/> | x86_64 | [Manatan-v6.2.20-Mac-Intel.dmg](https://github.com/KolbyML/Manatan/releases/download/v6.2.20/Manatan-v6.2.20-Mac-Intel.dmg) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/windows8/windows8-original.svg" width="50" alt="Windows"/> | x86_64 | [ManatanSetup-v6.2.20-Windows-x64.exe](https://github.com/KolbyML/Manatan/releases/download/v6.2.20/ManatanSetup-v6.2.20-Windows-x64.exe) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/linux/linux-original.svg" width="50" alt="Linux"/> | x86_64 | [manatan_6.2.20_amd64.deb](https://github.com/KolbyML/Manatan/releases/download/v6.2.20/manatan_6.2.20_amd64.deb) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/linux/linux-original.svg" width="50" alt="Linux"/> | aarch64 | [manatan_6.2.20_arm64.deb](https://github.com/KolbyML/Manatan/releases/download/v6.2.20/manatan_6.2.20_arm64.deb) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/android/android-original.svg" width="50" alt="Android"/> | ARM64 | [Manatan-Android-ARM64-v6.2.20.apk](https://github.com/KolbyML/Manatan/releases/download/v6.2.20/Manatan-Android-ARM64-v6.2.20.apk) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/android/android-original.svg" width="50" alt="Android"/> | ARM32 | [Manatan-Android-ARM32-v6.2.20.apk](https://github.com/KolbyML/Manatan/releases/download/v6.2.20/Manatan-Android-ARM32-v6.2.20.apk) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/apple/apple-original.svg" width="50" alt="iOS"/> | arm64 | [Manatan-v6.2.20-iOS.ipa](https://github.com/KolbyML/Manatan/releases/download/v6.2.20/Manatan-v6.2.20-iOS.ipa) |
+
+- The manatan-app and manatan-launcher archives are updater payloads, not the normal manual install path.
+- The legacy Manatan archives are one-time migration assets for older clients.
+- Android requires Android 8.0 or newer. Choose ARM64 for a 64-bit Android system, or ARM32 for a 32-bit Android system.
+- ARM32 support is experimental.
+- Checksums: [Checksums.sha256](https://github.com/KolbyML/Manatan/releases/download/v6.2.20/Checksums.sha256)
+
+
 ## Release v6.2.19
 
 - Keep Android screen lookup aligned around punctuation (4291b07ad)
