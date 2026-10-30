@@ -1,3 +1,37 @@
+## Release v6.2.22
+
+- Add local audiobook import and playback (45f893f2c)
+- Unify setup and make desktop WebUI optional (17ad6cd84)
+- Add mobile browser with ad blocking and reading tools (817992e38)
+- Add podcast episode looping to player options (27779705d)
+- Keep note fields aligned and share the rich Add editor (ef3e9cb71)
+- Keep desktop update progress stable across parallel downloads (b4f5f4745)
+- Keep screen lookup outlines clear of text (a42f6ae23)
+- Prevent subtitle failures from freezing playback (3cd2bfed5)
+- Choose Anki vocabulary decks and note types independently (96a380b8c)
+- Speed up podcast transcript generation (8656a7f1c)
+- Recover desktop update locks after interrupted updates (2f22d0aab)
+- Use reader placement rules for screen lookup popups (d8ad13633)
+### Downloads
+
+| System | Architecture | Download |
+|:---:|:---:|:---|
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/apple/apple-original.svg" width="50" alt="macOS"/> | aarch64 | [Manatan-v6.2.22-Mac-Silicon.dmg](https://github.com/KolbyML/Manatan/releases/download/v6.2.22/Manatan-v6.2.22-Mac-Silicon.dmg) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/apple/apple-original.svg" width="50" alt="macOS"/> | x86_64 | [Manatan-v6.2.22-Mac-Intel.dmg](https://github.com/KolbyML/Manatan/releases/download/v6.2.22/Manatan-v6.2.22-Mac-Intel.dmg) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/windows8/windows8-original.svg" width="50" alt="Windows"/> | x86_64 | [ManatanSetup-v6.2.22-Windows-x64.exe](https://github.com/KolbyML/Manatan/releases/download/v6.2.22/ManatanSetup-v6.2.22-Windows-x64.exe) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/linux/linux-original.svg" width="50" alt="Linux"/> | x86_64 | [manatan_6.2.22_amd64.deb](https://github.com/KolbyML/Manatan/releases/download/v6.2.22/manatan_6.2.22_amd64.deb) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/linux/linux-original.svg" width="50" alt="Linux"/> | aarch64 | [manatan_6.2.22_arm64.deb](https://github.com/KolbyML/Manatan/releases/download/v6.2.22/manatan_6.2.22_arm64.deb) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/android/android-original.svg" width="50" alt="Android"/> | ARM64 | [Manatan-Android-ARM64-v6.2.22.apk](https://github.com/KolbyML/Manatan/releases/download/v6.2.22/Manatan-Android-ARM64-v6.2.22.apk) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/android/android-original.svg" width="50" alt="Android"/> | ARM32 | [Manatan-Android-ARM32-v6.2.22.apk](https://github.com/KolbyML/Manatan/releases/download/v6.2.22/Manatan-Android-ARM32-v6.2.22.apk) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/apple/apple-original.svg" width="50" alt="iOS"/> | arm64 | [Manatan-v6.2.22-iOS.ipa](https://github.com/KolbyML/Manatan/releases/download/v6.2.22/Manatan-v6.2.22-iOS.ipa) |
+
+- The manatan-app and manatan-launcher archives are updater payloads, not the normal manual install path.
+- The legacy Manatan archives are one-time migration assets for older clients.
+- Android requires Android 8.0 or newer. Choose ARM64 for a 64-bit Android system, or ARM32 for a 32-bit Android system.
+- ARM32 support is experimental.
+- Checksums: [Checksums.sha256](https://github.com/KolbyML/Manatan/releases/download/v6.2.22/Checksums.sha256)
+
+
 ## Release v6.2.21
 
 - Automatically update vocabulary from Anki connections (75d3cdf37)
