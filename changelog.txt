@@ -1,3 +1,37 @@
+## Release v6.2.23
+
+- Prune completed Linux ARM compiler intermediates (765b81cb4)
+- Restore automatic subtitles and remember imported tracks (7220382f8)
+- Enable manual audio trimming in Android Screen Lookup (76055af05)
+- Cache reader preloads without decoding full-size pages (8e3e5bfa9)
+- Fix webtoon seams and duplicate page decoding (5ad860eaf)
+- Add browser immersion extension and shared learning integration (11122ffcd)
+- Unify local audio screens and preserve embedded covers (ad6624720)
+- Improve audiobook navigation in the novel reader (999439e24)
+- Keep Android update changelog responsive (9196ecc45)
+- Prune completed macOS compiler intermediates (e645c92da)
+- Prune completed iOS compiler intermediates (9428acdb0)
+- Restore iOS module metadata during release builds (0da4145b8)
+### Downloads
+
+| System | Architecture | Download |
+|:---:|:---:|:---|
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/apple/apple-original.svg" width="50" alt="macOS"/> | aarch64 | [Manatan-v6.2.23-Mac-Silicon.dmg](https://github.com/KolbyML/Manatan/releases/download/v6.2.23/Manatan-v6.2.23-Mac-Silicon.dmg) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/apple/apple-original.svg" width="50" alt="macOS"/> | x86_64 | [Manatan-v6.2.23-Mac-Intel.dmg](https://github.com/KolbyML/Manatan/releases/download/v6.2.23/Manatan-v6.2.23-Mac-Intel.dmg) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/windows8/windows8-original.svg" width="50" alt="Windows"/> | x86_64 | [ManatanSetup-v6.2.23-Windows-x64.exe](https://github.com/KolbyML/Manatan/releases/download/v6.2.23/ManatanSetup-v6.2.23-Windows-x64.exe) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/linux/linux-original.svg" width="50" alt="Linux"/> | x86_64 | [manatan_6.2.23_amd64.deb](https://github.com/KolbyML/Manatan/releases/download/v6.2.23/manatan_6.2.23_amd64.deb) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/linux/linux-original.svg" width="50" alt="Linux"/> | aarch64 | [manatan_6.2.23_arm64.deb](https://github.com/KolbyML/Manatan/releases/download/v6.2.23/manatan_6.2.23_arm64.deb) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/android/android-original.svg" width="50" alt="Android"/> | ARM64 | [Manatan-Android-ARM64-v6.2.23.apk](https://github.com/KolbyML/Manatan/releases/download/v6.2.23/Manatan-Android-ARM64-v6.2.23.apk) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/android/android-original.svg" width="50" alt="Android"/> | ARM32 | [Manatan-Android-ARM32-v6.2.23.apk](https://github.com/KolbyML/Manatan/releases/download/v6.2.23/Manatan-Android-ARM32-v6.2.23.apk) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/apple/apple-original.svg" width="50" alt="iOS"/> | arm64 | [Manatan-v6.2.23-iOS.ipa](https://github.com/KolbyML/Manatan/releases/download/v6.2.23/Manatan-v6.2.23-iOS.ipa) |
+
+- The manatan-app and manatan-launcher archives are updater payloads, not the normal manual install path.
+- The legacy Manatan archives are one-time migration assets for older clients.
+- Android requires Android 8.0 or newer. Choose ARM64 for a 64-bit Android system, or ARM32 for a 32-bit Android system.
+- ARM32 support is experimental.
+- Checksums: [Checksums.sha256](https://github.com/KolbyML/Manatan/releases/download/v6.2.23/Checksums.sha256)
+
+
 ## Release v6.2.22
 
 - Add local audiobook import and playback (45f893f2c)
