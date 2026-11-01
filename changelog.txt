@@ -1,3 +1,48 @@
+## Release v6.3.0
+
+- Require consent before opening Android shortcut settings (315c6bd12)
+- Publish Chrome extension updates with app releases (138bde514)
+- Stream YouTube dubs progressively with synchronized playback (7d958f37d)
+- Add system, light and dark webpage appearance to mobile browser (4dc9ea243)
+- Fix mobile browser fullscreen, dictionary lookup and word markings (d57971467)
+- Enable dictionary lookup during flashcard review (d5885b072)
+- Remember video subtitle visibility across playback sessions (8ca9430d4)
+- Align app and store allowances with higher tier usage (70214972b)
+- Simplify premium usage labels and round plan multipliers (70ca83415)
+- Improve kanji dictionary layouts (9a69399ad)
+- Keep older apps syncing with newer hosted collections (5fa5df935)
+- Show AI usage allowances and start premium actions directly (dfe336f34)
+- Improve manga OCR resource diagnostics and capture recovery (5062aba40)
+- Make Screen Lookup audio trimming optional (7ab7da2e5)
+- Remember search terms in saved source searches (8a31e0694)
+- Add premium multilingual video dubbing to the extension (ed2c077da)
+- Document Manatan ownership of imported vocabulary records (76322c3bd)
+- Handle both Google Play review states (396fb9cb5)
+- Keep vocabulary sources independent across readers and sync (59a898a32)
+- Buffer target-language Shorts for uninterrupted browsing (5d0790f58)
+- Keep Google Play drafts out of automatic review (594118883)
+### Downloads
+
+| System | Architecture | Download |
+|:---:|:---:|:---|
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/apple/apple-original.svg" width="50" alt="macOS"/> | aarch64 | [Manatan-v6.3.0-Mac-Silicon.dmg](https://github.com/KolbyML/Manatan/releases/download/v6.3.0/Manatan-v6.3.0-Mac-Silicon.dmg) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/apple/apple-original.svg" width="50" alt="macOS"/> | x86_64 | [Manatan-v6.3.0-Mac-Intel.dmg](https://github.com/KolbyML/Manatan/releases/download/v6.3.0/Manatan-v6.3.0-Mac-Intel.dmg) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/windows8/windows8-original.svg" width="50" alt="Windows"/> | x86_64 | [ManatanSetup-v6.3.0-Windows-x64.exe](https://github.com/KolbyML/Manatan/releases/download/v6.3.0/ManatanSetup-v6.3.0-Windows-x64.exe) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/linux/linux-original.svg" width="50" alt="Linux"/> | x86_64 | [manatan_6.3.0_amd64.deb](https://github.com/KolbyML/Manatan/releases/download/v6.3.0/manatan_6.3.0_amd64.deb) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/linux/linux-original.svg" width="50" alt="Linux"/> | aarch64 | [manatan_6.3.0_arm64.deb](https://github.com/KolbyML/Manatan/releases/download/v6.3.0/manatan_6.3.0_arm64.deb) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/android/android-original.svg" width="50" alt="Android"/> | ARM64 | [Manatan-Android-ARM64-v6.3.0.apk](https://github.com/KolbyML/Manatan/releases/download/v6.3.0/Manatan-Android-ARM64-v6.3.0.apk) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/android/android-original.svg" width="50" alt="Android"/> | ARM32 | [Manatan-Android-ARM32-v6.3.0.apk](https://github.com/KolbyML/Manatan/releases/download/v6.3.0/Manatan-Android-ARM32-v6.3.0.apk) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/apple/apple-original.svg" width="50" alt="iOS"/> | arm64 | [Manatan-v6.3.0-iOS.ipa](https://github.com/KolbyML/Manatan/releases/download/v6.3.0/Manatan-v6.3.0-iOS.ipa) |
+| Chrome | all | [Manatan-v6.3.0-Chrome.zip](https://github.com/KolbyML/Manatan/releases/download/v6.3.0/Manatan-v6.3.0-Chrome.zip) |
+
+- The manatan-app and manatan-launcher archives are updater payloads, not the normal manual install path.
+- The legacy Manatan archives are one-time migration assets for older clients.
+- Android requires Android 8.0 or newer. Choose ARM64 for a 64-bit Android system, or ARM32 for a 32-bit Android system.
+- ARM32 support is experimental.
+- Chrome extension updates are subject to Google review; a release ZIP does not mean the store update is live.
+- Checksums: [Checksums.sha256](https://github.com/KolbyML/Manatan/releases/download/v6.3.0/Checksums.sha256)
+
+
 ## Release v6.2.23
 
 - Prune completed Linux ARM compiler intermediates (765b81cb4)
