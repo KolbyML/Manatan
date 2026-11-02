@@ -1,3 +1,35 @@
+## Release v6.3.1
+
+- Preserve novel bookmarks when reopening chapters (a86cede73)
+- Use album artwork when mining podcast cards (0be6c11aa)
+- Add opt-in manga input diagnostics (f1904692e)
+- Preserve AnkiDroid flashcard destinations across web clients (cbfe2bef1)
+- Install manga extensions with shared entry points (c2815960b)
+- Link desktop Browser and YouTube to the published extension (f2244b8a3)
+- Prevent duplicate profile buttons during dictionary lookups (b53d44cc4)
+- Combine immersion progress across devices by language (e1f69f6a2)
+### Downloads
+
+| System | Architecture | Download |
+|:---:|:---:|:---|
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/apple/apple-original.svg" width="50" alt="macOS"/> | aarch64 | [Manatan-v6.3.1-Mac-Silicon.dmg](https://github.com/KolbyML/Manatan/releases/download/v6.3.1/Manatan-v6.3.1-Mac-Silicon.dmg) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/apple/apple-original.svg" width="50" alt="macOS"/> | x86_64 | [Manatan-v6.3.1-Mac-Intel.dmg](https://github.com/KolbyML/Manatan/releases/download/v6.3.1/Manatan-v6.3.1-Mac-Intel.dmg) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/windows8/windows8-original.svg" width="50" alt="Windows"/> | x86_64 | [ManatanSetup-v6.3.1-Windows-x64.exe](https://github.com/KolbyML/Manatan/releases/download/v6.3.1/ManatanSetup-v6.3.1-Windows-x64.exe) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/linux/linux-original.svg" width="50" alt="Linux"/> | x86_64 | [manatan_6.3.1_amd64.deb](https://github.com/KolbyML/Manatan/releases/download/v6.3.1/manatan_6.3.1_amd64.deb) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/linux/linux-original.svg" width="50" alt="Linux"/> | aarch64 | [manatan_6.3.1_arm64.deb](https://github.com/KolbyML/Manatan/releases/download/v6.3.1/manatan_6.3.1_arm64.deb) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/android/android-original.svg" width="50" alt="Android"/> | ARM64 | [Manatan-Android-ARM64-v6.3.1.apk](https://github.com/KolbyML/Manatan/releases/download/v6.3.1/Manatan-Android-ARM64-v6.3.1.apk) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/android/android-original.svg" width="50" alt="Android"/> | ARM32 | [Manatan-Android-ARM32-v6.3.1.apk](https://github.com/KolbyML/Manatan/releases/download/v6.3.1/Manatan-Android-ARM32-v6.3.1.apk) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/apple/apple-original.svg" width="50" alt="iOS"/> | arm64 | [Manatan-v6.3.1-iOS.ipa](https://github.com/KolbyML/Manatan/releases/download/v6.3.1/Manatan-v6.3.1-iOS.ipa) |
+| Chrome | all | [Manatan-v6.3.1-Chrome.zip](https://github.com/KolbyML/Manatan/releases/download/v6.3.1/Manatan-v6.3.1-Chrome.zip) |
+
+- The manatan-app and manatan-launcher archives are updater payloads, not the normal manual install path.
+- The legacy Manatan archives are one-time migration assets for older clients.
+- Android requires Android 8.0 or newer. Choose ARM64 for a 64-bit Android system, or ARM32 for a 32-bit Android system.
+- ARM32 support is experimental.
+- Chrome extension updates are subject to Google review; a release ZIP does not mean the store update is live.
+- Checksums: [Checksums.sha256](https://github.com/KolbyML/Manatan/releases/download/v6.3.1/Checksums.sha256)
+
+
 ## Release v6.3.0
 
 - Require consent before opening Android shortcut settings (315c6bd12)
