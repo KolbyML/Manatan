@@ -1,3 +1,44 @@
+## Release v6.3.2
+
+- Simplify Sync settings with a connection card and FAQ (912b9b6)
+- Streamline screen lookup settings across desktop and mobile (5db709f)
+- Streamline novel settings across desktop and mobile (5b50c60)
+- Improve manga OCR settings across desktop and mobile (7374232)
+- Streamline video settings across desktop and mobile (6a72c0a)
+- Improve flashcard settings layout and media controls (f34210a)
+- Fix browser extension rendering and resource loading (0818dd0)
+- Unify popup appearance and streamline dictionary settings (0d1e1f4)
+- Keep release recovery revisions out of test fixtures (66110a2)
+- Isolate Play recovery fixtures from packaging tests (b5a5b11)
+- Preserve committed source provenance during Play recovery (6530c80)
+- Use the attached display for Android input diagnostics (f46ec0c)
+- Use percentage-based premium usage in the app and browser extension (c668172)
+- Add dictionary choices and optional YouTube lookup pauses (a5c4f89)
+- Open optional feedback after removing the browser extension (0428234)
+- Keep filtered YouTube home feeds in arrival order (629d36e)
+- Keep YouTube Shorts filtering active across ads and scrolling (a867666)
+### Downloads
+
+| System | Architecture | Download |
+|:---:|:---:|:---|
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/apple/apple-original.svg" width="50" alt="macOS"/> | aarch64 | [Manatan-v6.3.2-Mac-Silicon.dmg](https://github.com/KolbyML/Manatan/releases/download/v6.3.2/Manatan-v6.3.2-Mac-Silicon.dmg) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/apple/apple-original.svg" width="50" alt="macOS"/> | x86_64 | [Manatan-v6.3.2-Mac-Intel.dmg](https://github.com/KolbyML/Manatan/releases/download/v6.3.2/Manatan-v6.3.2-Mac-Intel.dmg) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/windows8/windows8-original.svg" width="50" alt="Windows"/> | x86_64 | [ManatanSetup-v6.3.2-Windows-x64.exe](https://github.com/KolbyML/Manatan/releases/download/v6.3.2/ManatanSetup-v6.3.2-Windows-x64.exe) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/linux/linux-original.svg" width="50" alt="Linux"/> | x86_64 | [manatan_6.3.2_amd64.deb](https://github.com/KolbyML/Manatan/releases/download/v6.3.2/manatan_6.3.2_amd64.deb) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/linux/linux-original.svg" width="50" alt="Linux"/> | aarch64 | [manatan_6.3.2_arm64.deb](https://github.com/KolbyML/Manatan/releases/download/v6.3.2/manatan_6.3.2_arm64.deb) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/android/android-original.svg" width="50" alt="Android"/> | ARM64 | [Manatan-Android-ARM64-v6.3.2.apk](https://github.com/KolbyML/Manatan/releases/download/v6.3.2/Manatan-Android-ARM64-v6.3.2.apk) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/android/android-original.svg" width="50" alt="Android"/> | ARM32 | [Manatan-Android-ARM32-v6.3.2.apk](https://github.com/KolbyML/Manatan/releases/download/v6.3.2/Manatan-Android-ARM32-v6.3.2.apk) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/apple/apple-original.svg" width="50" alt="iOS"/> | arm64 | [Manatan-v6.3.2-iOS.ipa](https://github.com/KolbyML/Manatan/releases/download/v6.3.2/Manatan-v6.3.2-iOS.ipa) |
+| Chrome | all | [Manatan-v6.3.2-Chrome.zip](https://github.com/KolbyML/Manatan/releases/download/v6.3.2/Manatan-v6.3.2-Chrome.zip) |
+
+- The manatan-app and manatan-launcher archives are updater payloads, not the normal manual install path.
+- The legacy Manatan archives are one-time migration assets for older clients.
+- Android requires Android 8.0 or newer. Choose ARM64 for a 64-bit Android system, or ARM32 for a 32-bit Android system.
+- ARM32 support is experimental.
+- Chrome extension updates are subject to Google review; a release ZIP does not mean the store update is live.
+- Checksums: [Checksums.sha256](https://github.com/KolbyML/Manatan/releases/download/v6.3.2/Checksums.sha256)
+
+
 ## Release v6.3.1
 
 - Preserve novel bookmarks when reopening chapters (a86cede73)
