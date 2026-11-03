@@ -1,3 +1,40 @@
+## Release v6.3.3
+
+- Look up the selected word in connected dictionaries (46efbd1e5)
+- Fix playback when closing the video dictionary (40779d9b0)
+- Prevent browser dictionary imports from freezing the extension (03725ce2d)
+- Keep subtitle status underlines off reading annotations (35b3957ac)
+- Show existing flashcards in browser dictionary popups (eb98be13e)
+- Restore the full immersion dashboard across devices (39c2d510a)
+- Fix browser dictionary word status and account saves (23ed0bd4b)
+- Sync Jimaku subtitle keys with Manatan accounts (9fb9fab13)
+- Fix mixed-script dictionary typography across popup views (c6353ca30)
+- Compact installed dictionary controls across screen sizes (f444d02b9)
+- Clarify Hanzi lookup setting labels (32accbb2e)
+- Enable offline picture scanning with installed OCR models (bb487c8df)
+- Enable recursive lookups in kanji dictionary details (aa0a9e1be)
+### Downloads
+
+| System | Architecture | Download |
+|:---:|:---:|:---|
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/apple/apple-original.svg" width="50" alt="macOS"/> | aarch64 | [Manatan-v6.3.3-Mac-Silicon.dmg](https://github.com/KolbyML/Manatan/releases/download/v6.3.3/Manatan-v6.3.3-Mac-Silicon.dmg) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/apple/apple-original.svg" width="50" alt="macOS"/> | x86_64 | [Manatan-v6.3.3-Mac-Intel.dmg](https://github.com/KolbyML/Manatan/releases/download/v6.3.3/Manatan-v6.3.3-Mac-Intel.dmg) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/windows8/windows8-original.svg" width="50" alt="Windows"/> | x86_64 | [ManatanSetup-v6.3.3-Windows-x64.exe](https://github.com/KolbyML/Manatan/releases/download/v6.3.3/ManatanSetup-v6.3.3-Windows-x64.exe) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/linux/linux-original.svg" width="50" alt="Linux"/> | x86_64 | [manatan_6.3.3_amd64.deb](https://github.com/KolbyML/Manatan/releases/download/v6.3.3/manatan_6.3.3_amd64.deb) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/linux/linux-original.svg" width="50" alt="Linux"/> | aarch64 | [manatan_6.3.3_arm64.deb](https://github.com/KolbyML/Manatan/releases/download/v6.3.3/manatan_6.3.3_arm64.deb) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/android/android-original.svg" width="50" alt="Android"/> | ARM64 | [Manatan-Android-ARM64-v6.3.3.apk](https://github.com/KolbyML/Manatan/releases/download/v6.3.3/Manatan-Android-ARM64-v6.3.3.apk) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/android/android-original.svg" width="50" alt="Android"/> | ARM32 | [Manatan-Android-ARM32-v6.3.3.apk](https://github.com/KolbyML/Manatan/releases/download/v6.3.3/Manatan-Android-ARM32-v6.3.3.apk) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/apple/apple-original.svg" width="50" alt="iOS"/> | arm64 | [Manatan-v6.3.3-iOS.ipa](https://github.com/KolbyML/Manatan/releases/download/v6.3.3/Manatan-v6.3.3-iOS.ipa) |
+| Chrome | all | [Manatan-v6.3.3-Chrome.zip](https://github.com/KolbyML/Manatan/releases/download/v6.3.3/Manatan-v6.3.3-Chrome.zip) |
+
+- The manatan-app and manatan-launcher archives are updater payloads, not the normal manual install path.
+- The legacy Manatan archives are one-time migration assets for older clients.
+- Android requires Android 8.0 or newer. Choose ARM64 for a 64-bit Android system, or ARM32 for a 32-bit Android system.
+- ARM32 support is experimental.
+- Chrome extension updates are subject to Google review; a release ZIP does not mean the store update is live.
+- Checksums: [Checksums.sha256](https://github.com/KolbyML/Manatan/releases/download/v6.3.3/Checksums.sha256)
+
+
 ## Release v6.3.2
 
 - Simplify Sync settings with a connection card and FAQ (912b9b6)
