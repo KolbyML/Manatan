@@ -1,3 +1,47 @@
+## Release v6.3.5
+
+- Include iOS crash diagnostics in support exports (f2d2f3e21)
+- Handle deferred review for internal Android uploads (fd89b4f38)
+- Release desktop update ownership on every error path (589a1e9cb)
+- Rename Manatan SRS to Flashcards (4a313372c)
+- Preserve module metadata in Firefox reviewer builds (1345cde26)
+- Initialize the exact Firefox reviewer toolchain (557fdda18)
+- Generate extension runtime types before verification (5130cf7b5)
+- Publish Firefox extensions with app releases (ae3a3e210)
+- Keep both local manga import buttons visible (79a97be41)
+- Add pins and cover multi-selection to Home Continue (6beb91bd5)
+- Add fullscreen mode to the mobile browser (e6fc233c5)
+- Scale immersion history with compact binary storage (ba9decc05)
+- Import multiple videos into new or existing shows (ad2466907)
+- Add per-line manga OCR editing across apps (3e799f855)
+- Show learning language and word count on Home (a7e0765e1)
+- Fix dictionary lookup trigger isolation (b79ef4d67)
+- Fix dictionary lookup with dual video subtitles (b5b67611a)
+- Restore manga OCR on Android (a14f33822)
+### Downloads
+
+| System | Architecture | Download |
+|:---:|:---:|:---|
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/apple/apple-original.svg" width="50" alt="macOS"/> | aarch64 | [Manatan-v6.3.5-Mac-Silicon.dmg](https://github.com/KolbyML/Manatan/releases/download/v6.3.5/Manatan-v6.3.5-Mac-Silicon.dmg) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/apple/apple-original.svg" width="50" alt="macOS"/> | x86_64 | [Manatan-v6.3.5-Mac-Intel.dmg](https://github.com/KolbyML/Manatan/releases/download/v6.3.5/Manatan-v6.3.5-Mac-Intel.dmg) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/windows8/windows8-original.svg" width="50" alt="Windows"/> | x86_64 | [ManatanSetup-v6.3.5-Windows-x64.exe](https://github.com/KolbyML/Manatan/releases/download/v6.3.5/ManatanSetup-v6.3.5-Windows-x64.exe) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/linux/linux-original.svg" width="50" alt="Linux"/> | x86_64 | [manatan_6.3.5_amd64.deb](https://github.com/KolbyML/Manatan/releases/download/v6.3.5/manatan_6.3.5_amd64.deb) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/linux/linux-original.svg" width="50" alt="Linux"/> | aarch64 | [manatan_6.3.5_arm64.deb](https://github.com/KolbyML/Manatan/releases/download/v6.3.5/manatan_6.3.5_arm64.deb) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/android/android-original.svg" width="50" alt="Android"/> | ARM64 | [Manatan-Android-ARM64-v6.3.5.apk](https://github.com/KolbyML/Manatan/releases/download/v6.3.5/Manatan-Android-ARM64-v6.3.5.apk) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/android/android-original.svg" width="50" alt="Android"/> | ARM32 | [Manatan-Android-ARM32-v6.3.5.apk](https://github.com/KolbyML/Manatan/releases/download/v6.3.5/Manatan-Android-ARM32-v6.3.5.apk) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/apple/apple-original.svg" width="50" alt="iOS"/> | arm64 | [Manatan-v6.3.5-iOS.ipa](https://github.com/KolbyML/Manatan/releases/download/v6.3.5/Manatan-v6.3.5-iOS.ipa) |
+| Chrome | all | [Manatan-v6.3.5-Chrome.zip](https://github.com/KolbyML/Manatan/releases/download/v6.3.5/Manatan-v6.3.5-Chrome.zip) |
+|Firefox|Desktop|[Install from Mozilla Add-ons](https://addons.mozilla.org/firefox/addon/manatan/)|
+
+- The manatan-app and manatan-launcher archives are updater payloads, not the normal manual install path.
+- The legacy Manatan archives are one-time migration assets for older clients.
+- Android requires Android 8.0 or newer. Choose ARM64 for a 64-bit Android system, or ARM32 for a 32-bit Android system.
+- ARM32 support is experimental.
+- Chrome extension updates are subject to Google review; a release ZIP does not mean the store update is live.
+- Firefox store updates require Mozilla validation/review. The Firefox ZIP is an unsigned submission package, not an installable signed XPI; use the AMO listing.
+- Checksums: [Checksums.sha256](https://github.com/KolbyML/Manatan/releases/download/v6.3.5/Checksums.sha256)
+
+
 ## Release v6.3.3
 
 - Look up the selected word in connected dictionaries (46efbd1e5)
