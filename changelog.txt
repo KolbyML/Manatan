@@ -1,3 +1,43 @@
+## Release v6.3.6
+
+- Speed up statistics recovery staging and preserve upgrade validation (f3059a195)
+- Fix animated AVIF captures in the browser extension (cb4d3f2ae)
+- Fix desktop URL routing and iOS widget release signing (873289c94)
+- Open the full immersion dashboard directly (73adae86a)
+- Add native vocabulary widgets and guided setup (95a023a59)
+- Prepare immersion reports in the background and compact statistics history (44b01bc57)
+- Keep inline dictionary icons out of Anki definition pictures (a7d285e49)
+- Keep GitHub Android updates quiet with urgent release controls (670585af7)
+- Restore backup file exports across platforms (b23c1f1eb)
+- Restore dictionary lookup in flashcard reviews (11597efb9)
+- Save extension word status directly without opening account tabs (d03b68cd6)
+- Restore Firefox publishing after recovered app releases (73899c25a)
+- Wait for Android activity before starting the app UI (3f81569b0)
+- Use regional project checks during release preparation (de12ed33a)
+### Downloads
+
+| System | Architecture | Download |
+|:---:|:---:|:---|
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/apple/apple-original.svg" width="50" alt="macOS"/> | aarch64 | [Manatan-v6.3.6-Mac-Silicon.dmg](https://github.com/KolbyML/Manatan/releases/download/v6.3.6/Manatan-v6.3.6-Mac-Silicon.dmg) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/apple/apple-original.svg" width="50" alt="macOS"/> | x86_64 | [Manatan-v6.3.6-Mac-Intel.dmg](https://github.com/KolbyML/Manatan/releases/download/v6.3.6/Manatan-v6.3.6-Mac-Intel.dmg) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/windows8/windows8-original.svg" width="50" alt="Windows"/> | x86_64 | [ManatanSetup-v6.3.6-Windows-x64.exe](https://github.com/KolbyML/Manatan/releases/download/v6.3.6/ManatanSetup-v6.3.6-Windows-x64.exe) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/linux/linux-original.svg" width="50" alt="Linux"/> | x86_64 | [manatan_6.3.6_amd64.deb](https://github.com/KolbyML/Manatan/releases/download/v6.3.6/manatan_6.3.6_amd64.deb) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/linux/linux-original.svg" width="50" alt="Linux"/> | aarch64 | [manatan_6.3.6_arm64.deb](https://github.com/KolbyML/Manatan/releases/download/v6.3.6/manatan_6.3.6_arm64.deb) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/android/android-original.svg" width="50" alt="Android"/> | ARM64 | [Manatan-Android-ARM64-v6.3.6.apk](https://github.com/KolbyML/Manatan/releases/download/v6.3.6/Manatan-Android-ARM64-v6.3.6.apk) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/android/android-original.svg" width="50" alt="Android"/> | ARM32 | [Manatan-Android-ARM32-v6.3.6.apk](https://github.com/KolbyML/Manatan/releases/download/v6.3.6/Manatan-Android-ARM32-v6.3.6.apk) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/apple/apple-original.svg" width="50" alt="iOS"/> | arm64 | [Manatan-v6.3.6-iOS.ipa](https://github.com/KolbyML/Manatan/releases/download/v6.3.6/Manatan-v6.3.6-iOS.ipa) |
+| Chrome | all | [Manatan-v6.3.6-Chrome.zip](https://github.com/KolbyML/Manatan/releases/download/v6.3.6/Manatan-v6.3.6-Chrome.zip) |
+|Firefox|Desktop|[Install from Mozilla Add-ons](https://addons.mozilla.org/firefox/addon/manatan/)|
+
+- The manatan-app and manatan-launcher archives are updater payloads, not the normal manual install path.
+- The legacy Manatan archives are one-time migration assets for older clients.
+- Android requires Android 8.0 or newer. Choose ARM64 for a 64-bit Android system, or ARM32 for a 32-bit Android system.
+- ARM32 support is experimental.
+- Chrome extension updates are subject to Google review; a release ZIP does not mean the store update is live.
+- Firefox store updates require Mozilla validation/review. The Firefox ZIP is an unsigned submission package, not an installable signed XPI; use the AMO listing.
+- Checksums: [Checksums.sha256](https://github.com/KolbyML/Manatan/releases/download/v6.3.6/Checksums.sha256)
+
+
 ## Release v6.3.5
 
 - Include iOS crash diagnostics in support exports (f2d2f3e21)
