@@ -1,3 +1,38 @@
+## Release v6.3.9
+
+- Add automatic suspension for newly mined flashcards (06eca7840)
+- Fix Firefox word and flashcard saves (526d00a33)
+- Support multiple Jellyfin server profiles (1142dd8f0)
+- Add transcript deletion to the podcast player (011e96949)
+- Resume automatic immersion statistics (9acc2a825)
+- Show tracked words separately in comprehension charts (f4c9c510d)
+- Keep immersion reports fast without blocking library actions (c7a1a412e)
+- Remember Screen Lookup accessibility choices across sessions (663d27390)
+- Restore Unknown status and streamline browser word saves (8266201d9)
+### Downloads
+
+| System | Architecture | Download |
+|:---:|:---:|:---|
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/apple/apple-original.svg" width="50" alt="macOS"/> | aarch64 | [Manatan-v6.3.9-Mac-Silicon.dmg](https://github.com/KolbyML/Manatan/releases/download/v6.3.9/Manatan-v6.3.9-Mac-Silicon.dmg) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/apple/apple-original.svg" width="50" alt="macOS"/> | x86_64 | [Manatan-v6.3.9-Mac-Intel.dmg](https://github.com/KolbyML/Manatan/releases/download/v6.3.9/Manatan-v6.3.9-Mac-Intel.dmg) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/windows8/windows8-original.svg" width="50" alt="Windows"/> | x86_64 | [ManatanSetup-v6.3.9-Windows-x64.exe](https://github.com/KolbyML/Manatan/releases/download/v6.3.9/ManatanSetup-v6.3.9-Windows-x64.exe) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/linux/linux-original.svg" width="50" alt="Linux"/> | x86_64 | [manatan_6.3.9_amd64.deb](https://github.com/KolbyML/Manatan/releases/download/v6.3.9/manatan_6.3.9_amd64.deb) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/linux/linux-original.svg" width="50" alt="Linux"/> | aarch64 | [manatan_6.3.9_arm64.deb](https://github.com/KolbyML/Manatan/releases/download/v6.3.9/manatan_6.3.9_arm64.deb) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/android/android-original.svg" width="50" alt="Android"/> | ARM64 | [Manatan-Android-ARM64-v6.3.9.apk](https://github.com/KolbyML/Manatan/releases/download/v6.3.9/Manatan-Android-ARM64-v6.3.9.apk) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/android/android-original.svg" width="50" alt="Android"/> | ARM32 | [Manatan-Android-ARM32-v6.3.9.apk](https://github.com/KolbyML/Manatan/releases/download/v6.3.9/Manatan-Android-ARM32-v6.3.9.apk) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/apple/apple-original.svg" width="50" alt="iOS"/> | arm64 | [Manatan-v6.3.9-iOS.ipa](https://github.com/KolbyML/Manatan/releases/download/v6.3.9/Manatan-v6.3.9-iOS.ipa) |
+| Chrome | all | [Manatan-v6.3.9-Chrome.zip](https://github.com/KolbyML/Manatan/releases/download/v6.3.9/Manatan-v6.3.9-Chrome.zip) |
+|Firefox|Desktop|[Install from Mozilla Add-ons](https://addons.mozilla.org/firefox/addon/manatan/)|
+
+- The manatan-app and manatan-launcher archives are updater payloads, not the normal manual install path.
+- The legacy Manatan archives are one-time migration assets for older clients.
+- Android requires Android 8.0 or newer. Choose ARM64 for a 64-bit Android system, or ARM32 for a 32-bit Android system.
+- ARM32 support is experimental.
+- Chrome extension updates are subject to Google review; a release ZIP does not mean the store update is live.
+- Firefox store updates require Mozilla validation/review. The Firefox ZIP is an unsigned submission package, not an installable signed XPI; use the AMO listing.
+- Checksums: [Checksums.sha256](https://github.com/KolbyML/Manatan/releases/download/v6.3.9/Checksums.sha256)
+
+
 ## Release v6.3.8
 
 - Pause immersion stats by default until explicitly enabled (43689afbb)
