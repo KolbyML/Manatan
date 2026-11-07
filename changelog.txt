@@ -1,3 +1,43 @@
+## Release v6.3.10
+
+- Keep Jimaku credential sync off shared app requests (feb770509)
+- Fix Windows immersion storage and Home stats recovery (e7ae79778)
+- Add local diagnostics for unresponsive library covers (a37b385f2)
+- Use the published flashcard extension SDK (c3d5af540)
+- Speed up immersion statistics upgrades (cf48a18da)
+- Support the same eleven vocabulary languages across app and extension (582843586)
+- Compact local immersion statistics indexes and session data (ef2c794f8)
+- Add pronunciation volume controls to app and extension (58184fc07)
+- Preserve vocabulary languages across account sync (9c1f87de5)
+- Apply compact flashcard editor with inline media controls (d3429967f)
+- Unify still-image and animated capture settings (424f298a9)
+- Improve extension flashcard capture and audio editing (e32dc8f21)
+- Cancel abandoned browser address edits (4aa61edbf)
+- Fix clean browser release validation (3fcd780b8)
+### Downloads
+
+| System | Architecture | Download |
+|:---:|:---:|:---|
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/apple/apple-original.svg" width="50" alt="macOS"/> | aarch64 | [Manatan-v6.3.10-Mac-Silicon.dmg](https://github.com/KolbyML/Manatan/releases/download/v6.3.10/Manatan-v6.3.10-Mac-Silicon.dmg) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/apple/apple-original.svg" width="50" alt="macOS"/> | x86_64 | [Manatan-v6.3.10-Mac-Intel.dmg](https://github.com/KolbyML/Manatan/releases/download/v6.3.10/Manatan-v6.3.10-Mac-Intel.dmg) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/windows8/windows8-original.svg" width="50" alt="Windows"/> | x86_64 | [ManatanSetup-v6.3.10-Windows-x64.exe](https://github.com/KolbyML/Manatan/releases/download/v6.3.10/ManatanSetup-v6.3.10-Windows-x64.exe) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/linux/linux-original.svg" width="50" alt="Linux"/> | x86_64 | [manatan_6.3.10_amd64.deb](https://github.com/KolbyML/Manatan/releases/download/v6.3.10/manatan_6.3.10_amd64.deb) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/linux/linux-original.svg" width="50" alt="Linux"/> | aarch64 | [manatan_6.3.10_arm64.deb](https://github.com/KolbyML/Manatan/releases/download/v6.3.10/manatan_6.3.10_arm64.deb) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/android/android-original.svg" width="50" alt="Android"/> | ARM64 | [Manatan-Android-ARM64-v6.3.10.apk](https://github.com/KolbyML/Manatan/releases/download/v6.3.10/Manatan-Android-ARM64-v6.3.10.apk) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/android/android-original.svg" width="50" alt="Android"/> | ARM32 | [Manatan-Android-ARM32-v6.3.10.apk](https://github.com/KolbyML/Manatan/releases/download/v6.3.10/Manatan-Android-ARM32-v6.3.10.apk) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/apple/apple-original.svg" width="50" alt="iOS"/> | arm64 | [Manatan-v6.3.10-iOS.ipa](https://github.com/KolbyML/Manatan/releases/download/v6.3.10/Manatan-v6.3.10-iOS.ipa) |
+| Chrome | all | [Manatan-v6.3.10-Chrome.zip](https://github.com/KolbyML/Manatan/releases/download/v6.3.10/Manatan-v6.3.10-Chrome.zip) |
+|Firefox|Desktop|[Install from Mozilla Add-ons](https://addons.mozilla.org/firefox/addon/manatan/)|
+
+- The manatan-app and manatan-launcher archives are updater payloads, not the normal manual install path.
+- The legacy Manatan archives are one-time migration assets for older clients.
+- Android requires Android 8.0 or newer. Choose ARM64 for a 64-bit Android system, or ARM32 for a 32-bit Android system.
+- ARM32 support is experimental.
+- Chrome extension updates are subject to Google review; a release ZIP does not mean the store update is live.
+- Firefox store updates require Mozilla validation/review. The Firefox ZIP is an unsigned submission package, not an installable signed XPI; use the AMO listing.
+- Checksums: [Checksums.sha256](https://github.com/KolbyML/Manatan/releases/download/v6.3.10/Checksums.sha256)
+
+
 ## Release v6.3.9
 
 - Add automatic suspension for newly mined flashcards (06eca7840)
