@@ -1,3 +1,53 @@
+## Release v6.3.12
+
+- Preserve source serialization with extension package aliases (fabdb3655)
+- Add Mandarin tone colors and multilingual extension parsing (1e7e9174b)
+- Add flashcard diagnostics for animated video capture (ea9b18a9a)
+- Download reader packs from static asset URLs (4ec4e7601)
+- Add an export shortcut to deck menus (4cf736976)
+- Add Windows diagnostics for Anki image exports (067c3afa9)
+- Add Flashcards exports and study time (986f4502a)
+- Prefer opaque parser pack links in the reader (c4af8d03f)
+- Switch browser dictionary entries by tapping another word (fd6bfc7a0)
+- Keep visual novel dialogue in place during browser lookups (f55d9a907)
+- Accept subtitle drops with Subtitle options open (3f69990ed)
+- Speed up Flashcards Decks and Sync (5e1208286)
+- Keep full sentences when mining from the browser (c5f637fdb)
+- Run Flashcards sync directly from the toolbar (a9a5845de)
+- Add subtitle drag and drop to the desktop player (567ddbd95)
+- Report app version, release channel, and learning language (1c944c682)
+- Preserve flashcard review history when reimporting decks (c7f5dc858)
+- Use shared dictionary settings in the in-app browser (1f72f3b45)
+- Keep Android browser dictionary working across navigation (817e2a375)
+- Use Mandarin Korean and Vietnamese dictionaries in reader analysis (4428ed6a5)
+- Explain immersion stats sync failures (6c3c446cf)
+- Keep EPUB text continuous across page turns (cf4382591)
+- Stabilize filtered YouTube Home feed ordering (c96f3ba3e)
+- Keep installed source lists consistent across app surfaces (49ff4352c)
+### Downloads
+
+| System | Architecture | Download |
+|:---:|:---:|:---|
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/apple/apple-original.svg" width="50" alt="macOS"/> | aarch64 | [Manatan-v6.3.12-Mac-Silicon.dmg](https://github.com/KolbyML/Manatan/releases/download/v6.3.12/Manatan-v6.3.12-Mac-Silicon.dmg) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/apple/apple-original.svg" width="50" alt="macOS"/> | x86_64 | [Manatan-v6.3.12-Mac-Intel.dmg](https://github.com/KolbyML/Manatan/releases/download/v6.3.12/Manatan-v6.3.12-Mac-Intel.dmg) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/windows8/windows8-original.svg" width="50" alt="Windows"/> | x86_64 | [ManatanSetup-v6.3.12-Windows-x64.exe](https://github.com/KolbyML/Manatan/releases/download/v6.3.12/ManatanSetup-v6.3.12-Windows-x64.exe) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/linux/linux-original.svg" width="50" alt="Linux"/> | x86_64 | [manatan_6.3.12_amd64.deb](https://github.com/KolbyML/Manatan/releases/download/v6.3.12/manatan_6.3.12_amd64.deb) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/linux/linux-original.svg" width="50" alt="Linux"/> | aarch64 | [manatan_6.3.12_arm64.deb](https://github.com/KolbyML/Manatan/releases/download/v6.3.12/manatan_6.3.12_arm64.deb) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/android/android-original.svg" width="50" alt="Android"/> | ARM64 | [Manatan-Android-ARM64-v6.3.12.apk](https://github.com/KolbyML/Manatan/releases/download/v6.3.12/Manatan-Android-ARM64-v6.3.12.apk) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/android/android-original.svg" width="50" alt="Android"/> | ARM32 | [Manatan-Android-ARM32-v6.3.12.apk](https://github.com/KolbyML/Manatan/releases/download/v6.3.12/Manatan-Android-ARM32-v6.3.12.apk) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/apple/apple-original.svg" width="50" alt="iOS"/> | arm64 | [Manatan-v6.3.12-iOS.ipa](https://github.com/KolbyML/Manatan/releases/download/v6.3.12/Manatan-v6.3.12-iOS.ipa) |
+| Chrome | all | [Manatan-v6.3.12-Chrome.zip](https://github.com/KolbyML/Manatan/releases/download/v6.3.12/Manatan-v6.3.12-Chrome.zip) |
+|Firefox|Desktop|[Install from Mozilla Add-ons](https://addons.mozilla.org/firefox/addon/manatan/)|
+
+- The manatan-app and manatan-launcher archives are updater payloads, not the normal manual install path.
+- The legacy Manatan archives are one-time migration assets for older clients.
+- Android requires Android 8.0 or newer. Choose ARM64 for a 64-bit Android system, or ARM32 for a 32-bit Android system.
+- ARM32 support is experimental.
+- Chrome extension updates are subject to Google review; a release ZIP does not mean the store update is live.
+- Firefox store updates require Mozilla validation/review. The Firefox ZIP is an unsigned submission package, not an installable signed XPI; use the AMO listing.
+- Checksums: [Checksums.sha256](https://github.com/KolbyML/Manatan/releases/download/v6.3.12/Checksums.sha256)
+
+
 ## Release v6.3.11
 
 - Fix Android native path conversion (892212c)
