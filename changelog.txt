@@ -1,3 +1,48 @@
+## Release v6.3.13
+
+- Update Japanese assets in the browser extension (6e0756429)
+- Use Manatan pitch accents by default (92dffafb8)
+- Record Cantonese parser rebuild checkpoint (43453812b)
+- Upgrade Japanese parser assets and retire superseded caches (09e9b112d)
+- Restore learning languages and expand Flashcards mining (20352d93a)
+- Schedule Flashcards reviews with RWKV (e09509f47)
+- Download OCR models directly in the manga reader (4fa058c90)
+- Match extension dictionaries and flashcards to the app (a5eeb1ce1)
+- Keep subtitle outlines behind glyph fills (2138ddccc)
+- Harden native CI smoke inputs and scratch cleanup (8639c61ca)
+- Bound ARM64 compiler cache tool downloads (5fc13e9af)
+- Prepare Darwin headers and retain completed iOS native inputs (6c7da17ec)
+- Run Windows recovery through a pinned script (89248184f)
+- Verify Android Gradle tools before compilation (4709caf4d)
+- Resume interrupted Windows builds from verified run inputs (dd164eeb2)
+- Validate iOS JNI header inputs before archiving (ab20bd61d)
+- Verify the complete Android recovery helper allow-list (5039966cb)
+- Recover Android tool downloads through the release API (6e1b374a8)
+- Always capture full sentences when mining from the browser (7cf0968ec)
+### Downloads
+
+| System | Architecture | Download |
+|:---:|:---:|:---|
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/apple/apple-original.svg" width="50" alt="macOS"/> | aarch64 | [Manatan-v6.3.13-Mac-Silicon.dmg](https://github.com/KolbyML/Manatan/releases/download/v6.3.13/Manatan-v6.3.13-Mac-Silicon.dmg) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/apple/apple-original.svg" width="50" alt="macOS"/> | x86_64 | [Manatan-v6.3.13-Mac-Intel.dmg](https://github.com/KolbyML/Manatan/releases/download/v6.3.13/Manatan-v6.3.13-Mac-Intel.dmg) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/windows8/windows8-original.svg" width="50" alt="Windows"/> | x86_64 | [ManatanSetup-v6.3.13-Windows-x64.exe](https://github.com/KolbyML/Manatan/releases/download/v6.3.13/ManatanSetup-v6.3.13-Windows-x64.exe) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/linux/linux-original.svg" width="50" alt="Linux"/> | x86_64 | [manatan_6.3.13_amd64.deb](https://github.com/KolbyML/Manatan/releases/download/v6.3.13/manatan_6.3.13_amd64.deb) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/linux/linux-original.svg" width="50" alt="Linux"/> | aarch64 | [manatan_6.3.13_arm64.deb](https://github.com/KolbyML/Manatan/releases/download/v6.3.13/manatan_6.3.13_arm64.deb) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/android/android-original.svg" width="50" alt="Android"/> | ARM64 | [Manatan-Android-ARM64-v6.3.13.apk](https://github.com/KolbyML/Manatan/releases/download/v6.3.13/Manatan-Android-ARM64-v6.3.13.apk) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/android/android-original.svg" width="50" alt="Android"/> | ARM32 | [Manatan-Android-ARM32-v6.3.13.apk](https://github.com/KolbyML/Manatan/releases/download/v6.3.13/Manatan-Android-ARM32-v6.3.13.apk) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/apple/apple-original.svg" width="50" alt="iOS"/> | arm64 | [Manatan-v6.3.13-iOS.ipa](https://github.com/KolbyML/Manatan/releases/download/v6.3.13/Manatan-v6.3.13-iOS.ipa) |
+| Chrome | all | [Manatan-v6.3.13-Chrome.zip](https://github.com/KolbyML/Manatan/releases/download/v6.3.13/Manatan-v6.3.13-Chrome.zip) |
+|Firefox|Desktop|[Install from Mozilla Add-ons](https://addons.mozilla.org/firefox/addon/manatan/)|
+
+- The manatan-app and manatan-launcher archives are updater payloads, not the normal manual install path.
+- The legacy Manatan archives are one-time migration assets for older clients.
+- Android requires Android 8.0 or newer. Choose ARM64 for a 64-bit Android system, or ARM32 for a 32-bit Android system.
+- ARM32 support is experimental.
+- Chrome extension updates are subject to Google review; a release ZIP does not mean the store update is live.
+- Firefox store updates require Mozilla validation/review. The Firefox ZIP is an unsigned submission package, not an installable signed XPI; use the AMO listing.
+- Checksums: [Checksums.sha256](https://github.com/KolbyML/Manatan/releases/download/v6.3.13/Checksums.sha256)
+
+
 ## Release v6.3.12
 
 - Preserve source serialization with extension package aliases (fabdb3655)
