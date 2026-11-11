@@ -126,6 +126,7 @@ modules:
   # Manatan's normal launcher downloads CEF into the user's data directory.
   # Flatpak instead installs the exact pinned CEF runtime read-only in /app so
   # first launch is deterministic and does not require runtime provisioning.
+  # Both Linux architectures use their separately built and tested CEF binaries.
   - name: cef-runtime
     buildsystem: simple
     build-commands:
@@ -139,14 +140,14 @@ modules:
     sources:
       - type: archive
         dest: cef
-        url: https://cef-builds.spotifycdn.com/cef_binary_149.0.6%2Bg0d0eeb6%2Bchromium-149.0.7827.201_linux64_minimal.tar.bz2
-        sha256: f90dec4c5c42a7bbd4f2bd80a7a77e0ac6aacfc6627bb43572d803e77f26dfbc
+        url: https://github.com/KolbyML/assets/releases/download/cef-149.0.6-linux64-wayland-osr.1/cef_binary_149.0.6%2Bg0d0eeb6%2Bchromium-149.0.7827.201_linux64_minimal_wayland-osr.1.tar.bz2
+        sha256: dc604601eea015354c6c0205f0f0004fae89eae11012d279dccae35c8549ecee
         only-arches:
           - x86_64
       - type: archive
         dest: cef
-        url: https://cef-builds.spotifycdn.com/cef_binary_149.0.6%2Bg0d0eeb6%2Bchromium-149.0.7827.201_linuxarm64_minimal.tar.bz2
-        sha256: 8aa87c0f0e848b747903ffbd5e5751179c1bdedf32afb32afaad51dd777c960d
+        url: https://github.com/KolbyML/assets/releases/download/cef-149.0.6-linuxarm64-wayland-osr.1/cef_binary_149.0.6%2Bg0d0eeb6%2Bchromium-149.0.7827.201_linuxarm64_minimal_wayland-osr.1.tar.bz2
+        sha256: 90d98592d6a800ec7000dbce03c33e86157e16abefa96baca530331080dccb12
         only-arches:
           - aarch64
       - type: file

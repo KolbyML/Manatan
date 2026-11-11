@@ -141,6 +141,7 @@ def validate_manifest(directory: Path) -> None:
     cef_urls = re.findall(r"^        url: (\S+)$", cef, re.MULTILINE)
     if len(cef_urls) != 2:
         fail("CEF runtime archive URLs are invalid")
+    cef_hashes = re.findall(r"^        sha256: (\S+)$", cef, re.MULTILINE)
     for arch in ("linux64", "linuxarm64"):
         metadata_path = directory / f"cef-{arch}-archive.json"
         if not metadata_path.is_file():
@@ -151,6 +152,13 @@ def validate_manifest(directory: Path) -> None:
             name in urllib.parse.unquote(url) for url in cef_urls
         ):
             fail(f"CEF {arch} runtime metadata does not match its archive")
+        if metadata.get("build_identity"):
+            matching_hashes = [
+                sha for url, sha in zip(cef_urls, cef_hashes, strict=True)
+                if name in urllib.parse.unquote(url)
+            ]
+            if matching_hashes != [metadata.get("sha256")]:
+                fail(f"CEF {arch} downstream build checksum does not match its archive")
     validate_packaged_runtimes(directory, text)
     app = manifest_module(text, "manatan")
     if "    sources:\n" not in app:
