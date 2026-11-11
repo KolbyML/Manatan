@@ -1,3 +1,59 @@
+## Release v6.3.15
+
+- Fix desktop helpers and release packaging (020c632)
+- Use native menus to copy dictionary selections (da2283c)
+- Document the 6.3.15 annual membership submission (ae61c92)
+- Match the membership review steps to the iOS menu (1b209c0)
+- Show live flashcard sync progress (c754efd)
+- Exercise annual membership cards in the iOS review tests (ad156ba)
+- Allow copying selected popup dictionary text (6d4b962)
+- Keep flashcard reviews working during sync (df4a607)
+- Decode apostrophes in YouTube subtitles (8f96e82)
+- Add annual App Store memberships and refresh the membership screen (5b772cb)
+- Restore flashcard saves and highlights for YouTube ad captions (af4298e)
+- Export secondary video subtitles to flashcards (b4f1a85)
+- Keep flashcard duplicate checks working through session renewals (6e62b3d)
+- Confirm word status changes in the dictionary popup (6d586d8)
+- Keep dictionary popups anchored to highlighted subtitles (e40aa76)
+- Highlight full subtitle matches and enable lookups during ads (c2a99ca)
+- Enable webpage dictionary lookup and reduce account requests (ea4e903)
+- Match Widget Settings to the selected app theme (a305ff4)
+- Keep podcast flashcard audio aligned with playback (a3c3f84)
+- Pin corrected CEF runtime for Linux dictionary popups (9919744)
+- Follow system appearance for widgets (47e5af0)
+- Import comic archives using their actual format (06dd556)
+- Include AVIF capture and flashcard playback evidence in debug exports (e19ae3a)
+- Import shared files into local media libraries (2c869c9)
+- Capture native CPU hotspots in battery diagnostics (dff9ac2)
+- Keep Flashcards syncing when media runs out of space (7bb243b)
+- Reduce repeated work when validating Drive checkpoints (fff0005)
+- Restore Paddle OCR model downloads on Android (c235853)
+- Add support snapshot export to Flashcards (25ec21a)
+- Keep podcast transcripts synced with playback (34d39d1)
+### Downloads
+
+| System | Architecture | Download |
+|:---:|:---:|:---|
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/apple/apple-original.svg" width="50" alt="macOS"/> | aarch64 | [Manatan-v6.3.15-Mac-Silicon.dmg](https://github.com/KolbyML/Manatan/releases/download/v6.3.15/Manatan-v6.3.15-Mac-Silicon.dmg) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/apple/apple-original.svg" width="50" alt="macOS"/> | x86_64 | [Manatan-v6.3.15-Mac-Intel.dmg](https://github.com/KolbyML/Manatan/releases/download/v6.3.15/Manatan-v6.3.15-Mac-Intel.dmg) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/windows8/windows8-original.svg" width="50" alt="Windows"/> | x86_64 | [ManatanSetup-v6.3.15-Windows-x64.exe](https://github.com/KolbyML/Manatan/releases/download/v6.3.15/ManatanSetup-v6.3.15-Windows-x64.exe) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/linux/linux-original.svg" width="50" alt="Linux"/> | x86_64 | [manatan_6.3.15_amd64.deb](https://github.com/KolbyML/Manatan/releases/download/v6.3.15/manatan_6.3.15_amd64.deb) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/linux/linux-original.svg" width="50" alt="Linux"/> | aarch64 | [manatan_6.3.15_arm64.deb](https://github.com/KolbyML/Manatan/releases/download/v6.3.15/manatan_6.3.15_arm64.deb) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/android/android-original.svg" width="50" alt="Android"/> | ARM64 | [Manatan-Android-ARM64-v6.3.15.apk](https://github.com/KolbyML/Manatan/releases/download/v6.3.15/Manatan-Android-ARM64-v6.3.15.apk) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/android/android-original.svg" width="50" alt="Android"/> | ARM32 | [Manatan-Android-ARM32-v6.3.15.apk](https://github.com/KolbyML/Manatan/releases/download/v6.3.15/Manatan-Android-ARM32-v6.3.15.apk) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/apple/apple-original.svg" width="50" alt="iOS"/> | arm64 | [Manatan-v6.3.15-iOS.ipa](https://github.com/KolbyML/Manatan/releases/download/v6.3.15/Manatan-v6.3.15-iOS.ipa) |
+| Chrome | all | [Manatan-v6.3.15-Chrome.zip](https://github.com/KolbyML/Manatan/releases/download/v6.3.15/Manatan-v6.3.15-Chrome.zip) |
+|Firefox|Desktop|[Install from Mozilla Add-ons](https://addons.mozilla.org/firefox/addon/manatan/)|
+
+- The manatan-app and manatan-launcher archives are updater payloads, not the normal manual install path.
+- The legacy Manatan archives are one-time migration assets for older clients.
+- Android requires Android 8.0 or newer. Choose ARM64 for a 64-bit Android system, or ARM32 for a 32-bit Android system.
+- ARM32 support is experimental.
+- Chrome extension updates are subject to Google review; a release ZIP does not mean the store update is live.
+- Firefox store updates require Mozilla validation/review. The Firefox ZIP is an unsigned submission package, not an installable signed XPI; use the AMO listing.
+- Checksums: [Checksums.sha256](https://github.com/KolbyML/Manatan/releases/download/v6.3.15/Checksums.sha256)
+
+
 ## Release v6.3.14
 
 - Restore Android glide typing in the browser address bar (c2289bc)
