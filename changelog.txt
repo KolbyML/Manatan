@@ -1,3 +1,39 @@
+## Release v6.3.16
+
+- Keep database initialization compatible with background sync (c055358)
+- Refresh installed widget count after Lock Screen changes (6d88101)
+- Translate captured text in Android Screen Lookup (b17709b)
+- Keep novel artwork and books loading across CDN changes (9cd37da)
+- Recover interrupted flashcard collection syncs (d99d52c)
+- Adjust podcast audio clips when creating flashcards (1b76cad)
+- Keep multiword dictionary tags together (48d4473)
+- Keep flashcard reviews moving between cards (2fc2791)
+- Keep shared imports in the Default category (9ae724f)
+- Tighten dictionary popup spacing and accents (4fc008d)
+### Downloads
+
+| System | Architecture | Download |
+|:---:|:---:|:---|
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/apple/apple-original.svg" width="50" alt="macOS"/> | aarch64 | [Manatan-v6.3.16-Mac-Silicon.dmg](https://github.com/KolbyML/Manatan/releases/download/v6.3.16/Manatan-v6.3.16-Mac-Silicon.dmg) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/apple/apple-original.svg" width="50" alt="macOS"/> | x86_64 | [Manatan-v6.3.16-Mac-Intel.dmg](https://github.com/KolbyML/Manatan/releases/download/v6.3.16/Manatan-v6.3.16-Mac-Intel.dmg) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/windows8/windows8-original.svg" width="50" alt="Windows"/> | x86_64 | [ManatanSetup-v6.3.16-Windows-x64.exe](https://github.com/KolbyML/Manatan/releases/download/v6.3.16/ManatanSetup-v6.3.16-Windows-x64.exe) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/linux/linux-original.svg" width="50" alt="Linux"/> | x86_64 | [manatan_6.3.16_amd64.deb](https://github.com/KolbyML/Manatan/releases/download/v6.3.16/manatan_6.3.16_amd64.deb) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/linux/linux-original.svg" width="50" alt="Linux"/> | aarch64 | [manatan_6.3.16_arm64.deb](https://github.com/KolbyML/Manatan/releases/download/v6.3.16/manatan_6.3.16_arm64.deb) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/android/android-original.svg" width="50" alt="Android"/> | ARM64 | [Manatan-Android-ARM64-v6.3.16.apk](https://github.com/KolbyML/Manatan/releases/download/v6.3.16/Manatan-Android-ARM64-v6.3.16.apk) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/android/android-original.svg" width="50" alt="Android"/> | ARM32 | [Manatan-Android-ARM32-v6.3.16.apk](https://github.com/KolbyML/Manatan/releases/download/v6.3.16/Manatan-Android-ARM32-v6.3.16.apk) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/apple/apple-original.svg" width="50" alt="iOS"/> | arm64 | [Manatan-v6.3.16-iOS.ipa](https://github.com/KolbyML/Manatan/releases/download/v6.3.16/Manatan-v6.3.16-iOS.ipa) |
+| Chrome | all | [Manatan-v6.3.16-Chrome.zip](https://github.com/KolbyML/Manatan/releases/download/v6.3.16/Manatan-v6.3.16-Chrome.zip) |
+|Firefox|Desktop|[Install from Mozilla Add-ons](https://addons.mozilla.org/firefox/addon/manatan/)|
+
+- The manatan-app and manatan-launcher archives are updater payloads, not the normal manual install path.
+- The legacy Manatan archives are one-time migration assets for older clients.
+- Android requires Android 8.0 or newer. Choose ARM64 for a 64-bit Android system, or ARM32 for a 32-bit Android system.
+- ARM32 support is experimental.
+- Chrome extension updates are subject to Google review; a release ZIP does not mean the store update is live.
+- Firefox store updates require Mozilla validation/review. The Firefox ZIP is an unsigned submission package, not an installable signed XPI; use the AMO listing.
+- Checksums: [Checksums.sha256](https://github.com/KolbyML/Manatan/releases/download/v6.3.16/Checksums.sha256)
+
+
 ## Release v6.3.15
 
 - Fix desktop helpers and release packaging (020c632)
