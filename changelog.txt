@@ -1,3 +1,61 @@
+## Release v6.3.21
+
+- Handle invalid local card media errors on Android (a1a8011dc)
+- Fix Firefox sentence audio when saving flashcards (93899315a)
+- Support iOS crash diagnostics builds with Xcode 26 (fc3d708ef)
+- Keep EPUB covers sharp in the novel library (3bb750a90)
+- Add note type management to Flashcards (0d0a557db)
+- Add secondary AI subtitles and clearer Premium prompts (ee53509b0)
+- Read metadata from local anime folders (96c421f82)
+- Keep Subtitle options steady while scrolling (8707d206d)
+- Keep EPUB illustrations on one page (ca98d1a5b)
+- Keep rapid novel page turns animated (fc06d32d0)
+- Resolve contextual readings of 開ける (299bee65f)
+- Use regular text color for dictionary popup headwords (c940dfa55)
+- Fix pitch graphs in built-in flashcards (f3004c2ab)
+- Use dictionary grammar for mined pitch categories (e11ae5c61)
+- Keep primary and supplemental glossaries separate in mined cards (87f3e8042)
+- Reveal subtitles for unknown study words (69ad71acb)
+- Keep one desktop update rollback copy (44b6ce80e)
+- Restore the Flashcards Add editor (a589ea277)
+- Show Android app update download progress (2fcea13bc)
+- Show contextual word translations in video subtitles (dbaefa321)
+- Remove duplicate PNG conversion from Lens OCR (f96292a9e)
+- Fix manga reader cropping across reading modes (fe12f8e2f)
+- Prioritize OCR for manga pages in view (9e3b4e2fc)
+- Save flashcards when dictionary images are corrupt (48d01b07a)
+- Restore novel selection actions after dragging on iOS (ba1b21fcc)
+- Report local immersion stats upgrade failures (71833f403)
+- Show the premium features popup only in the WebUI (7191a9de8)
+- Keep Flashcards review counts in step with the queue (fb4e9431e)
+- Reclaim task SDK inputs after verified uploads (e7c72e895)
+- Prepare macOS build inputs before compiling (964a825af)
+- Isolate iOS version fixtures from release configuration (e45161962)
+- Isolate Android release fixtures from CI version overrides (451cefb5a)
+### Downloads
+
+| System | Architecture | Download |
+|:---:|:---:|:---|
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/apple/apple-original.svg" width="50" alt="macOS"/> | aarch64 | [Manatan-v6.3.21-Mac-Silicon.dmg](https://github.com/KolbyML/Manatan/releases/download/v6.3.21/Manatan-v6.3.21-Mac-Silicon.dmg) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/apple/apple-original.svg" width="50" alt="macOS"/> | x86_64 | [Manatan-v6.3.21-Mac-Intel.dmg](https://github.com/KolbyML/Manatan/releases/download/v6.3.21/Manatan-v6.3.21-Mac-Intel.dmg) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/windows8/windows8-original.svg" width="50" alt="Windows"/> | x86_64 | [ManatanSetup-v6.3.21-Windows-x64.exe](https://github.com/KolbyML/Manatan/releases/download/v6.3.21/ManatanSetup-v6.3.21-Windows-x64.exe) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/linux/linux-original.svg" width="50" alt="Linux"/> | x86_64 | [manatan_6.3.21_amd64.deb](https://github.com/KolbyML/Manatan/releases/download/v6.3.21/manatan_6.3.21_amd64.deb) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/linux/linux-original.svg" width="50" alt="Linux"/> | aarch64 | [manatan_6.3.21_arm64.deb](https://github.com/KolbyML/Manatan/releases/download/v6.3.21/manatan_6.3.21_arm64.deb) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/android/android-original.svg" width="50" alt="Android"/> | ARM64 | [Manatan-Android-ARM64-v6.3.21.apk](https://github.com/KolbyML/Manatan/releases/download/v6.3.21/Manatan-Android-ARM64-v6.3.21.apk) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/android/android-original.svg" width="50" alt="Android"/> | ARM32 | [Manatan-Android-ARM32-v6.3.21.apk](https://github.com/KolbyML/Manatan/releases/download/v6.3.21/Manatan-Android-ARM32-v6.3.21.apk) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/apple/apple-original.svg" width="50" alt="iOS"/> | arm64 | [Manatan-v6.3.21-iOS.ipa](https://github.com/KolbyML/Manatan/releases/download/v6.3.21/Manatan-v6.3.21-iOS.ipa) |
+| Chrome | all | [Manatan-v6.3.21-Chrome.zip](https://github.com/KolbyML/Manatan/releases/download/v6.3.21/Manatan-v6.3.21-Chrome.zip) |
+|Firefox|Desktop|[Install from Mozilla Add-ons](https://addons.mozilla.org/firefox/addon/manatan/)|
+
+- The manatan-app and manatan-launcher archives are updater payloads, not the normal manual install path.
+- The legacy Manatan archives are one-time migration assets for older clients.
+- Android requires Android 8.0 or newer. Choose ARM64 for a 64-bit Android system, or ARM32 for a 32-bit Android system.
+- ARM32 support is experimental.
+- Chrome extension updates are subject to Google review; a release ZIP does not mean the store update is live.
+- Firefox store updates require Mozilla validation/review. The Firefox ZIP is an unsigned submission package, not an installable signed XPI; use the AMO listing.
+- Checksums: [Checksums.sha256](https://github.com/KolbyML/Manatan/releases/download/v6.3.21/Checksums.sha256)
+
+
 ## Release v6.3.20
 
 - Use literal limits for Apple build queues (71c575b27)
