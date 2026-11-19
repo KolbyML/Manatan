@@ -1,3 +1,43 @@
+## Release v6.3.25
+
+- Open lookup flashcards in the right workspace (007cd30)
+- Import Jiten and JPDB review history into Flashcards (aae960c)
+- Restore replay controls on imported flashcards (7b8bdcd)
+- Restore images and audio on synced flashcards (b8b5be2)
+- Add Flashcards performance diagnostics (8a62829)
+- Reuse manga reading coverage until it changes (7c6023b)
+- Add protected publisher updates for note types (90aeaf9)
+- Speed up Lens image cropping without changing OCR inputs (9f421fd)
+- Stream sync status and manual progress updates (c472c99)
+- Include reader identity failure details in debug exports (d8f2bc3)
+- Keep vocabulary sources editable when an Anki deck is missing (5ce6a6e)
+- Return from flashcard Browse to the lookup source (58f0f35)
+- Share boundary OCR scans across adjacent reader pages (1203d32)
+- Restore sentence audio when mining video flashcards (9f4ca81)
+### Downloads
+
+| System | Architecture | Download |
+|:---:|:---:|:---|
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/apple/apple-original.svg" width="50" alt="macOS"/> | aarch64 | [Manatan-v6.3.25-Mac-Silicon.dmg](https://github.com/KolbyML/Manatan/releases/download/v6.3.25/Manatan-v6.3.25-Mac-Silicon.dmg) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/apple/apple-original.svg" width="50" alt="macOS"/> | x86_64 | [Manatan-v6.3.25-Mac-Intel.dmg](https://github.com/KolbyML/Manatan/releases/download/v6.3.25/Manatan-v6.3.25-Mac-Intel.dmg) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/windows8/windows8-original.svg" width="50" alt="Windows"/> | x86_64 | [ManatanSetup-v6.3.25-Windows-x64.exe](https://github.com/KolbyML/Manatan/releases/download/v6.3.25/ManatanSetup-v6.3.25-Windows-x64.exe) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/linux/linux-original.svg" width="50" alt="Linux"/> | x86_64 | [manatan_6.3.25_amd64.deb](https://github.com/KolbyML/Manatan/releases/download/v6.3.25/manatan_6.3.25_amd64.deb) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/linux/linux-original.svg" width="50" alt="Linux"/> | aarch64 | [manatan_6.3.25_arm64.deb](https://github.com/KolbyML/Manatan/releases/download/v6.3.25/manatan_6.3.25_arm64.deb) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/android/android-original.svg" width="50" alt="Android"/> | ARM64 | [Manatan-Android-ARM64-v6.3.25.apk](https://github.com/KolbyML/Manatan/releases/download/v6.3.25/Manatan-Android-ARM64-v6.3.25.apk) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/android/android-original.svg" width="50" alt="Android"/> | ARM32 | [Manatan-Android-ARM32-v6.3.25.apk](https://github.com/KolbyML/Manatan/releases/download/v6.3.25/Manatan-Android-ARM32-v6.3.25.apk) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/apple/apple-original.svg" width="50" alt="iOS"/> | arm64 | [Manatan-v6.3.25-iOS.ipa](https://github.com/KolbyML/Manatan/releases/download/v6.3.25/Manatan-v6.3.25-iOS.ipa) |
+| Chrome | all | [Manatan-v6.3.25-Chrome.zip](https://github.com/KolbyML/Manatan/releases/download/v6.3.25/Manatan-v6.3.25-Chrome.zip) |
+|Firefox|Desktop|[Install from Mozilla Add-ons](https://addons.mozilla.org/firefox/addon/manatan/)|
+
+- The manatan-app and manatan-launcher archives are updater payloads, not the normal manual install path.
+- The legacy Manatan archives are one-time migration assets for older clients.
+- Android requires Android 8.0 or newer. Choose ARM64 for a 64-bit Android system, or ARM32 for a 32-bit Android system.
+- ARM32 support is experimental.
+- Chrome extension updates are subject to Google review; a release ZIP does not mean the store update is live.
+- Firefox store updates require Mozilla validation/review. The Firefox ZIP is an unsigned submission package, not an installable signed XPI; use the AMO listing.
+- Checksums: [Checksums.sha256](https://github.com/KolbyML/Manatan/releases/download/v6.3.25/Checksums.sha256)
+
+
 ## Release v6.3.24
 
 - Fix release build compatibility (7f22d16e1)
