@@ -94,10 +94,12 @@ public class AnkiBridge {
 
         new Thread(() -> {
             try {
-                // Bind to 0.0.0.0 to allow connections from any IP
+                // Keep the bridge local to the device. The WebView and native app
+                // only need loopback access, and exposing this on LAN widens the
+                // attack surface for public or shared networks.
                 serverSocket = new ServerSocket();
-                serverSocket.bind(new InetSocketAddress("0.0.0.0", 8765));
-                Log.i(TAG, "✅ AnkiConnect listening on 0.0.0.0:8765");
+                serverSocket.bind(new InetSocketAddress("127.0.0.1", 8765));
+                Log.i(TAG, "✅ AnkiConnect listening on 127.0.0.1:8765");
 
                 while (serverRunning) {
                     try {
