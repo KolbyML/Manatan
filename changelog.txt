@@ -1,3 +1,71 @@
+## Release v6.3.26
+
+- Add dictionary library backups and device copy (f345c3f13)
+- Fix scrambled pages in the manga reader (3fc98ee7b)
+- Improve playback and Windows crash diagnostics (2de910065)
+- Fix local subtitles for image-wrapped HLS streams (fe79d40bc)
+- Honor dictionary popup scale on iOS (b96d9181d)
+- Validate Android torrent bridge packaging (dc23d25e4)
+- Use Manatan SDK 2.1.0 (1c69a6afd)
+- Revert "Speed up MDX dictionary imports" (bd1eaa2f0)
+- Update build configuration (686654274)
+- Add anime and manga extension capabilities (8fe271ee6)
+- Keep webtoon panels aligned across image boundaries (54bbf3add)
+- Keep dictionary character images inside their definitions (ea2d6cf43)
+- Reuse decoded page pixels for Lens OCR (57ac6c426)
+- Reduce image resize memory across OCR backends (431c6b8ac)
+- Show extension-provided seek thumbnails (f52a82255)
+- Make Japanese subtitle lookup furigana-aware (732e54c08)
+- Support anime extension API 17 (f15422d1e)
+- Unify obsolete extension removal across media (01c38d008)
+- Use dav1d for AVIF decoding in OCR and Flashcards (96154e702)
+- Enable concurrent downloads for Komga and Kavita (cc0a97464)
+- Show download speeds and enable self-hosted concurrency (8736f94a9)
+- Improve Flashcards performance recordings (8c0f875f1)
+- Fix embedded subtitle selection for local video (5dfd1b7e8)
+- Support screen lookup on Hyprland Wayland (181043e2e)
+- Add definitions and pitch accents to Flashcards imports (c19b22c64)
+- Preserve cards when updating note types (0b0f52b7d)
+- Enable four European parsers in the app and extension (cd2651c8a)
+- Fix Flashcards workload estimates (252176ddb)
+- Save connected Flashcards locally and sync media promptly (7a07d264f)
+- Restore subtitles when switching YouTube videos (519b90958)
+- Restore manga image recovery test coverage (61620ae17)
+- Share capped cover thumbnails across media libraries (737b64a1d)
+- Keep YouTube playing through fullscreen rotation (b96be34f6)
+- Speed up MDX dictionary imports (7d6f77172)
+- Refine video statistics layouts across phone and desktop (2f7d88821)
+- Keep YouTube playing while checking notifications (f8c3b7db1)
+- Open the mobile browser start page without waiting for protection (c35a925c2)
+- Use the selected Manatan theme throughout Flashcards (5bb49eb58)
+- Read AVIF dimensions without decoding frames (06f51c176)
+- Reduce memory retained by AVIF reader images (3cd386609)
+- Keep downloaded subtitles working offline (4cf3f4d52)
+- Make video mouse clicks consistent on Android (9a98236c8)
+### Downloads
+
+| System | Architecture | Download |
+|:---:|:---:|:---|
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/apple/apple-original.svg" width="50" alt="macOS"/> | aarch64 | [Manatan-v6.3.26-Mac-Silicon.dmg](https://github.com/KolbyML/Manatan/releases/download/v6.3.26/Manatan-v6.3.26-Mac-Silicon.dmg) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/apple/apple-original.svg" width="50" alt="macOS"/> | x86_64 | [Manatan-v6.3.26-Mac-Intel.dmg](https://github.com/KolbyML/Manatan/releases/download/v6.3.26/Manatan-v6.3.26-Mac-Intel.dmg) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/windows8/windows8-original.svg" width="50" alt="Windows"/> | x86_64 | [ManatanSetup-v6.3.26-Windows-x64.exe](https://github.com/KolbyML/Manatan/releases/download/v6.3.26/ManatanSetup-v6.3.26-Windows-x64.exe) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/linux/linux-original.svg" width="50" alt="Linux"/> | x86_64 | [manatan_6.3.26_amd64.deb](https://github.com/KolbyML/Manatan/releases/download/v6.3.26/manatan_6.3.26_amd64.deb) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/linux/linux-original.svg" width="50" alt="Linux"/> | aarch64 | [manatan_6.3.26_arm64.deb](https://github.com/KolbyML/Manatan/releases/download/v6.3.26/manatan_6.3.26_arm64.deb) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/android/android-original.svg" width="50" alt="Android"/> | ARM64 | [Manatan-Android-ARM64-v6.3.26.apk](https://github.com/KolbyML/Manatan/releases/download/v6.3.26/Manatan-Android-ARM64-v6.3.26.apk) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/android/android-original.svg" width="50" alt="Android"/> | ARM32 | [Manatan-Android-ARM32-v6.3.26.apk](https://github.com/KolbyML/Manatan/releases/download/v6.3.26/Manatan-Android-ARM32-v6.3.26.apk) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/apple/apple-original.svg" width="50" alt="iOS"/> | arm64 | [Manatan-v6.3.26-iOS.ipa](https://github.com/KolbyML/Manatan/releases/download/v6.3.26/Manatan-v6.3.26-iOS.ipa) |
+| Chrome | all | [Manatan-v6.3.26-Chrome.zip](https://github.com/KolbyML/Manatan/releases/download/v6.3.26/Manatan-v6.3.26-Chrome.zip) |
+|Firefox|Desktop|[Install from Mozilla Add-ons](https://addons.mozilla.org/firefox/addon/manatan/)|
+
+- The manatan-app and manatan-launcher archives are updater payloads, not the normal manual install path.
+- The legacy Manatan archives are one-time migration assets for older clients.
+- Android requires Android 8.0 or newer. Choose ARM64 for a 64-bit Android system, or ARM32 for a 32-bit Android system.
+- ARM32 support is experimental.
+- Chrome extension updates are subject to Google review; a release ZIP does not mean the store update is live.
+- Firefox store updates require Mozilla validation/review. The Firefox ZIP is an unsigned submission package, not an installable signed XPI; use the AMO listing.
+- Checksums: [Checksums.sha256](https://github.com/KolbyML/Manatan/releases/download/v6.3.26/Checksums.sha256)
+
+
 ## Release v6.3.25
 
 - Open lookup flashcards in the right workspace (007cd30)
