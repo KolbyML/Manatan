@@ -1,0 +1,6 @@
+--- a/meson.build
++++ b/meson.build
+@@ -1788,2 +1788,3 @@
+                  link_args: cc.get_supported_link_arguments(['-Wl,-Bsymbolic']),
++                 install_rpath: '$ORIGIN/manatan-playback',
+                  version: client_api_version, install: get_option('libmpv'),

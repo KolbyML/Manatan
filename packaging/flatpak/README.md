@@ -12,11 +12,14 @@ and supplies the sandbox-specific CEF and MPV runtimes around it.
   the read-only payload.
 - CEF is pinned to the version used by `vendor/webview_cef` and installed in
   `/app/lib/cef`, avoiding a first-run runtime download.
-- A Flatpak-owned libmpv is built against the Freedesktop codec extension for
-  payloads that use system MPV on ordinary Linux distributions.
+- The Flatpak builds libmpv in LGPL mode and links it to a pinned LGPL FFmpeg
+  install under `/app/lib/manatan-playback`. The manifest provides their
+  source versions and build options.
 - Manatan's custom `libfftools-ffi` and its sibling FFmpeg libraries remain in
   the public payload. Mining continues to resolve those files relative to the
-  Manatan runner and does not use the Flatpak MPV build for final encodes.
+  Manatan runner. The payload includes its media source record under
+  `/app/lib/manatan/share/licenses/manatan-media`. Matching media source
+  and license notices are supplied at release time.
 - Local media access is portal-first. The manifest deliberately does not grant
   unrestricted home or host filesystem access.
 - Desktop metadata, AppStream metadata, the icon, and the license are installed

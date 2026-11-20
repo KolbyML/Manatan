@@ -11,18 +11,6 @@ command: manatan
 build-options:
   no-debuginfo: true
 
-# The full codec extension is ABI-compatible with the FFmpeg libraries in the
-# Freedesktop runtime. Manatan's fftools-ffi/custom FFmpeg remains isolated in
-# the upstream payload and continues to handle mining encodes.
-add-extensions:
-  org.freedesktop.Platform.ffmpeg-full:
-    version: '25.08'
-    directory: lib/ffmpeg
-    add-ld-path: .
-
-cleanup-commands:
-  - mkdir -p ${FLATPAK_DEST}/lib/ffmpeg
-
 finish-args:
   - --share=ipc
   - --share=network
@@ -33,10 +21,6 @@ finish-args:
   - --env=GTK_USE_PORTAL=1
 
 modules:
-  # Future Manatan Linux payloads use the distribution's libmpv. Build an
-  # equivalent Flatpak-owned libmpv because host libraries are not visible in
-  # the sandbox. The current 6.0.18 payload's private media runtime continues
-  # to take precedence through its runner-relative RUNPATH.
   - name: libplacebo
     buildsystem: meson
     config-opts:
@@ -92,11 +76,50 @@ modules:
           stable-only: true
           url-template: https://github.com/libass/libass/releases/download/$version/libass-$version.tar.xz
 
+  # Use a separate FFmpeg ABI from the bundled sentence-audio encoder. The
+  # RPATH on libmpv also keeps the optional runtime codecs extension from
+  # substituting its own same-SONAME FFmpeg build.
+  - name: ffmpeg-playback
+    buildsystem: simple
+    build-commands:
+      - >-
+        ./configure --prefix=/app --libdir=/app/lib/manatan-playback
+        --disable-gpl --disable-nonfree --enable-version3
+        --enable-shared --disable-static --disable-programs --disable-doc
+        --disable-autodetect --disable-debug
+        --enable-gnutls --enable-libxml2 --enable-zlib
+        --enable-libdav1d --enable-libvpx --enable-libopus --enable-libvorbis
+        --enable-libdrm --enable-vaapi --enable-vulkan --enable-ffnvcodec --enable-nvdec --enable-cuvid
+        --extra-ldflags=-Wl,--disable-new-dtags,-rpath,/app/lib/manatan-playback
+      - >-
+        grep -Fxq '#define CONFIG_GPL 0' config.h
+        && grep -Fxq '#define CONFIG_NONFREE 0' config.h
+        && grep -Fxq '#define CONFIG_VERSION3 1' config.h
+        && sed -i -e 's/^#define FFMPEG_CONFIGURATION .*/#define FFMPEG_CONFIGURATION ""/'
+        -e 's/^#define FFMPEG_LICENSE .*/#define FFMPEG_LICENSE ""/' config.h
+        && grep -Fxq '#define FFMPEG_CONFIGURATION ""' config.h
+        && grep -Fxq '#define FFMPEG_LICENSE ""' config.h
+      - make -j"${FLATPAK_BUILDER_N_JOBS}"
+      - make install
+    cleanup:
+      - /include
+      - /lib/manatan-playback/pkgconfig
+      - /share/ffmpeg
+    sources:
+      - type: archive
+        url: https://ffmpeg.org/releases/ffmpeg-7.1.5.tar.xz
+        sha256: de668509caf9e35e3cd162473441fdb29538c6d96ed080292b3cf9e6fc5d558f
+
   - name: libmpv
     buildsystem: meson
+    build-options:
+      prepend-pkg-config-path: /app/lib/manatan-playback/pkgconfig
     config-opts:
       - --libdir=lib
+      - -Dgpl=false
       - -Dlibmpv=true
+      - -Dplain-gl=enabled
+      - -Dc_link_args=-Wl,--disable-new-dtags
       - -Dcplayer=false
       - -Dlua=disabled
       - -Djavascript=disabled
@@ -104,6 +127,10 @@ modules:
       - -Dalsa=disabled
       - -Dmanpage-build=disabled
       - -Dvulkan=enabled
+    post-install:
+      - >-
+        readelf -d /app/lib/libmpv.so.2 |
+        grep -F 'Library rpath: [$ORIGIN/manatan-playback]'
     cleanup:
       - /include
       - /lib/pkgconfig
@@ -122,6 +149,8 @@ modules:
           stable-only: true
           url-template: https://github.com/mpv-player/mpv/archive/refs/tags/v$version.tar.gz
           is-important: true
+      - type: patch
+        path: libmpv-install-rpath.patch
 
   # Manatan's normal launcher downloads CEF into the user's data directory.
   # Flatpak instead installs the exact pinned CEF runtime read-only in /app so
@@ -211,6 +240,7 @@ modules:
     build-options:
       strip: false
     build-commands:
+      - test -f manatan/share/licenses/manatan-media/sources.txt
       - install -d ${FLATPAK_DEST}/lib/manatan
       - cp -a manatan/. ${FLATPAK_DEST}/lib/manatan/
       - chmod 0755 ${FLATPAK_DEST}/lib/manatan/Manatan ${FLATPAK_DEST}/lib/manatan/manatan-helper

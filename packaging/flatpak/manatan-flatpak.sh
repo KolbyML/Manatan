@@ -18,8 +18,7 @@ export WEBVIEW_CEF_USER_DATA_DIR="${XDG_DATA_HOME:-$HOME/.local/share}/manatan/c
 export MANATAN_DISABLE_BOOTSTRAP=1
 
 # CEF must be visible to the dynamic loader before the Flutter runner starts.
-# Preserve Flatpak's existing path so /app/lib and runtime extensions (notably
-# ffmpeg-full) remain available to libmpv and Manatan's media helpers.
+# Preserve Flatpak's existing library path for other runtime dependencies.
 export LD_LIBRARY_PATH="$cef_root${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}"
 
 # Keep compatibility with already-published payloads whose Rust allocator uses
