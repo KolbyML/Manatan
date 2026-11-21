@@ -6,6 +6,7 @@ from __future__ import annotations
 import argparse
 import html
 import json
+import os
 import re
 import sys
 import urllib.parse
@@ -24,9 +25,14 @@ RUNTIME_ENTRYPOINTS = {
 
 
 def fetch(url: str) -> bytes:
+    headers = {"Accept": "application/vnd.github+json", "User-Agent": USER_AGENT}
+    token = os.environ.get("GH_TOKEN") or os.environ.get("GITHUB_TOKEN")
+    parsed = urllib.parse.urlsplit(url)
+    if token and parsed.scheme == "https" and parsed.netloc == "api.github.com":
+        headers["Authorization"] = f"Bearer {token}"
     request = urllib.request.Request(
         url,
-        headers={"Accept": "application/vnd.github+json", "User-Agent": USER_AGENT},
+        headers=headers,
     )
     with urllib.request.urlopen(request, timeout=60) as response:
         return response.read()

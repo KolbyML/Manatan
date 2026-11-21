@@ -240,7 +240,6 @@ modules:
     build-options:
       strip: false
     build-commands:
-      - test -f manatan/share/licenses/manatan-media/sources.txt
       - install -d ${FLATPAK_DEST}/lib/manatan
       - cp -a manatan/. ${FLATPAK_DEST}/lib/manatan/
       - chmod 0755 ${FLATPAK_DEST}/lib/manatan/Manatan ${FLATPAK_DEST}/lib/manatan/manatan-helper

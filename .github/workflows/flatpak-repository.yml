@@ -58,7 +58,10 @@ jobs:
 
       - name: Pin the requested public release
         working-directory: packaging/flatpak
+        env:
+          GH_TOKEN: ${{ github.token }}
         run: |
+          python3 -m unittest discover -s . -p 'test_*.py'
           if [[ -n "${RELEASE_TAG}" ]]; then
             python3 update_release.py --tag "${RELEASE_TAG}"
           else

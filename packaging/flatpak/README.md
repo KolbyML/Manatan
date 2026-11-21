@@ -17,9 +17,9 @@ and supplies the sandbox-specific CEF and MPV runtimes around it.
   source versions and build options.
 - Manatan's custom `libfftools-ffi` and its sibling FFmpeg libraries remain in
   the public payload. Mining continues to resolve those files relative to the
-  Manatan runner. The payload includes its media source record under
-  `/app/lib/manatan/share/licenses/manatan-media`. Matching media source
-  and license notices are supplied at release time.
+  Manatan runner. Source records and license notices already included in the
+  payload are preserved, but an optional source-record file is not a build
+  prerequisite.
 - Local media access is portal-first. The manifest deliberately does not grant
   unrestricted home or host filesystem access.
 - Desktop metadata, AppStream metadata, the icon, and the license are installed
