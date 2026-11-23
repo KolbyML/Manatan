@@ -1,3 +1,56 @@
+## Release v6.3.29
+
+- Keep manga word lookups from triggering double-tap zoom (b85fe1d)
+- Match audiobook button to the novel reader theme (a110145)
+- Speed up loading and correct seek preview images (36e1f27)
+- Preserve video watch time during transient capture failures (f9f3b75)
+- Preserve novel reading positions while fonts load (73ce162)
+- Make the video toolbar handle draggable (8160c89)
+- Recover interrupted Google Drive sync (a251a92)
+- Fix startup from pinned Windows taskbar shortcuts (0a88a64)
+- Keep library covers visible when switching tabs (6c77ba3)
+- Fix glossary formatting and frequencies on mined cards (7815f74)
+- Preserve source settings when syncing a new device (8e420d7)
+- Expand streaming subtitle language and audio support (5fb3646)
+- Add subtitle study and mining across streaming sites (86d28df)
+- Recover saved manga titles when reading resumes (954227b)
+- Fix Linux browser runtime startup (743b298)
+- Display video statistics in a two-by-two card grid (f95538b)
+- Support headphone playback controls for videos (c201046)
+- Load metadata beside imported local videos (61b2b73)
+- Add Slide page-turn animation to the novel reader (7125a97)
+- Add Netflix study and flashcard mining to the browser extension (c6e9a2e)
+- Fix wrong page previews during Android novel turns (1394a53)
+- Honor library category preferences for videos and novels (dac5bd7)
+- Save source preferences reliably (b5a02d8)
+- Improve browsing and playback reliability (49ee569)
+- Keep source icons available offline (f18e1cc)
+- Add a toolbar switch for dictionary lookups and highlights (82acd6d)
+- Restore direct lookups on subtitle furigana (eb6af55)
+### Downloads
+
+| System | Architecture | Download |
+|:---:|:---:|:---|
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/apple/apple-original.svg" width="50" alt="macOS"/> | aarch64 | [Manatan-v6.3.29-Mac-Silicon.dmg](https://github.com/KolbyML/Manatan/releases/download/v6.3.29/Manatan-v6.3.29-Mac-Silicon.dmg) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/apple/apple-original.svg" width="50" alt="macOS"/> | x86_64 | [Manatan-v6.3.29-Mac-Intel.dmg](https://github.com/KolbyML/Manatan/releases/download/v6.3.29/Manatan-v6.3.29-Mac-Intel.dmg) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/windows8/windows8-original.svg" width="50" alt="Windows"/> | x86_64 | [ManatanSetup-v6.3.29-Windows-x64.exe](https://github.com/KolbyML/Manatan/releases/download/v6.3.29/ManatanSetup-v6.3.29-Windows-x64.exe) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/linux/linux-original.svg" width="50" alt="Linux"/> | x86_64 | [manatan_6.3.29_amd64.deb](https://github.com/KolbyML/Manatan/releases/download/v6.3.29/manatan_6.3.29_amd64.deb) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/linux/linux-original.svg" width="50" alt="Linux"/> | aarch64 | [manatan_6.3.29_arm64.deb](https://github.com/KolbyML/Manatan/releases/download/v6.3.29/manatan_6.3.29_arm64.deb) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/android/android-original.svg" width="50" alt="Android"/> | ARM64 | [Manatan-Android-ARM64-v6.3.29.apk](https://github.com/KolbyML/Manatan/releases/download/v6.3.29/Manatan-Android-ARM64-v6.3.29.apk) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/android/android-original.svg" width="50" alt="Android"/> | ARM32 | [Manatan-Android-ARM32-v6.3.29.apk](https://github.com/KolbyML/Manatan/releases/download/v6.3.29/Manatan-Android-ARM32-v6.3.29.apk) |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/apple/apple-original.svg" width="50" alt="iOS"/> | arm64 | [Manatan-v6.3.29-iOS.ipa](https://github.com/KolbyML/Manatan/releases/download/v6.3.29/Manatan-v6.3.29-iOS.ipa) |
+| Chrome | all | [Manatan-v6.3.29-Chrome.zip](https://github.com/KolbyML/Manatan/releases/download/v6.3.29/Manatan-v6.3.29-Chrome.zip) |
+|Firefox|Desktop|[Install from Mozilla Add-ons](https://addons.mozilla.org/firefox/addon/manatan/)|
+
+- The manatan-app and manatan-launcher archives are updater payloads, not the normal manual install path.
+- The legacy Manatan archives are one-time migration assets for older clients.
+- Android requires Android 8.0 or newer. Choose ARM64 for a 64-bit Android system, or ARM32 for a 32-bit Android system.
+- ARM32 support is experimental.
+- Chrome extension updates are subject to Google review; a release ZIP does not mean the store update is live.
+- Firefox store updates require Mozilla validation/review. The Firefox ZIP is an unsigned submission package, not an installable signed XPI; use the AMO listing.
+- Checksums: [Checksums.sha256](https://github.com/KolbyML/Manatan/releases/download/v6.3.29/Checksums.sha256)
+
+
 ## Release v6.3.28
 
 - Fix Linux browser runtime startup (4340662)
